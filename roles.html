@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ProTrack — Step by step, by role</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDEEE9;--surface:#FBFBF9;--surface-2:#F2F3EF;--ink:#1B252E;--ink-2:#56626C;--line:#D4D8D1;
+  --accent:#24508A;--accent-soft:#DCE5F1;--green:#2E7A4C;--green-soft:#DDEFE3;--amber:#A26A06;--amber-soft:#F7EACB;
+  --red:#B03A2B;--red-soft:#F5DEDA;--navy:#04101F;
+  --font:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--cond:'Barlow Condensed','Barlow',system-ui,sans-serif;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141A1F;--surface:#1C242B;--surface-2:#222C34;--ink:#E5E9E3;--ink-2:#9AA6AF;--line:#33404A;
+  --accent:#86ABDF;--accent-soft:#233449;--green:#63BE88;--green-soft:#1D3527;--amber:#E2AA42;--amber-soft:#3A2F17;
+  --red:#EC7564;--red-soft:#3E2320;--navy:#0B1219;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141A1F;--surface:#1C242B;--surface-2:#222C34;--ink:#E5E9E3;--ink-2:#9AA6AF;--line:#33404A;
+  --accent:#86ABDF;--accent-soft:#233449;--green:#63BE88;--green-soft:#1D3527;--amber:#E2AA42;--amber-soft:#3A2F17;
+  --red:#EC7564;--red-soft:#3E2320;--navy:#0B1219;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 120px);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--font)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--navy);color:#E8EEF8;padding:10px 18px 0}
+.top .bar{display:flex;align-items:center;gap:14px;max-width:1180px;margin:0 auto}
+.top img{height:32px;border-radius:5px}
+.top b{font:600 19px/1 var(--cond);letter-spacing:.02em}
+.top .sp{margin-inline-start:auto;display:flex;gap:8px}
+.top button.tool{background:rgba(255,255,255,.1);border:0;color:inherit;border-radius:7px;padding:7px 12px;font:600 13px var(--font);cursor:pointer}
+.tabs{display:flex;gap:6px;overflow-x:auto;max-width:1180px;margin:10px auto 0;padding-bottom:10px;scrollbar-width:thin}
+.tabs a{white-space:nowrap;color:#BFD3EE;text-decoration:none;font-size:14px;font-weight:600;padding:8px 13px;border-radius:8px 8px 0 0}
+.tabs a:hover{background:rgba(255,255,255,.1);color:#fff}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 80px}
+section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 28px;margin-bottom:20px}
+h1{font:700 38px/1.1 var(--cond);margin:0 0 6px}
+h2{font:600 27px/1.15 var(--cond);margin:0 0 6px}
+h2 .who{display:block;font:600 14px/1.4 var(--font);color:var(--ink-2);letter-spacing:.02em;text-transform:none;margin-top:4px}
+h3{font:600 18px/1.3 var(--font);margin:22px 0 8px}
+p,li{font-size:15.5px}
+ul,ol{padding-inline-start:22px}
+li{margin:5px 0}
+.lead{font-size:18px;color:var(--ink-2)}
+table{width:100%;border-collapse:collapse;font-size:14.5px;margin:12px 0}
+th{text-align:start;font-weight:600;color:var(--ink-2);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);padding:8px 10px}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+.steps{counter-reset:s;list-style:none;padding:0;margin:10px 0}
+.steps>li{counter-increment:s;position:relative;padding-inline-start:42px;margin:14px 0}
+.steps>li::before{content:counter(s);position:absolute;inset-inline-start:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font:700 14px var(--font)}
+.steps>li b{display:block}
+.rule{height:3px;border-radius:2px;background:linear-gradient(90deg,#1763d8,#39a0ff 55%,#f5871f);margin:0 0 18px;width:110px}
+.note,.warn,.tip{border-radius:10px;padding:12px 15px;margin:14px 0;font-size:15px;border-inline-start:4px solid}
+.note{background:var(--accent-soft);border-color:var(--accent)}
+.warn{background:var(--red-soft);border-color:var(--red)}
+.tip{background:var(--green-soft);border-color:var(--green)}
+.note b,.warn b,.tip b{display:block;margin-bottom:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:14px 0}
+.card{background:var(--surface-2);border-radius:10px;padding:14px 16px}
+.card b{display:block;margin-bottom:4px}
+.card span{font-size:14px;color:var(--ink-2)}
+.pill{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:3px 11px;font-size:13px;font-weight:600;margin:0 6px 6px 0}
+.when{display:inline-block;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:10px}
+.scroll{overflow-x:auto}
+footer{max-width:1180px;margin:0 auto;padding:0 18px 60px;color:var(--ink-2);font-size:14px}
+@media (max-width:860px){.wrap{padding:16px 12px 70px}section{padding:18px 16px}h1{font-size:30px}h2{font-size:23px}}
+@media print{
+  .top{position:static;background:#04101F !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tabs,.top .sp{display:none}
+  section{border:0;padding:0 0 16px;break-inside:auto}
+  section+section{break-before:page}
+  h2{break-after:avoid}
+  body{background:#fff;color:#000;font-size:11pt}
+}
+a.tool{background:rgba(255,255,255,.1);color:#E8EEF8;border-radius:7px;padding:7px 12px;font:600 13px var(--font);text-decoration:none;display:inline-flex;align-items:center}
+a.tool:hover{background:rgba(255,255,255,.2)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <img id="logo" alt="ProTrack">
+    <b>Step by step, by role</b>
+    <span class="sp"><a class="tool" href="index.html">Open ProTrack</a><a class="tool" href="guide.html">User guide</a>
+      <button class="tool" id="theme" type="button">Dark</button>
+      <button class="tool" onclick="window.print()" type="button">Print</button>
+    </span>
+  </div>
+  <nav class="tabs">
+    <a href="#map">Who does what</a>
+    <a href="#foreman">Foreman</a>
+    <a href="#engineer">Site engineer</a>
+    <a href="#pm">Project manager</a>
+    <a href="#planning">Planning engineer</a>
+    <a href="#costing">Costing engineer</a>
+    <a href="#exec">Executive and regional</a>
+    <a href="#admin">Super admin</a>
+    <a href="#first">First two weeks</a>
+  </nav>
+</header>
+
+<div class="wrap">
+<section id="map">
+  <h1>Step by step, by role</h1>
+  <div class="rule"></div>
+  <p class="lead">What each person does in ProTrack, in the order they do it, and what they are accountable for.</p>
+  <p>ProTrack works on one principle: every number has exactly one owner. Nobody overwrites anybody. If two people hold different figures, the system shows the difference instead of hiding it.</p>
+
+  <h3>Who owns which number</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Number</th><th>Owner</th><th>Where it comes from</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td>Quantity executed today, crews, hours, equipment</td><td><b>Foreman</b> and <b>site engineer</b></td><td>Daily report</td><td>Productivity, earned value, cost</td></tr>
+      <tr><td>Approval of that report</td><td><b>Project manager</b></td><td>Review and approve</td><td>Nothing counts until approved or submitted</td></tr>
+      <tr><td>Dates, logic, WBS, price weighting, labour resource loading</td><td><b>Planning engineer</b></td><td>P6 schedule</td><td>Plan, progress weighting, invoicing, trade proportions</td></tr>
+      <tr><td>Design and procurement milestones</td><td><b>Planning engineer</b></td><td>Weekly Excel update</td><td>Engineering and procurement progress</td></tr>
+      <tr><td>Budget quantity, unit, unit rate, budget cost, budget manhours</td><td><b>Costing engineer</b></td><td>Costing Excel</td><td>Budget analysis, unit rates, EAC</td></tr>
+      <tr><td>Trade salaries and loaded rates, subcontractor POs</td><td><b>Super admin</b> with costing</td><td>Settings</td><td>Actual cost of work done</td></tr>
+      <tr><td>Contract payment terms, retention, advance</td><td><b>Super admin</b> with commercial</td><td>Settings</td><td>Invoiceable value</td></tr>
+      <tr><td>Decisions</td><td><b>Executive, regional and portfolio managers</b></td><td>Executive summary</td><td>Where to intervene</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note"><b>The golden rule</b>Construction progress comes only from daily reports. Design and procurement progress comes only from the weekly update. Price comes only from P6. Cost comes only from the costing file. No screen lets one of these overwrite another.</div>
+</section>
+
+<section id="foreman">
+  <h2>Foreman<span class="who">Records what his crews actually did, every working day</span></h2>
+  <div class="rule"></div>
+  <span class="when">Every day, end of shift, 5 minutes</span>
+  <p>You are the source of every number in the system. If the crew and the quantity are right, everything above you is right.</p>
+
+  <h3>Your daily routine</h3>
+  <ol class="steps">
+    <li><b>Sign in on your phone.</b> You see only your own project.</li>
+    <li><b>Open New report.</b> The date and project are already filled in. Choose your name as foreman if it isn't set.</li>
+    <li><b>Pick the work location</b> — the area of the site you worked in, for example "380kV GIS Building" or "Section 14, PI-17 to PI-18".</li>
+    <li><b>Pick the work type</b> — Civil, Electrical, Mechanical and so on. Only the types available in that location appear.</li>
+    <li><b>Pick the WBS, then the activity.</b> By this point the list is three or four activities, not the whole schedule.</li>
+    <li><b>Enter the quantity executed today</b> in the activity's own unit: m³, tonnes, metres, towers.</li>
+    <li><b>Enter the crew that produced it</b> — trade, number of workers, regular hours, overtime hours. The usual crew is pre-filled; change the numbers that differ.</li>
+    <li><b>Add subcontractor crews</b> if any worked with you: company, trade, workers, hours, and the quantity they executed. Their quantity is part of your total.</li>
+    <li><b>Add equipment</b> — crane, excavator, boom truck — with units and working hours.</li>
+    <li><b>Add another activity</b> for every other activity your crews touched today. Each gets its own location, quantity and crew.</li>
+    <li><b>Check the productivity panel on the right.</b> If it is red, look at it before submitting: usually the crew is right and the quantity was mis-measured, or the crew was waiting.</li>
+    <li><b>Write a remark</b> if anything held you up: no access, no material, crane breakdown, rain, client instruction. Managers read these.</li>
+    <li><b>Submit for approval.</b> It reaches your project manager immediately.</li>
+  </ol>
+
+  <h3>Rules that matter</h3>
+  <ul>
+    <li>If a worker split the day between two activities, record him on both with the hours he spent on each, for example 4 and 4.</li>
+    <li>Never inflate a quantity to make the index look good. The surveyor's measurement will correct it and your approval rate drops.</li>
+    <li>Record overtime honestly. Overtime is costed at 1.5 times and shows up in your scorecard as a separate line, not as bad productivity.</li>
+    <li>If you cannot finish the report, Save draft. A draft counts for nothing until submitted.</li>
+  </ul>
+  <div class="tip"><b>What you are measured on</b>Productivity index, overtime share, rework (reports returned or rejected) and approval rate — combined into your monthly score in Performance → Foremen. Consistent reporting matters as much as fast work.</div>
+</section>
+
+<section id="engineer">
+  <h2>Site engineer<span class="who">Owns the accuracy of the daily report for his area</span></h2>
+  <div class="rule"></div>
+  <span class="when">Daily, plus a weekly look at productivity</span>
+  <p>You either enter the reports yourself or check what the foremen entered. You can edit any report until the project manager approves it.</p>
+
+  <h3>Daily</h3>
+  <ol class="steps">
+    <li><b>Check the drafts</b> in Daily reports, filtered to Draft. Nothing should stay in draft overnight.</li>
+    <li><b>Verify the quantity against the survey or the measurement sheet</b> before submitting. This is the single check that protects every number above you.</li>
+    <li><b>Verify the crew</b> against the gate count or attendance. The resources total on the right of the form should reconcile.</li>
+    <li><b>Submit</b>, or correct and submit. Edits are logged with your name.</li>
+    <li><b>Deal with returned reports</b> the same day. A returned report carries the manager's comment at the top of the audit trail.</li>
+  </ol>
+
+  <h3>Weekly</h3>
+  <ul>
+    <li>Open <b>Reports → Planned vs actual productivity</b> for your project and look at the activities below 90%.</li>
+    <li>Open <b>Reports → Manpower histogram</b>, set the trade filter, and compare the crew you have against the forecast. Ask for mobilisation early rather than late.</li>
+    <li>Look at <b>Executive summary → Project view</b> for your project: bottlenecks, underperforming activities and foreman performance in one screen.</li>
+    <li>Ask ProTrack AI: "which activity is underperforming and why", "what manpower is needed to finish on time".</li>
+  </ul>
+  <div class="warn"><b>What you cannot do</b>You cannot approve your own reports, change the baseline, or change design and procurement progress. That separation is deliberate.</div>
+</section>
+
+<section id="pm">
+  <h2>Project manager<span class="who">Approves the record, then acts on it</span></h2>
+  <div class="rule"></div>
+  <span class="when">Every evening, plus Monday review</span>
+  <p>Your approval turns site data into the company's record. Nothing reaches a dashboard, an invoice or a client report without it.</p>
+
+  <h3>Every evening</h3>
+  <ol class="steps">
+    <li><b>Open Daily reports, filter to Submitted.</b> The hint line tells you how many are waiting.</li>
+    <li><b>Open each report.</b> You see the quantity, every crew and machine, the attachments, the remarks, and the full audit trail.</li>
+    <li><b>Check three things:</b> is the quantity credible for that crew, is the crew what was actually on site, and does the productivity index look explainable.</li>
+    <li><b>Mark reviewed, then approve</b> — or <b>return with comments</b> if something is wrong. Rejection and return both require a comment, which the site team sees immediately.</li>
+  </ol>
+
+  <h3>Every Monday</h3>
+  <ol class="steps">
+    <li><b>Dashboard:</b> productivity index for the last 7 days, workforce trend, early warnings.</li>
+    <li><b>Executive summary → Project view:</b> SPI, CPI, EAC, forecast finish, milestones, EOT status, bottlenecks.</li>
+    <li><b>Reports → Early warnings:</b> work down the list. Each warning names the indicator, the threshold and a recommended action.</li>
+    <li><b>Reports → Manpower histogram:</b> what has to be mobilised, by trade, for the next six weeks.</li>
+    <li><b>Reports → EAC:</b> where the project lands on cost, and what the variance at completion is.</li>
+  </ol>
+
+  <h3>Before the monthly meeting</h3>
+  <ul>
+    <li><b>Quantity reconciliation</b> — how much was done by your own crews, by rental manpower and by subcontractors.</li>
+    <li><b>Unit rate analysis</b> — which activities are costing more per unit than budgeted, and the revised rate for the rest of the work.</li>
+    <li><b>Invoiceable value</b> — what can actually be billed this month after phase caps and retention.</li>
+    <li>Export the <b>Full report pack</b> to Excel, or individual reports to PDF.</li>
+  </ul>
+  <div class="note"><b>Approve the same day</b>Approving late is the most common cause of a wrong dashboard. Submitted reports do count, but only approval closes the audit trail and protects you in a claim.</div>
+</section>
+
+<section id="planning">
+  <h2>Planning engineer<span class="who">Owns the plan, the price weighting and the design and procurement update</span></h2>
+  <div class="rule"></div>
+  <span class="when">At award, at every revision, and every week</span>
+
+  <h3>At award, once per project</h3>
+  <ol class="steps">
+    <li><b>Baselines → choose the project → Original baseline</b>, then load the P6 file (XER, XML or the Excel template).</li>
+    <li><b>Set the mapping in the preview:</b> which WBS level is the work location, which level decides the activity class, and which resource carries the price weighting. The preview shows how many labour resources and hours it read, how many activities carry quantities, and which weighting resources exist.</li>
+    <li><b>Read the warnings.</b> If it says none of the activity IDs match the project, you have the wrong file. Check before importing; you can undo afterwards.</li>
+    <li><b>Import</b>, then check the baseline summary: activities per class, budget manhours, earliest start and latest finish.</li>
+    <li><b>Map the P6 labour resources to trades</b> in the panel underneath. Suggestions are pre-filled; one button creates any trades that don't exist yet, such as Lineman or Cable Jointer.</li>
+    <li><b>Tell the costing engineer the baseline is loaded</b> so they can download the costing template.</li>
+  </ol>
+
+  <h3>Every week</h3>
+  <ol class="steps">
+    <li><b>Weekly update → Download update template.</b> It contains only the design and procurement activities in your projects.</li>
+    <li><b>Fill the shaded columns:</b> data date, actual start, milestone reached, forecast finish, actual finish, remarks. Progress is set by milestone, never typed as a percentage.</li>
+    <li><b>Upload it.</b> Every row is validated: unknown IDs, construction rows, invalid milestones, dates after the data date, and progress going backwards without a remark are all rejected.</li>
+    <li><b>Review the preview,</b> then apply. The batch is stored with its data date and your name.</li>
+    <li><b>Export the P6 progress update</b> from Reports and load it into the schedule, so P6 and ProTrack tell the same story.</li>
+  </ol>
+
+  <h3>When the schedule changes</h3>
+  <ul>
+    <li>An approved extension of time → load a <b>Revised baseline</b>. A catch-up plan → load a <b>Recovery baseline</b>. Both store dates only and never change earned progress.</li>
+    <li>Use <b>Measure against</b> at the top of the screen to report on either, and the <b>Baseline comparison</b> report to show slip against each.</li>
+    <li>Re-importing the original baseline for a schedule already progressed in P6? Tick <b>Ignore percent complete in the file</b>, or the progress will be counted twice.</li>
+  </ul>
+  <div class="tip"><b>Keep milestones current</b>Settings → Projects → Edit holds project start, intermediate milestones, TCC, PAC, FAC and the EOT claim. The invoicing engine releases phase balances and retention against these dates, so they are commercial, not decorative.</div>
+</section>
+
+<section id="costing">
+  <h2>Costing engineer<span class="who">Owns the budget: quantity, unit, rate, cost and manhours</span></h2>
+  <div class="rule"></div>
+  <span class="when">At award, and at every budget revision</span>
+  <p>You keep quantities out of P6 and in a file you control. ProTrack joins the two on the activity ID.</p>
+
+  <h3>At award</h3>
+  <ol class="steps">
+    <li><b>Baselines → the project → Costing file → Download costing template.</b> It arrives pre-filled with every activity ID and name from the schedule.</li>
+    <li><b>Fill in per activity:</b> budget quantity, UOM, budget unit rate, budget cost, budget manhours, and a gang code if you use one. Leave budget cost blank and ProTrack computes quantity × rate.</li>
+    <li>Several BOQ lines against one activity? Use several rows with the same activity ID; they are summed.</li>
+    <li><b>Upload it.</b> The preview shows how many rows matched the baseline, which activity IDs are not in the schedule, and how many schedule activities have no costing row.</li>
+    <li><b>Check the flags:</b> any activity whose manhours differ from the P6 loading by more than 25% is highlighted.</li>
+    <li><b>Apply.</b> Quantities, units, rates, costs and manhours are written to the activities, and the previous state is snapshotted for undo.</li>
+  </ol>
+
+  <h3>With the super admin, set the cost basis</h3>
+  <ul>
+    <li><b>Settings → Trades and rates:</b> basic monthly salary, hours per month and the loaded factor for every trade. The rate history is dated, so a pay rise never restates past reports.</li>
+    <li><b>Settings → Subcontractors:</b> one purchase order per project per vendor. Measured POs carry a rate per activity and unit; manpower supply POs carry a rate per trade and manhour.</li>
+  </ul>
+
+  <h3>Every month</h3>
+  <ul>
+    <li><b>Unit rate analysis</b> — budgeted rate against actual, split into own labour, rental manpower and subcontract, with a forecast cost to complete at the actual rate.</li>
+    <li><b>Quantity reconciliation</b> — scope against executed, by execution route.</li>
+    <li><b>Budget manhour reconciliation</b> — where your file and the schedule disagree, worst first. Each project names which is the budget of record.</li>
+    <li><b>EAC</b> — the forecast final cost, and the variance at completion.</li>
+  </ul>
+  <div class="note"><b>Price is not yours</b>The client price schedule sits in P6 as the weighting resource, loaded by planning, and drives invoicing. Your file drives cost and productivity. Keeping them apart is what lets ProTrack show margin: earned price less incurred cost.</div>
+</section>
+
+<section id="exec">
+  <h2>Executive, regional and portfolio managers<span class="who">Decide where to intervene, with no data entry</span></h2>
+  <div class="rule"></div>
+  <span class="when">Weekly, and before every review meeting</span>
+  <p>Executives see every project; regional managers see their regions; portfolio managers see one region. All read-only.</p>
+
+  <h3>The five-minute weekly scan</h3>
+  <ol class="steps">
+    <li><b>Executive summary.</b> Portfolio complete against plan, SPI, CPI, productivity, and how many projects need attention.</li>
+    <li><b>Projects by region and by sector.</b> Tap any row to filter the whole system to it.</li>
+    <li><b>Critical projects.</b> Worst first, with Plan %, Actual %, variance, CPI, SPI, productivity and the main issue in plain words.</li>
+    <li><b>Open the worst project</b> in Project view: progress, forecast finish, EAC, milestones with TCC and EOT status, bottlenecks, underperforming activities and foreman performance.</li>
+    <li><b>Ask ProTrack AI</b> anything the screen doesn't answer: "what is the invoiceable value", "which subcontractor is underperforming", "how many more riggers do we need".</li>
+  </ol>
+
+  <h3>The four questions worth asking in the meeting</h3>
+  <div class="grid">
+    <div class="card"><b>Is progress real?</b><span>Actual % against plan, and the productivity index behind it. Progress without productivity means more people, not better performance.</span></div>
+    <div class="card"><b>Will it finish on time?</b><span>Forecast finish and slip, with the reason in the bottlenecks list.</span></div>
+    <div class="card"><b>Will it make money?</b><span>CPI, EAC and variance at completion, plus the unit rate analysis for where the money is going.</span></div>
+    <div class="card"><b>Can we bill it?</b><span>Invoiceable value: phase caps, milestone releases and retention, which is usually well below the progress percentage.</span></div>
+  </div>
+  <div class="tip"><b>One number to trust</b>The productivity index. It cannot be improved by adding people, unlike percent complete, and it turns before the schedule does.</div>
+</section>
+
+<section id="admin">
+  <h2>Super admin, the planning manager at head office<span class="who">Owns the system, the master data and who can see what</span></h2>
+  <div class="rule"></div>
+  <span class="when">At setup, then as things change</span>
+
+  <h3>Setting up, in order</h3>
+  <ol class="steps">
+    <li><b>Sectors, regions and cities.</b> Assign a regional manager to each region.</li>
+    <li><b>Trades and rates.</b> Create every labour category and set its cost rate from basic salary, hours per month and the loaded factor. Rates are dated.</li>
+    <li><b>Projects.</b> Code (any format, such as PE-000 or EL-000), name, sector, region, city, dates, contract value, project type and status.</li>
+    <li><b>Users and access.</b> Create each person with their role, and tick the projects or regions they may see.</li>
+    <li><b>Project team.</b> Reopen the project and set the project manager, site engineer and foremen.</li>
+    <li><b>Milestones and EOT</b> for the project, including TCC, PAC and FAC.</li>
+    <li><b>Payment terms:</b> phase caps, milestone releases, retention percentage and cap, the TCC and FAC release split, advance payment and recovery.</li>
+    <li><b>Budget manhours source:</b> costing file or P6 resource loading, per project.</li>
+    <li><b>Subcontractors</b> and their purchase orders, one per project, with rates.</li>
+    <li>Hand over to planning and costing to load the baseline and the costing file.</li>
+  </ol>
+
+  <h3>Routine administration</h3>
+  <ul>
+    <li><b>New starter:</b> Users and access → Create user → role → tick projects. Give them the demo password and tell them to use Forgot password.</li>
+    <li><b>Leaver:</b> set the user Inactive. Their history stays intact.</li>
+    <li><b>Salary revision:</b> Trades and rates → the trade → Add a new rate with its effective date. Past reports keep their old rate.</li>
+    <li><b>New purchase order:</b> Subcontractors → the vendor → Add a purchase order for that project, then its rates.</li>
+    <li><b>Wrong baseline loaded:</b> Baselines → the project → Undo this import, or Remove imported baseline.</li>
+    <li><b>Check the change log</b> in Settings. Every change carries a name and a time stamp.</li>
+  </ul>
+  <div class="warn"><b>Access discipline</b>A portfolio manager covers exactly one region; a regional manager can cover several. Approvals stay with project managers. Only planning engineers and you load baselines or the weekly update. Keep it that way, or the audit trail loses meaning.</div>
+</section>
+
+<section id="first">
+  <h2>The first two weeks on a live project</h2>
+  <div class="rule"></div>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td>Day 1</td><td>Super admin</td><td>Project, users, trades and rates, milestones, payment terms</td></tr>
+      <tr><td>Day 2</td><td>Planning engineer</td><td>Import the P6 baseline, set the work location and class levels, map labour resources to trades</td></tr>
+      <tr><td>Day 3</td><td>Costing engineer</td><td>Download the costing template, fill quantities, units, rates and costs, upload it</td></tr>
+      <tr><td>Day 3</td><td>Super admin</td><td>Subcontractor purchase orders and rates</td></tr>
+      <tr><td>Day 4</td><td>All</td><td>One hour together: each role walks through their own screen once</td></tr>
+      <tr><td>Days 5 to 10</td><td>Foremen and site engineers</td><td>Daily reports every evening. Keep the old Excel DPR in parallel for the first week only</td></tr>
+      <tr><td>Daily</td><td>Project manager</td><td>Approve the same evening</td></tr>
+      <tr><td>Day 8</td><td>Planning engineer</td><td>First weekly design and procurement update, and the first P6 progress export</td></tr>
+      <tr><td>Day 12</td><td>Project manager and costing</td><td>Compare ProTrack against the manual report. Differences are usually measurement, not the system</td></tr>
+      <tr><td>Day 14</td><td>Executive</td><td>Review the executive summary and agree the thresholds for critical projects</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note"><b>The habit that makes it work</b>Report every working day and approve the same evening. A system fed weekly is a reporting exercise; a system fed daily is a management tool.</div>
+</section>
+</div>
+<footer>ProTrack role guide. Prototype documentation, sample data. Figures shown in the application are illustrative.</footer>
+<script>
+document.getElementById('logo').src='data:image/jpeg;base64,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';
+const t=document.getElementById('theme');
+const mode=()=>document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+const paint=()=>t.textContent=mode()==='dark'?'Light':'Dark';
+t.addEventListener('click',()=>{document.documentElement.dataset.theme=mode()==='dark'?'light':'dark';try{localStorage.setItem('pt-role-theme',document.documentElement.dataset.theme)}catch(e){}paint()});
+try{const s=localStorage.getItem('pt-role-theme');if(s)document.documentElement.dataset.theme=s}catch(e){}
+paint();
+</script>
+</body>
+</html>
