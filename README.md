@@ -91,6 +91,18 @@ scoped to the projects their account may see.
 Then the site reports daily, the project manager approves, and the planning
 engineer updates design and procurement weekly.
 
+At import you choose **which WBS branches to monitor** and **which activity
+classes to bring in**, so a schedule full of procurement and engineering lines
+can be reduced to the construction, installation and testing activities the site
+actually reports against.
+
+Mistakes are recoverable: every original import keeps a snapshot, so
+**Baselines → Imported baseline and history → Undo this import** puts the project
+back, and **Remove imported activities** clears them all. Projects can be deleted
+outright from Settings → Projects, from the Baselines page, or from inside the
+project editor; the deletion cascades to activities, reports, baselines, costing
+and purchase order rates.
+
 ---
 
 ## Read this before real use
@@ -135,6 +147,26 @@ Production needs:
 `guide.html` section 15 lists every formula; section 16 lists these guarantees.
 
 ---
+
+## Recent changes in this build
+
+- In-app confirmation dialogs, because sandboxed frames block the browser's own
+  `confirm()`; delete, undo and reset now work wherever the app is hosted
+- Delete a project from three places, with a full cascade and a change-log entry
+- Undo an import, remove imported activities, or delete a revised or recovery set
+- Pick WBS branches and activity classes at import; the class list shows live
+  counts from the branches ticked
+- Resource-aware P6 import: labour hours, material quantities with their units,
+  price weighting resource, and the trade mix per activity
+- Costing file for budget quantity, unit, rate, cost and manhours, joined on
+  activity ID, with a per-project setting for which file owns budget manhours
+- Any unit of measure, any project code format
+- Billing by phase with up to two milestone releases, plus advance recovery
+- Trade-wise manpower histogram with a forecast at current productivity
+- Quantity reconciliation, unit rate analysis, budget manhour reconciliation and
+  invoiceable value reports
+- Executive summary as the landing page, and an interactive ProTrack AI avatar
+  that answers from any report
 
 ## Resetting the demo
 

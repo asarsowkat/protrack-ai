@@ -414,6 +414,12 @@ label.btn{display:inline-block}
 #aiSpeak[aria-pressed="true"]{background:rgba(255,255,255,.25)}
 @media (prefers-reduced-motion:reduce){#aiFab .avwrap,.avwrap .ring,.avwrap .eq i{animation:none!important}}
 @media (max-width:900px){#aiHint{right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 130px);max-width:60vw}}
+
+.cfm-wrap{position:fixed;inset:0;z-index:120;background:rgba(6,14,26,.55);display:grid;place-items:center;padding:20px;backdrop-filter:blur(2px)}
+.cfm{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;max-width:460px;width:100%;padding:22px 24px;box-shadow:0 26px 70px rgba(6,14,26,.45)}
+.cfm h3{margin:0 0 8px;font:600 19px/1.3 var(--font)}
+.cfm p{margin:0 0 8px;font-size:14.5px;color:var(--ink-2)}
+.cfm .actions{margin-top:16px;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -460,6 +466,7 @@ label.btn{display:inline-block}
   <div class="ai-chips" id="aiChips"></div>
   <form id="aiForm" autocomplete="off"><button id="aiMic" type="button" class="iconbtn" aria-label="Ask by voice" hidden>🎤</button><input id="aiQ" placeholder="Ask ProTrack AI" aria-label="Question for ProTrack AI"><button class="btn primary" id="aiSend" type="submit">Send</button></form>
 </section>
+<datalist id="uomList"><option value="m³"><option value="m²"><option value="m"><option value="km"><option value="LM"><option value="t"><option value="MT"><option value="kg"><option value="nos"><option value="pcs"><option value="Tower"><option value="twr"><option value="set"><option value="lot"><option value="lit"><option value="drum"><option value="bag"><option value="day"><option value="hr"><option value="mh"><option value="%"><option value="lump sum"></datalist>
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -655,8 +662,21 @@ function rebalance(){
       g.forEach(a=>{a.bmh=a._b0*f;a.pp=a.qty/a.bmh})});
   });
 }
-function applyMaster(){PROJECTS=DB.master.projects;if(!DB.master.trades||!DB.master.trades.length)DB.master.trades=seedTrades();if(!DB.master.subs||!DB.master.subs.length)DB.master.subs=seedSubs();SUBS=DB.master.subs;CATS=DB.master.trades.filter(t=>t.active).map(t=>t.name);ACTS=BASE_ACTS.concat(DB.master.acts);syncTeams();rebalance();
+function applyCosting(){
+  if(!DB.costed)return;
+  ACTS.forEach(a=>{const c=DB.costed[a.id];if(!c)return;
+    const p=projById(a.p)||{};
+    if(a.p6mh==null)a.p6mh=a.bmh;
+    a.qty=c.qty;a.uom=c.uom;a.brate=c.brate;a.bcost=c.bcost;a.costmh=c.mh;if(c.gang)a.gang=c.gang;
+    if(c.mh&&(p.mhSrc||'Costing file')==='Costing file')a.bmh=c.mh;
+    else if((p.mhSrc||'Costing file')==='P6 resource loading'&&a.p6mh)a.bmh=a.p6mh;
+    a.pp=((a.cls&&a.cls!=='CON')?100:a.qty)/Math.max(1,a.bmh);
+    try{a.dailyPlan=a.qty/Math.max(1,workdays(a.bs,a.bf))}catch(e){}
+    a.costed=true});
+}
+function applyMaster(){PROJECTS=DB.master.projects;if(!DB.master.trades||!DB.master.trades.length)DB.master.trades=seedTrades();if(!DB.master.subs||!DB.master.subs.length)DB.master.subs=seedSubs();SUBS=DB.master.subs;CATS=DB.master.trades.filter(t=>t.active).map(t=>t.name);ACTS=BASE_ACTS.concat(DB.master.acts).filter(a=>PROJECTS.some(p=>p.id===a.p));syncTeams();rebalance();
   if(DB.progress)ACTS.forEach(a=>{if(DB.progress[a.id])a.cur=DB.progress[a.id]});
+  applyCosting();
   _lines=null}
 const actById=id=>ACTS.find(a=>a.id===id);
 const projById=id=>PROJECTS.find(p=>p.id===id);
@@ -799,7 +819,7 @@ const state={view:'exec',scope:'ALL',sector:'ALL',base:'ORG',uid:'U28',role:'sa'
 let DB=gen();
 function setDB(x){DB=x;applyMaster()}
 setDB(DB);
-try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.master&&s.dprs)setDB(s)}catch(e){}
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.master&&s.dprs)setDB(s)}catch(e){console.error('Stored data could not be loaded',e)}
 try{const t=localStorage.getItem(KEY+'-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
 const save=()=>{_lines=null;try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}};
 SCOPE=scopeIds();
@@ -1071,6 +1091,24 @@ function openDpr(id){
   ${acts.length?`<h3>Your action as ${ROLES[state.role]}</h3>${acts.some(k=>k==='reject'||k==='return')?'<textarea id="cmt" rows="3" placeholder="Comment for the site team (required to reject or return)"></textarea>':''}
   <div class="actions">${acts.map(k=>`<button type="button" class="btn ${k==='approve'||k==='submit'||k==='review'?'primary':k==='reject'?'danger':''}" data-do="${k}">${ALABEL[k]}</button>`).join('')}</div><p class="err" id="actErr"></p>`:''}`;
   $('#drawer').hidden=false;
+}
+
+function confirmBox(msg,okText){
+  return new Promise(res=>{
+    const prev=document.getElementById('cfmWrap');if(prev)prev.remove();
+    const w=document.createElement('div');w.id='cfmWrap';w.className='cfm-wrap';
+    const lines=String(msg).split('\n').filter(l=>l.trim());
+    w.innerHTML=`<div class="cfm" role="alertdialog" aria-modal="true" aria-label="Please confirm">
+      <h3>${esc(lines[0]||'Are you sure?')}</h3>
+      ${lines.slice(1).map(l=>`<p>${esc(l)}</p>`).join('')}
+      <div class="actions"><button class="btn" type="button" data-cfm="0">Cancel</button><button class="btn danger" type="button" data-cfm="1">${esc(okText||'Delete')}</button></div></div>`;
+    document.body.appendChild(w);
+    const done=v=>{w.remove();document.removeEventListener('keydown',key);res(v)};
+    const key=e=>{if(e.key==='Escape')done(false);if(e.key==='Enter')done(true)};
+    w.addEventListener('click',e=>{const b=e.target.closest('[data-cfm]');if(b)done(b.dataset.cfm==='1');else if(e.target===w)done(false)});
+    document.addEventListener('keydown',key);
+    setTimeout(()=>{const ok=w.querySelector('[data-cfm="1"]');ok&&ok.focus()},30);
+  });
 }
 function closeDrawer(){$('#drawer').hidden=true;state.open=null}
 function notifyLow(d){d.lines.filter(l=>lpi(l)<0.9).forEach(l=>notify(`Productivity below target: ${actById(l.act).name} reported at ${pct(lpi(l))} in ${d.id}.`,true))}
@@ -1586,7 +1624,7 @@ function execProject(){
 /* ---------- P6 labour resources mapped to ProTrack trades ---------- */
 /* ---------- invoiceable value: price progress against contract payment terms ---------- */
 const PHASES=[['ENG','Engineering and design'],['PRC','Procurement and supply'],['CON','Construction and installation'],['TC','Testing and commissioning']];
-const defBilling=()=>({adv:{pct:0,recover:0},ret:{pct:10,cap:5,tcc:50,fac:50},
+const defBilling=()=>({adv:{pct:0,recover:10},ret:{pct:0,cap:5,tcc:50,fac:50},
   phases:{ENG:{cap:90,rel1:'TCC',pct1:10,rel2:'',pct2:0},PRC:{cap:90,rel1:'TCC',pct1:10,rel2:'',pct2:0},
     CON:{cap:80,rel1:'TCC',pct1:10,rel2:'FAC',pct2:10},TC:{cap:80,rel1:'TCC',pct1:10,rel2:'FAC',pct2:10}}});
 const fixPhase=c=>{c=c||{};return {cap:c.cap??100,rel1:c.rel1??c.rel??'',pct1:c.pct1??c.relPct??0,rel2:c.rel2||'',pct2:c.pct2||0}};
@@ -1632,17 +1670,18 @@ function billingEditor(p){
         <td class="n"><input name="pct2_${k}" type="number" min="0" max="100" value="${c.pct2}" style="width:78px"> %</td>
         <td class="n ${tot===100?'g-c':tot>100?'r-c':'a-c'}">${tot}%</td></tr>`}).join('')}
     </tbody></table></div>
-    <p class="small muted" style="margin:6px 0 0">Example for construction: 80% against progress, 10% released at TCC, 10% at FAC. The total should come to 100%.</p>
+    <p class="small muted" style="margin:6px 0 0">Example for construction: 80% against progress, 10% released at TCC, 10% at FAC. Each row should total 100%. The part not billed on progress is your holdback: ${PHASES.map(([k,name])=>{const c=fixPhase(B.phases[k]);const h=100-(+c.cap||0);return h>0?`${name.split(' ')[0].toLowerCase()} ${h}%`:''}).filter(Boolean).join(', ')||'none'}.</p>
+    <div class="note" style="margin:12px 0 4px"><b>Two ways a contract holds money back</b>If the holdback is released at TCC and FAC, as in the table above, that is the whole story: leave retention at 0. Only fill in retention when the contract deducts a further percentage from each certified invoice on top of the phase split, with its own release terms.</div>
     <div class="fields" style="margin-top:12px">
-      ${F('Retention on each invoice (%)',inp('retpct',B.ret.pct,'type="number" min="0" max="30" step="0.5"'))}
+      ${F('Separate retention on each invoice (%), 0 if none',inp('retpct',B.ret.pct,'type="number" min="0" max="30" step="0.5"'))}
       ${F('Retention cap (% of contract price)',inp('retcap',B.ret.cap,'type="number" min="0" max="30" step="0.5"'))}
       ${F('Retention released at TCC (%)',inp('rettcc',B.ret.tcc,'type="number" min="0" max="100"'))}
       ${F('Retention released at FAC (%)',inp('retfac',B.ret.fac,'type="number" min="0" max="100"'))}
       ${F('Advance payment (% of contract)',inp('advpct',B.adv.pct,'type="number" min="0" max="50" step="0.5"'))}
-      ${F('Advance recovery per invoice (%)',inp('advrec',B.adv.recover,'type="number" min="0" max="100" step="0.5"'))}
+      ${F('Advance recovery per invoice (%), until fully repaid',inp('advrec',B.adv.recover,'type="number" min="0" max="100" step="0.5"'))}
     </div><p class="err" id="billErr"></p><button class="btn" type="submit">Save payment terms</button></form>`;
 }
-function saveBilling(fd){
+async function saveBilling(fd){
   const p=projById(impPid()||state.adm.id),v=k=>String(fd.get(k)??'').trim(),n=k=>+v(k)||0;
   const B=defBilling();
   let over='';
@@ -1653,6 +1692,8 @@ function saveBilling(fd){
   B.ret={pct:clamp(n('retpct'),0,30),cap:clamp(n('retcap'),0,30),tcc:clamp(n('rettcc'),0,100),fac:clamp(n('retfac'),0,100)};
   B.adv={pct:clamp(n('advpct'),0,50),recover:clamp(n('advrec'),0,100)};
   if(B.ret.tcc+B.ret.fac>100){$('#billErr').textContent='Retention released at TCC and FAC cannot add up to more than 100%.';return}
+  const hold=PHASES.some(([k])=>(+B.phases[k].cap||0)<100);
+  if(B.ret.pct>0&&hold&&!await confirmBox('Your phases already hold back part of the price until TCC or FAC, and you have also set a separate retention of '+B.ret.pct+'% on each invoice.\n\nMost contracts have one or the other. Deducting both understates your cash. Save anyway?'))return;
   p.billing=B;logChange(`Updated payment terms for ${p.short}: retention ${B.ret.pct}% capped at ${B.ret.cap}%, released ${B.ret.tcc}/${B.ret.fac} at TCC and FAC`);
   save();admDrawer('projects',p.id);render();toast('Payment terms saved');
 }
@@ -1717,50 +1758,77 @@ async function costingTemplate(){
   if(!acts.length)return toast('Import the P6 baseline first, then the costing file maps onto it');
   try{
     await loadLib(LIBS.xlsx);
-    const head=['Activity ID','Description','Budget quantity','UOM','Budget unit rate (SAR)','Budget cost (SAR)','Budget manhours','Gang code','Revision or remark'];
+    const head=['Activity ID','Description','Budget quantity','UOM','Budget unit rate (SAR)','Budget cost (SAR)','Budget manhours','Gang code (optional)','Revision or remark'];
     const body=acts.map(a=>[a.id,a.name,'',a.uom==='mh'||a.uom==='%'?'':a.uom,'','',Math.round(a.bmh),'','']);
     const ws=XLSX.utils.aoa_to_sheet([[`ProTrack costing file, ${projById(pid).short} (${pid})`],
-      ['One row per activity ID. Fill budget quantity, unit, unit rate and cost. Leave budget cost blank to let ProTrack compute quantity x rate. Several rows may share an activity ID; they are summed.'],[],head,...body]);
+      ['One row per activity ID. Required: budget quantity and UOM. Fill unit rate and cost as well, or leave budget cost blank and ProTrack computes quantity x rate.'],
+      ['Budget manhours are pre-filled from the P6 labour loading; change them only if the costing budget differs. Gang code and remark are optional: leave the gang code blank unless your estimating department uses standard crew codes, as ProTrack does not use it yet.'],
+      ['Several rows may share an activity ID; they are summed. Activity IDs not in the baseline are rejected at upload, and the preview lists them.'],[],head,...body]);
     ws['!cols']=head.map((h,i)=>({wch:i===1?46:Math.max(14,h.length+3)}));
+    ws['!rows']=[{hpx:20},{hpx:16},{hpx:16},{hpx:16},{hpx:6},{hpx:20}];
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Costing');
     await saveFile(`ProTrack_costing_${pid}_${ASOF}.xlsx`,new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
   }catch(e){toast('Could not build the template: '+(e.message||'check your connection'))}
 }
 async function handleCostFile(file){
   const box=$('#costBox');box.innerHTML='<p class="muted">Reading the costing file…</p>';
+  const pid=impPid();
+  const fail=(msg,detail)=>{box.innerHTML=`<div class="warn-box"><b>${esc(msg)}</b>${detail||''}</div>
+    <p class="small muted">Use <b>Download costing template</b> above, which arrives with this project's activity IDs already filled in, then add your columns to it.</p>`};
+  if(!pid)return fail('Choose a project first.');
+  const acts=ACTS.filter(a=>a.p===pid);
+  if(!acts.length)return fail('This project has no baseline yet.','The costing file matches on activity ID, so import the P6 baseline first.');
   try{
-    await loadLib(LIBS.xlsx);
-    const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
-    const ws=wb.Sheets[wb.SheetNames.find(n=>/cost|boq|budget/i.test(n))||wb.SheetNames[0]];
+    try{await loadLib(LIBS.xlsx)}catch(e){return fail('The spreadsheet library could not load.','Reading Excel needs an internet connection the first time. Check the connection and try again, or save the file as CSV.')}
+    const buf=await file.arrayBuffer();
+    if(!buf||!buf.byteLength)return fail('That file is empty.');
+    let wb;try{wb=XLSX.read(buf,{type:'array',cellDates:true})}catch(e){return fail('That file could not be opened as a spreadsheet.',`<p class="small">${esc(file.name)} may be corrupt, password protected, or not a real .xlsx, .xls or .csv file. Open it in Excel and use <b>Save as → Excel Workbook</b>, then try again.</p>`)}
+    const names=wb.SheetNames||[];
+    if(!names.length)return fail('That workbook has no sheets.');
+    const sheet=names.find(n=>/cost|boq|budget/i.test(n))||names[0];
+    const ws=wb.Sheets[sheet];
     const aoa=XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false});
+    if(!aoa.length)return fail(`Sheet "${sheet}" is empty.`,names.length>1?`<p class="small">Other sheets in this file: ${names.filter(n=>n!==sheet).map(esc).join(', ')}. Rename the sheet you want to "Costing" and upload again.</p>`:'');
     let hi=aoa.findIndex(r=>r.some(c=>CHEAD.id.test(String(c||''))));
-    if(hi<0)throw new Error('Could not find an "Activity ID" column.');
-    const head=aoa[hi].map(c=>String(c||'').trim()),col={};
-    Object.entries(CHEAD).forEach(([k,re])=>{const i=head.findIndex(h=>re.test(h));if(i>=0&&!Object.values(col).includes(i))col[k]=i});
+    if(hi<0){
+      const seen=aoa.slice(0,6).map((r,i)=>`<tr><td class="small">Row ${i+1}</td><td class="small">${r.slice(0,8).map(c=>esc(String(c??'').slice(0,26))).join(' | ')||'<span class="muted">empty</span>'}</td></tr>`).join('');
+      return fail('No "Activity ID" column found.',`<p class="small">Sheet read: <b>${esc(sheet)}</b>. The header row must contain a column called <b>Activity ID</b> (or Task Code). This is what the first rows look like:</p><table class="tbl">${seen}</table>`);
+    }
+    const head=aoa[hi].map(c=>String(c||'').replace(/^\uFEFF/,'').trim()),col={};
+    Object.entries(CHEAD).forEach(([k,re])=>{const i2=head.findIndex(h=>re.test(h));if(i2>=0&&!Object.values(col).includes(i2))col[k]=i2});
+    const missing=['qty','uom'].filter(k=>col[k]==null);
+    if(missing.length)return fail(`The header row has no ${missing.map(k=>k==='qty'?'"Budget quantity"':'"UOM"').join(' or ')} column.`,
+      `<p class="small">Columns found in row ${hi+1}: ${head.filter(Boolean).map(h=>`<b>${esc(h)}</b>`).join(', ')||'none'}. Rename your columns to match the template, or download the template and paste your figures into it.</p>`);
     const g=(r,k)=>col[k]==null?'':r[col[k]];
-    const num=v=>{const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0};
+    const num=v=>{if(v instanceof Date)return 0;const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0};
     const raw=aoa.slice(hi+1).filter(r=>String(g(r,'id')||'').trim()).map(r=>({
-      id:String(g(r,'id')).trim(),name:String(g(r,'name')||'').trim(),qty:num(g(r,'qty')),uom:String(g(r,'uom')||'').trim(),
+      id:String(g(r,'id')).replace(/^\uFEFF/,'').trim(),name:String(g(r,'name')||'').trim(),qty:num(g(r,'qty')),uom:String(g(r,'uom')||'').trim(),
       rate:num(g(r,'rate')),cost:num(g(r,'cost')),mh:num(g(r,'mh')),gang:String(g(r,'gang')||'').trim(),rev:String(g(r,'rev')||'').trim()}));
+    if(!raw.length)return fail('No data rows under the header.',`<p class="small">The header was found in row ${hi+1} of sheet <b>${esc(sheet)}</b>, but every row below it has an empty Activity ID.</p>`);
     const merged={};
     raw.forEach(r=>{const k=r.id.toLowerCase();const o=merged[k]||(merged[k]={id:r.id,name:r.name,qty:0,uom:r.uom,rate:r.rate,cost:0,mh:0,gang:r.gang,rev:r.rev,n:0});
       o.qty+=r.qty;o.cost+=r.cost||r.qty*r.rate;o.mh+=r.mh;o.n++;if(!o.uom)o.uom=r.uom;if(!o.rate&&r.rate)o.rate=r.rate;if(!o.gang&&r.gang)o.gang=r.gang});
-    const pid=impPid(),acts=ACTS.filter(a=>a.p===pid);
     const rows=Object.values(merged).map(r=>{
       const a=acts.find(x=>x.id.toLowerCase()===r.id.toLowerCase());
       const rate=r.rate||(r.qty?r.cost/r.qty:0);
       let err=null,warn=null;
-      if(!a)err='Activity ID not in this project\\u2019s baseline';
+      if(!a)err='Activity ID not in this project\u2019s baseline';
       else if(!(r.qty>0))err='Budget quantity missing or zero';
       else if(!r.uom)err='Unit of measure missing';
       else if(!(r.cost>0))warn='No budget cost or unit rate';
       else if(r.mh&&a.bmh&&Math.abs(r.mh-a.bmh)/a.bmh>0.25)warn=`Manhours differ from P6 by ${pct(Math.abs(r.mh-a.bmh)/a.bmh,0)}`;
       return {...r,rate,a,err,warn,oldQty:a?a.qty:null,oldUom:a?a.uom:null,oldMh:a?Math.round(a.bmh):null};
     });
-    const missing=acts.filter(a=>!Object.values(merged).some(r=>r.id.toLowerCase()===a.id.toLowerCase()));
-    state.cost={file:file.name,rows,missing:missing.length,acts:acts.length};
+    const matched=rows.filter(r=>!r.err).length;
+    if(!matched&&rows.length){
+      const sample=rows.slice(0,4).map(r=>esc(r.id)).join(', '),mine=acts.slice(0,4).map(a=>esc(a.id)).join(', ');
+      return fail(`None of the ${rows.length} activity IDs match this project.`,
+        `<p class="small">Your file starts with: ${sample}. This project's baseline uses: ${mine}. Either the file belongs to another project, or the IDs were changed after the baseline was imported.</p>`);
+    }
+    const missingRows=acts.filter(a=>!Object.values(merged).some(r=>r.id.toLowerCase()===a.id.toLowerCase()));
+    state.cost={file:file.name,sheet,rows,missing:missingRows.length,acts:acts.length};
     renderCostPreview();
-  }catch(e){box.innerHTML=`<p class="err">${esc(e.message||'This file could not be read.')}</p><p class="small muted">Use the ProTrack costing template, or any sheet with an Activity ID column.</p>`}
+  }catch(e){fail('That file could not be read.',`<p class="small">${esc(e.message||String(e))}</p>`)}
 }
 function renderCostPreview(){
   const C=state.cost;if(!C)return;
@@ -1785,10 +1853,11 @@ function runCosting(){
   const prev=DB.master.acts.filter(a=>a.p===pid),p=projById(pid);
   DB.baseHist=DB.baseHist||{};
   DB.baseHist[pid]=[{at:stamp(),by:me().name,file:'Costing: '+C.file,n:ok.length,before:prev.length,acts:JSON.parse(JSON.stringify(prev)),start:p.start,finish:p.finish}].concat(DB.baseHist[pid]||[]).slice(0,6);
-  let applied=0;
+  let applied=0;DB.costed=DB.costed||{};
   ok.forEach(r=>{
-    const a=DB.master.acts.find(x=>x.p===pid&&x.id.toLowerCase()===r.id.toLowerCase());if(!a)return;
-    a.qty=r.qty;a.uom=r.uom.slice(0,8);
+    const a=ACTS.find(x=>x.p===pid&&x.id.toLowerCase()===r.id.toLowerCase());if(!a)return;
+    DB.costed[a.id]={qty:r.qty,uom:r.uom.slice(0,12),mh:r.mh>0?r.mh:null,brate:r.rate||0,bcost:r.cost||0,gang:r.gang||''};
+    a.qty=r.qty;a.uom=r.uom.slice(0,12);
     if(a.p6mh==null)a.p6mh=a.bmh;
     a.costmh=r.mh>0?r.mh:null;
     if(r.mh>0&&(p.mhSrc||'Costing file')==='Costing file')a.bmh=r.mh;
@@ -1807,7 +1876,7 @@ function costingHTML(pid){
   const bc=acts.reduce((t,a)=>t+(+a.bcost||0),0),pw=acts.reduce((t,a)=>t+(+a.pw||0),0),mh=acts.reduce((t,a)=>t+(+a.bmh||0),0);
   return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Costing file</h2>
     <div class="actions" style="margin:0"><button class="btn" type="button" data-costtpl>Download costing template</button><label class="btn primary" for="costfile">Upload costing file</label><input id="costfile" type="file" accept=".xlsx,.xls,.csv" hidden></div></div>
-    <p class="small muted" style="margin:0 0 12px">The costing engineer maps budgeted quantity, unit, unit rate and cost to each P6 activity ID, so planning does not have to load quantities into P6. Price weighting stays with the schedule; cost stays here.</p>
+    <p class="small muted" style="margin:0 0 12px">The costing engineer maps budgeted quantity, unit, unit rate and cost to each P6 activity ID, so planning does not have to load quantities into P6. Price weighting stays with the schedule; cost stays here. Only the activity ID, quantity and unit are required; the gang code column is optional and can be left blank.</p>
     <div class="g g-kpi" style="margin-bottom:6px">
       <div class="panel kpi"><div class="l">Activities costed</div><div class="v">${costed} of ${acts.length}</div><div class="s">${c?`${esc(c.file)}<br>${esc(c.by)}, ${esc(c.at)}`:'No costing file applied yet'}</div></div>
       <div class="panel kpi"><div class="l">Budget cost</div><div class="v">${bc?sar(bc):'—'}</div><div class="s">From the costing file</div></div>
@@ -1830,7 +1899,8 @@ function renderBaseline(){
   const acts=pid?ACTS.filter(a=>a.p===pid):[],cnt=k=>acts.filter(a=>clsOf(a)===k).length;
   const set=state.bset||'ORG';
   document.getElementById('view').innerHTML=`${crumb()}
-  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Baseline management</h2></div>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Baseline management</h2>
+    ${pid&&state.role==='sa'?`<button class="btn sm danger" type="button" data-delproj="${pid}">Delete project ${esc(projById(pid).short)}</button>`:''}</div>
     <p class="small muted" style="margin:0 0 12px">Load the schedule that progress is measured against. The original baseline is the contract plan and drives every report. Revised and recovery baselines are stored alongside it for comparison, and never change earned progress.</p>
     <div class="fields">
       <label class="field">Project<select data-bproj>${opt(ps.map(p=>[p.id,p.short]),pid)}</select></label>
@@ -1843,7 +1913,9 @@ function renderBaseline(){
     ${['ORG','REV','REC'].map(k=>{const b=k==='ORG'?null:bsetOf(pid,k);
       const loaded=k==='ORG'?(acts.length?`${fmt(acts.length)} activities`:'Not loaded'):(b?`${fmt(Object.keys(b.rows).length)} activities`:'Not loaded');
       const meta=k==='ORG'?(acts.length?`${fmtD(acts.map(a=>a.bs).sort()[0])} to ${fmtD(acts.map(a=>a.bf).sort().pop())}`:'Import a schedule to start'):(b?`${esc(b.by)}, ${esc(b.at)}<br>${esc(b.file)}`:'Optional, for comparison');
-      return `<div class="panel kpi"><div class="l">${BSETS[k]}</div><div class="v" style="font-size:22px">${loaded}</div><div class="s">${meta}</div></div>`}).join('')}
+      const del=k==='ORG'?(acts.length&&canBaseline()?`<button class="btn sm danger" type="button" data-bclear="${pid}" style="margin-top:8px">Remove imported activities</button>`:'')
+        :(b&&canBaseline()?`<button class="btn sm danger" type="button" data-bsetdel="${pid}:${k}" style="margin-top:8px">Delete this set</button>`:'');
+      return `<div class="panel kpi"><div class="l">${BSETS[k]}</div><div class="v" style="font-size:22px">${loaded}</div><div class="s">${meta}</div>${del}</div>`}).join('')}
   </section>
   ${pid?costingHTML(pid):''}
   ${pid?resMapHTML(pid):''}
@@ -1866,19 +1938,19 @@ function baseHistHTML(pid){
     </tbody></table></div>
     ${seeded>0?`<p class="small muted" style="margin:10px 0 0">${seeded} activities on this project came with the sample data and are not removable here; use Reset demo data for those.</p>`:''}</section>`;
 }
-function restoreBaseline(pid,ix){
+async function restoreBaseline(pid,ix){
   const hist=((DB.baseHist||{})[pid])||[],snap=hist[ix];if(!snap)return;
   const now=DB.master.acts.filter(a=>a.p===pid).length;
-  if(!confirm(`Undo the import of ${snap.file||'that file'}?\n\nThis project's baseline goes back to ${snap.before} activities, from ${now} now. Daily reports are not deleted.`))return;
+  if(!await confirmBox(`Undo the import of ${snap.file||'that file'}?\n\nThis project's baseline goes back to ${snap.before} activities, from ${now} now. Daily reports are not deleted.`))return;
   DB.master.acts=DB.master.acts.filter(a=>a.p!==pid).concat(JSON.parse(JSON.stringify(snap.acts)));
   const p=projById(pid);if(snap.start)p.start=snap.start;if(snap.finish)p.finish=snap.finish;
   DB.baseHist[pid]=hist.slice(ix+1);
   logChange(`Undid the baseline import of ${snap.file||'a file'} on ${p.short}, back to ${snap.before} activities`);
   applyMaster();save();render();toast('Import undone');
 }
-function clearBaseline(pid){
+async function clearBaseline(pid){
   const p=projById(pid),mine=DB.master.acts.filter(a=>a.p===pid),used=lines().filter(l=>l.p===pid).length;
-  if(!confirm(`Remove all ${mine.length} imported activities from ${p.short}?\n\n${used} daily report line${used===1?'':'s'} reference this project. The reports stay, but they will have no baseline to measure against until you import the correct file.`))return;
+  if(!await confirmBox(`Remove all ${mine.length} imported activities from ${p.short}?\n\n${used} daily report line${used===1?'':'s'} reference this project. The reports stay, but they will have no baseline to measure against until you import the correct file.`))return;
   DB.baseHist=DB.baseHist||{};
   DB.baseHist[pid]=[{at:stamp(),by:me().name,file:'Removed baseline',n:0,before:mine.length,acts:JSON.parse(JSON.stringify(mine)),start:p.start,finish:p.finish}].concat(DB.baseHist[pid]||[]).slice(0,6);
   DB.master.acts=DB.master.acts.filter(a=>a.p!==pid);
@@ -2272,10 +2344,12 @@ const REPORTS={
       b.rows.filter(r=>r.price).forEach(r=>rows.push({proj:p.short,phase:r.name,price:r.price,pct:r.pct,gross:r.gross,cap:r.cap/100,
         capped:r.capped,rel:r.rel,relNote:r.note,billable:r.billable}));
       rows.push({proj:p.short,phase:'Total, gross billable',price:b.contract,pct:b.progress,gross:b.rows.reduce((t,r)=>t+r.gross,0),cap:null,capped:null,rel:b.rows.reduce((t,r)=>t+r.rel,0),relNote:'',billable:b.billable,total:true});
-      rows.push({proj:p.short,phase:`Retention held (${b.B.ret.pct}% of invoices, cap ${b.B.ret.cap}% of price)`,billable:-b.held,relNote:b.released?`${sar(b.released)} released`:'Released at TCC and FAC'});
-      if(b.released)rows.push({proj:p.short,phase:'Retention released',billable:b.released,relNote:`${b.tcc?'TCC achieved':''}${b.fac?', FAC achieved':''}`});
+      const holdback=b.rows.reduce((t,r)=>t+(r.price?r.price-r.billable:0),0);
+      rows.push({proj:p.short,phase:'Held back until the milestones',billable:-holdback,relNote:'Balance of each phase, released at its milestones'});
+      if(b.held>0.5)rows.push({proj:p.short,phase:`Separate retention (${b.B.ret.pct}% of invoices, cap ${b.B.ret.cap}% of price)`,billable:-b.held,relNote:b.released?`${sar(b.released)} released`:'Released at TCC and FAC'});
+      if(b.released>0.5)rows.push({proj:p.short,phase:'Retention released',billable:b.released,relNote:`${b.tcc?'TCC achieved':''}${b.fac?', FAC achieved':''}`});
       if(b.recovered)rows.push({proj:p.short,phase:'Advance recovery',billable:-b.recovered,relNote:`${b.B.adv.recover}% of each invoice`});
-      rows.push({proj:p.short,phase:'Net invoiceable to date',billable:b.net,relNote:'',total:true});
+      rows.push({proj:p.short,phase:'Net invoiceable to date',billable:b.net,relNote:b.recovered?'After advance recovery':'',total:true});
     });
     const net=ps.reduce((t,x)=>t+x.b.net,0),gross=ps.reduce((t,x)=>t+x.b.billable,0),held=ps.reduce((t,x)=>t+x.b.retNet,0);
     return {cols:[C('Project','proj'),C('Phase or adjustment','phase'),C('Contract price','price','sar'),C('Price progress','pct','pct'),C('Earned price','gross','sar'),C('Cap','cap','pct'),C('Capped at','capped','sar'),C('Milestone release','rel','sar'),C('Condition','relNote'),C('Billable','billable','sar')],rows,
@@ -2283,7 +2357,7 @@ const REPORTS={
         {label:'Earned price',data:ps.flatMap(x=>x.b.rows.filter(r=>r.price).map(r=>Math.round(r.gross/1e3))),backgroundColor:pal.bar},
         {label:'Billable now',data:ps.flatMap(x=>x.b.rows.filter(r=>r.price).map(r=>Math.round(r.billable/1e3))),backgroundColor:pal.accent}]},
         options:{scales:{y:{beginAtZero:true,title:{display:true,text:'SAR thousands'}}}}}),
-      notes:`Gross billable ${sar(gross)}, retention held ${sar(held)}, net invoiceable ${sar(net)}. Price comes from the P6 weighting resource loaded by planning, which carries the client price schedule; cost and manhours from the costing file are not used here. Each phase bills on price progress up to its cap, with the balance released when its milestone is achieved. Retention is deducted from every invoice, capped as a percentage of the contract price, and released at TCC and FAC. Payment terms are set per project in Settings.`}}},
+      notes:`Gross billable ${sar(gross)}, retention held ${sar(held)}, net invoiceable ${sar(net)}. Price comes from the P6 weighting resource loaded by planning, which carries the client price schedule; cost and manhours from the costing file are not used here. Each phase bills on price progress up to its cap, with the balance released when its milestone is achieved. Where a contract also deducts a separate retention from each invoice, it is shown as its own line; if the phase split is the only holdback, retention stays at zero. Advance payment is recovered as a percentage of each invoice until it is fully repaid. Payment terms are set per project in Settings.`}}},
   mhrec:{sheet:'Budget manhour check',title:'Budget manhour reconciliation, P6 against costing',desc:'Where the schedule and the costing file disagree on hours',build(){
     const rows=scopeActs().map(a=>{const p6=+a.p6mh||0,cf=+a.costmh||0,used=+a.bmh||0;
       return {proj:projById(a.p).short,id:a.id,name:a.name,cls:CLASSES[clsOf(a)],p6,cf,used,
@@ -2474,7 +2548,7 @@ function renderAdmin(){
   const m=DB.master,t=state.adminTab,add=t==='log'?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>`;
   const edit=(k,id,del)=>`<td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-aedit="${k}:${id}">Edit</button>${del===undefined?'':del?` <button class="btn sm" type="button" disabled title="In use, cannot delete">In use</button>`:` <button class="btn sm danger" type="button" data-adel="${k}:${id}">Delete</button>`}</td>`;
   let body='',count=0;
-  if(t==='projects'){count=PROJECTS.length;body=`<table class="tbl"><thead><tr><th>Project</th><th>Sector</th><th>Region and city</th><th>Team</th><th class="n">Activities</th><th class="n">Value</th><th>Status</th><th></th></tr></thead><tbody>${PROJECTS.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${p.id}, ${esc(p.name)}</span></td><td>${esc(secById(p.sector)?.name||'—')}</td><td>${esc(regName(p))}<span class="t2">${esc(cityName(p))}</span></td><td>${esc(p.pm)}<span class="t2">${esc(p.eng)}, ${p.foremen.length} foreman${p.foremen.length===1?'':'en'}</span></td><td class="n">${ACTS.filter(a=>a.p===p.id).length}</td><td class="n">SAR ${fmt(p.value)}M</td><td><span class="st ${stCls(p.status)}">${p.status}</span></td>${edit('projects',p.id)}</tr>`).join('')}</tbody></table>`}
+  if(t==='projects'){count=PROJECTS.length;body=`<table class="tbl"><thead><tr><th>Project</th><th>Sector</th><th>Region and city</th><th>Team</th><th class="n">Activities</th><th class="n">Value</th><th>Status</th><th></th></tr></thead><tbody>${PROJECTS.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${p.id}, ${esc(p.name)}</span></td><td>${esc(secById(p.sector)?.name||'—')}</td><td>${esc(regName(p))}<span class="t2">${esc(cityName(p))}</span></td><td>${esc(p.pm)}<span class="t2">${esc(p.eng)}, ${p.foremen.length} foreman${p.foremen.length===1?'':'en'}</span></td><td class="n">${ACTS.filter(a=>a.p===p.id).length}</td><td class="n">SAR ${fmt(p.value)}M</td><td><span class="st ${stCls(p.status)}">${p.status}</span></td>${edit('projects',p.id,false)}</tr>`).join('')}</tbody></table>`}
   if(t==='users'){const us=m.users.slice().sort((a,b)=>Object.keys(ROLES).indexOf(a.role)-Object.keys(ROLES).indexOf(b.role));count=us.length;body=`<table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Access</th><th>Status</th><th></th></tr></thead><tbody>${us.map(u=>`<tr><td><b>${esc(u.name)}</b><span class="t2">${esc(u.email)}</span></td><td>${ROLES[u.role]}<span class="t2">${esc(u.title)}</span></td><td class="small">${esc(accessText(u))}</td><td><span class="st ${u.active?'Approved':'Draft'}">${u.active?'Active':'Inactive'}</span></td>${edit('users',u.id)}</tr>`).join('')}</tbody></table>`}
   if(t==='trades'){const tr=m.trades||[];count=tr.length;body=`<p class="small muted" style="margin:0 0 12px">Cost rates are dated. A new rate applies to reports from its effective date onwards; reports already filed keep the rate that applied when the work was done.</p><table class="tbl"><thead><tr><th>Trade</th><th class="n">Basic salary</th><th class="n">Cost rate</th><th>Effective from</th><th class="n">Rate changes</th><th>Status</th><th></th></tr></thead><tbody>${tr.map(x=>{const rs=(x.rates||[]).slice().sort((a,b)=>a.from.localeCompare(b.from));let cur=rs[0];rs.forEach(r=>{if(r.from<=TODAY)cur=r});const next=rs.find(r=>r.from>TODAY);
     if(!cur)return `<tr><td><b>${esc(x.name)}</b></td><td class="n muted">—</td><td class="n muted">No rate set</td><td>—</td><td class="n">0</td><td><span class="st Draft">${x.active?'Active':'Inactive'}</span></td>${edit('trades',x.name)}</tr>`;
@@ -2559,6 +2633,7 @@ function admDrawer(type,id){
   const title=id?`Edit ${NOUN[type]}`:(type==='users'?'Create user':`Create ${NOUN[type]}`);
   $('#sheet').innerHTML=`<div class="sheet-head"><h2>${title}</h2><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
     <form id="admForm" novalidate>${html}<p class="err" id="admErr"></p><div class="actions"><button class="btn primary" type="submit">${id?'Save changes':title}</button><button class="btn" type="button" data-close>Cancel</button></div></form>
+    ${type==='projects'&&id&&state.role==='sa'?`<div class="note" style="margin-top:18px"><b>Delete this project</b>Removes ${esc(projById(id).short)} with its ${fmt(ACTS.filter(a=>a.p===id).length)} activities, ${fmt(DB.dprs.filter(d=>d.p===id).length)} daily reports, baselines, costing and purchase order rates.<div class="actions" style="margin:10px 0 0"><button class="btn danger" type="button" data-delproj="${id}">Delete ${esc(projById(id).short)}</button></div></div>`:''}
     ${type==='projects'&&id?msEditor(projById(id))+billingEditor(projById(id))+baselineHTML(id):''}
     ${type==='trades'&&id?rateEditor(tradeBy(id)):''}
     ${type==='subs'&&id?subRateEditor(subById(id)):''}`;
@@ -2595,7 +2670,7 @@ function baselineHTML(pid){
   <div id="impBox"></div>
   <div class="scroll"><table class="tbl"><thead><tr><th>Activity</th><th class="n">Budget qty</th><th class="n">Budget mh</th><th class="n">Planned rate</th></tr></thead><tbody>${acts.map(a=>`<tr><td>${esc(a.name)}<span class="t2">${a.id}, ${esc(a.area)} › ${esc(discOf(a))} › ${esc(a.wbs)}</span></td><td class="n">${fmt(a.qty)} ${a.uom}</td><td class="n">${fmt(a.bmh)}</td><td class="n">${fmt(a.pp,3)}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">No baseline yet. Import one, or add activities below.</td></tr>'}</tbody></table></div>
   <form id="actForm" novalidate><h3>Add activity</h3><div class="fields">
-    ${F('Activity ID',inp('aid','',`placeholder="${pid}-1010"`))}${F('Unit',sel('uom',['m³','m²','m','t','nos'],'m³'))}
+    ${F('Activity ID',inp('aid','',`placeholder="${pid}-1010"`))}${F('Unit',inp('uom','','list="uomList" maxlength="12" placeholder="e.g. Tower, nos, m³, km, MT"'))}
     ${F('Activity name',inp('name','','placeholder="e.g. Pile cap concrete"'),true)}
     ${F('Work location',inp('area','','placeholder="e.g. 380kV GIS Building"'))}${F('Work type',sel('disc',DISCS,'Civil'))}${F('WBS',inp('wbs','','placeholder="e.g. Structure Works"'))}
     ${F('Budget quantity',inp('qty','','type="number" min="0" step="0.1" inputmode="decimal"'))}${F('Budget manhours',inp('bmh','','type="number" min="0" inputmode="numeric"'))}
@@ -2759,6 +2834,7 @@ function saveAct(fd){
   const pid=impPid(),v=k=>String(fd.get(k)??'').trim(),e=t=>{$('#actErr2').textContent=t};
   const aid=v('aid'),qty=+v('qty'),bmh=+v('bmh');
   if(!aid||!v('name'))return e('Enter an activity ID and name.');
+  if(!v('uom'))return e('Enter the unit of measure, for example Tower, nos, m³ or km.');
   if(/[:"'<>\\]/.test(aid))return e('Activity ID cannot contain : " \' < > or \\.');
   if(ACTS.some(x=>x.id.toLowerCase()===aid.toLowerCase()))return e('That activity ID already exists.');
   if(!(qty>0)||!(bmh>0))return e('Budget quantity and budget manhours must both be more than zero.');
@@ -2767,9 +2843,30 @@ function saveAct(fd){
   a.dailyPlan=qty/Math.max(1,workdays(a.bs,a.bf));
   DB.master.acts.push(a);logChange(`Added baseline activity ${aid} ${a.name} to ${projById(pid).short}`);applyMaster();save();admDrawer('projects',pid);render();toast(`Activity ${aid} added`);
 }
-function delAdm(type,id){
+async function delProject(id){
+  const p=projById(id);if(!p)return;
+  const acts=ACTS.filter(a=>a.p===id).length,reps=DB.dprs.filter(d=>d.p===id).length,users=DB.master.users.filter(u=>(u.projects||[]).includes(id)).length;
+  if(!await confirmBox(`Delete ${p.short} (${id})?\n\nThis removes the project, its ${acts} baseline activities, ${reps} daily report${reps===1?'':'s'}, its baselines, costing and purchase order rates.${users?` ${users} user${users===1?' loses':'s lose'} access to it.`:''}\n\nThis cannot be undone from inside the app.`))return;
+  if(reps>20&&!await confirmBox(`${p.short} holds ${reps} daily reports.\nDelete them all?`,'Delete everything'))return;
+  const m=DB.master;
+  m.projects=m.projects.filter(x=>x.id!==id);
+  m.acts=(m.acts||[]).filter(a=>a.p!==id);
+  DB.dprs=DB.dprs.filter(d=>d.p!==id);
+  if(DB.baselines)delete DB.baselines[id];
+  if(DB.baseHist)delete DB.baseHist[id];
+  if(DB.costing)delete DB.costing[id];
+  if(DB.updates)DB.updates=DB.updates.filter(u=>u.p!==id);
+  if(m.resMap)delete m.resMap[id];
+  (m.subs||[]).forEach(sb=>{sb.pos=(sb.pos||[]).filter(o=>o.project!==id)});
+  m.users.forEach(u=>{if(u.projects)u.projects=u.projects.filter(x=>x!==id)});
+  if(state.scope===id)state.scope='ALL';
+  logChange(`Deleted project ${p.short} (${id}) with ${acts} activities and ${reps} daily reports`);
+  applyMaster();save();closeDrawer();if(state.adm&&state.adm.id===id)state.adm=null;render();toast(`${p.short} deleted`);
+}
+async function delAdm(type,id){
+  if(type==='projects')return delProject(id);
   if(usedBy(type,id))return;const m=DB.master,name=(type==='regions'?regById(id):type==='cities'?cityById(id):secById(id))?.name;
-  if(!confirm(`Delete ${name}?`))return;m[type]=m[type].filter(x=>x.id!==id);logChange(`Deleted ${NOUN[type]} ${name}`);applyMaster();save();render();toast(`${name} deleted`);
+  if(!await confirmBox(`Delete ${name}?`))return;m[type]=m[type].filter(x=>x.id!==id);logChange(`Deleted ${NOUN[type]} ${name}`);applyMaster();save();render();toast(`${name} deleted`);
 }
 
 /* ---------- authentication (prototype) ---------- */
@@ -2984,7 +3081,7 @@ async function handleImportFile(file){
     const maxLvl=Math.max(1,...parsed.rows.map(r=>(r.path||[]).length));
     const wr=(parsed.weightRes||[])[0];
     state.imp={...parsed,file:file.name,lvl:Math.min(maxLvl,maxLvl>=4?4:2),maxLvl,minBH:0,limit:2000,skipDone:true,defDisc:'Civil',
-      lvlCls:Math.min(2,maxLvl),wres:wr?wr.name:'',ignorePct:false};
+      lvlCls:Math.min(2,maxLvl),wres:wr?wr.name:'',ignorePct:false,brLvl:Math.min(2,maxLvl),branches:null,clsOn:{CON:true,ENG:true,PRC:true}};
     renderImport();
   }catch(e){box.innerHTML=`<p class="err">${esc(e.message||'This file could not be read.')}</p><p class="small muted">Supported: Primavera XER, P6 XML (PMXML), and the Excel template.</p>`}
 }
@@ -2994,12 +3091,41 @@ function classFromPath(path,lvl,name){
   for(const [re,c] of CLSWORDS)if(re.test(t))return c;
   return guessClass([name,(path||[]).join(' ')].join(' '));
 }
+function branchList(){
+  const I=state.imp;if(!I)return [];
+  const m={};
+  I.rows.forEach(r=>{
+    if(r.type&&/milestone|WBS Summary|TT_Mile|TT_FinMile/i.test(r.type))return;
+    const p=r.path||[],name=p[Math.min(I.brLvl,p.length)-1]||'(no WBS)';
+    const o=m[name]||(m[name]={name,n:0,hours:0,cls:{}});
+    o.n++;o.hours+=r.bh||0;const c=classFromPath(p,I.lvlCls,r.name);o.cls[c]=(o.cls[c]||0)+1;
+  });
+  return Object.values(m).sort((a,b)=>b.hours-a.hours||b.n-a.n);
+}
+const brOn=name=>{const b=state.imp&&state.imp.branches;return !b||b[name]!==false};
+function clsCounts(){
+  const I=state.imp,out={CON:0,ENG:0,PRC:0};if(!I)return out;
+  I.rows.forEach(r=>{
+    if(I.skipDone&&(r.done||r.pct>=1))return;
+    if(r.type&&/milestone|WBS Summary|TT_Mile|TT_FinMile/i.test(r.type))return;
+    const p=r.path||[];
+    if(!brOn(p[Math.min(I.brLvl,p.length)-1]||'(no WBS)'))return;
+    const w=I.wres?(r.wts&&r.wts[I.wres])||0:0;
+    if(!(r.bh>=I.minBH||w>0))return;
+    const c=r.cls&&['CON','ENG','PRC'].includes(r.cls)?r.cls:classFromPath(p,I.lvlCls,r.name);
+    out[c]=(out[c]||0)+1;
+  });
+  return out;
+}
 function mapRows(){
   const I=state.imp,seen=new Set(),wres=I.wres||'';
   return I.rows.filter(r=>{
-    const w=wres?(r.wts&&r.wts[wres])||0:0;
+    const w=wres?(r.wts&&r.wts[wres])||0:0,p=r.path||[];
     if(I.skipDone&&(r.done||r.pct>=1))return false;
     if(r.type&&/milestone|WBS Summary|TT_Mile|TT_FinMile/i.test(r.type))return false;
+    if(!brOn(p[Math.min(I.brLvl,p.length)-1]||'(no WBS)'))return false;
+    const cls0=r.cls&&['CON','ENG','PRC'].includes(r.cls)?r.cls:classFromPath(p,I.lvlCls,r.name);
+    if(I.clsOn&&I.clsOn[cls0]===false)return false;
     return r.bh>=I.minBH||w>0;
   }).map(r=>{
     const path=r.path||[],w=wres?(r.wts&&r.wts[wres])||0:0;
@@ -3010,7 +3136,7 @@ function mapRows(){
     const hasQty=r.qty>0&&r.uom;
     const bh=Math.round(r.bh)||0;
     const qty=hasQty?r.qty:(cls==='CON'?(bh||Math.round(w)||100):100);
-    const uom=hasQty?String(r.uom).slice(0,8):(cls==='CON'?(bh?'mh':'%'):'%');
+    const uom=hasQty?String(r.uom).slice(0,12):(cls==='CON'?(bh?'mh':'%'):'%');
     let id=String(r.id).replace(/[:"'<>\\]/g,'-').slice(0,24);while(seen.has(id))id=id+'-2';
     seen.add(id);
     const pr=projById(impPid());let bs=r.bs||pr.start,bf=r.bf||pr.finish;if(!(bf>bs))bf=addDays(bs,1);
@@ -3031,6 +3157,15 @@ function renderImport(){
       ${F('Minimum budget manhours',inp('minBH',I.minBH,'type="number" min="0" data-imp'))}
       ${F('Maximum activities',inp('limit',I.limit,'type="number" min="1" max="4000" data-imp'))}
     </div>
+    <div class="fields" style="margin-bottom:4px">${F('Choose branches at WBS level',sel('brLvl',Array.from({length:I.maxLvl},(_,i)=>[i+1,'Level '+(i+1)]),I.brLvl||2,'data-imp'))}</div>
+    <div class="field">WBS branches to monitor
+      <div class="actions" style="margin:4px 0 6px"><button class="btn sm" type="button" data-brall="1">Select all</button><button class="btn sm" type="button" data-brall="0">Clear all</button><span class="small muted" style="align-self:center">Untick procurement, engineering or anything not measured on site.</span></div>
+      <div class="checks">${branchList().map(b=>`<label class="chk"><input type="checkbox" data-branch="${esc(b.name)}" ${brOn(b.name)?'checked':''}><span>${esc(b.name)}</span><span class="muted small">${b.n} activities, ${fmt(b.hours)} mh</span></label>`).join('')}</div></div>
+    ${(()=>{const cc=clsCounts(),has=Object.entries(cc).filter(([,n])=>n>0);
+      return `<div class="field" style="margin-top:10px">Activity classes inside the branches you ticked
+      <div class="checks" style="max-height:none">${has.length?has.map(([k,n])=>`<label class="chk"><input type="checkbox" data-impcls="${k}" ${I.clsOn&&I.clsOn[k]===false?'':'checked'}><span>${CLASSES[k]}</span><span class="muted small">${n} activities</span></label>`).join(''):'<p class="small muted" style="margin:4px 0">No activities in the branches ticked above.</p>'}</div>
+      ${has.length<3?`<p class="small muted" style="margin:6px 0 0">Not listed, so nothing to exclude: ${Object.keys(CLASSES).filter(k=>!cc[k]).map(k=>CLASSES[k]).join(', ')}.</p>`:''}
+      ${cc.ENG||cc.PRC?`<p class="small" style="margin:6px 0 0">Some activities inside your ticked branches read as engineering or procurement from their wording, for example supply or delivery items sitting under a construction branch. Untick a class here to leave those out of the daily report.</p>`:''}</div>`})()}
     <label class="chk" style="margin:10px 0"><input type="checkbox" name="skipDone" data-imp ${I.skipDone?'checked':''}><span>Skip completed activities and milestones</span></label>
     <label class="chk" style="margin:0 0 10px"><input type="checkbox" name="ignorePct" data-imp ${I.ignorePct?'checked':''}><span>Ignore percent complete in the file (use when ProTrack already holds the progress)</span></label>
     ${(()=>{const pid=impPid(),ex=ACTS.filter(a=>a.p===pid),m=rows.filter(r=>ex.some(a=>a.id===r.id)).length;
@@ -3082,10 +3217,10 @@ async function templateXlsx(){
 document.addEventListener('click',e=>{
   if(e.target.closest('#lgEye'))return togglePw('lgPw',e.target.closest('#lgEye'));
   if(e.target.closest('#rsEye'))return togglePw('rsPw',e.target.closest('#rsEye'));
-  const t=e.target.closest('[data-resauto],[data-costtpl],[data-costgo],[data-costcancel],[data-brestore],[data-bclear],[data-posel],[data-podel],[data-srdel],[data-msdel],[data-etab],[data-execp],[data-escope],[data-p6],[data-bproj],[data-bset],[data-updtpl],[data-updgo],[data-updcancel],[data-template],[data-impgo],[data-impcancel],[data-signout],[data-auth],[data-fill],[data-pwreset],[data-rep],[data-export],[data-atab],[data-aadd],[data-aedit],[data-adel],[data-import],[data-sector],[data-go],[data-scope],[data-filter],[data-open],[data-close],[data-do],[data-add],[data-rm],[data-addline],[data-rmline],[data-save],[data-tab],[data-q],[data-more],[data-reset]');
+  const t=e.target.closest('[data-delproj],[data-bsetdel],[data-brall],[data-resauto],[data-costtpl],[data-costgo],[data-costcancel],[data-brestore],[data-bclear],[data-posel],[data-podel],[data-srdel],[data-msdel],[data-etab],[data-execp],[data-escope],[data-p6],[data-bproj],[data-bset],[data-updtpl],[data-updgo],[data-updcancel],[data-template],[data-impgo],[data-impcancel],[data-signout],[data-auth],[data-fill],[data-pwreset],[data-rep],[data-export],[data-atab],[data-aadd],[data-aedit],[data-adel],[data-import],[data-sector],[data-go],[data-scope],[data-filter],[data-open],[data-close],[data-do],[data-add],[data-rm],[data-addline],[data-rmline],[data-save],[data-tab],[data-q],[data-more],[data-reset]');
   if(!t){if(!e.target.closest('#notes,#bell'))$('#notes').hidden=true;if(e.target.id==='drawer')closeDrawer();return}
   const ds=t.dataset,f=state.form;
-  if('signout' in ds){if(confirm('Sign out of ProTrack?'))signOut();return}
+  if('signout' in ds){confirmBox('Sign out of ProTrack?','Sign out').then(v=>{if(v)signOut()});return}
   if(ds.auth){if(ds.auth==='reset'&&!resetToken())return renderAuth('reset');renderAuth(ds.auth,{id:$('#fgId')?$('#fgId').value:''});return}
   if(ds.fill){$('#lgId').value=ds.fill;$('#lgPw').value=DEMO_PW;$('#lgErr').textContent='';return}
   if(ds.pwreset){const u=userById(ds.pwreset);u.pw=null;ensureHashes();logChange(`Password reset issued for ${u.name}; temporary password set`);save();toast('Password reset to the demo password');return}
@@ -3095,10 +3230,18 @@ document.addEventListener('click',e=>{
   if('costtpl' in ds){costingTemplate();return}
   if('costgo' in ds){runCosting();return}
   if('costcancel' in ds){state.cost=null;$('#costBox').innerHTML='';$('#costfile').value='';return}
+  if(ds.delproj){delProject(ds.delproj);return}
+  if(ds.bsetdel){const [pid2,k]=ds.bsetdel.split(':');const p2=projById(pid2);
+    confirmBox(`Delete the ${BSETS[k].toLowerCase()} for ${p2.short}?\nEarned progress is not affected; only this comparison set is removed.`).then(okd=>{if(okd){
+      if(DB.baselines&&DB.baselines[pid2])delete DB.baselines[pid2][k];
+      if(state.base===k)state.base='ORG';
+      logChange(`Deleted the ${BSETS[k].toLowerCase()} for ${p2.short}`);save();render();toast(`${BSETS[k]} deleted`)}});
+    return}
   if(ds.brestore){const [pid,ix]=ds.brestore.split(':');restoreBaseline(pid,+ix);return}
   if(ds.bclear){clearBaseline(ds.bclear);return}
   if(ds.posel){state.subPo=ds.posel;admDrawer('subs',state.adm.id);return}
-  if(ds.podel){const [sid,pid]=ds.podel.split(':');const sx=subById(sid),po=poById(sx,pid);if(confirm(`Remove ${po.no}? Costs on reports already filed will fall back to an estimate.`)){sx.pos=sx.pos.filter(o=>o.id!==pid);logChange(`Removed purchase order ${po.no} from ${sx.name}`);applyMaster();save();admDrawer('subs',sid);render()}return}
+  if(ds.podel){const [sid,pid]=ds.podel.split(':');const sx=subById(sid),po=poById(sx,pid);
+    confirmBox(`Remove ${po.no}?`,'Remove').then(okd=>{if(okd){sx.pos=sx.pos.filter(o=>o.id!==pid);logChange(`Removed purchase order ${po.no} from ${sx.name}`);applyMaster();save();admDrawer('subs',sid);render()}});return}
   if(ds.srdel){const [sid,pid,ix]=ds.srdel.split(':');const sx=subById(sid),po=poById(sx,pid);po.rates.splice(+ix,1);logChange(`Removed a rate from ${po.no}, ${sx.name}`);applyMaster();save();admDrawer('subs',sid);render();return}
   if(ds.msdel){const [pid,ix]=ds.msdel.split(':');const pr=projById(pid);pr.milestones.splice(+ix,1);logChange(`Removed a milestone from ${pr.short}`);save();admDrawer('projects',pid);render();return}
   if(ds.etab){state.execTab=ds.etab;render();return}
@@ -3115,6 +3258,7 @@ document.addEventListener('click',e=>{
   else if('updcancel' in ds){state.upd=null;$('#updBox').innerHTML='';$('#updfile').value=''}
   else if('template' in ds)templateXlsx();
   else if('impgo' in ds)runImport();
+  else if(ds.brall&&state.imp){state.imp.branches={};branchList().forEach(b=>state.imp.branches[b.name]=ds.brall==='1');renderImport()}
   else if('impcancel' in ds){state.imp=null;$('#impBox').innerHTML='';$('#p6file').value=''}
   else if(ds.go)go(ds.go);
   else if(ds.scope){state.scope=state.scope===ds.scope?'ALL':ds.scope;render()}
@@ -3131,7 +3275,7 @@ document.addEventListener('click',e=>{
   else if(ds.tab){state.perfTab=ds.tab;render()}
   else if(ds.q)ask(ds.q);
   else if('more' in ds){state.showN+=40;render()}
-  else if('reset' in ds){if(confirm('Reset all demo data to the original sample?')){try{localStorage.removeItem(KEY)}catch(x){}setDB(gen());seedNotes();state.chat=[];closeDrawer();$('#notes').hidden=true;go('dash');toast('Demo data reset')}}
+  else if('reset' in ds){confirmBox('Reset all demo data to the original sample?\nEverything you have added in this browser is removed.','Reset').then(okd=>{if(!okd)return;try{localStorage.removeItem(KEY)}catch(x){}setDB(gen());seedNotes();state.chat=[];closeDrawer();$('#notes').hidden=true;go('dash');toast('Demo data reset')})}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();$('#notes').hidden=true}if(e.key==='Enter'&&e.target.dataset?.open)openDpr(e.target.dataset.open)});
 document.addEventListener('input',e=>{
@@ -3167,6 +3311,8 @@ document.addEventListener('change',e=>{const el=e.target;
   if(el.id==='costfile'&&el.files[0]){handleCostFile(el.files[0]);return}
   if(el.matches('[data-resmap]')){const [pid,rn]=el.dataset.resmap.split('|');DB.master.resMap=DB.master.resMap||{};DB.master.resMap[pid]=DB.master.resMap[pid]||{};DB.master.resMap[pid][rn]=el.value;logChange(`Mapped P6 resource ${rn} to ${el.value||'no trade'} on ${projById(pid).short}`);save();render();return}
   if(el.id==='updfile'&&el.files[0]){handleUpdateFile(el.files[0]);return}
+  if(el.matches('[data-branch]')&&state.imp){state.imp.branches=state.imp.branches||{};state.imp.branches[el.dataset.branch]=el.checked;renderImport();return}
+  if(el.matches('[data-impcls]')&&state.imp){state.imp.clsOn=state.imp.clsOn||{};state.imp.clsOn[el.dataset.impcls]=el.checked;renderImport();return}
   if(el.matches('[data-imp]')&&state.imp){const n=el.name;state.imp[n]=el.type==='checkbox'?el.checked:(['lvl','minBH','limit'].includes(n)?+el.value:el.value);renderImport();return}
   if(el.matches('[data-cityfor]')){const c=el.form.elements.city;c.innerHTML=opt(DB.master.cities.filter(x=>x.region===el.value).map(x=>[x.id,x.name]),'')}if(el.matches('[data-rolefor]'))toggleAccess()});
 $('#scope').addEventListener('change',e=>{state.scope=e.target.value;render()});
