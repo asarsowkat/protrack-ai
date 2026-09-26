@@ -1,20 +1,22 @@
 # ProTrack — Construction Productivity Intelligence
 
-Prototype web application: daily site reporting, productivity, earned value, EAC,
-manpower forecasting, Primavera P6 import and export, contract billing, and an
-assistant that answers questions from the project data.
+Prototype web application: daily site reporting, productivity, earned value and EAC,
+manpower planning and forecasting, Primavera P6 import and export, budget and
+costing, contract billing, and an assistant that answers questions from the
+project data.
 
-**Live pages**
+**Pages**
 
 | File | What it is |
 |---|---|
 | `index.html` | The application |
 | `guide.html` | User guide: every screen, every formula, FAQ |
 | `roles.html` | Step by step by role: foreman, site engineer, project manager, planning engineer, costing engineer, executives, super admin |
+| `404.html` | Not-found page |
 
-Everything is self-contained. No build step, no server code, no npm install.
-Fonts load from Google Fonts; the spreadsheet and PDF libraries load from a CDN
-only when you export a report.
+Everything is self-contained: no build step, no server code, no npm install.
+Fonts come from Google Fonts; the spreadsheet and PDF libraries load from a CDN
+only when a report is exported.
 
 ---
 
@@ -22,7 +24,7 @@ only when you export a report.
 
 ### GitHub Pages
 1. Create a repository, for example `protrack`.
-2. Upload these files to the repository root (keep `.nojekyll`).
+2. Upload these files to the repository root, keeping `.nojekyll`.
 3. Settings → Pages → Source: *Deploy from a branch*, branch `main`, folder `/ (root)`.
 4. The site appears at `https://<your-account>.github.io/protrack/`.
 
@@ -35,13 +37,15 @@ git remote add origin https://github.com/<your-account>/protrack.git
 git push -u origin main
 ```
 
+Updating later: replace the file, then `git add . && git commit -m "update" && git push`.
+
 ### Vercel
 Import the repository, framework preset **Other**, no build command, output
-directory `.`. Add `protrack.com` under Settings → Domains when you are ready.
+directory `.`. Add `protrack.com` under Settings → Domains when ready.
 
 ### Netlify
-Drag the folder onto the Netlify dashboard, or connect the repository with no
-build command and publish directory `.`.
+Drag the folder onto the dashboard, or connect the repository with no build
+command and publish directory `.`.
 
 ---
 
@@ -55,13 +59,37 @@ Password for every account: `ProTrack@2026`
 | `abhijit@company.com` | Super Admin |
 | `khalid.alsolami@company.com` | Executive Manager |
 | `hani.barakat@company.sa` | Portfolio Manager, Central |
+| `rashid.alomani@company.sa` | Portfolio Manager, Eastern |
 | `nasser.alshammari@company.sa` | Regional Manager, Eastern and Southern |
 | `nabil.haddad@company.sa` | Planning Engineer |
 | `tariq.almutairi@company.sa` | Project Manager |
 | `omar.hassan@company.sa` | Site Engineer |
 | `imran.sheikh@company.sa` | Foreman |
+| `lina.saleh@company.sa` | Read-only |
 
-Each account lands on the Executive summary, scoped to the projects it may see.
+Everyone except the foreman and read-only users lands on the Executive summary,
+scoped to the projects their account may see.
+
+---
+
+## Setting up a project inside the app
+
+1. **Settings → Projects** — create the project shell: code (any format, such as
+   `PE-329`), sector, region, city, dates, contract value, project type, team,
+   milestones including TCC, PAC and FAC, and the payment terms.
+2. **Baselines → Original baseline** — the planning engineer imports the P6 file
+   (XER, XML or Excel). This creates the activities.
+3. **Baselines → P6 labour resources mapped to trades** — map the schedule's
+   resources to ProTrack trades, once per project.
+4. **Baselines → Costing file** — the costing engineer downloads the template,
+   which arrives pre-filled with every activity ID, adds budget quantity, unit,
+   unit rate, cost and manhours, and uploads it. The costing file never creates
+   activities; it matches on activity ID.
+5. **Settings → Trades and rates, and Subcontractors** — salaries with dated
+   history, and one purchase order per project per vendor.
+
+Then the site reports daily, the project manager approves, and the planning
+engineer updates design and procurement weekly.
 
 ---
 
@@ -69,41 +97,46 @@ Each account lands on the Executive summary, scoped to the projects it may see.
 
 This is a **prototype**. All data lives in the browser's local storage on each
 device. There is no server, no database and no real authentication: the sign-in
-screen, the roles and the access rules are demonstrations of the intended
-behaviour, not security.
+screen, roles and access rules demonstrate the intended behaviour, they are not
+security.
 
-Do not put real staff passwords, client contract values or commercially
-sensitive schedules into it as a production system.
+Do not use it as a production system for real staff passwords, client contract
+values or commercially sensitive schedules.
 
-For production the following are needed:
+Production needs:
 
 - A backend with a real authentication service (Supabase Auth, Clerk or Auth0),
   ideally with Microsoft Entra ID single sign-on for office staff
-- A database with per-user row-level security, so a site engineer's requests
-  cannot return another region's data
-- Server-side rate limiting, password hashing (bcrypt or Argon2), and secure
+- A database with per-user row-level security, so one region's data cannot be
+  returned to another region's user
+- Server-side rate limiting, password hashing (bcrypt or Argon2) and secure
   session cookies over HTTPS
 - File storage for photographs and attachments
 - Backups, and an audit log held outside the browser
 
 ---
 
-## Resetting the demo
+## Rules the system enforces, which should survive any rewrite
 
-Sign in and use **Reset demo data** at the bottom of the sidebar, or clear the
-site data in the browser. Each browser holds its own copy, so a demo on one
-laptop does not affect another.
+- Construction progress comes only from daily reports; engineering and
+  procurement only from the weekly milestone update.
+- **Price** comes only from the P6 weighting resource and drives invoicing;
+  **cost, quantity and manhours** come only from the costing file and drive
+  budget analysis. Each project names which file owns budget manhours.
+- Trade rates and purchase order rates are dated, so a pay rise or a PO
+  amendment never restates a report already filed.
+- Re-baselining moves the plan, never earned progress. Original, revised and
+  recovery baselines are kept side by side.
+- Invoiceable value follows the contract: a cap on progress per phase, up to two
+  milestone releases per phase, retention with a cap, and release at TCC and FAC.
+- Nothing reaches a dashboard until it is submitted or approved, and every
+  change is logged with a name and a time stamp.
+
+`guide.html` section 15 lists every formula; section 16 lists these guarantees.
 
 ---
 
-## Notes for whoever builds the production version
+## Resetting the demo
 
-- The prototype is a single HTML file by design, so it can be opened, emailed and
-  demonstrated anywhere. The production build should keep the same screens and
-  rules but split into components with the data model below.
-- Core rules the system enforces, which should survive the rewrite:
-  construction progress only from daily reports; engineering and procurement only
-  from the weekly milestone update; price only from the P6 weighting resource;
-  cost only from the costing file; dated trade and purchase order rates so past
-  reports never restate; re-baselining moves the plan, never earned progress.
-- `guide.html` section 15 lists every formula, and section 16 the guarantees.
+Sign in and use **Reset demo data** at the bottom of the sidebar, or clear the
+site data in the browser. Each browser holds its own copy.

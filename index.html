@@ -539,7 +539,7 @@ function seedMaster(){
         eot:{status:'Not submitted'},milestones:[{n:'Project start',t:'Start',plan:'2025-11-01',act:'2025-11-04'},{n:'Station box excavation complete',t:'Intermediate',plan:'2026-06-30',act:'2026-07-18'},{n:'Structure topping out',t:'Intermediate',plan:'2027-01-15',fc:'2027-02-10'},{n:'Technical completion certificate (TCC)',t:'TCC',plan:'2027-06-30',fc:'2027-07-25'}]},
       {id:'QOT',name:'Riyadh to Qassim 380kV Overhead Transmission Line, Section 2',short:'Riyadh-Qassim OHTL',sector:'PWR',region:'C',city:'KHJ',start:'2025-09-15',finish:'2027-08-31',value:480,status:'Active',ptype:'OHTL',
         eot:{status:'Under review',days:60,ref:'EOT-02',sub:'2026-08-12'},
-        milestones:[{n:'Project start',t:'Start',plan:'2025-09-15',act:'2025-09-20'},{n:'Right of way handover complete',t:'Intermediate',plan:'2026-03-31',act:'2026-05-12'},{n:'First 40 foundations complete',t:'Intermediate',plan:'2026-08-31',act:'2026-09-14'},{n:'Stringing start',t:'Intermediate',plan:'2026-11-30',fc:'2027-01-20'},{n:'Technical completion certificate (TCC)',t:'TCC',plan:'2027-08-31',fc:'2027-10-25'},{n:'Provisional acceptance (PAC)',t:'PAC',plan:'2027-11-30',fc:'2028-01-20'}]},
+        milestones:[{n:'Project start',t:'Start',plan:'2025-09-15',act:'2025-09-20'},{n:'Right of way handover complete',t:'Intermediate',plan:'2026-03-31',act:'2026-05-12'},{n:'First 40 foundations complete',t:'Intermediate',plan:'2026-08-31',act:'2026-09-14'},{n:'Stringing start',t:'Intermediate',plan:'2026-11-30',fc:'2027-01-20'},{n:'Technical completion certificate (TCC)',t:'TCC',plan:'2027-08-31',fc:'2027-10-25'},{n:'Provisional acceptance (PAC)',t:'PAC',plan:'2027-11-30',fc:'2028-01-20'},{n:'Final acceptance (FAC)',t:'FAC',plan:'2028-11-30',fc:'2029-01-20'}]},
       {id:'JDC',name:'Jeddah Data Center, Phase 2',short:'Jeddah DC Ph2',sector:'MEP',region:'W',city:'JED',start:'2026-01-15',finish:'2027-03-31',value:185,status:'Active'},
       {id:'JBS',name:'Jubail 380kV Substation',short:'Jubail 380kV',sector:'PWR',region:'E',city:'JUB',start:'2025-10-01',finish:'2027-04-30',value:260,status:'Active',ptype:'Substation',
         eot:{status:'Approved',days:45,ref:'EOT-01',sub:'2026-05-02'},milestones:[{n:'Project start',t:'Start',plan:'2025-10-01',act:'2025-10-06'},{n:'GIS building ready for equipment',t:'Intermediate',plan:'2026-10-31',fc:'2026-11-20'},{n:'Transformer energisation',t:'Intermediate',plan:'2027-02-28',fc:'2027-03-25'},{n:'Technical completion certificate (TCC)',t:'TCC',plan:'2027-04-30',fc:'2027-05-28'}]},
@@ -1349,7 +1349,7 @@ function aiContext(q){
     billing:scopeProjects().map(p=>{const b=billing(p,ASOF);if(!b.contract)return null;
       return {project:p.short,contractPrice:Math.round(b.contract),priceProgress:+(b.progress*100).toFixed(1),grossBillable:Math.round(b.billable),
         retentionHeld:Math.round(b.retNet),retentionReleased:Math.round(b.released),advanceRecovered:Math.round(b.recovered),netInvoiceable:Math.round(b.net),
-        phases:b.rows.filter(r=>r.price).map(r=>({phase:r.name,price:Math.round(r.price),progressPct:+(r.pct*100).toFixed(1),cap:r.cap,billable:Math.round(r.billable),releaseAt:r.relMs,releaseAchieved:r.relDone}))}}).filter(Boolean),
+        phases:b.rows.filter(r=>r.price).map(r=>({phase:r.name,price:Math.round(r.price),progressPct:+(r.pct*100).toFixed(1),capPct:r.cap,billable:Math.round(r.billable),releases:(r.rels||[]).map(x=>({at:x.ms,pct:x.pct,achieved:x.done}))}))}}).filter(Boolean),
     milestones:scopeProjects().flatMap(p=>msOf(p).map(m=>({project:p.short,milestone:m.n,type:m.t,planned:m.plan,forecast:m.fc,actual:m.act}))).slice(0,30),
     eot:scopeProjects().map(p=>({project:p.short,status:(p.eot||{}).status,days:(p.eot||{}).days,ref:(p.eot||{}).ref})).filter(x=>x.status&&x.status!=='Not applicable'),
     reports:(pickReports(q||'')||[]).map(id=>repSnapshot(id)).filter(Boolean)
@@ -1587,8 +1587,10 @@ function execProject(){
 /* ---------- invoiceable value: price progress against contract payment terms ---------- */
 const PHASES=[['ENG','Engineering and design'],['PRC','Procurement and supply'],['CON','Construction and installation'],['TC','Testing and commissioning']];
 const defBilling=()=>({adv:{pct:0,recover:0},ret:{pct:10,cap:5,tcc:50,fac:50},
-  phases:{ENG:{cap:90,rel:'TCC',relPct:10},PRC:{cap:90,rel:'TCC',relPct:10},CON:{cap:95,rel:'TCC',relPct:5},TC:{cap:80,rel:'TCC',relPct:20}}});
-const billOf=p=>Object.assign(defBilling(),p.billing||{});
+  phases:{ENG:{cap:90,rel1:'TCC',pct1:10,rel2:'',pct2:0},PRC:{cap:90,rel1:'TCC',pct1:10,rel2:'',pct2:0},
+    CON:{cap:80,rel1:'TCC',pct1:10,rel2:'FAC',pct2:10},TC:{cap:80,rel1:'TCC',pct1:10,rel2:'FAC',pct2:10}}});
+const fixPhase=c=>{c=c||{};return {cap:c.cap??100,rel1:c.rel1??c.rel??'',pct1:c.pct1??c.relPct??0,rel2:c.rel2||'',pct2:c.pct2||0}};
+const billOf=p=>{const b=Object.assign(defBilling(),p.billing||{});b.phases=Object.fromEntries(PHASES.map(([k])=>[k,fixPhase((p.billing&&p.billing.phases||{})[k]||b.phases[k])]));return b};
 const priceOf=a=>(+a.pw||0)||(+a.bcost||0)||(a.bmh||0)*RATE;
 const phaseOf=a=>{const c=clsOf(a);if(c!=='CON')return c;return /test|commission|energiz/i.test(`${a.name} ${a.wbs} ${a.area}`)?'TC':'CON'};
 const msDone=(p,type)=>{const m=msOf(p).find(x=>(x.t||'')===type);return m&&m.act?m.act:null};
@@ -1598,11 +1600,13 @@ function billing(p,t){
     const g=acts.filter(a=>phaseOf(a)===k),price=g.reduce((x,a)=>x+priceOf(a),0);
     if(!price)return {k,name,price:0,pct:0,gross:0,cap:0,capped:0,rel:0,billable:0,none:true};
     const earned=g.reduce((x,a)=>{const e=evm([a],dt);return x+priceOf(a)*(e.bac?Math.min(1,e.ev/e.bac):0)},0);
-    const cfg=B.phases[k]||{cap:100,rel:'',relPct:0};
+    const cfg=fixPhase(B.phases[k]);
     const capAmt=price*(cfg.cap||100)/100,capped=Math.min(earned,capAmt);
-    const done=cfg.rel?msDone(p,cfg.rel):null;
-    const rel=done&&done<=dt?price*(cfg.relPct||0)/100:0;
-    return {k,name,price,pct:price?earned/price:0,gross:earned,cap:cfg.cap||100,capped,relMs:cfg.rel,relPct:cfg.relPct||0,relDone:!!done,rel,billable:Math.min(price,capped+rel)};
+    const rels=[[cfg.rel1,cfg.pct1],[cfg.rel2,cfg.pct2]].filter(([m,q])=>m&&q>0).map(([m,q])=>{
+      const d=msDone(p,m);return {ms:m,pct:q,amount:price*q/100,done:!!(d&&d<=dt)}});
+    const rel=rels.filter(r=>r.done).reduce((x,r)=>x+r.amount,0);
+    const note=rels.map(r=>`${r.pct}% at ${r.ms}${r.done?' (achieved)':''}`).join(', ')||'—';
+    return {k,name,price,pct:price?earned/price:0,gross:earned,cap:cfg.cap||100,capped,rels,note,rel,billable:Math.min(price,capped+rel)};
   });
   const contract=rows.reduce((t2,r)=>t2+r.price,0),billable=rows.reduce((t2,r)=>t2+r.billable,0);
   const retRaw=billable*(B.ret.pct||0)/100,retCap=contract*(B.ret.cap||100)/100,held=Math.min(retRaw,retCap);
@@ -1619,12 +1623,16 @@ function billingEditor(p){
   return `<h3 style="margin-top:22px">Billing and payment terms</h3>
   <p class="small muted">Invoiceable value follows the contract, not only the schedule: each phase can be billed up to a cap on progress, with the balance released at a milestone. Retention is deducted from every invoice and released at TCC and FAC.</p>
   <form id="billForm" novalidate>
-    <div class="scroll"><table class="tbl"><thead><tr><th>Phase</th><th class="n">Billable on progress, up to</th><th>Balance released at</th><th class="n">Release %</th></tr></thead><tbody>
-      ${PHASES.map(([k,name])=>{const c=B.phases[k]||{};return `<tr><td>${name}</td>
-        <td class="n"><input name="cap_${k}" type="number" min="0" max="100" value="${c.cap??100}" style="width:90px"> %</td>
-        <td><select name="rel_${k}">${opt([['','No milestone release'],...types.map(t=>[t,t])],c.rel||'')}</select></td>
-        <td class="n"><input name="relpct_${k}" type="number" min="0" max="100" value="${c.relPct??0}" style="width:90px"> %</td></tr>`}).join('')}
+    <div class="scroll"><table class="tbl"><thead><tr><th>Phase</th><th class="n">On progress, up to</th><th>First release at</th><th class="n">%</th><th>Second release at</th><th class="n">%</th><th class="n">Total</th></tr></thead><tbody>
+      ${PHASES.map(([k,name])=>{const c=fixPhase(B.phases[k]);const tot=(+c.cap||0)+(+c.pct1||0)+(+c.pct2||0);return `<tr><td>${name}</td>
+        <td class="n"><input name="cap_${k}" type="number" min="0" max="100" value="${c.cap}" style="width:82px"> %</td>
+        <td><select name="rel1_${k}">${opt([['','None'],...types.map(t=>[t,t])],c.rel1)}</select></td>
+        <td class="n"><input name="pct1_${k}" type="number" min="0" max="100" value="${c.pct1}" style="width:78px"> %</td>
+        <td><select name="rel2_${k}">${opt([['','None'],...types.map(t=>[t,t])],c.rel2)}</select></td>
+        <td class="n"><input name="pct2_${k}" type="number" min="0" max="100" value="${c.pct2}" style="width:78px"> %</td>
+        <td class="n ${tot===100?'g-c':tot>100?'r-c':'a-c'}">${tot}%</td></tr>`}).join('')}
     </tbody></table></div>
+    <p class="small muted" style="margin:6px 0 0">Example for construction: 80% against progress, 10% released at TCC, 10% at FAC. The total should come to 100%.</p>
     <div class="fields" style="margin-top:12px">
       ${F('Retention on each invoice (%)',inp('retpct',B.ret.pct,'type="number" min="0" max="30" step="0.5"'))}
       ${F('Retention cap (% of contract price)',inp('retcap',B.ret.cap,'type="number" min="0" max="30" step="0.5"'))}
@@ -1637,7 +1645,11 @@ function billingEditor(p){
 function saveBilling(fd){
   const p=projById(impPid()||state.adm.id),v=k=>String(fd.get(k)??'').trim(),n=k=>+v(k)||0;
   const B=defBilling();
-  PHASES.forEach(([k])=>{B.phases[k]={cap:clamp(n('cap_'+k),0,100),rel:v('rel_'+k),relPct:clamp(n('relpct_'+k),0,100)}});
+  let over='';
+  PHASES.forEach(([k,nm])=>{const cap=clamp(n('cap_'+k),0,100),p1=clamp(n('pct1_'+k),0,100),p2=clamp(n('pct2_'+k),0,100);
+    if(cap+p1+p2>100)over=nm;
+    B.phases[k]={cap,rel1:v('rel1_'+k),pct1:p1,rel2:v('rel2_'+k),pct2:p2}});
+  if(over){$('#billErr').textContent=`${over}: the progress cap and both releases add up to more than 100%.`;return}
   B.ret={pct:clamp(n('retpct'),0,30),cap:clamp(n('retcap'),0,30),tcc:clamp(n('rettcc'),0,100),fac:clamp(n('retfac'),0,100)};
   B.adv={pct:clamp(n('advpct'),0,50),recover:clamp(n('advrec'),0,100)};
   if(B.ret.tcc+B.ret.fac>100){$('#billErr').textContent='Retention released at TCC and FAC cannot add up to more than 100%.';return}
@@ -2258,7 +2270,7 @@ const REPORTS={
     const rows=[];
     ps.forEach(({p,b})=>{
       b.rows.filter(r=>r.price).forEach(r=>rows.push({proj:p.short,phase:r.name,price:r.price,pct:r.pct,gross:r.gross,cap:r.cap/100,
-        capped:r.capped,rel:r.rel,relNote:r.relMs?`${r.relPct}% at ${r.relMs}${r.relDone?', achieved':''}`:'—',billable:r.billable}));
+        capped:r.capped,rel:r.rel,relNote:r.note,billable:r.billable}));
       rows.push({proj:p.short,phase:'Total, gross billable',price:b.contract,pct:b.progress,gross:b.rows.reduce((t,r)=>t+r.gross,0),cap:null,capped:null,rel:b.rows.reduce((t,r)=>t+r.rel,0),relNote:'',billable:b.billable,total:true});
       rows.push({proj:p.short,phase:`Retention held (${b.B.ret.pct}% of invoices, cap ${b.B.ret.cap}% of price)`,billable:-b.held,relNote:b.released?`${sar(b.released)} released`:'Released at TCC and FAC'});
       if(b.released)rows.push({proj:p.short,phase:'Retention released',billable:b.released,relNote:`${b.tcc?'TCC achieved':''}${b.fac?', FAC achieved':''}`});
