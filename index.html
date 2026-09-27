@@ -7,6 +7,8 @@
 <title>ProTrack — Construction Productivity Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js" onerror="console.info('No config.js: running on demo data')"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Noto+Kufi+Arabic:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -447,7 +449,7 @@ label.btn{display:inline-block}
       <label class="ctl"><span class="cl">Scope</span><select id="scope"></select></label>
       <label class="ctl" id="secWrap"><span class="cl">Sector</span><select id="sector"></select></label>
       <label class="ctl" id="baseWrap"><span class="cl">Measure against</span><select id="base"></select></label>
-      <label class="ctl"><span class="cl">Acting as</span><select id="role"></select></label>
+      <label class="ctl" id="roleWrap"><span class="cl">Acting as</span><select id="role"></select></label>
       <button class="txtbtn" id="lang" type="button" aria-label="Switch language">عربي</button>
       <button class="iconbtn" id="theme" type="button" aria-label="Switch light or dark mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
       <button class="iconbtn" id="bell" type="button" aria-label="Notifications" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="dot" id="bellDot" hidden></span></button>
@@ -780,7 +782,30 @@ let _lines=null;
 const lines=()=>_lines||(_lines=DB.dprs.flatMap(d=>d.lines.map(l=>({...l,rid:d.id,date:d.date,p:d.p,foreman:d.foreman,status:d.status,late:d.late,returned:d.returned}))));
 const repAgg=d=>agg(d.lines);
 let SCOPE=new Set();
-const me=()=>userById(state.uid)||DB.master.users[0];
+let CLOUD_ME=null;
+const CFG=window.PROTRACK||{};
+const CLOUD=!!(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase);
+const SB=CLOUD?window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}}):null;
+const me=()=>CLOUD_ME||userById(state.uid)||DB.master.users[0];
+async function cloudProfile(){
+  const {data:{user}}=await SB.auth.getUser();if(!user)return null;
+  const {data:prof,error}=await SB.from('profiles').select('*').eq('id',user.id).single();
+  if(error||!prof)throw new Error('Signed in, but this account has no profile row yet. Ask the administrator to add you to the profiles table.');
+  if(prof.active===false)throw new Error('This account has been deactivated.');
+  const [{data:pa},{data:ra}]=await Promise.all([
+    SB.from('project_access').select('project_id').eq('user_id',user.id),
+    SB.from('region_access').select('region_id').eq('user_id',user.id)]);
+  return {id:prof.id,name:prof.name||user.email,email:user.email,title:prof.title||ROLES[prof.role]||'',
+    role:prof.role||'ro',active:true,cloud:true,
+    projects:(pa||[]).map(x=>x.project_id),regions:(ra||[]).map(x=>x.region_id)};
+}
+async function startCloudSession(profile,quiet){
+  CLOUD_ME=profile;state.uid=profile.id;state.role=profile.role;
+  state.scope='ALL';state.sector='ALL';state.chat=[];aiTurns=[];
+  state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');
+  SESSION={uid:profile.id,exp:Date.now()+12*36e5,seen:Date.now(),cloud:true};
+  showApp();if(!quiet)toast(`Welcome, ${profile.name.replace(/^Eng\.\s*/,'')}`);
+}
 function accessIds(u=me()){if(u.role==='sa'||u.role==='exec')return PROJECTS.map(p=>p.id);const r=new Set(u.regions);return PROJECTS.filter(p=>r.has(p.region)||u.projects.includes(p.id)).map(p=>p.id)}
 function scopeIds(){
   let ids=accessIds();
@@ -2935,10 +2960,12 @@ function renderAuth(view='login',data={}){
 }
 const resetToken=()=>{try{const r=JSON.parse(localStorage.getItem(RKEY)||'null');return r&&r.exp>Date.now()?r:null}catch(e){return null}};
 function showAuth(view='login'){SESSION=null;$('#app').hidden=true;$('#aiFab').hidden=true;$('#aiPanel').hidden=true;$('#auth').hidden=false;document.body.classList.add('signedout');renderAuth(view)}
-function showApp(){$('#auth').hidden=true;$('#app').hidden=false;$('#aiFab').hidden=false;document.body.classList.remove('signedout');render();resetIdle()}
+function showApp(){
+  const rw=document.getElementById('roleWrap');if(rw)rw.hidden=!!CLOUD_ME;$('#auth').hidden=true;$('#app').hidden=false;$('#aiFab').hidden=false;document.body.classList.remove('signedout');render();resetIdle()}
 function signIn(uid,remember){SESSION=writeSession(uid,remember);state.uid=uid;state.role=me().role;state.scope='ALL';state.sector='ALL';state.chat=[];aiTurns=[];state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');
   DB.master.log.unshift({t:stamp(),who:me().name,text:`Signed in${remember?' (remembered device)':''}`});save();showApp();toast(`Welcome, ${me().name.replace(/^Eng\.\s*/,'')}`)}
 function signOut(reason){
+  if(CLOUD_ME){CLOUD_ME=null;SESSION=null;if(SB)SB.auth.signOut();clearInterval(idleTimer);closeDrawer();$('#notes').hidden=true;showAuth('login');if(reason==='idle')$('#lgErr').textContent=`You were signed out after ${IDLE_MIN} minutes of inactivity.`;return}
   if(SESSION)DB.master.log.unshift({t:stamp(),who:me().name,text:reason==='idle'?'Signed out automatically after inactivity':'Signed out'}),save();
   try{localStorage.removeItem(SKEY);sessionStorage.removeItem(SKEY)}catch(e){}
   clearInterval(idleTimer);closeDrawer();$('#notes').hidden=true;showAuth('login');
@@ -2955,6 +2982,20 @@ async function doLogin(){
   const key=id.toLowerCase(),l=lockState(key);
   if(l.until>Date.now()){E('lgErr',`Too many attempts. Try again in ${Math.ceil((l.until-Date.now())/1000)} seconds.`);return}
   const btn=$('#lgBtn');btn.disabled=true;btn.textContent='Checking…';
+  if(CLOUD&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(id)){
+    try{
+      const {error}=await SB.auth.signInWithPassword({email:id,password:pw});
+      if(!error){
+        const prof=await cloudProfile();
+        clearFails(key);btn.disabled=false;btn.textContent='Sign in';
+        try{localStorage.setItem(KEY+'-last',id)}catch(e){}
+        await startCloudSession(prof);return;
+      }
+      if(!/invalid login credentials/i.test(error.message||'')){
+        btn.disabled=false;btn.textContent='Sign in';E('lgErr',error.message);return;
+      }
+    }catch(e){btn.disabled=false;btn.textContent='Sign in';E('lgErr',e.message);return}
+  }
   const u=findUser(id),ok=u&&u.active&&await verifyPw(u,pw);
   btn.disabled=false;btn.textContent='Sign in';
   if(!ok){const f=noteFail(key);E('lgErr',f.until>Date.now()?`Too many failed attempts. Sign-in is locked for ${Math.round((f.until-Date.now())/1000)} seconds.`:`Username or password is incorrect. ${5-f.n} attempt${5-f.n===1?'':'s'} left before a temporary lock.`);$('#lgPw').value='';$('#lgPw').focus();return}
@@ -2962,6 +3003,10 @@ async function doLogin(){
   signIn(u.id,$('#lgRemember').checked);
 }
 function doForgot(){const id=$('#fgId').value.trim();$('#fgIdErr').textContent='';
+  if(CLOUD&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(id)){
+    SB.auth.resetPasswordForEmail(id,{redirectTo:location.href.split('#')[0]});
+    renderAuth('sent',{id});return;
+  }
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(id)){$('#fgIdErr').textContent='Enter a valid email address.';return}
   const u=findUser(id);if(u)try{localStorage.setItem(RKEY,JSON.stringify({uid:u.id,token:randTok(),exp:Date.now()+30*6e4}))}catch(e){}
   renderAuth('sent',{id});
@@ -2984,6 +3029,10 @@ async function boot(){
   const s=readSession();
   if(s&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');
+  if(CLOUD)SB.auth.getSession().then(async ({data})=>{
+    if(!data||!data.session)return;
+    try{const prof=await cloudProfile();await startCloudSession(prof,true)}catch(e){console.warn(e.message)}
+  }).catch(e=>console.warn(e.message));
 }
 
 /* ---------- Primavera P6 / Excel baseline import ---------- */
