@@ -150,6 +150,20 @@ Production needs:
 
 ## Recent changes in this build
 
+- **Sign-in against your Supabase server** when `config.js` carries the URL and
+  anon key; demo accounts still work for people you show the prototype to
+- **Projects live on the server** once signed in that way, so everyone with an
+  account sees the same list
+- **Invoice register**: the costing engineer uploads invoice number, amount,
+  submitted, approved and collected each week, including the advance, and the
+  executive summary shows invoiceable, invoiced, approved, collected,
+  under-billed, short of approval and outstanding collection
+- **Presentation builder**: pick the project and tick the slides, download a
+  PowerPoint with cover, KPIs, charts, tables and a closing slide
+- **Invoicing and collection** report, alongside the rest
+
+## Earlier in this build
+
 - In-app confirmation dialogs, because sandboxed frames block the browser's own
   `confirm()`; delete, undo and reset now work wherever the app is hosted
 - Delete a project from three places, with a full cascade and a change-log entry

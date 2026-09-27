@@ -923,8 +923,8 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',pm:'Project Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'ProTrack AI',exec:'Executive summary',upd:'Weekly update',base:'Baselines',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'ProTrack AI',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'ProTrack AI',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'ProTrack AI',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={
   dash:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
@@ -937,6 +937,7 @@ const ICONS={
   upd:'<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 3v5h-5"/><path d="M12 8v4l3 2"/>',
   base:'<path d="M3 6h7v5H3zM14 6h7v5h-7zM8 17h8v4H8z"/><path d="M6.5 11v3h11v-3M12 14v3"/>',
   exec:'<path d="M3 20h18"/><path d="M5 20V9l7-5 7 5v11"/><path d="M9 20v-6h6v6"/>',
+  deck:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/>',
   admin:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'
 };
 const icon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
@@ -944,7 +945,7 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
 
 /* ---------- shell ---------- */
 function renderNav(){
-  const L=T[state.lang];const views=['exec','dash','dpr','new','upd','base','eva','rep','perf','admin'].filter(v=>(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline())&&(v!=='exec'||canExec()));
+  const L=T[state.lang];const views=['exec','dash','dpr','new','upd','base','eva','rep','deck','perf','admin'].filter(v=>(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline())&&(v!=='exec'||canExec()));
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
   $('#nav').innerHTML=views.map(b).join('');$('#bottom').innerHTML=views.map(b).join('');
   $('#pageTitle').textContent=L[state.view];
@@ -969,7 +970,7 @@ let charts=[];const killCharts=()=>{charts.forEach(c=>c.destroy());charts=[]};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
-  ({exec:renderExec,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({exec:renderExec,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   if(!$('#aiPanel').hidden)renderChat();
   renderBell();
 }
@@ -1362,7 +1363,7 @@ function renderPerf(){
 }
 
 /* ---------- ProTrack AI ---------- */
-const QS=["Today's productivity",'Early warnings','Invoiceable value','Quantity reconciliation','Unit rates','EAC forecast','Manpower forecast','Milestones and EOT','Design and procurement','Underperforming activities','Compare foremen','Best subcontractor'];
+const QS=["Today's productivity",'Early warnings','Invoiceable value','Invoicing and collection','Quantity reconciliation','Unit rates','EAC forecast','Manpower forecast','Milestones and EOT','Design and procurement','Underperforming activities','Compare foremen','Best subcontractor'];
 const samP=window.claude&&window.claude.use?window.claude.use('sample'):Promise.resolve(null);
 let aiTurns=[],aiBusy=false,aiCtl=null,aiHintTimer=null,aiRec=null,aiSpeakOn=false;
 const AISTATE={idle:'',thinking:'Reading the project data',listening:'Listening',speaking:'Speaking',new:'New answer'};
@@ -1436,7 +1437,7 @@ async function ask(q){
     if($('#aiPanel').hidden)$('#aiDot').hidden=false}
 }
 const HELP='<p>I can answer questions about productivity, progress, manpower, EAC, early warnings, foremen and subcontractors. Try one of the suggestions below, or open Reports for the full tables.</p>';
-const REPQ=[[/invoice|billing|\bbill\b|retention|advance|certificat|payment|cash/i,'invoice'],
+const REPQ=[[/collect|outstanding|receiv|under-?billed/i,'cash'],[/invoice|billing|\bbill\b|retention|advance|certificat|payment|cash/i,'invoice'],
   [/reconcil|own manpower|rental|subcontract(ed)? quantit|scope (vs|against)/i,'recon'],
   [/unit rate|rate analysis|cost per unit|revised rate|estimat(e|ing) rate/i,'unitrate'],
   [/manpower|histogram|headcount|mobilis|mobiliz|crew size|how many (workers|men)/i,'histo'],
@@ -1482,6 +1483,16 @@ function answer(q){
   const byAct=acts.map(a=>actStats(a,w14)).filter(x=>x.g.mh).sort((x,y)=>x.g.pi-y.g.pi);
   const named=acts.find(a=>a.name.toLowerCase().split(/[ ,]+/).some(w=>w.length>4&&s.includes(w)));
   const open=r=>`<p><button class="btn sm" type="button" data-go="rep" data-rep="${r}">Open ${REPORTS[r].sheet} report</button></p>`;
+  if(/collect|outstanding|cash|receiv|approved amount|under-?billed|short.*bill/.test(s)){
+    const B=scopeProjects().map(billPosition).filter(x=>x.b.contract||x.t.n);
+    if(!B.length)return '<p>No billing data in this scope yet.</p>';
+    const T=B.reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.t.submitted,ap:t.ap+x.t.approved,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
+    return `<p>Invoiceable <b>${sar(T.inv)}</b>, invoiced ${sar(T.sub)}, approved ${sar(T.ap)}, collected ${sar(T.co)}.</p>
+      <ul><li>Under-billed against invoiceable: <b>${sar(Math.max(0,T.inv-T.sub))}</b></li>
+      <li>Short of invoiceable after approval: ${sar(Math.max(0,T.inv-T.ap))}</li>
+      <li>Outstanding collection: <b>${sar(Math.max(0,T.ap-T.co))}</b></li></ul>
+      ${B.filter(x=>x.gapSub>1).slice(0,3).map(x=>`<p class="small">${esc(x.p.short)}: ${sar(x.gapSub)} earned but not invoiced.</p>`).join('')}${open('cash')}`;
+  }
   if(/^invoiceable value$|invoice|billing|\bbill\b|retention|advance payment|certificat|payment/.test(s)){
     const ps=scopeProjects().map(p=>({p,b:billing(p,ASOF)})).filter(x=>x.b.contract);
     if(!ps.length)return '<p>No price weighting loaded for this scope, so nothing can be invoiced yet. Load the P6 schedule with its price weighting resource.</p>';
@@ -1657,6 +1668,25 @@ function execSummary(){
     <div class="panel"><h2>Projects by region</h2><div class="scroll"><table class="tbl"><thead><tr><th>Region</th><th class="n">Projects</th><th class="n">Value</th><th>Progress</th><th class="n">SPI</th><th class="n">CPI</th><th class="n">Productivity</th><th class="n">Critical</th></tr></thead><tbody>${grp(DB.master.regions,k=>k.p.region)}</tbody></table></div></div>
     <div class="panel"><h2>Projects by sector</h2><div class="scroll"><table class="tbl"><thead><tr><th>Sector</th><th class="n">Projects</th><th class="n">Value</th><th>Progress</th><th class="n">SPI</th><th class="n">CPI</th><th class="n">Productivity</th><th class="n">Critical</th></tr></thead><tbody>${grp(DB.master.sectors,k=>k.p.sector)}</tbody></table></div></div>
   </section>
+  ${(()=>{const B=ks.map(k=>billPosition(k.p)).filter(x=>x.b.contract||x.t.n);
+    if(!B.length)return '';
+    const T=B.reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.t.submitted,ap:t.ap+x.t.approved,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
+    const gapS=T.inv-T.sub,gapA=T.inv-T.ap,out=T.ap-T.co;
+    return `<section class="panel"><h2>Billing and collection</h2>
+    <div class="g g-kpi" style="margin-bottom:10px">
+      <div class="panel kpi"><div class="l">Invoiceable</div><div class="v" style="font-size:22px">${sar(T.inv)}</div><div class="s">Earned price after the contract terms</div></div>
+      <div class="panel kpi"><div class="l">Invoiced</div><div class="v" style="font-size:22px">${sar(T.sub)}</div><div class="s">${T.inv?pct(T.sub/T.inv,0)+' of invoiceable':'No register uploaded'}</div></div>
+      <div class="panel kpi"><div class="l">Approved</div><div class="v" style="font-size:22px">${sar(T.ap)}</div><div class="s">${T.sub?pct(T.ap/T.sub,0)+' of invoiced':'—'}</div></div>
+      <div class="panel kpi"><div class="l">Collected</div><div class="v" style="font-size:22px">${sar(T.co)}</div><div class="s">${T.ap?pct(T.co/T.ap,0)+' of approved':'—'}</div></div>
+      <div class="panel kpi ${gapS>1?'warncard':''}"><div class="l">Under-billed against invoiceable</div><div class="v ${gapS>1?'r-c':'g-c'}" style="font-size:22px">${sar(Math.max(0,gapS))}</div><div class="s">Work earned but not yet invoiced</div></div>
+      <div class="panel kpi"><div class="l">Outstanding collection</div><div class="v ${out>1?'a-c':'g-c'}" style="font-size:22px">${sar(Math.max(0,out))}</div><div class="s">Approved but not received</div></div>
+    </div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Invoiceable</th><th class="n">Invoiced</th><th class="n">Approved</th><th class="n">Collected</th><th class="n">Short vs invoiced</th><th class="n">Short vs approved</th><th class="n">Outstanding</th></tr></thead><tbody>
+      ${B.map(x=>`<tr class="click" data-execp="${x.p.id}"><td><b>${esc(x.p.short)}</b><span class="t2">${x.t.n} invoice${x.t.n===1?'':'s'}${x.t.advance?', advance included':''}</span></td>
+        <td class="n">${sar(x.invoiceable)}</td><td class="n">${sar(x.t.submitted)}</td><td class="n">${sar(x.t.approved)}</td><td class="n">${sar(x.t.collected)}</td>
+        <td class="n ${x.gapSub>1?'r-c':''}">${sar(Math.max(0,x.gapSub))}</td><td class="n ${x.gapAppr>1?'a-c':''}">${sar(Math.max(0,x.gapAppr))}</td><td class="n">${sar(Math.max(0,x.outstanding))}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="small muted">Invoiceable follows the contract payment terms. Invoiced, approved and collected come from the weekly register uploaded by costing.</p></section>`})()}
   <section class="panel"><h2>Critical projects</h2><div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Sector and region</th><th class="n">Plan %</th><th class="n">Actual %</th><th class="n">Var</th><th class="n">CPI</th><th class="n">SPI</th><th class="n">Productivity</th><th>Main issue</th><th></th></tr></thead><tbody>
     ${crit.map(k=>{const w=bottlenecks(k.p)[0];return `<tr class="click" data-execp="${k.p.id}"><td><b>${esc(k.p.short)}</b><span class="t2">${esc(k.p.pm)}</span></td><td>${esc(secById(k.p.sector)?.name||'')}<span class="t2">${esc(regName(k.p))}</span></td><td class="n">${pct(k.plan,0)}</td><td class="n">${pct(k.act,0)}</td><td class="n">${fmtType.pctv(k.va)}</td><td class="n ${light(k.f.cpi)}-c">${k.f.cpi.toFixed(2)}</td><td class="n ${light(k.f.spi)}-c">${k.f.spi.toFixed(2)}</td><td class="n">${k.pi?tl(k.pi):'—'}</td><td class="small">${w?esc(w.h):'—'}</td><td class="n"><button class="btn sm" type="button" data-execp="${k.p.id}">Open</button></td></tr>`}).join('')||'<tr><td colspan="10" class="muted">No project is below the thresholds. Well run.</td></tr>'}
   </tbody></table></div><p class="small muted">A project is flagged when SPI or CPI is under 0.95, productivity is under 90%, or the forecast finish is more than 14 days late.</p></section>`;
@@ -1687,6 +1717,13 @@ function execProject(){
     <div class="panel kpi"><div class="l">Earned value</div><div class="v" style="font-size:24px">${sar(k.e.ev)}</div><div class="s">PV ${sar(k.e.pv)}, AC ${sar(k.e.ac)}<br>BAC ${sar(k.e.bac)}, ETC ${sar(k.x.etc)}</div></div>
     <div class="panel kpi"><div class="l">Engineering and procurement</div><div class="v" style="font-size:24px">${(()=>{const S=engProcStats().rows.filter(r=>r.proj===p.short);return S.length?pct(S.reduce((t,r)=>t+r.bac*r.pct,0)/S.reduce((t,r)=>t+r.bac,0),0):'—'})()}</div><div class="s">${(()=>{const S=engProcStats().rows.filter(r=>r.proj===p.short);const l=S.filter(r=>r.slip>0).length;return S.length?`${S.length} items, ${l?`<span class="r-c">${l} forecast late</span>`:'<span class="g-c">none late</span>'}`:'No design or procurement items'})()}</div></div>
   </section>
+  ${(()=>{const X=billPosition(p);if(!X.b.contract&&!X.t.n)return '';
+    return `<section class="g g-kpi">
+      <div class="panel kpi"><div class="l">Invoiceable</div><div class="v" style="font-size:22px">${sar(X.invoiceable)}</div><div class="s">Price progress ${pct(X.b.progress,0)}</div></div>
+      <div class="panel kpi"><div class="l">Invoiced</div><div class="v" style="font-size:22px">${sar(X.t.submitted)}</div><div class="s">${X.gapSub>1?`<span class="r-c">${sar(X.gapSub)} still to bill</span>`:'Up to date'}</div></div>
+      <div class="panel kpi"><div class="l">Approved</div><div class="v" style="font-size:22px">${sar(X.t.approved)}</div><div class="s">${X.gapAppr>1?`${sar(X.gapAppr)} short of invoiceable`:'Matches the claim'}</div></div>
+      <div class="panel kpi"><div class="l">Collected</div><div class="v" style="font-size:22px">${sar(X.t.collected)}</div><div class="s">${X.outstanding>1?`<span class="a-c">${sar(X.outstanding)} outstanding</span>`:'Nothing outstanding'}</div></div>
+    </section>`})()}
   ${milestonesHTML(p)}
   ${ohtlHTML(p)}
   <section class="g g-2">
@@ -1833,6 +1870,257 @@ function autoCreateTrades(pid){
   });
   if(n){logChange(`Created ${n} trades from the P6 labour resources on ${projById(pid).short}`);applyMaster();save();render();toast(`${n} trades created and mapped`)}
 }
+/* ---------- invoice register: submitted, approved, collected ---------- */
+const IHEAD={no:/invoice ?(no|number|#)|^inv/i,date:/invoice ?date|^date$/i,type:/type|category/i,
+  amount:/invoice ?amount|amount|value/i,sub:/submit/i,appr:/approv|certif/i,coll:/collect|receiv|paid/i,note:/remark|note/i};
+const INVTYPES=['Progress','Advance','Retention release','Variation','Other'];
+const invOf=pid=>((DB.invoices||{})[pid])||[];
+function invTotals(pid){
+  const rows=invOf(pid);
+  const sum=k=>rows.reduce((t,r)=>t+(+r[k]||0),0);
+  return {n:rows.length,submitted:sum('sub')||sum('amount'),approved:sum('appr'),collected:sum('coll'),
+    advance:rows.filter(r=>/advance/i.test(r.type||'')).reduce((t,r)=>t+(+r.coll||+r.appr||+r.sub||0),0),last:rows.map(r=>r.date).filter(Boolean).sort().pop()};
+}
+function billPosition(p){
+  const b=billing(p,ASOF),t=invTotals(p.id);
+  return {p,b,t,invoiceable:b.net,
+    gapSub:b.net-t.submitted, gapAppr:b.net-t.approved, outstanding:t.approved-t.collected};
+}
+async function invoiceTemplate(){
+  const pid=impPid();if(!pid)return;
+  try{
+    await loadLib(LIBS.xlsx);
+    const head=['Invoice number','Invoice date','Type','Invoice amount (SAR)','Submitted amount (SAR)','Approved amount (SAR)','Collected amount (SAR)','Remark'];
+    const eg=[['INV-001','2026-02-28','Advance',2000000,2000000,2000000,2000000,'Advance payment'],
+              ['INV-002','2026-03-31','Progress',860000,860000,812000,812000,'IPC 1'],
+              ['INV-003','2026-04-30','Progress',940000,940000,0,0,'IPC 2, under review']];
+    const ws=XLSX.utils.aoa_to_sheet([[`ProTrack invoice register, ${projById(pid).short} (${pid})`],
+      ['One row per invoice. Submitted, approved and collected are amounts, not dates. Leave approved or collected at 0 until they happen.'],
+      ['Types: Progress, Advance, Retention release, Variation, Other. Upload the whole register each week; it replaces the previous one.'],[],head,...eg]);
+    ws['!cols']=head.map(h=>({wch:Math.max(15,h.length+2)}));
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Invoices');
+    await saveFile(`ProTrack_invoices_${pid}_${ASOF}.xlsx`,new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  }catch(e){toast('Could not build the template: '+(e.message||''))}
+}
+async function handleInvFile(file){
+  const box=$('#invBox'),pid=impPid();
+  const fail=(m,d)=>{box.innerHTML=`<div class="warn-box"><b>${esc(m)}</b>${d||''}</div>`};
+  if(!pid)return fail('Choose a project first.');
+  box.innerHTML='<p class="muted">Reading the register…</p>';
+  try{
+    await loadLib(LIBS.xlsx);
+    const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
+    const ws=wb.Sheets[wb.SheetNames.find(n=>/invoice|billing|ipc/i.test(n))||wb.SheetNames[0]];
+    const aoa=XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false});
+    const hi=aoa.findIndex(r=>r.some(c=>IHEAD.no.test(String(c||''))));
+    if(hi<0)return fail('No "Invoice number" column found.','<p class="small">Use the template above, or a sheet whose header row has an Invoice number column.</p>');
+    const head=aoa[hi].map(c=>String(c||'').trim()),col={};
+    Object.entries(IHEAD).forEach(([k,re])=>{const i=head.findIndex(h=>re.test(h));if(i>=0&&!Object.values(col).includes(i))col[k]=i});
+    const g=(r,k)=>col[k]==null?'':r[col[k]];
+    const num=v=>{if(v instanceof Date)return 0;const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0};
+    const rows=aoa.slice(hi+1).filter(r=>String(g(r,'no')||'').trim()).map(r=>{
+      const amount=num(g(r,'amount')),sub=col.sub!=null?num(g(r,'sub')):amount;
+      const o={no:String(g(r,'no')).trim(),date:dOnly(g(r,'date'))||'',type:String(g(r,'type')||'Progress').trim(),
+        amount:amount||sub,sub,appr:num(g(r,'appr')),coll:num(g(r,'coll')),note:String(g(r,'note')||'').trim()};
+      o.err=!(o.amount>0||o.sub>0)?'No invoice amount':(o.appr>o.sub*1.001&&o.sub?'Approved is more than submitted':(o.coll>o.appr*1.001&&o.appr?'Collected is more than approved':null));
+      o.warn=!o.err&&o.date&&o.date>ASOF?'Invoice date is after the data date':null;
+      return o;});
+    if(!rows.length)return fail('No invoice rows under the header.');
+    state.inv={file:file.name,pid,rows};
+    renderInvPreview();
+  }catch(e){fail('That file could not be read.',`<p class="small">${esc(e.message||e)}</p>`)}
+}
+function renderInvPreview(){
+  const I=state.inv;if(!I)return;
+  const ok=I.rows.filter(r=>!r.err),bad=I.rows.filter(r=>r.err);
+  const s=k=>ok.reduce((t,r)=>t+(+r[k]||0),0);
+  $('#invBox').innerHTML=`<div class="impbox">
+    <p class="small"><b>${esc(I.file)}</b>. ${I.rows.length} invoices read, ${ok.length} valid${bad.length?`, ${bad.length} rejected`:''}.
+      Submitted ${sar(s('sub'))}, approved ${sar(s('appr'))}, collected ${sar(s('coll'))}.</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th></th><th>Invoice</th><th>Date</th><th>Type</th><th class="n">Submitted</th><th class="n">Approved</th><th class="n">Collected</th><th>Check</th></tr></thead><tbody>
+      ${I.rows.slice(0,14).map(r=>`<tr class="${r.err?'rowbad':r.warn?'rowwarn':''}"><td>${r.err?'<span class="sev High">Error</span>':r.warn?'<span class="sev Medium">Check</span>':'<span class="sev ok">Apply</span>'}</td>
+        <td>${esc(r.no)}<span class="t2">${esc(r.note||'')}</span></td><td>${r.date?fmtD(r.date):'—'}</td><td>${esc(r.type)}</td>
+        <td class="n">${sar(r.sub)}</td><td class="n">${r.appr?sar(r.appr):'—'}</td><td class="n">${r.coll?sar(r.coll):'—'}</td>
+        <td class="small">${esc(r.err||r.warn||'')}</td></tr>`).join('')}
+    </tbody></table></div>
+    ${I.rows.length>14?`<p class="small muted">Showing the first 14 of ${I.rows.length}.</p>`:''}
+    <div class="actions"><button class="btn primary" type="button" data-invgo ${ok.length?'':'disabled'}>Apply ${ok.length} invoices</button><button class="btn" type="button" data-invcancel>Cancel</button></div>
+    <p class="small muted">Applying replaces the whole register for this project, so upload the full list each week.</p></div>`;
+}
+function runInvoices(){
+  const I=state.inv;if(!I)return;
+  const ok=I.rows.filter(r=>!r.err);
+  DB.invoices=DB.invoices||{};
+  DB.invoices[I.pid]=ok.map(({err,warn,...r})=>r);
+  DB.invMeta=DB.invMeta||{};DB.invMeta[I.pid]={file:I.file,at:stamp(),by:me().name,n:ok.length};
+  const t=invTotals(I.pid);
+  logChange(`Loaded invoice register for ${projById(I.pid).short}: ${ok.length} invoices, submitted ${sar(t.submitted)}, approved ${sar(t.approved)}, collected ${sar(t.collected)}`);
+  save();state.inv=null;render();toast(`${ok.length} invoices loaded`);
+}
+function invoiceHTML(pid){
+  const t=invTotals(pid),m=((DB.invMeta||{})[pid]),B=billPosition(projById(pid));
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Invoice register</h2>
+    <div class="actions" style="margin:0"><button class="btn" type="button" data-invtpl>Download template</button><label class="btn primary" for="invfile">Upload register</label><input id="invfile" type="file" accept=".xlsx,.xls,.csv" hidden></div></div>
+    <p class="small muted" style="margin:0 0 12px">The costing engineer uploads the register weekly: invoice number, amount, submitted, approved and collected, including the advance. ProTrack compares it with what the contract says is invoiceable.</p>
+    <div class="g g-kpi" style="margin-bottom:6px">
+      <div class="panel kpi"><div class="l">Invoiceable to date</div><div class="v" style="font-size:22px">${sar(B.invoiceable)}</div><div class="s">After phase caps and retention</div></div>
+      <div class="panel kpi"><div class="l">Submitted</div><div class="v" style="font-size:22px">${sar(t.submitted)}</div><div class="s">${t.n} invoice${t.n===1?'':'s'}${t.last?`, last ${fmtD(t.last)}`:''}</div></div>
+      <div class="panel kpi"><div class="l">Approved</div><div class="v" style="font-size:22px">${sar(t.approved)}</div><div class="s">${t.submitted?pct(t.approved/t.submitted,0)+' of submitted':'—'}</div></div>
+      <div class="panel kpi"><div class="l">Collected</div><div class="v" style="font-size:22px">${sar(t.collected)}</div><div class="s">${t.advance?`includes advance ${sar(t.advance)}`:'—'}</div></div>
+    </div>
+    ${m?`<p class="small muted">Last upload: ${esc(m.file)}, ${esc(m.by)}, ${esc(m.at)}.</p>`:''}
+    <div id="invBox"></div></section>`;
+}
+
+/* ---------- presentation builder: pick slides, get a PowerPoint ---------- */
+const DECK_SLIDES=[
+  ['kpi','Portfolio or project KPIs','Progress, SPI, CPI, productivity, workforce'],
+  ['health','Project health','Progress, forecast finish, risk, per project'],
+  ['scurve','Progress S-curve','Plan, actual and forecast'],
+  ['region','Progress by region and sector','Roll-up tables'],
+  ['prod','Productivity','Planned against actual rates, worst first'],
+  ['histo','Manpower, plan actual forecast','With the trade table'],
+  ['recon','Quantity reconciliation','Own, rental and subcontract'],
+  ['unitrate','Unit rate analysis','Budget against actual per unit'],
+  ['eac','Estimate at completion','EAC, VAC and forecast finish'],
+  ['invoice','Invoiceable value','Phase caps, releases, retention'],
+  ['miles','Milestones and EOT','Planned, forecast, actual'],
+  ['warn','Early warnings','With the recommended action'],
+  ['bottle','Bottlenecks and challenges','Per project, in plain words'],
+  ['foremen','Foreman performance','Productivity, overtime, approval'],
+  ['next','Actions and next steps','An empty slide for your own points']
+];
+const deckState=()=>state.deck||(state.deck={pick:{kpi:1,health:1,scurve:1,prod:1,histo:1,eac:1,warn:1,next:1},
+  title:'',sub:'',who:me().name,charts:true,rows:8});
+function renderDeck(){
+  const D=deckState(),ps=scopeProjects();
+  D.title=D.title||(ps.length===1?ps[0].name:'Portfolio progress review');
+  document.getElementById('view').innerHTML=`${crumb()}
+  <section class="panel"><h2>Build a presentation</h2>
+    <p class="small muted" style="margin:0 0 14px">Choose what the meeting needs. Every slide is built from the same numbers as the reports, for the scope selected at the top of the screen. The file downloads as PowerPoint, so you can edit it afterwards.</p>
+    <div class="fields">
+      ${F('Title',inp('dtitle',D.title),true)}
+      ${F('Subtitle',inp('dsub',D.sub||`Progress as of ${fmtDY(ASOF)}`))}
+      ${F('Presented by',inp('dwho',D.who))}
+      ${F('Rows per table',sel('drows',[[6,'6 rows'],[8,'8 rows'],[12,'12 rows'],[20,'20 rows']],D.rows))}
+    </div>
+    <label class="chk" style="margin:6px 0 14px"><input type="checkbox" data-dchart ${D.charts?'checked':''}><span>Include charts as pictures</span></label>
+    <h3>Slides</h3>
+    <div class="actions" style="margin:0 0 8px"><button class="btn sm" type="button" data-dall="1">Select all</button><button class="btn sm" type="button" data-dall="0">Clear all</button></div>
+    <div class="checks" style="max-height:none">
+      ${DECK_SLIDES.map(([k,t,d])=>`<label class="chk"><input type="checkbox" data-dslide="${k}" ${D.pick[k]?'checked':''}><span>${esc(t)}</span><span class="muted small">${esc(d)}</span></label>`).join('')}
+    </div>
+    <p class="small muted" style="margin:12px 0 0">${Object.values(D.pick).filter(Boolean).length+2} slides including the cover and the closing slide.</p>
+    <div class="actions"><button class="btn primary" type="button" data-dgo>Download PowerPoint</button></div>
+    <p id="deckMsg" class="small muted"></p></section>`;
+}
+function deckRows(id,n){
+  try{const b=REPORTS[id].build();return {cols:b.cols,rows:b.rows.slice(0,n),notes:b.notes,chart:b.chart}}catch(e){return null}
+}
+async function chartImage(cfgFn,w,h){
+  if(!window.Chart||!cfgFn)return null;
+  const cv=document.createElement('canvas');cv.width=w||960;cv.height=h||440;
+  cv.style.position='fixed';cv.style.left='-3000px';document.body.appendChild(cv);
+  try{
+    const pal=palette(false),cfg=chartCfg(cfgFn(pal),pal);
+    cfg.options=Object.assign({},cfg.options,{animation:false,responsive:false,devicePixelRatio:2});
+    const c=new Chart(cv,cfg);await new Promise(r=>setTimeout(r,120));
+    const url=cv.toDataURL('image/png');c.destroy();cv.remove();return url;
+  }catch(e){cv.remove();return null}
+}
+async function buildDeck(){
+  const D=deckState(),msg=t=>{const el=$('#deckMsg');if(el)el.textContent=t};
+  msg('Building the presentation…');
+  try{
+    await loadLib(LIBS.pptx);
+    const P=new PptxGenJS();
+    P.layout='LAYOUT_16x9';P.author='ProTrack';P.company='ProTrack';
+    const NAVY='04101F',INK='1B252E',GREY='56626C',BLUE='1763D8',AMBER='C07A12',RED='B03A2B',GREEN='2E7A4C';
+    const ps=scopeProjects(),one=ps.length===1?ps[0]:null,e=evm(scopeActs(),ASOF);
+    const head=(s,t,sub)=>{s.addText(t,{x:0.45,y:0.3,w:9,h:0.5,fontSize:26,bold:true,color:INK,fontFace:'Arial'});
+      if(sub)s.addText(sub,{x:0.45,y:0.85,w:9,h:0.3,fontSize:12,color:GREY,fontFace:'Arial'});};
+    const tbl=(s,cols,rows,y)=>{
+      const cell=(v,t)=>{if(v==null||v==='')return '';
+        const f=fmtType[t||'text'];let out=f?f(v):String(v);
+        return String(out).replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').trim()};
+      const body=[cols.map(c=>({text:c.h,options:{bold:true,color:'FFFFFF',fill:BLUE,fontSize:10}}))]
+        .concat(rows.map(r=>cols.map(c=>({text:cell(r[c.k],c.t),options:{fontSize:10,color:INK}}))));
+      s.addTable(body,{x:0.45,y:y||1.3,w:9.1,colW:cols.map(()=>9.1/cols.length),border:{type:'solid',color:'D4D8D1',pt:0.5},autoPage:false});
+    };
+    /* cover */
+    const c=P.addSlide();c.background={color:NAVY};
+    c.addText('ProTrack',{x:0.6,y:1.5,w:8.8,h:0.6,fontSize:20,color:'7FB4FF',bold:true,fontFace:'Arial'});
+    c.addText(D.title,{x:0.6,y:2.0,w:8.8,h:1.1,fontSize:36,bold:true,color:'FFFFFF',fontFace:'Arial'});
+    c.addText(D.sub||`Progress as of ${fmtDY(ASOF)}`,{x:0.6,y:3.1,w:8.8,h:0.4,fontSize:14,color:'A8C1E4',fontFace:'Arial'});
+    c.addText(`${scopeLabel()} · ${D.who} · ${fmtDY(ASOF)}`,{x:0.6,y:4.6,w:8.8,h:0.3,fontSize:11,color:'6E87A8',fontFace:'Arial'});
+    /* slides */
+    const pick=k=>D.pick[k];
+    if(pick('kpi')){
+      const s=P.addSlide();head(s,'Where we stand',`${scopeLabel()}, measured against the ${BSETS[state.base].toLowerCase()}`);
+      const pi=agg(valid().filter(d=>d.date>=addDays(TODAY,-7))).pi;
+      const cards=[['Complete',pct(e.bac?e.ev/e.bac:0,0),`Plan ${pct(e.bac?e.pv/e.bac:0,0)}`],
+        ['Schedule, SPI',e.spi.toFixed(2),e.sv>=0?'Ahead of plan':'Behind plan'],
+        ['Cost, CPI',e.cpi.toFixed(2),e.cv>=0?'Under budget':'Over budget'],
+        ['Productivity',pi?pct(pi,0):'—','Last 7 days'],
+        ['Workforce',fmt(agg(valid().filter(d=>d.date===ASOF)).heads),'On the last reported day'],
+        ['Warnings',String(warnings().length),`${warnings().filter(w=>w.sev==='High').length} high`]];
+      cards.forEach((cd,i)=>{const x=0.45+(i%3)*3.05,y=1.4+Math.floor(i/3)*1.75;
+        s.addShape(P.ShapeType.roundRect,{x,y,w:2.85,h:1.5,fill:{color:'F2F3EF'},line:{color:'D4D8D1'},rectRadius:0.1});
+        s.addText(cd[0],{x:x+0.15,y:y+0.12,w:2.5,h:0.3,fontSize:11,color:GREY});
+        s.addText(cd[1],{x:x+0.15,y:y+0.42,w:2.5,h:0.6,fontSize:28,bold:true,color:INK});
+        s.addText(cd[2],{x:x+0.15,y:y+1.05,w:2.55,h:0.3,fontSize:10,color:GREY});});
+    }
+    if(pick('health')){const r=deckRows('projprog',D.rows);if(r){const s=P.addSlide();head(s,'Project health','Plan against actual, with the forecast finish');tbl(s,r.cols.slice(0,7),r.rows);}}
+    if(pick('scurve')&&D.charts){
+      const img=await chartImage(pal=>scurve(scopeActs(),pal),1100,520);
+      if(img){const s=P.addSlide();head(s,'Progress S-curve','Original plan, actual and forecast');s.addImage({data:img,x:0.6,y:1.25,w:8.8,h:4.0});}
+    }
+    if(pick('region')){const r=deckRows('regprog',D.rows);if(r){const s=P.addSlide();head(s,'Progress by region','Roll-up across the portfolio');tbl(s,r.cols.slice(0,7),r.rows);}}
+    for(const [key,title,sub] of [['prod','Productivity','Planned against actual rates'],['histo','Manpower, plan against actual and forecast','Headcount by day'],
+        ['recon','Quantity reconciliation','Scope against executed, by who did the work'],['unitrate','Unit rate analysis','Budget against actual per unit'],
+        ['eac','Estimate at completion','Forecast cost and finish'],['invoice','Invoiceable value','After phase caps, releases and retention'],
+        ['warn','Early warnings','With the recommended action']]){
+      if(!pick(key))continue;
+      const r=deckRows(key,D.rows);if(!r)continue;
+      const s=P.addSlide();head(s,title,sub);
+      if(D.charts&&r.chart){const img=await chartImage(r.chart,1100,380);
+        if(img){s.addImage({data:img,x:0.6,y:1.2,w:8.8,h:2.0});tbl(s,r.cols.slice(0,7),r.rows.slice(0,5),3.4);continue}}
+      tbl(s,r.cols.slice(0,8),r.rows);
+    }
+    if(pick('miles')){
+      const rows=[];scopeProjects().forEach(p=>msOf(p).forEach(m=>{const st=msState(m);
+        rows.push({proj:p.short,n:m.n,t:m.t||'Intermediate',plan:m.plan?fmtD(m.plan):'—',fc:m.fc?fmtD(m.fc):'—',act:m.act?fmtD(m.act):'—',st:st.t})}));
+      if(rows.length){const s=P.addSlide();head(s,'Milestones and extension of time','Planned, forecast and actual');
+        tbl(s,[C('Project','proj'),C('Milestone','n'),C('Type','t'),C('Planned','plan'),C('Forecast','fc'),C('Actual','act'),C('Status','st')],rows.slice(0,D.rows));}
+    }
+    if(pick('bottle')){
+      const s=P.addSlide();head(s,'Bottlenecks and challenges','What is holding the work back');
+      let y=1.3;scopeProjects().slice(0,3).forEach(p=>{
+        const bn=bottlenecks(p).slice(0,3);if(!bn.length)return;
+        s.addText(p.short,{x:0.45,y,w:9,h:0.3,fontSize:13,bold:true,color:BLUE});y+=0.35;
+        bn.forEach(b=>{s.addText(`• ${b.h}`,{x:0.65,y,w:8.8,h:0.28,fontSize:11,color:INK});y+=0.28;
+          s.addText(b.d,{x:0.85,y,w:8.6,h:0.26,fontSize:9.5,color:GREY});y+=0.3;});
+        y+=0.15;});
+    }
+    if(pick('foremen')){const r=deckRows('prod',D.rows);const rows=foremanRows().slice(0,D.rows);
+      if(rows.length){const s=P.addSlide();head(s,'Foreman performance','Last 30 days');
+        tbl(s,[C('Foreman','name'),C('Reports','n','int'),C('Productivity','pi','pct'),C('Overtime','ot','pct'),C('Approval','appr','pct')],rows);}}
+    if(pick('next')){
+      const s=P.addSlide();head(s,'Actions and next steps','Agreed in this meeting');
+      ['','','',''].forEach((_,i)=>{s.addText('•',{x:0.6,y:1.5+i*0.6,w:0.2,h:0.4,fontSize:14,color:GREY});
+        s.addShape(P.ShapeType.line,{x:0.9,y:1.9+i*0.6,w:8.4,h:0,line:{color:'D4D8D1',width:1}});});
+    }
+    /* closing */
+    const z=P.addSlide();z.background={color:NAVY};
+    z.addText('One capture at site. Answers everywhere else.',{x:0.6,y:2.2,w:8.8,h:0.8,fontSize:24,bold:true,color:'FFFFFF',fontFace:'Arial'});
+    z.addText('ProTrack · plan · track · analyze · deliver',{x:0.6,y:3.0,w:8.8,h:0.4,fontSize:12,color:'8FA9CC',fontFace:'Arial'});
+    const name=`ProTrack_${(one?one.id:'portfolio').replace(/[^A-Za-z0-9-]/g,'')}_${ASOF}.pptx`;
+    const blob=await P.write({outputType:'blob'});
+    await saveFile(name,blob);
+    msg(`Done. ${name}`);
+  }catch(err){msg('Could not build the presentation: '+(err.message||err))}
+}
+
 /* ---------- costing file: budgeted quantity, rate and cost per activity ---------- */
 const CHEAD={id:/activity ?id|task ?code|^id$/i,name:/description|activity ?name|^name$/i,qty:/budget.*(qty|quantity)|^quantity$/i,uom:/uom|unit(?! rate)/i,
   rate:/unit ?rate|rate ?per|budget.*rate/i,cost:/budget.*cost|^cost$|amount/i,mh:/manhour|budget.*(mh|hours)|labou?r ?hours/i,gang:/gang|crew ?code/i,rev:/revision|remark|note/i};
@@ -2002,6 +2290,7 @@ function renderBaseline(){
       return `<div class="panel kpi"><div class="l">${BSETS[k]}</div><div class="v" style="font-size:22px">${loaded}</div><div class="s">${meta}</div>${del}</div>`}).join('')}
   </section>
   ${pid?costingHTML(pid):''}
+  ${pid?invoiceHTML(pid):''}
   ${pid?resMapHTML(pid):''}
   ${pid?baseHistHTML(pid):''}
   ${pid?`<section class="panel"><h2>${esc(projById(pid).short)} baseline summary</h2>
@@ -2442,6 +2731,20 @@ const REPORTS={
         {label:'Billable now',data:ps.flatMap(x=>x.b.rows.filter(r=>r.price).map(r=>Math.round(r.billable/1e3))),backgroundColor:pal.accent}]},
         options:{scales:{y:{beginAtZero:true,title:{display:true,text:'SAR thousands'}}}}}),
       notes:`Gross billable ${sar(gross)}, retention held ${sar(held)}, net invoiceable ${sar(net)}. Price comes from the P6 weighting resource loaded by planning, which carries the client price schedule; cost and manhours from the costing file are not used here. Each phase bills on price progress up to its cap, with the balance released when its milestone is achieved. Where a contract also deducts a separate retention from each invoice, it is shown as its own line; if the phase split is the only holdback, retention stays at zero. Advance payment is recovered as a percentage of each invoice until it is fully repaid. Payment terms are set per project in Settings.`}}},
+  cash:{sheet:'Invoicing and collection',title:'Invoicing and collection against invoiceable',desc:'Invoice register, shortfalls and outstanding collection',build(){
+    const rows=[];
+    scopeProjects().forEach(p=>{
+      const X=billPosition(p);if(!X.b.contract&&!X.t.n)return;
+      invOf(p.id).forEach(i=>rows.push({proj:p.short,no:i.no,date:i.date,type:i.type,sub:i.sub,appr:i.appr,coll:i.coll,
+        due:Math.max(0,(+i.appr||0)-(+i.coll||0)),note:i.note||''}));
+      rows.push({proj:p.short,no:'Total',type:`${X.t.n} invoices`,sub:X.t.submitted,appr:X.t.approved,coll:X.t.collected,
+        due:Math.max(0,X.outstanding),note:`Invoiceable ${sar(X.invoiceable)}, ${X.gapSub>1?`under-billed ${sar(X.gapSub)}`:'fully billed'}`,total:true});
+    });
+    const T=scopeProjects().map(billPosition).reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.t.submitted,ap:t.ap+x.t.approved,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
+    return {cols:[C('Project','proj'),C('Invoice','no'),C('Date','date','date'),C('Type','type'),C('Submitted','sub','sar'),C('Approved','appr','sar'),C('Collected','coll','sar'),C('Outstanding','due','sar'),C('Note','note')],rows,
+      chart:pal=>({type:'bar',data:{labels:['Invoiceable','Invoiced','Approved','Collected'],datasets:[{label:'SAR thousands',data:[T.inv,T.sub,T.ap,T.co].map(v=>Math.round(v/1e3)),backgroundColor:[pal.bar,pal.accent,pal.amber,pal.green]}]},
+        options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'SAR thousands'}}}}}),
+      notes:`Invoiceable ${sar(T.inv)}, invoiced ${sar(T.sub)}, approved ${sar(T.ap)}, collected ${sar(T.co)}. Under-billed against invoiceable ${sar(Math.max(0,T.inv-T.sub))}. Short of invoiceable after approval ${sar(Math.max(0,T.inv-T.ap))}. Outstanding collection ${sar(Math.max(0,T.ap-T.co))}. Invoiceable comes from the contract payment terms; invoiced, approved and collected come from the register uploaded weekly by costing.`}}},
   mhrec:{sheet:'Budget manhour check',title:'Budget manhour reconciliation, P6 against costing',desc:'Where the schedule and the costing file disagree on hours',build(){
     const rows=scopeActs().map(a=>{const p6=+a.p6mh||0,cf=+a.costmh||0,used=+a.bmh||0;
       return {proj:projById(a.p).short,id:a.id,name:a.name,cls:CLASSES[clsOf(a)],p6,cf,used,
@@ -2556,7 +2859,7 @@ function renderReports(){
 }
 function scopeLabel(){const ids=[...SCOPE];const sc=state.sector!=='ALL'?secById(state.sector)?.name+' sector, ':'';if(ids.length===1)return sc+projById(ids[0]).name;if(state.scope.startsWith('R:'))return sc+regById(state.scope.slice(2))?.name+' Region';return sc+(accessIds().length===PROJECTS.length?'whole portfolio':'all assigned projects')+` (${ids.length} projects)`}
 
-const LIBS={xlsx:'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',jspdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',auto:'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'};
+const LIBS={pptx:'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',xlsx:'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',jspdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',auto:'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'};
 const libP={};
 const loadLib=u=>libP[u]||(libP[u]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=u;s.onload=res;s.onerror=()=>{delete libP[u];rej(new Error('Could not load '+u))};document.head.appendChild(s)}));
 const dlP=window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null);
@@ -3346,7 +3649,7 @@ async function templateXlsx(){
 document.addEventListener('click',e=>{
   if(e.target.closest('#lgEye'))return togglePw('lgPw',e.target.closest('#lgEye'));
   if(e.target.closest('#rsEye'))return togglePw('rsPw',e.target.closest('#rsEye'));
-  const t=e.target.closest('[data-delproj],[data-bsetdel],[data-brall],[data-resauto],[data-costtpl],[data-costgo],[data-costcancel],[data-brestore],[data-bclear],[data-posel],[data-podel],[data-srdel],[data-msdel],[data-etab],[data-execp],[data-escope],[data-p6],[data-bproj],[data-bset],[data-updtpl],[data-updgo],[data-updcancel],[data-template],[data-impgo],[data-impcancel],[data-signout],[data-auth],[data-fill],[data-pwreset],[data-rep],[data-export],[data-atab],[data-aadd],[data-aedit],[data-adel],[data-import],[data-sector],[data-go],[data-scope],[data-filter],[data-open],[data-close],[data-do],[data-add],[data-rm],[data-addline],[data-rmline],[data-save],[data-tab],[data-q],[data-more],[data-reset]');
+  const t=e.target.closest('[data-invtpl],[data-invgo],[data-invcancel],[data-dgo],[data-dall],[data-delproj],[data-bsetdel],[data-brall],[data-resauto],[data-costtpl],[data-costgo],[data-costcancel],[data-brestore],[data-bclear],[data-posel],[data-podel],[data-srdel],[data-msdel],[data-etab],[data-execp],[data-escope],[data-p6],[data-bproj],[data-bset],[data-updtpl],[data-updgo],[data-updcancel],[data-template],[data-impgo],[data-impcancel],[data-signout],[data-auth],[data-fill],[data-pwreset],[data-rep],[data-export],[data-atab],[data-aadd],[data-aedit],[data-adel],[data-import],[data-sector],[data-go],[data-scope],[data-filter],[data-open],[data-close],[data-do],[data-add],[data-rm],[data-addline],[data-rmline],[data-save],[data-tab],[data-q],[data-more],[data-reset]');
   if(!t){if(!e.target.closest('#notes,#bell'))$('#notes').hidden=true;if(e.target.id==='drawer')closeDrawer();return}
   const ds=t.dataset,f=state.form;
   if('signout' in ds){confirmBox('Sign out of ProTrack?','Sign out').then(v=>{if(v)signOut()});return}
@@ -3359,6 +3662,11 @@ document.addEventListener('click',e=>{
   if('costtpl' in ds){costingTemplate();return}
   if('costgo' in ds){runCosting();return}
   if('costcancel' in ds){state.cost=null;$('#costBox').innerHTML='';$('#costfile').value='';return}
+  if('invtpl' in ds){invoiceTemplate();return}
+  if('invgo' in ds){runInvoices();return}
+  if('invcancel' in ds){state.inv=null;$('#invBox').innerHTML='';$('#invfile').value='';return}
+  if('dgo' in ds){buildDeck();return}
+  if(ds.dall){const D=deckState();DECK_SLIDES.forEach(([k])=>D.pick[k]=ds.dall==='1'?1:0);render();return}
   if(ds.delproj){delProject(ds.delproj);return}
   if(ds.bsetdel){const [pid2,k]=ds.bsetdel.split(':');const p2=projById(pid2);
     confirmBox(`Delete the ${BSETS[k].toLowerCase()} for ${p2.short}?\nEarned progress is not affected; only this comparison set is removed.`).then(okd=>{if(okd){
@@ -3438,8 +3746,12 @@ document.addEventListener('change',e=>{const el=e.target;
   if(el.matches('[data-bset]')){state.bset=el.value;state.imp=null;render();return}
   if(el.id==='p6file'&&el.files[0]){handleImportFile(el.files[0]);return}
   if(el.id==='costfile'&&el.files[0]){handleCostFile(el.files[0]);return}
+  if(el.id==='invfile'&&el.files[0]){handleInvFile(el.files[0]);return}
   if(el.matches('[data-resmap]')){const [pid,rn]=el.dataset.resmap.split('|');DB.master.resMap=DB.master.resMap||{};DB.master.resMap[pid]=DB.master.resMap[pid]||{};DB.master.resMap[pid][rn]=el.value;logChange(`Mapped P6 resource ${rn} to ${el.value||'no trade'} on ${projById(pid).short}`);save();render();return}
   if(el.id==='updfile'&&el.files[0]){handleUpdateFile(el.files[0]);return}
+  if(el.matches('[data-dslide]')){const D=deckState();D.pick[el.dataset.dslide]=el.checked?1:0;return}
+  if(el.matches('[data-dchart]')){deckState().charts=el.checked;return}
+  if(['dtitle','dsub','dwho','drows'].includes(el.name)){const D=deckState();D[{dtitle:'title',dsub:'sub',dwho:'who',drows:'rows'}[el.name]]=el.name==='drows'?+el.value:el.value;return}
   if(el.matches('[data-branch]')&&state.imp){state.imp.branches=state.imp.branches||{};state.imp.branches[el.dataset.branch]=el.checked;renderImport();return}
   if(el.matches('[data-impcls]')&&state.imp){state.imp.clsOn=state.imp.clsOn||{};state.imp.clsOn[el.dataset.impcls]=el.checked;renderImport();return}
   if(el.matches('[data-imp]')&&state.imp){const n=el.name;state.imp[n]=el.type==='checkbox'?el.checked:(['lvl','minBH','limit'].includes(n)?+el.value:el.value);renderImport();return}
