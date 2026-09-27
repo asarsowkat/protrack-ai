@@ -422,6 +422,11 @@ label.btn{display:inline-block}
 .cfm h3{margin:0 0 8px;font:600 19px/1.3 var(--font)}
 .cfm p{margin:0 0 8px;font-size:14.5px;color:var(--ink-2)}
 .cfm .actions{margin-top:16px;justify-content:flex-end}
+.cloudbadge{margin:0 0 10px;font-size:12.5px;color:var(--ink-2);min-height:16px}
+.cloudbadge.ok{color:var(--green)}
+.cloudbadge.ok::before{content:"● "}
+.cloudbadge.bad{color:var(--red)}
+.cloudbadge.bad::before{content:"● "}
 </style>
 </head>
 <body>
@@ -438,7 +443,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span id="whoami"></span><span>Prototype with sample data. Your changes stay in this browser.</span>
+      <span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset>Reset demo data</button>
     </div>
@@ -787,6 +792,59 @@ const CFG=window.PROTRACK||{};
 const CLOUD=!!(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase);
 const SB=CLOUD?window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}}):null;
 const me=()=>CLOUD_ME||userById(state.uid)||DB.master.users[0];
+
+/* ---------- stage 2a: projects live on the server ---------- */
+const projToDb=p=>({id:p.id,name:p.name,short:p.short,sector:p.sector||null,region:p.region||null,city:p.city||null,
+  ptype:p.ptype||null,start_date:p.start||null,finish_date:p.finish||null,value_m:+p.value||0,
+  status:p.status||'Active',mh_source:p.mhSrc||'Costing file',billing:p.billing||{},eot:p.eot||{}});
+const projFromDb=r=>({id:r.id,name:r.name,short:r.short,sector:r.sector,region:r.region,city:r.city,ptype:r.ptype,
+  start:r.start_date,finish:r.finish_date,value:+r.value_m||0,status:r.status||'Active',mhSrc:r.mh_source,
+  billing:r.billing||{},eot:r.eot||{},pm:'Unassigned',eng:'Unassigned',foremen:[],milestones:[]});
+
+async function cloudSeedMasters(){            // first run: copy regions, sectors and cities up
+  if(state.role!=='sa')return;
+  const {data:r}=await SB.from('regions').select('id').limit(1);
+  if(r&&r.length)return;
+  await SB.from('regions').upsert(DB.master.regions.map(x=>({id:x.id,name:x.name})));
+  await SB.from('sectors').upsert(DB.master.sectors.map(x=>({id:x.id,name:x.name})));
+  await SB.from('cities').upsert(DB.master.cities.map(x=>({id:x.id,name:x.name,region:x.region})));
+}
+async function cloudLoadProjects(){
+  const {data,error}=await SB.from('projects').select('*').order('short');
+  if(error)throw new Error(error.message);
+  const {data:ms}=await SB.from('milestones').select('*');
+  DB.master.projects=(data||[]).map(projFromDb);
+  (ms||[]).forEach(m=>{const p=projById(m.project_id);if(p)p.milestones.push({n:m.name,t:m.ms_type,plan:m.planned,fc:m.forecast,act:m.actual})});
+  DB.dprs=DB.dprs.filter(d=>projById(d.p));      // drop anything left from demo mode
+  DB.master.acts=(DB.master.acts||[]).filter(a=>projById(a.p));
+  applyMaster();
+}
+async function cloudSaveProject(p,isNew){
+  const {error}=await SB.from('projects').upsert(projToDb(p));
+  if(error)throw new Error(error.message);
+  await SB.from('change_log').insert({project_id:p.id,text:`${isNew?'Created':'Updated'} project ${p.short}`});
+  await cloudLoadProjects();
+}
+async function cloudDeleteProject(id){
+  const {error}=await SB.from('projects').delete().eq('id',id);
+  if(error)throw new Error(error.message);
+  await cloudLoadProjects();
+}
+async function cloudSaveMilestones(pid){
+  const p=projById(pid);if(!p)return;
+  await SB.from('milestones').delete().eq('project_id',pid);
+  if((p.milestones||[]).length)await SB.from('milestones').insert(p.milestones.map(m=>({
+    project_id:pid,name:m.n,ms_type:m.t||'Intermediate',planned:m.plan||null,forecast:m.fc||null,actual:m.act||null})));
+}
+async function checkCloud(){
+  const show=(t,cls)=>{const el=document.getElementById('cloudBadge');if(el){el.textContent=t;el.className='cloudbadge '+cls}};
+  try{
+    const {error}=await SB.from('profiles').select('id').limit(1);
+    if(error&&/api key|jwt|unauthor/i.test(error.message||''))return show('Server key rejected: check the anon key in config.js','bad');
+    if(error&&/failed to fetch|network/i.test(error.message||''))return show('Cannot reach the server: check the project URL in config.js','bad');
+    show('Connected to the ProTrack server','ok');
+  }catch(e){show('Cannot reach the server: '+(e.message||''),'bad')}
+}
 async function cloudProfile(){
   const {data:{user}}=await SB.auth.getUser();if(!user)return null;
   const {data:prof,error}=await SB.from('profiles').select('*').eq('id',user.id).single();
@@ -801,6 +859,7 @@ async function cloudProfile(){
 }
 async function startCloudSession(profile,quiet){
   CLOUD_ME=profile;state.uid=profile.id;state.role=profile.role;
+  try{await cloudSeedMasters();await cloudLoadProjects()}catch(e){toast('Could not load projects: '+e.message)}
   state.scope='ALL';state.sector='ALL';state.chat=[];aiTurns=[];
   state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');
   SESSION={uid:profile.id,exp:Date.now()+12*36e5,seen:Date.now(),cloud:true};
@@ -2685,7 +2744,7 @@ function saveMs(fd){
   if(!v('mn'))return e('Enter the milestone name.');
   if(v('mact')&&v('mact')>TODAY)return e('An actual date cannot be in the future.');
   p.milestones=(p.milestones||[]).concat([{n:v('mn'),t:v('mt'),plan:v('mplan'),fc:v('mfc'),act:v('mact')}]);
-  logChange(`Added milestone ${v('mn')} to ${p.short}`);save();admDrawer('projects',pid);render();toast('Milestone added');
+  logChange(`Added milestone ${v('mn')} to ${p.short}`);save();if(CLOUD_ME)cloudSaveMilestones(pid);admDrawer('projects',pid);render();toast('Milestone added');
 }
 function baselineHTML(pid){
   const acts=ACTS.filter(a=>a.p===pid);
@@ -2777,7 +2836,14 @@ function saveAdm(fd){
     let x=id?secById(id):null;if(x)x.name=v('name');else{x={id:code,name:v('name')};m.sectors.push(x)}
     msg=`${id?'Updated':'Created'} sector ${x.name}`;
   }
-  logChange(msg);applyMaster();ensureHashes();save();closeDrawer();render();toast(msg.split(',')[0]);
+  logChange(msg);applyMaster();ensureHashes();save();
+  if(CLOUD_ME&&type==='projects'){
+    const pr=projById(id||v('code'));
+    if(pr)cloudSaveProject(pr,!id).then(()=>{closeDrawer();render();toast(msg.split(',')[0])})
+      .catch(e=>toast('Server refused: '+e.message));
+    return;
+  }
+  closeDrawer();render();toast(msg.split(',')[0]);
 }
 function rateEditor(x){
   const rs=(x.rates||[]).slice().sort((a,b)=>b.from.localeCompare(a.from));
@@ -2886,6 +2952,7 @@ async function delProject(id){
   m.users.forEach(u=>{if(u.projects)u.projects=u.projects.filter(x=>x!==id)});
   if(state.scope===id)state.scope='ALL';
   logChange(`Deleted project ${p.short} (${id}) with ${acts} activities and ${reps} daily reports`);
+  if(CLOUD_ME){try{await cloudDeleteProject(id)}catch(e){toast('Server refused: '+e.message);return}}
   applyMaster();save();closeDrawer();if(state.adm&&state.adm.id===id)state.adm=null;render();toast(`${p.short} deleted`);
 }
 async function delAdm(type,id){
@@ -2933,6 +3000,7 @@ function renderAuth(view='login',data={}){
     <form id="loginForm" novalidate>
       ${authField('lgId','Username or email','text','autocomplete="username" inputmode="email" value="'+esc(data.id??last)+'"')}
       <label class="field" for="lgPw">Password<span class="pwwrap"><input id="lgPw" type="password" autocomplete="current-password"><button type="button" class="eye" id="lgEye" aria-label="Show password" aria-pressed="false">${eyeSvg}</button></span></label><p class="err" id="lgPwErr"></p>
+      <p id="cloudBadge" class="cloudbadge"></p>
       <div class="rowline"><label class="chk"><input type="checkbox" id="lgRemember"><span>Remember me for 30 days</span></label><button type="button" class="link" data-auth="forgot">Forgot password?</button></div>
       <p class="err" id="lgErr">${left?`Too many attempts. Try again in ${left} seconds.`:''}</p>
       <button class="btn primary wide" type="submit" id="lgBtn">Sign in</button>
@@ -2961,7 +3029,10 @@ function renderAuth(view='login',data={}){
 const resetToken=()=>{try{const r=JSON.parse(localStorage.getItem(RKEY)||'null');return r&&r.exp>Date.now()?r:null}catch(e){return null}};
 function showAuth(view='login'){SESSION=null;$('#app').hidden=true;$('#aiFab').hidden=true;$('#aiPanel').hidden=true;$('#auth').hidden=false;document.body.classList.add('signedout');renderAuth(view)}
 function showApp(){
-  const rw=document.getElementById('roleWrap');if(rw)rw.hidden=!!CLOUD_ME;$('#auth').hidden=true;$('#app').hidden=false;$('#aiFab').hidden=false;document.body.classList.remove('signedout');render();resetIdle()}
+  const rw=document.getElementById('roleWrap');if(rw)rw.hidden=!!CLOUD_ME;
+  const sn=document.getElementById('sideNote');if(sn)sn.innerHTML=CLOUD_ME
+    ?'Signed in to the ProTrack server. Projects are shared; daily reports are still local to this browser.'
+    :'Prototype with sample data. Your changes stay in this browser.';$('#auth').hidden=true;$('#app').hidden=false;$('#aiFab').hidden=false;document.body.classList.remove('signedout');render();resetIdle()}
 function signIn(uid,remember){SESSION=writeSession(uid,remember);state.uid=uid;state.role=me().role;state.scope='ALL';state.sector='ALL';state.chat=[];aiTurns=[];state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');
   DB.master.log.unshift({t:stamp(),who:me().name,text:`Signed in${remember?' (remembered device)':''}`});save();showApp();toast(`Welcome, ${me().name.replace(/^Eng\.\s*/,'')}`)}
 function signOut(reason){
@@ -2990,6 +3061,14 @@ async function doLogin(){
         clearFails(key);btn.disabled=false;btn.textContent='Sign in';
         try{localStorage.setItem(KEY+'-last',id)}catch(e){}
         await startCloudSession(prof);return;
+      }
+      if(/invalid api key|api key/i.test(error.message||'')){
+        btn.disabled=false;btn.textContent='Sign in';
+        E('lgErr','The server key in config.js is not valid for this project. Copy the anon or publishable key again from Supabase, Project Settings, API Keys, and check it was pasted whole.');return;
+      }
+      if(/email not confirmed/i.test(error.message||'')){
+        btn.disabled=false;btn.textContent='Sign in';
+        E('lgErr','This account exists but its email is not confirmed. In Supabase, Authentication, Users, confirm it or recreate the user with Auto Confirm ticked.');return;
       }
       if(!/invalid login credentials/i.test(error.message||'')){
         btn.disabled=false;btn.textContent='Sign in';E('lgErr',error.message);return;
@@ -3029,6 +3108,7 @@ async function boot(){
   const s=readSession();
   if(s&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');
+  if(CLOUD)checkCloud();
   if(CLOUD)SB.auth.getSession().then(async ({data})=>{
     if(!data||!data.session)return;
     try{const prof=await cloudProfile();await startCloudSession(prof,true)}catch(e){console.warn(e.message)}
@@ -3292,7 +3372,7 @@ document.addEventListener('click',e=>{
   if(ds.podel){const [sid,pid]=ds.podel.split(':');const sx=subById(sid),po=poById(sx,pid);
     confirmBox(`Remove ${po.no}?`,'Remove').then(okd=>{if(okd){sx.pos=sx.pos.filter(o=>o.id!==pid);logChange(`Removed purchase order ${po.no} from ${sx.name}`);applyMaster();save();admDrawer('subs',sid);render()}});return}
   if(ds.srdel){const [sid,pid,ix]=ds.srdel.split(':');const sx=subById(sid),po=poById(sx,pid);po.rates.splice(+ix,1);logChange(`Removed a rate from ${po.no}, ${sx.name}`);applyMaster();save();admDrawer('subs',sid);render();return}
-  if(ds.msdel){const [pid,ix]=ds.msdel.split(':');const pr=projById(pid);pr.milestones.splice(+ix,1);logChange(`Removed a milestone from ${pr.short}`);save();admDrawer('projects',pid);render();return}
+  if(ds.msdel){const [pid,ix]=ds.msdel.split(':');const pr=projById(pid);pr.milestones.splice(+ix,1);logChange(`Removed a milestone from ${pr.short}`);save();if(CLOUD_ME)cloudSaveMilestones(pid);admDrawer('projects',pid);render();return}
   if(ds.etab){state.execTab=ds.etab;render();return}
   if('execp' in ds){state.execProj=ds.execp||null;state.execTab='proj';render();return}
   if(ds.escope){if(DB.master.regions.some(r=>r.id===ds.escope))state.scope='R:'+ds.escope;if(DB.master.sectors.some(x=>x.id===ds.escope))state.sector=ds.escope;render();return}
