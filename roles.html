@@ -119,7 +119,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <tr><td>Dates, logic, WBS, price weighting, labour resource loading</td><td><b>Planning engineer</b></td><td>P6 schedule</td><td>Plan, progress weighting, invoicing, trade proportions</td></tr>
       <tr><td>Design and procurement milestones</td><td><b>Planning engineer</b></td><td>Weekly Excel update</td><td>Engineering and procurement progress</td></tr>
       <tr><td>Budget quantity, unit, unit rate, budget cost, budget manhours</td><td><b>Costing engineer</b></td><td>Costing Excel</td><td>Budget analysis, unit rates, EAC</td></tr>
-      <tr><td>Trade salaries and loaded rates, subcontractor POs</td><td><b>Super admin</b> with costing</td><td>Settings</td><td>Actual cost of work done</td></tr>
+      <tr><td>Subcontractor purchase orders and rates</td><td><b>Costing engineer</b>, per project</td><td>Baselines page</td><td>Subcontract cost</td></tr>
+      <tr><td>Trade salaries and loaded rates</td><td><b>Super admin</b></td><td>Settings</td><td>Own labour cost</td></tr>
       <tr><td>Contract payment terms, retention, advance</td><td><b>Super admin</b> with commercial</td><td>Settings</td><td>Invoiceable value</td></tr>
       <tr><td>Decisions</td><td><b>Executive, regional and portfolio managers</b></td><td>Executive summary</td><td>Where to intervene</td></tr>
     </tbody>
@@ -268,11 +269,14 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Apply.</b> Quantities, units, rates, costs and manhours are written to the activities, and the previous state is snapshotted for undo.</li>
   </ol>
 
-  <h3>With the super admin, set the cost basis</h3>
-  <ul>
-    <li><b>Settings → Trades and rates:</b> basic monthly salary, hours per month and the loaded factor for every trade. The rate history is dated, so a pay rise never restates past reports.</li>
-    <li><b>Settings → Subcontractors:</b> one purchase order per project per vendor. Measured POs carry a rate per activity and unit; manpower supply POs carry a rate per trade and manhour.</li>
-  </ul>
+  <h3>Purchase orders, for your projects</h3>
+  <ol class="steps">
+    <li><b>Baselines → your project → Subcontractor purchase orders.</b></li>
+    <li><b>Add a purchase order:</b> pick the company, or New subcontractor; PO number, basis, date, value.</li>
+    <li><b>Open it and add rates:</b> per activity and unit for measured POs, per trade per manhour for manpower supply, each with an effective date.</li>
+    <li><b>Watch cost to date</b> against the PO value in the same table.</li>
+  </ol>
+  <p>Trade salaries stay with the super admin, in Settings → Trades and rates.</p>
 
   <h3>Every month</h3>
   <ul>
@@ -324,7 +328,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Milestones and EOT</b> for the project, including TCC, PAC and FAC.</li>
     <li><b>Payment terms:</b> phase caps, milestone releases, retention percentage and cap, the TCC and FAC release split, advance payment and recovery.</li>
     <li><b>Budget manhours source:</b> costing file or P6 resource loading, per project.</li>
-    <li><b>Subcontractors</b> and their purchase orders, one per project, with rates.</li>
+    <li><b>Hand subcontractor purchase orders to each project's costing engineer.</b> You can still review every PO in Settings → Subcontractors.</li>
     <li>Hand over to planning and costing to load the baseline and the costing file.</li>
   </ol>
 
@@ -333,7 +337,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>New starter:</b> Users and access → Create user → role → tick projects. Give them the demo password and tell them to use Forgot password.</li>
     <li><b>Leaver:</b> set the user Inactive. Their history stays intact.</li>
     <li><b>Salary revision:</b> Trades and rates → the trade → Add a new rate with its effective date. Past reports keep their old rate.</li>
-    <li><b>New purchase order:</b> Subcontractors → the vendor → Add a purchase order for that project, then its rates.</li>
+    <li><b>New purchase order:</b> done by the project's costing engineer on the Baselines page; you can review or correct it in Settings → Subcontractors.</li>
     <li><b>Wrong baseline loaded:</b> Baselines → the project → Undo this import, or Remove imported baseline.</li>
     <li><b>Check the change log</b> in Settings. Every change carries a name and a time stamp.</li>
   </ul>
@@ -350,7 +354,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <tr><td>Day 1</td><td>Super admin</td><td>Project, users, trades and rates, milestones, payment terms</td></tr>
       <tr><td>Day 2</td><td>Planning engineer</td><td>Import the P6 baseline, set the work location and class levels, map labour resources to trades</td></tr>
       <tr><td>Day 3</td><td>Costing engineer</td><td>Download the costing template, fill quantities, units, rates and costs, upload it</td></tr>
-      <tr><td>Day 3</td><td>Super admin</td><td>Subcontractor purchase orders and rates</td></tr>
+      <tr><td>Day 3</td><td>Costing engineer</td><td>Subcontractor purchase orders and rates, on the Baselines page</td></tr>
       <tr><td>Day 4</td><td>All</td><td>One hour together: each role walks through their own screen once</td></tr>
       <tr><td>Days 5 to 10</td><td>Foremen and site engineers</td><td>Daily reports every evening. Keep the old Excel DPR in parallel for the first week only</td></tr>
       <tr><td>Daily</td><td>Project manager</td><td>Approve the same evening</td></tr>

@@ -150,6 +150,20 @@ Production needs:
 
 ## Recent changes in this build
 
+- **Costing engineer role**, who owns the costing file, the invoice register and
+  **subcontractor purchase orders** for his projects, on the Baselines page
+- **Performance**: project managers (approvals, SPI, CPI, cost variance, OT,
+  under-billing, collection pending, and **monthly invoicing** until 80% of the
+  contract), planning engineers (**DCMA 14-point check** and weekly update
+  compliance), costing engineers (upload quality and timeliness), and
+  **reporting compliance** by project with **Notify team**
+- **Customisable executive summary**: 18 tiles, breakdown by region, sector,
+  city or project, chosen columns, per person
+- Subcontractor entry: one company and one quantity, several trades underneath
+- User guide version 2 with every performance formula written out
+
+## Earlier
+
 - **Sign-in against your Supabase server** when `config.js` carries the URL and
   anon key; demo accounts still work for people you show the prototype to
 - **Projects live on the server** once signed in that way, so everyone with an

@@ -188,500 +188,435 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>ProTrack AI</b></span>
     </div>
-    <div class="meta"><span>Version 1.0</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 2.0</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#intro">Start reading →</a>
   </div>
 </header>
 <div class="wrap">
 <nav class="toc collapsed" id="toc">
   <h2>Contents</h2>
-  <a href="#intro">1. What ProTrack does</a>
-  <a href="#start">2. Getting started</a>
-  <a href="#roles">3. Roles and access</a>
-  <a href="#setup">4. Setting up a project</a>
-  <a href="#setup" class="sub">Projects, teams, master data</a>
-  <a href="#trades" class="sub">Trades and cost rates</a>
-  <a href="#subs" class="sub">Subcontractors and POs</a>
-  <a href="#baseline">5. Baselines and P6 import</a>
-  <a href="#daily">6. Daily progress reporting</a>
-  <a href="#approval">7. Review and approval</a>
-  <a href="#weekly">8. Weekly design and procurement</a>
-  <a href="#dash">9. Dashboards</a>
-  <a href="#exec">10. Executive summary</a>
-  <a href="#eva">11. Earned value and EAC</a>
-  <a href="#reports">12. Reports</a>
-  <a href="#p6out">13. Sending progress back to P6</a>
-  <a href="#ai">14. ProTrack AI</a>
-  <a href="#formulas">15. Formula reference</a>
-  <a href="#rules">16. Rules the system enforces</a>
-  <a href="#pilot">17. Running a pilot</a>
-  <a href="#faq">18. FAQ and troubleshooting</a>
-  <a href="#glossary">19. Glossary</a>
-  <a href="#changes">20. What changed recently</a>
+  <a href="#about">1. What ProTrack is</a>
+  <a href="#process">2. How the application works</a>
+  <a href="#owners">3. Who owns which number</a>
+  <a href="#roles">4. Roles, access and responsibilities</a>
+  <a href="#features">5. Features at a glance</a>
+  <a href="#steps">6. Step by step, by role</a>
+  <a href="#s-foreman" class="sub">Foreman</a>
+  <a href="#s-eng" class="sub">Site engineer</a>
+  <a href="#s-pm" class="sub">Project manager</a>
+  <a href="#s-plan" class="sub">Planning engineer</a>
+  <a href="#s-cost" class="sub">Costing engineer</a>
+  <a href="#s-exec" class="sub">Executive, regional, portfolio</a>
+  <a href="#s-sa" class="sub">Super admin</a>
+  <a href="#perf">7. How performance is measured</a>
+  <a href="#p-foreman" class="sub">Foreman score</a>
+  <a href="#p-eng" class="sub">Site engineer score</a>
+  <a href="#p-pm" class="sub">Project manager KPIs</a>
+  <a href="#p-plan" class="sub">Planning engineer score</a>
+  <a href="#p-cost" class="sub">Costing engineer score</a>
+  <a href="#p-comp" class="sub">Reporting compliance score</a>
+  <a href="#p-sub" class="sub">Subcontractors</a>
+  <a href="#dcma">8. DCMA 14-point check</a>
+  <a href="#formulas">9. Formula reference</a>
+  <a href="#billing">10. Billing and collection</a>
+  <a href="#reports">11. Reports and presentations</a>
+  <a href="#server">12. Server and demo mode</a>
+  <a href="#rules">13. Rules the system enforces</a>
+  <a href="#faq">14. FAQ and troubleshooting</a>
+  <a href="#glossary">15. Glossary</a>
 </nav>
 
 <main>
-<section id="intro">
+<section id="about">
   <h1>ProTrack user guide</h1>
-  <p class="lead">Construction productivity intelligence: from the daily site report to management decisions.</p>
-  <p>ProTrack turns what the site records every evening into productivity, earned value, forecast cost and early warnings. The idea behind it is one sentence: <b>quantity alone is progress; quantity together with the resources that produced it is productivity</b>. Everything in the system follows from capturing both, once, at site.</p>
-
-  <h3>What it covers</h3>
+  <p class="lead">Construction productivity intelligence: from the daily site report to management decisions, invoices and cash.</p>
+  <p>ProTrack turns what the site records every evening into productivity, earned value, forecast cost, invoiceable value and early warnings, and it measures the people who feed it. Its principle is one sentence: <b>quantity alone is progress; quantity together with the resources that produced it is productivity.</b> Everything follows from capturing both, once, at site.</p>
   <div class="grid2">
-    <div class="card"><b>Daily progress</b><span>Quantities, own crews, rental manpower, subcontractors and equipment, captured per activity in under a minute.</span></div>
-    <div class="card"><b>Weekly engineering and procurement</b><span>Design and long-lead items updated by milestone from one Excel file.</span></div>
-    <div class="card"><b>Productivity and earned value</b><span>Productivity index, SPI, CPI, EAC, S-curves against original, revised and recovery baselines.</span></div>
-    <div class="card"><b>Reports and exports</b><span>Eleven standard reports in Excel and PDF, including quantity reconciliation, unit rate analysis and a manpower forecast, plus a progress file for Primavera P6.</span></div>
-    <div class="card"><b>Early warnings</b><span>Threshold breaches with a recommended action, before the monthly report tells you.</span></div>
-    <div class="card"><b>ProTrack AI</b><span>Plain-language questions answered from the project's own data.</span></div>
+    <div class="card"><b>For site teams</b><span>A daily report that takes under a minute per activity, on a phone, with the productivity index shown as you type.</span></div>
+    <div class="card"><b>For planning and costing</b><span>P6 in, P6 out; a costing file for budget quantity and rate; a weekly design and procurement update; an invoice register.</span></div>
+    <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
-
-  <div class="warn"><b>This is a prototype</b>Data lives in your browser, not on a server. Use it for demonstration, user feedback and process agreement. Do not put real staff passwords or commercially sensitive contract data into it until the production build with a proper backend and authentication service is in place.</div>
+  <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, identity and projects are shared; daily reports, baselines and costing are moving to the server in stages. Section 12 explains which is which.</div>
 </section>
 
-<section id="start">
-  <h2>2. Getting started</h2>
-  <h3>Signing in</h3>
+<section id="process">
+  <h2>2. How the application works</h2>
+  <p>ProTrack is a single chain. Each link is owned by one role, and every later link depends on the ones before it.</p>
   <ol class="steps">
-    <li>Open the ProTrack link. The sign-in page lists demo accounts; tap one to fill the form, or type your own username and password.</li>
-    <li>Use the eye button to check the password before signing in.</li>
-    <li>Tick <b>Remember me</b> for a 30-day session on a trusted device. Leave it off on a shared computer and the session ends when you close the tab.</li>
-    <li>Forgotten passwords go through <b>Forgot password</b>, which issues a one-time link valid for 30 minutes.</li>
+    <li><b>Set up.</b> The super admin creates the project, users and access, trades and salary rates, milestones including TCC, PAC and FAC, and the contract payment terms.</li>
+    <li><b>Baseline.</b> The planning engineer imports the P6 schedule. ProTrack reads activities, WBS, dates, labour hours, material quantities, the price weighting resource and the trade mix, then runs the DCMA 14-point check.</li>
+    <li><b>Budget and purchase orders.</b> The costing engineer downloads the costing template, pre-filled with every activity ID, adds budget quantity, unit, unit rate, cost and manhours, and uploads it. He then enters each subcontractor's purchase order for the project, with its rates.</li>
+    <li><b>Daily reporting.</b> Every working day the foreman or site engineer reports, per activity, the quantity executed and the crews that produced it: own labour, subcontractors with their trades, and equipment.</li>
+    <li><b>Approval.</b> The project manager reviews and approves the same evening. Nothing counts until it is submitted, and only approval closes the audit trail.</li>
+    <li><b>Weekly update.</b> The planning engineer updates design and procurement by milestone from one Excel file, until those phases are complete.</li>
+    <li><b>Invoicing.</b> The costing engineer uploads the invoice register weekly: invoice number, amount, submitted, approved and collected, including the advance.</li>
+    <li><b>Analysis.</b> ProTrack calculates productivity, earned value, EAC, manpower forecasts, unit rates, reconciliation and invoiceable value against the contract terms, and raises early warnings.</li>
+    <li><b>Oversight.</b> Management reads the executive summary, the reports and ProTrack AI; the performance scorecards show who is keeping the chain alive, and reminders chase the gaps.</li>
   </ol>
-  <p>Five failed attempts lock sign-in for 60 seconds, eight for 15 minutes. Sessions end automatically after 20 minutes of inactivity, and after 12 hours in any case. <b>Sign out</b> is at the bottom of the sidebar, or in the notifications panel on a phone.</p>
+  <div class="note"><b>Why the order matters</b>Costing matches on activity IDs, so it cannot come before the baseline. Productivity needs the planned rate, so it cannot come before costing or the P6 labour loading. Invoiceable value needs the price weighting and the payment terms. If a screen reads zero, the link before it is usually missing.</div>
+</section>
 
-  <h3>Finding your way around</h3>
-  <table>
-    <thead><tr><th>Area</th><th>What it is for</th></tr></thead>
+<section id="owners">
+  <h2>3. Who owns which number</h2>
+  <p>Every number has exactly one owner. No screen lets one owner overwrite another; where two sources disagree, ProTrack shows the difference rather than hiding it.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Number</th><th>Owner</th><th>Source</th><th>Drives</th></tr></thead>
     <tbody>
-      <tr><td>Executive summary</td><td>Portfolio position, critical projects, and a searchable single-project view</td></tr>
-      <tr><td>Dashboard</td><td>Operational view: productivity, workforce, warnings, project health</td></tr>
-      <tr><td>Daily reports</td><td>The report list, review and approval</td></tr>
-      <tr><td>New report</td><td>Creating a daily report (site engineers and foremen)</td></tr>
-      <tr><td>Weekly update</td><td>Design and procurement progress by milestone (planning engineers)</td></tr>
-      <tr><td>Baselines</td><td>Loading original, revised and recovery schedules (planning engineers)</td></tr>
-      <tr><td>Earned value</td><td>PV, EV, AC, SPI, CPI, EAC and the S-curve</td></tr>
-      <tr><td>Reports</td><td>All standard reports, with Excel and PDF export</td></tr>
-      <tr><td>Performance</td><td>Foremen, site engineers and subcontractors</td></tr>
-      <tr><td>Settings</td><td>Projects, users, trades, subcontractors and master data (Super Admin)</td></tr>
+      <tr><td>Quantity executed, crews, hours, equipment</td><td>Foreman, site engineer</td><td>Daily report</td><td>Productivity, earned value, actual cost</td></tr>
+      <tr><td>Approval of the daily report</td><td>Project manager</td><td>Review screen</td><td>Whether the report counts and is final</td></tr>
+      <tr><td>Dates, logic, WBS, labour loading, price weighting</td><td>Planning engineer</td><td>P6 schedule</td><td>Plan, progress weighting, invoiceable value, trade mix</td></tr>
+      <tr><td>Design and procurement milestones</td><td>Planning engineer</td><td>Weekly Excel</td><td>Engineering and procurement progress</td></tr>
+      <tr><td>Budget quantity, unit, rate, cost, manhours</td><td>Costing engineer</td><td>Costing Excel</td><td>Budget analysis, unit rates, EAC</td></tr>
+      <tr><td>Invoices submitted, approved, collected</td><td>Costing engineer</td><td>Invoice register</td><td>Billing and collection position</td></tr>
+      <tr><td>Subcontractor purchase orders and their rates</td><td>Costing engineer, per project</td><td>Baselines page</td><td>Subcontract cost, cost to date against PO value</td></tr>
+      <tr><td>Salaries and loaded rates, payment terms</td><td>Super admin</td><td>Settings</td><td>Own labour cost, invoiceable value</td></tr>
+      <tr><td>Decisions and follow-up</td><td>Executive, regional, portfolio</td><td>Executive summary, performance</td><td>Where to intervene</td></tr>
     </tbody>
-  </table>
-  <p>Three controls at the top of every page decide what the numbers cover:</p>
-  <ul>
-    <li><b>Scope</b> — the whole portfolio, one region, or one project.</li>
-    <li><b>Sector</b> — Infrastructure, Power, Oil &amp; Gas, MEP, Water and any sector you add.</li>
-    <li><b>Measure against</b> — original, revised or recovery baseline. It only appears once an alternative baseline exists.</li>
-  </ul>
-  <div class="tip"><b>ProTrack AI</b>The avatar at the bottom right opens the assistant on any page. It answers for whatever scope you have selected.</div>
+  </table></div>
 </section>
 
 <section id="roles">
-  <h2>3. Roles and access</h2>
-  <p>Access is set per person by the Super Admin. Nine roles are available; a person sees only the projects attached to their account.</p>
-  <div class="scroll">
-  <table>
-    <thead><tr><th>Role</th><th>Sees</th><th>Can do</th><th>Cannot do</th></tr></thead>
+  <h2>4. Roles, access and responsibilities</h2>
+  <p>Access is set per person by the super admin. A person sees only the projects or regions attached to their account.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Role</th><th>Sees</th><th>Responsible for</th><th>Cannot</th></tr></thead>
     <tbody>
-      <tr><td><b>Super Admin</b><br>Planning manager, head office</td><td>Everything</td><td>All settings, projects, users, trades, subcontractors, baselines, approvals, weekly updates</td><td>—</td></tr>
-      <tr><td><b>Executive Manager</b></td><td>All projects, read only</td><td>Executive summary, dashboards, reports, earned value, performance</td><td>Create or approve reports, change any setting</td></tr>
-      <tr><td><b>Regional Manager</b></td><td>One or more regions, set by the Super Admin</td><td>View everything in those regions</td><td>Approve reports, change settings</td></tr>
-      <tr><td><b>Portfolio Manager</b></td><td>Exactly one region</td><td>View everything in that region</td><td>Approve reports, change settings</td></tr>
-      <tr><td><b>Planning Engineer</b></td><td>Assigned projects</td><td>Weekly design and procurement update, load baselines, all views</td><td>Create daily reports, approve, change settings</td></tr>
-      <tr><td><b>Project Manager</b></td><td>Assigned projects</td><td>Review, approve, reject or return daily reports; all project views</td><td>Create daily reports, change settings, load baselines</td></tr>
-      <tr><td><b>Site Engineer</b></td><td>Assigned projects</td><td>Create and edit daily reports until approval; all project views</td><td>Approve their own reports, change settings</td></tr>
-      <tr><td><b>Foreman</b></td><td>Assigned projects</td><td>Create and submit daily reports</td><td>Approve, see reports and settings areas</td></tr>
-      <tr><td><b>Read-only</b></td><td>Regions or projects given</td><td>View dashboards and reports</td><td>Anything that changes data</td></tr>
+      <tr><td><b>Super admin</b></td><td>Everything</td><td>Setup, users, master data, trade rates, payment terms; can see and correct every project's purchase orders; may do anything below</td><td>—</td></tr>
+      <tr><td><b>Executive manager</b></td><td>All projects</td><td>Reading the portfolio, intervening, sending reminders</td><td>Enter or approve data</td></tr>
+      <tr><td><b>Regional manager</b></td><td>One or more regions</td><td>Regional oversight, sending reminders</td><td>Enter or approve data</td></tr>
+      <tr><td><b>Portfolio manager</b></td><td>Exactly one region</td><td>Portfolio oversight, sending reminders</td><td>Enter or approve data</td></tr>
+      <tr><td><b>Planning engineer</b></td><td>Assigned projects</td><td>P6 baselines, resource-to-trade mapping, weekly design and procurement update, P6 progress export, schedule quality</td><td>Create daily reports, approve, set rates</td></tr>
+      <tr><td><b>Costing engineer</b></td><td>Assigned projects</td><td>Costing file, invoice register, <b>subcontractor purchase orders and their rates</b> for his projects, including adding a new subcontractor</td><td>Import schedules, approve reports, set salaries or payment terms</td></tr>
+      <tr><td><b>Project manager</b></td><td>Assigned projects</td><td>Approving daily reports, delivery against plan, monthly invoicing</td><td>Create reports, change baselines or settings</td></tr>
+      <tr><td><b>Site engineer</b></td><td>Assigned projects</td><td>Accuracy of daily reports in his area</td><td>Approve his own reports</td></tr>
+      <tr><td><b>Foreman</b></td><td>Assigned projects</td><td>The daily report for his crews</td><td>Approve, see management screens</td></tr>
+      <tr><td><b>Read-only</b></td><td>As given</td><td>Viewing</td><td>Anything that changes data</td></tr>
     </tbody>
-  </table>
-  </div>
-  <p>The <b>Acting as</b> selector at the top is a demonstration convenience that lets you switch between people without a password. It exists only in the prototype and would be removed before real use.</p>
+  </table></div>
+  <p>Reminders for reporting gaps can be sent by the super admin, executive, regional and portfolio managers, and planning engineers.</p>
 </section>
 
-<section id="setup">
-  <h2>4. Setting up a project</h2>
-  <p>Settings is open to the Super Admin only, at <b>Settings</b> in the sidebar. Work in this order.</p>
-  <ol class="steps">
-    <li><b>Sectors, regions and cities.</b> Add anything missing. A region can have a regional manager; cities belong to a region. Items in use cannot be deleted.</li>
-    <li><b>Trades and cost rates.</b> See below — a project cannot be costed correctly without them.</li>
-    <li><b>Projects.</b> Create the project with its code, name, short name, sector, region, city, dates, contract value, status and project type (Building, Substation, OHTL, Pipeline, Data centre, Industrial, Other).</li>
-    <li><b>Users and access.</b> Create the project manager, site engineers and foremen, and tick the projects each person may see.</li>
-    <li><b>Project team.</b> Reopen the project and choose the project manager, site engineer and foremen from those users.</li>
-    <li><b>Milestones and EOT.</b> Add project start, intermediate milestones, TCC, PAC or FAC with planned, forecast and actual dates; record any extension of time claim.</li>
-    <li><b>Baseline.</b> Import the schedule (next chapter).</li>
-    <li><b>Subcontractors and purchase orders.</b> Add the vendors working on the project and their PO rates.</li>
-  </ol>
-
-  <h3 id="trades">Trades and cost rates</h3>
-  <p>A trade is a labour category: Mason, Carpenter, Electrician, Scaffolder, anything you need. Each trade carries a <b>dated rate history</b>, entered as what you actually pay:</p>
-  <div class="f"><b>Cost rate per hour = basic monthly salary ÷ working hours per month × loaded cost factor</b></div>
-  <p>Hours per month defaults to 208 (26 days × 8 hours). The loaded factor, 2.5 by default, covers accommodation, transport, insurance, mobilisation and overheads. A carpenter on SAR 1,500 basic works out at SAR 18.03 per hour.</p>
-  <div class="note"><b>Rate changes never rewrite history</b>When the salary rises to SAR 1,800, add a new rate with its effective date. Reports dated before that date keep the old rate; reports from that date use the new one. You can also enter a rate in advance and it takes effect on its own date.</div>
-
-  <h3 id="subs">Subcontractors and purchase orders</h3>
-  <p>A subcontractor holds <b>one purchase order per project</b>, so the same company can work on several projects at different rates. Each PO has a commercial basis:</p>
-  <table>
-    <thead><tr><th>Basis</th><th>Rates are set per</th><th>Executed cost</th></tr></thead>
-    <tbody>
-      <tr><td><b>Measured</b></td><td>Activity, with its unit</td><td>Quantity executed × PO unit rate</td></tr>
-      <tr><td><b>Manpower supply</b> (rental)</td><td>Trade, per manhour</td><td>Workers × hours × PO manhour rate</td></tr>
-    </tbody>
-  </table>
-  <p>PO rates are dated in the same way as salaries. If a daily report references a vendor with no PO on that project, the line is costed as an estimate and clearly labelled, so the gap is visible rather than silently wrong.</p>
-</section>
-
-<section id="baseline">
-  <h2>5. Baselines and the P6 import</h2>
-  <p>Open <b>Baselines</b>, choose the project and the baseline set, then load the file. Planning engineers and the Super Admin can do this.</p>
-  <h3>Three baseline sets</h3>
-  <table>
-    <thead><tr><th>Set</th><th>Purpose</th><th>Effect</th></tr></thead>
-    <tbody>
-      <tr><td><b>Original</b></td><td>The contract plan</td><td>All reporting measures against it by default; it creates and updates the activity list</td></tr>
-      <tr><td><b>Revised</b></td><td>After an approved extension or variation</td><td>Stored as dates alongside the original; selected through "Measure against"</td></tr>
-      <tr><td><b>Recovery</b></td><td>A catch-up plan</td><td>Same as revised, usually not contractual</td></tr>
-    </tbody>
-  </table>
-  <div class="note"><b>Re-baselining never changes earned progress</b>Revised and recovery sets hold dates only. Budgets, quantities and planned productivity stay with the original, so re-baselining cannot make a slow crew look fast. Activities missing from a revised file keep their original dates.</div>
-
-  <h3>Accepted files</h3>
-  <ul>
-    <li><b>XER</b> — a standard Primavera P6 export. Reads the WBS tree, activity IDs and names, baseline dates, budgeted labour units and physical percent complete.</li>
-    <li><b>XML (PMXML)</b> — P6 XML export.</li>
-    <li><b>Excel</b> — the ProTrack template, which you can download from the same screen.</li>
-  </ul>
-  <p>Before importing you choose which <b>WBS level becomes the work location</b>, the default work type, a minimum budget manhours filter, a maximum number of activities, and whether to skip completed activities and milestones. The preview shows how many activities passed, the work locations and work types found, and ten sample rows.</p>
-  <div class="warn"><b>P6 carries manhours, not quantities</b>Without a quantity column, activities are imported in earned manhours: budget quantity equals budgeted hours and the unit is "mh". To track physical quantities (m³, tonnes, metres), add quantity and unit columns using the Excel template.</div>
-
-  <h3>Activity classes</h3>
-  <p>Every activity is Construction, Engineering or Procurement. Construction is updated only by daily report; engineering and procurement only by the weekly Excel. The import classifies activities automatically from their names and WBS, and you can correct the class when editing an activity.</p>
-  <p>Each project weights the three classes for its overall progress; the default is construction 60%, procurement 30%, engineering 10%.</p>
-</section>
-
-<section id="daily">
-  <h2>6. Daily progress reporting</h2>
-  <p>Site engineers and foremen use <b>New report</b>. One report covers everything a foreman's crews did that day.</p>
-  <ol class="steps">
-    <li><b>Date and foreman.</b> The project is filled in from your access; if you hold more than one project you choose it.</li>
-    <li><b>Work location</b> — the area of the site, for example 380kV GIS Building or Zone B.</li>
-    <li><b>Work type</b> — Civil, Electrical, Mechanical, Instrumentation or Architectural. Only the types present in that location are offered.</li>
-    <li><b>WBS</b> — only the WBS elements under that location and type.</li>
-    <li><b>Activity</b> — now a short list instead of the whole baseline. Selecting it fills in the planned quantity for the day and the usual crew.</li>
-    <li><b>Quantity executed today</b>, in the activity's unit.</li>
-    <li><b>Own labour</b> — trade, number of workers, regular hours and overtime hours.</li>
-    <li><b>Subcontractor crews</b> — company, trade, workers, hours, and the quantity they executed. That quantity is part of the total above and is what measures their performance.</li>
-    <li><b>Equipment</b> — type, units and working hours.</li>
-    <li><b>Add another activity</b> as many times as needed; each has its own location, type, WBS, quantity and resources.</li>
-    <li><b>Evidence and remarks</b> — photographs, drawings, and a note about delays, weather, access or instructions. Remarks are read by managers and appear in the project's bottlenecks list.</li>
-    <li><b>Submit for approval</b>, or <b>Save draft</b> to finish later.</li>
-  </ol>
-  <p>The panel on the right updates as you type: productivity index for the report and for each activity, manhours, overtime share, labour cost, and the total resources on the report.</p>
-  <div class="tip"><b>Workers on two activities</b>Record them on each activity with the hours spent there, for example 4 hours and 4 hours. The resource summary can therefore be higher than the gate count, which is expected.</div>
-  <p>The system refuses a report with a quantity but no crew, a crew but no quantity, a future date, or the same activity twice. Each error names the activity.</p>
-</section>
-
-<section id="approval">
-  <h2>7. Review and approval</h2>
-  <p>Reports move: <b>Draft → Submitted → Reviewed → Approved</b>, or to <b>Rejected</b>. A returned report goes back to Draft with the manager's comment.</p>
-  <table>
-    <thead><tr><th>Role</th><th>Actions available</th></tr></thead>
-    <tbody>
-      <tr><td>Foreman</td><td>Submit or edit their own draft</td></tr>
-      <tr><td>Site Engineer</td><td>Submit drafts; edit a report until it is approved</td></tr>
-      <tr><td>Project Manager, Super Admin</td><td>Mark reviewed, approve, reject, or return with comments</td></tr>
-    </tbody>
-  </table>
-  <p>Opening a report shows the quantity, every crew and machine, the attachments, the remarks, and a full audit trail of who did what and when. Rejecting or returning requires a comment. Only submitted, reviewed and approved reports feed the dashboards; drafts and rejected reports do not.</p>
-  <p>Submitting a report notifies the project manager, and raises a separate warning for any activity below 90% productivity.</p>
-</section>
-
-<section id="weekly">
-  <h2>8. Weekly design and procurement update</h2>
-  <p>Design and procurement have no daily quantities, so planning engineers update them weekly — or whenever needed — from one Excel file, at <b>Weekly update</b>.</p>
-  <ol class="steps">
-    <li><b>Download update template.</b> It contains only the engineering and procurement activities in your scope, with their current status and baseline dates.</li>
-    <li>Fill the shaded columns: data date, actual start, milestone reached, forecast finish, actual finish, remarks.</li>
-    <li><b>Upload filled template.</b> Every row is validated and previewed before anything is saved.</li>
-    <li><b>Apply</b> the good rows. Rejected rows can be fixed and uploaded again.</li>
-  </ol>
-  <h3>Milestone weights</h3>
+<section id="features">
+  <h2>5. Features at a glance</h2>
   <div class="grid2">
-    <div class="card"><b>Engineering</b><span>Started 10% · IDC issued 40% · Comments incorporated 70% · IFC issued 100%</span></div>
-    <div class="card"><b>Procurement</b><span>PR issued 5% · PO placed 15% · Vendor drawings approved 30% · Manufacturing complete 65% · FAT released 80% · Shipped 90% · Delivered to site 100%</span></div>
+    <div class="card"><b>Executive summary</b><span>Landing page for managers. Pick any of 18 tiles; group the breakdown by region, sector, city or project; choose its columns; add a billing and collection panel. Each person keeps their own layout.</span></div>
+    <div class="card"><b>Dashboard</b><span>Productivity index, workforce, manhours, SPI, CPI, warnings, portfolio by region and sector, project health.</span></div>
+    <div class="card"><b>Daily reports</b><span>Location, work type, WBS, activity; quantity; own labour; subcontractor companies each with one quantity and several trades; equipment; photos and remarks; live productivity with own and subcontract split.</span></div>
+    <div class="card"><b>Weekly update</b><span>Design and procurement by milestone from one Excel file, validated before it is applied.</span></div>
+    <div class="card"><b>Baselines</b><span>P6 XER, XML or Excel import with branch and class pickers, DCMA check, revised and recovery sets, undo and remove, costing file, invoice register, resource mapping.</span></div>
+    <div class="card"><b>Earned value</b><span>PV, EV, AC, SPI, CPI, EAC, VAC and the S-curve against any baseline.</span></div>
+    <div class="card"><b>Reports</b><span>Fifteen reports in Excel and PDF, including reconciliation, unit rates, manpower forecast, invoiceable value and invoicing and collection.</span></div>
+    <div class="card"><b>Presentation</b><span>Tick the slides, download a PowerPoint built from the same numbers.</span></div>
+    <div class="card"><b>Performance</b><span>Scorecards for foremen, site engineers, project managers, planning engineers, costing engineers, subcontractors, and reporting compliance by project.</span></div>
+    <div class="card"><b>ProTrack AI</b><span>Ask in plain words; answers come from the reports, with voice in and out.</span></div>
+    <div class="card"><b>Settings</b><span>Projects, users, trades and dated rates, subcontractors and purchase orders per project, regions, cities, sectors, change log.</span></div>
   </div>
-  <p>Progress is never typed as a percentage: you enter the milestone and the system sets the figure. Engineering rolls up weighted by budgeted manhours, procurement by package value.</p>
-  <h3>What the upload rejects</h3>
-  <ul>
-    <li>Unknown activity IDs, or activities outside your project access</li>
-    <li>Construction activities (they belong to the daily report)</li>
-    <li>Milestones that do not exist for that class</li>
-    <li>Dates after the data date, a finish before a start, or an actual finish without the final milestone</li>
-    <li>Progress going backwards with no remark explaining it</li>
-  </ul>
-  <p>Warnings, which do not block the upload, cover items complete without an actual finish, progress without a start date, and missing forecast finish dates. Each upload is stored as a dated batch in the update history with the uploader's name.</p>
 </section>
 
-<section id="dash">
-  <h2>9. Dashboards</h2>
-  <p>The <b>Dashboard</b> is the operational view for everyone with project access.</p>
-  <ul>
-    <li><b>Productivity index, last 7 days</b>, with a 30-day trend line and an index ruler showing every project and activity in scope against the 90% and 100% marks.</li>
-    <li><b>Workforce on site</b> and <b>manhours over 30 days</b>, each with a sparkline, plus earned manhours and overtime share.</li>
-    <li><b>Schedule (SPI)</b> and <b>Cost (CPI)</b> gauges, and <b>portfolio complete</b> against plan.</li>
-    <li><b>Early warnings</b> with severity counts and the three most urgent.</li>
-    <li><b>Portfolio by region and by sector</b>, each with a progress bar of plan against actual. Tap a row to filter the whole site.</li>
-    <li><b>Daily productivity and manhours</b> chart, and <b>project health</b> with forecast finish and a risk score.</li>
-    <li><b>Activity performance</b> and the <b>foreman ranking</b> for the last 30 days.</li>
-  </ul>
-  <p>Traffic lights are consistent everywhere: green above 100%, amber 90 to 100%, red below 90%.</p>
+<section id="steps">
+  <h2>6. Step by step, by role</h2>
+
+  <h3 id="s-foreman">Foreman — every working day, about five minutes</h3>
+  <ol class="steps">
+    <li><b>Sign in on your phone.</b> You see only your project.</li>
+    <li><b>New report.</b> Date and project are filled in; choose yourself as foreman.</li>
+    <li><b>Work location, work type, WBS, activity.</b> Each choice narrows the next, so the activity list is short.</li>
+    <li><b>Quantity executed today</b> — the <b>total</b> placed on that activity, including anything done by subcontractors.</li>
+    <li><b>Own labour</b> — trade, workers, regular and overtime hours. The usual crew is pre-filled; correct what differs.</li>
+    <li><b>Subcontractor</b> — choose the company once, enter <b>the quantity they executed</b>, then <b>Add trade</b> for each of their trades with workers and hours. A second company is a second block.</li>
+    <li><b>Equipment</b> — type, units, hours.</li>
+    <li><b>Add another activity</b> for everything else your crews did today.</li>
+    <li><b>Check the productivity panel.</b> It shows the combined index and, where a subcontractor worked, your own figure and theirs separately. An amber line means a subcontractor quantity has no hours.</li>
+    <li><b>Remarks and photos</b> — delays, access, weather, instructions.</li>
+    <li><b>Submit for approval.</b></li>
+  </ol>
+  <div class="tip"><b>Example: 80 m³ poured, 30 of it by a subcontractor</b>Enter 80 as the quantity. Add your own crew. Add the subcontractor with quantity 30 and each of his trades with their hours. ProTrack derives your share as 50 and counts both crews' hours in the index.</div>
+
+  <h3 id="s-eng">Site engineer — daily verification, weekly look</h3>
+  <ol class="steps">
+    <li><b>Daily reports → Draft.</b> Nothing should stay in draft overnight.</li>
+    <li><b>Check quantities against survey or measurement,</b> and crews against the gate count.</li>
+    <li><b>Correct and submit.</b> Your edits are logged.</li>
+    <li><b>Deal with returned reports the same day;</b> the manager's comment is in the audit trail.</li>
+    <li><b>Weekly:</b> Reports → Productivity and the Manpower histogram for your trades; Executive summary → Project view for bottlenecks and foreman performance.</li>
+  </ol>
+
+  <h3 id="s-pm">Project manager — every evening, Monday review, monthly invoice</h3>
+  <ol class="steps">
+    <li><b>Daily reports → Submitted.</b> Open each: quantity, crews, equipment, photos, audit trail.</li>
+    <li><b>Three checks:</b> is the quantity credible for that crew, was that crew really on site, is the index explainable.</li>
+    <li><b>Approve,</b> or <b>return with a comment</b>, or reject with a comment.</li>
+    <li><b>Monday:</b> Dashboard, Executive summary → Project view, Reports → Early warnings, Manpower histogram, EAC.</li>
+    <li><b>Monthly:</b> make sure an invoice goes in <b>every month</b> until invoicing reaches 80% of the contract value. Performance → Project managers shows your monthly invoicing record; months with nothing submitted are listed by name.</li>
+    <li><b>Before the review meeting:</b> Presentation → pick the slides → download.</li>
+  </ol>
+
+  <h3 id="s-plan">Planning engineer — at award, every week, at each revision</h3>
+  <ol class="steps">
+    <li><b>Schedule the programme in P6 (F9) before exporting.</b> An unscheduled export carries no float, and DCMA cannot assess float.</li>
+    <li><b>Baselines → project → Original baseline → load the XER.</b></li>
+    <li><b>In the preview:</b> work location level (for a line, the section level), class level, price weighting resource, <b>WBS branches to monitor</b> and <b>classes to import</b>. Read the warning if no IDs match.</li>
+    <li><b>Import,</b> then read the <b>DCMA check</b> on the same page and fix what fails in P6.</li>
+    <li><b>Map P6 labour resources to trades,</b> once per project; create any missing trades.</li>
+    <li><b>Tell costing the baseline is in.</b></li>
+    <li><b>Every week until design and procurement are complete:</b> Weekly update → download template → fill milestones and dates → upload → preview → apply. Then export the P6 progress update from Reports.</li>
+    <li><b>At a revision:</b> load a revised or recovery set; use Measure against to report on it. Wrong file? Undo this import.</li>
+  </ol>
+
+  <h3 id="s-cost">Costing engineer — at award, at each budget revision, every week</h3>
+  <ol class="steps">
+    <li><b>Baselines → project → Costing file → Download template.</b> It carries every activity ID.</li>
+    <li><b>Fill budget quantity and unit</b> (required), unit rate and cost, and manhours if the costing budget differs from P6. Leave the gang code blank unless you use standard crew codes.</li>
+    <li><b>Upload,</b> read the preview: matched, rejected, missing, and manhour differences over 25%. Fix rejected rows at source and re-upload rather than accepting partial files.</li>
+    <li><b>Purchase orders — Baselines → your project → Subcontractor purchase orders.</b> For each subcontractor working on the project: choose the company, or <b>New subcontractor</b> to add one; enter PO number, basis (Measured or Manpower supply), date and value; <b>Add purchase order</b>.</li>
+    <li><b>Rates.</b> Click the purchase order to open it. For a measured PO add a rate per activity of this project, in its unit; for manpower supply, a rate per trade per manhour. Give each rate its effective date; a revision is a new rate with a later date, never an edit.</li>
+    <li><b>Check cost to date.</b> The table shows each PO's cost so far from the daily reports and its share of the PO value, so an overrun shows before the subcontractor's invoice does.</li>
+    <li><b>Every week:</b> Invoice register → upload the <b>whole</b> register: invoice number, date, type, amount, submitted, approved, collected. The advance goes in as its own row.</li>
+    <li><b>Monthly:</b> Reports → Unit rate analysis, Quantity reconciliation, Budget manhour reconciliation, Invoicing and collection.</li>
+  </ol>
+
+  <h3 id="s-exec">Executive, regional and portfolio managers — weekly scan</h3>
+  <ol class="steps">
+    <li><b>Executive summary.</b> Customise it once: choose tiles such as Under-billed, Outstanding collection; group by region or sector; pick columns.</li>
+    <li><b>Critical projects,</b> worst first, then open the worst in Project view.</li>
+    <li><b>Performance → Reporting compliance.</b> Anything in red has gone quiet; press <b>Notify team</b>.</li>
+    <li><b>Performance → Project managers</b> for approval backlog and monthly invoicing; Planning and Costing tabs for schedule quality and timeliness.</li>
+    <li><b>Ask ProTrack AI</b> what the screen does not answer.</li>
+  </ol>
+
+  <h3 id="s-sa">Super admin — setup, then as things change</h3>
+  <ol class="steps">
+    <li><b>Regions, cities, sectors</b> with their managers.</li>
+    <li><b>Trades and rates:</b> basic salary, hours per month, loaded factor, effective date.</li>
+    <li><b>Project:</b> code in any format, sector, region, city, dates, value, type, budget manhours source.</li>
+    <li><b>Users and access:</b> role and projects or regions for each person.</li>
+    <li><b>Project team:</b> project manager, site engineer, foremen.</li>
+    <li><b>Milestones</b> with TCC, PAC, FAC, and the EOT claim.</li>
+    <li><b>Payment terms:</b> per phase the progress cap and up to two milestone releases; separate retention only if the contract has one; advance and its recovery rate.</li>
+    <li><b>Hand purchase orders to costing.</b> Each project's costing engineer keeps its subcontractor POs on the Baselines page. Settings → Subcontractors still shows every company and PO across all projects, for review or correction.</li>
+    <li><b>Hand over</b> to planning and costing. Afterwards: leavers set inactive, pay rises as new dated rates, wrong baselines undone, change log reviewed.</li>
+  </ol>
 </section>
 
-<section id="exec">
-  <h2>10. Executive summary</h2>
-  <p>Open to executives, portfolio and regional managers, planning engineers, project managers and site engineers — each within their own access.</p>
-  <h3>Summary tab</h3>
-  <ul>
-    <li>Projects, regions, sectors and contract value; portfolio complete against plan; SPI; CPI; productivity; and how many projects need attention.</li>
-    <li><b>Projects by region</b> and <b>by sector</b>: count, value, progress, SPI, CPI, productivity and critical count.</li>
-    <li><b>Critical projects</b>, worst first, with Plan %, Actual %, Variance, CPI, SPI, productivity index and the main issue in plain words. A project is flagged when SPI or CPI is under 0.95, productivity is under 90%, or the forecast finish is more than 14 days late.</li>
-  </ul>
-  <h3>Project tab</h3>
-  <p>Search by project code, name or sector, then open it for:</p>
-  <ul>
-    <li>Progress against plan, SPI with forecast finish and slip, CPI with EAC and VAC, productivity with workforce, earned value figures, and the engineering and procurement position</li>
-    <li><b>Milestones and completion</b>: planned, forecast and actual dates for project start, intermediate milestones, TCC, PAC and FAC, with the EOT status, days claimed and reference</li>
-    <li><b>Transmission line key activities</b> for OHTL projects: plan and profile, soil investigation, access road, soil investigation support, foundation design, foundation works, tower delivery, tower erection and stringing, each with scope, done, plan %, actual % and finish date</li>
-    <li>The progress S-curve, bottlenecks and challenges, underperforming activities, and foreman performance</li>
-  </ul>
-</section>
+<section id="perf">
+  <h2>7. How performance is measured</h2>
+  <p>Every scorecard is calculated from data the person already enters. No score depends on anyone's opinion. Unless stated, windows are the last 30 days of submitted or approved reports.</p>
 
-<section id="eva">
-  <h2>11. Earned value and EAC</h2>
-  <p>The <b>Earned value</b> page reports in the language clients use: planned value, earned value, actual cost, the two performance indices, estimate at completion and variance at completion, with an S-curve and a per-activity table.</p>
+  <h3 id="p-foreman">Foreman score, out of 100</h3>
+  <div class="f"><b>Score = min(PI, 1.2) ÷ 1.2 × 60 + approval rate × 25 + (1 − rework rate) × 15</b></div>
+  <ul>
+    <li><b>PI</b> — productivity index of his reports: earned manhours ÷ actual manhours, capped at 1.2 so a single freak day cannot dominate.</li>
+    <li><b>Approval rate</b> — approved ÷ (approved + rejected).</li>
+    <li><b>Rework rate</b> — reports returned or rejected ÷ reports submitted.</li>
+  </ul>
+
+  <h3 id="p-eng">Site engineer score, out of 100</h3>
+  <div class="f"><b>Score = compliance × 30 + timeliness × 25 + approval rate × 20 + min(PI, 1.2) ÷ 1.2 × 25</b></div>
+  <ul>
+    <li><b>Compliance</b> — working days with a report ÷ working days in the window.</li>
+    <li><b>Timeliness</b> — reports not flagged late ÷ reports.</li>
+    <li><b>Approval rate</b> and <b>PI</b> as for foremen, for the whole project.</li>
+  </ul>
+
+  <h3 id="p-pm">Project manager KPIs</h3>
   <table>
-    <thead><tr><th>Term</th><th>Meaning in ProTrack</th></tr></thead>
+    <thead><tr><th>KPI</th><th>Definition</th></tr></thead>
     <tbody>
-      <tr><td>BAC</td><td>Baseline manhours at the blended rate, plus weighted engineering and procurement budgets</td></tr>
-      <tr><td>PV</td><td>BAC × planned percent to date, from the selected baseline's dates</td></tr>
-      <tr><td>EV</td><td>BAC × actual percent: approved quantities for construction, milestone percent for design and procurement</td></tr>
-      <tr><td>AC</td><td>Own labour at dated trade rates, plus subcontractor cost at PO rates</td></tr>
+      <tr><td>Approved, rejected, returned</td><td>Counts over 30 days across his projects</td></tr>
+      <tr><td>Pending</td><td>Submitted or reviewed, not yet approved; red when the oldest is over 2 days</td></tr>
+      <tr><td>Average days to approve</td><td>Mean of (approval date − submission date) for approved reports</td></tr>
+      <tr><td>SPI, CPI, cost variance</td><td>EV ÷ PV, EV ÷ AC, EV − AC across his projects</td></tr>
+      <tr><td>Productivity, overtime</td><td>PI and overtime hours ÷ total hours</td></tr>
+      <tr><td>Under-billed</td><td>Invoiceable − invoiced</td></tr>
+      <tr><td>Collection pending</td><td>Approved − collected</td></tr>
+      <tr><td><b>Monthly invoicing</b></td><td><b>Months with an invoice ÷ months due</b></td></tr>
     </tbody>
   </table>
-  <p>CPI is calculated from construction only, because design and procurement have no manhour or invoice feed in the prototype. SPI and percent complete include all three classes.</p>
+  <div class="f"><b>Months due</b> = calendar months from project start up to the month when cumulative invoiced reaches <b>80% of contract value</b>, or up to this month if 80% has not been reached.</div>
+  <div class="f"><b>Months invoiced</b> = months in that window with at least one invoice, excluding retention releases.</div>
+  <p>Also shown per project: <b>longest gap</b> (longest run of months with nothing submitted), <b>days since last invoice</b> (red over 45), invoiced as a share of contract value, and the <b>months missed</b> by name. After 80%, milestone invoices at TCC and FAC take over and the monthly requirement stops.</p>
+
+  <h3 id="p-plan">Planning engineer score, out of 100</h3>
+  <div class="f"><b>Score = (DCMA pass rate × 0.5 + weekly update compliance × 0.5) × 100</b></div>
+  <ul>
+    <li><b>DCMA pass rate</b> — checks passed ÷ checks assessable, averaged across his projects' imported XERs (section 8).</li>
+    <li><b>Weekly update compliance</b> — weeks with a design and procurement upload ÷ weeks elapsed, counted from the first engineering or procurement activity until all of them are complete; after that no update is required.</li>
+    <li>Where either part cannot be measured yet, it counts as 50% so a new project neither rewards nor punishes.</li>
+  </ul>
+
+  <h3 id="p-cost">Costing engineer score, out of 100</h3>
+  <div class="f"><b>Score = upload quality × 40 + costing coverage × 20 + timeliness × 40</b></div>
+  <ul>
+    <li><b>Upload quality</b> — 1 − (rejected rows + ½ × flagged rows) ÷ rows uploaded, across all costing uploads.</li>
+    <li><b>Costing coverage</b> — activities with a costing row ÷ activities in the baseline.</li>
+    <li><b>Timeliness</b> — weeks in the last twelve with an invoice register upload ÷ weeks (fewer for a newer project).</li>
+  </ul>
+
+  <h3 id="p-comp">Reporting compliance score, by project, out of 100</h3>
+  <div class="f"><b>Score = 100 − 5 × missing report days − min(20, 3 × age of oldest pending report in days) − 10 if weekly update overdue − 5 if invoice register overdue</b></div>
+  <ul>
+    <li><b>Missing report days</b> — working days in the last 14 (Fridays excluded) with no submitted report.</li>
+    <li><b>Weekly update overdue</b> — more than 9 days old, where the project has design or procurement activities.</li>
+    <li><b>Invoice register overdue</b> — more than 9 days old, where payment terms are set.</li>
+    <li>Issues are graded: no report for more than a day is <b>High</b>; more than two missing days, an approval backlog, or an overdue weekly update is <b>Medium</b>; an overdue register is <b>Low</b>.</li>
+  </ul>
+  <p>Scores are coloured green at 85 and above, amber from 60, red below 60.</p>
+
+  <h3 id="p-sub">Subcontractors</h3>
+  <p>Productivity (their earned ÷ their hours), days on site, average crew, cost to date at PO rates, and cost per earned manhour, with the commercial basis and PO numbers shown.</p>
 </section>
 
-<section id="reports">
-  <h2>12. Reports</h2>
-  <p>Every report follows the Scope, Sector and Measure-against selectors, previews on screen, and exports to <b>Excel</b> and <b>PDF</b>. <b>Full report pack</b> saves every report as a sheet in one workbook.</p>
-  <div class="scroll">
-  <table>
-    <thead><tr><th>Report</th><th>What it answers</th></tr></thead>
+<section id="dcma">
+  <h2>8. DCMA 14-point check</h2>
+  <p>Runs automatically when an XER is imported as the original baseline, and appears on the Baselines page and in the planning scorecard. Schedule the programme in P6 before exporting, or float cannot be assessed.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>Check</th><th>Measures</th><th>Threshold</th></tr></thead>
     <tbody>
-      <tr><td><b>Progress by activity</b></td><td>Budget, planned and actual quantity to date, planned % against actual %, variance, SPI</td></tr>
-      <tr><td><b>Progress by project</b></td><td>The same rolled up, with sector, region, SPI, CPI and productivity</td></tr>
-      <tr><td><b>Progress by region</b></td><td>Regional roll-up with the regional manager and contract value</td></tr>
-      <tr><td><b>Manpower histogram</b></td><td>Planned, actual and forecast headcount on one timeline, filtered to one trade or all, daily or weekly, with a by-trade table showing what still has to be mobilised</td></tr>
-      <tr><td><b>Productivity</b></td><td>Planned and actual rates, index, manhours gained or lost, week-on-week trend</td></tr>
-      <tr><td><b>EAC</b></td><td>BAC, EV, AC, CPI, SPI, two EAC methods, ETC, VAC, TCPI, forecast finish and slip</td></tr>
-      <tr><td><b>Baseline comparison</b></td><td>Original, revised and recovery dates against the forecast, with slip against each</td></tr>
-      <tr><td><b>Quantity reconciliation</b></td><td>Original scope against quantity executed, split into carried in, own manpower, rental manpower and measured subcontract, with the remainder</td></tr>
-      <tr><td><b>Unit rate analysis</b></td><td>Original manhours and cost per unit against actual, the cost split by own, rental and subcontract, and a forecast cost to complete at the actual rate</td></tr>
-      <tr><td><b>Early warnings</b></td><td>Severity, indicator, current value, threshold and a recommended action</td></tr>
-      <tr><td><b>P6 progress update</b></td><td>Actual dates, physical percent and units to load back into Primavera</td></tr>
+      <tr><td>1</td><td>Logic</td><td>Open activities missing a predecessor or successor</td><td>≤ 5%</td></tr>
+      <tr><td>2</td><td>Leads</td><td>Relationships with negative lag</td><td>0</td></tr>
+      <tr><td>3</td><td>Lags</td><td>Relationships with positive lag</td><td>≤ 5%</td></tr>
+      <tr><td>4</td><td>Relationship types</td><td>Finish-to-start share</td><td>≥ 90%</td></tr>
+      <tr><td>5</td><td>Hard constraints</td><td>Mandatory start or finish, must start or finish on</td><td>≤ 5%</td></tr>
+      <tr><td>6</td><td>High float</td><td>Total float over 44 working days</td><td>≤ 5%</td></tr>
+      <tr><td>7</td><td>Negative float</td><td>Total float below zero</td><td>0</td></tr>
+      <tr><td>8</td><td>High duration</td><td>Duration over 44 working days</td><td>≤ 5%</td></tr>
+      <tr><td>9</td><td>Invalid dates</td><td>Actuals after, or forecasts before, the data date</td><td>0</td></tr>
+      <tr><td>10</td><td>Resources</td><td>Activities with duration but no resource</td><td>0%</td></tr>
+      <tr><td>11</td><td>Missed tasks</td><td>Due by the data date but not finished on time</td><td>≤ 5%</td></tr>
+      <tr><td>12</td><td>Critical path test</td><td>Needs a CPM run in P6</td><td>Not assessed from the file</td></tr>
+      <tr><td>13</td><td>Critical path length index</td><td>Needs the critical path</td><td>Not assessed from the file</td></tr>
+      <tr><td>14</td><td>Baseline execution index</td><td>Due activities complete ÷ due activities</td><td>≥ 0.95</td></tr>
     </tbody>
-  </table>
-  </div>
-  <h3>Report controls</h3>
-  <p>Some reports carry their own controls above the table. The manpower histogram has two:</p>
-  <ul>
-    <li><b>Trade</b> — all trades, or a single trade such as electrician or rigger.</li>
-    <li><b>Period</b> — daily, or weekly averages for a smoother picture.</li>
-  </ul>
-  <p>Whatever you select is what exports, and it is named in the report notes so a printed copy explains itself.</p>
-
-  <h3>Manpower histogram in detail</h3>
-  <p>The report covers 30 days back and six weeks ahead, with three series:</p>
-  <table>
-    <thead><tr><th>Series</th><th>Source</th><th>Answers</th></tr></thead>
-    <tbody>
-      <tr><td><b>Planned</b> (dashed line)</td><td>Baseline daily quantity ÷ planned rate ÷ 8 hours, split across trades by the activity's planned crew mix</td><td>What the schedule assumed</td></tr>
-      <tr><td><b>Actual</b> (bars)</td><td>Headcount in approved and submitted daily reports, own crews and subcontractors</td><td>Who actually turned up</td></tr>
-      <tr><td><b>Forecast</b> (solid line, future only)</td><td>Planned headcount × (planned rate ÷ actual rate of the last 21 days)</td><td>How many workers are needed to hold the baseline at today's productivity</td></tr>
-    </tbody>
-  </table>
-  <p>The by-trade table gives planned and actual averages for the last 30 days, the variance, the forecast average and peak for the next six weeks, and <b>to mobilise</b>: the gap between the forecast and the current crew. That column is what a project manager takes to the manpower meeting.</p>
-
-  <h3>Quantity reconciliation in detail</h3>
-  <p>Per activity: original scope, carried in at go-live, executed by own manpower, by rental manpower, by measured subcontract, total executed, percent and remaining. Own manpower is the daily report quantity less what the subcontractor crews claimed, so each row reconciles two ways:</p>
-  <div class="f"><b>carried in + own + rental + subcontract = executed</b> &nbsp;·&nbsp; <b>executed + remaining = scope</b></div>
-  <p>Quantities are in each activity's own unit, so the columns add across a row and not down the page.</p>
-
-  <div class="tip"><b>Using the unit rate analysis</b>The actual cost per unit is your revised rate for estimating similar work. The forecast column tells you what the remaining quantity will cost at that rate rather than at the original one.</div>
-  <h3>Early warning thresholds</h3>
-  <ul>
-    <li>SPI or CPI below 0.95 (high below 0.90)</li>
-    <li>Forecast finish more than 14 days late (high above 30 days)</li>
-    <li>Activity productivity below 90% over 14 days (high below 80%)</li>
-    <li>Weekly productivity falling more than 5 points</li>
-    <li>Manpower below 85% of plan over 7 days</li>
-    <li>Overtime above 12% of manhours</li>
-    <li>A missing daily report on the last working day</li>
-    <li>Subcontractor productivity below 90%</li>
-  </ul>
-</section>
-
-<section id="p6out">
-  <h2>13. Sending progress back to P6</h2>
-  <p>Open <b>Reports → P6 progress update</b>, set Scope to one project, then download as <b>XER</b>, <b>P6 XML</b> or <b>Excel for P6</b>. The file carries, per started activity: physical percent complete, actual start, actual finish, expected finish, remaining duration in working days, and actual and remaining labour units.</p>
-  <div class="note"><b>Before loading into P6</b>Set the activity percent complete type to <b>Physical</b> — ProTrack's percent is earned value over budget, not duration — and set the project data date to match the file. Test on a copy of the schedule first; the Excel route is the most predictable because you map the columns yourself.</div>
-</section>
-
-<section id="ai">
-  <h2>14. ProTrack AI</h2>
-  <p>The assistant opens from the avatar at the bottom right, and answers for the scope you have selected. Suggested questions are answered instantly from the data; anything you type yourself is answered by Claude using the same project data.</p>
-  <h3>Questions it handles well</h3>
-  <ul>
-    <li>What is today's productivity?</li>
-    <li>Which activity is underperforming, and by how much?</li>
-    <li>What manpower is needed to finish on time?</li>
-    <li>Show the early warnings; show the EAC forecast.</li>
-    <li>Compare foreman productivity; which subcontractor performed best?</li>
-    <li>Explain the productivity variance on an activity.</li>
-  </ul>
-  <p>Answers quote the activity, the current rate, the crew size required and the dates. It does not invent numbers: if the data does not cover a question, it says so and points at the report that would.</p>
+  </table></div>
+  <p>On a baseline that has not started, 11 and 14 show "nothing due yet". A fresh baseline is therefore scored on up to nine checks.</p>
 </section>
 
 <section id="formulas">
-  <h2>15. Formula reference</h2>
+  <h2>9. Formula reference</h2>
   <h3>Productivity</h3>
-  <div class="f"><b>Actual rate = quantity executed ÷ manhours consumed</b></div>
   <div class="f"><b>Planned rate = budget quantity ÷ budget manhours</b></div>
-  <div class="f"><b>Productivity index = actual rate ÷ planned rate</b> — equivalently earned manhours ÷ actual manhours</div>
   <div class="f"><b>Earned manhours = quantity executed ÷ planned rate</b></div>
-  <p>Green above 100%, amber 90 to 100%, red below 90%. A report covering several activities is weighted by manhours.</p>
+  <div class="f"><b>Actual manhours = own workers × (regular + overtime hours) + subcontractor workers × hours</b></div>
+  <div class="f"><b>Productivity index (PI) = earned manhours ÷ actual manhours</b> — green above 100%, amber 90–100%, red below 90%</div>
+  <div class="f"><b>Own quantity = quantity executed − subcontractor quantities</b>; own and subcontract PI are shown separately</div>
   <h3>Earned value</h3>
-  <div class="f"><b>SPI = EV ÷ PV</b> &nbsp;·&nbsp; <b>CPI = EV ÷ AC</b> &nbsp;·&nbsp; <b>SV = EV − PV</b> &nbsp;·&nbsp; <b>CV = EV − AC</b></div>
-  <div class="f"><b>EAC (CPI) = BAC ÷ CPI</b> &nbsp;·&nbsp; <b>EAC (CPI × SPI) = AC + (BAC − EV) ÷ (CPI × SPI)</b></div>
-  <div class="f"><b>ETC = EAC − AC</b> &nbsp;·&nbsp; <b>VAC = BAC − EAC</b> &nbsp;·&nbsp; <b>TCPI = (BAC − EV) ÷ (BAC − AC)</b></div>
+  <div class="f"><b>Budget value per activity</b> = costing budget cost, else P6 price weight, else manhours × blended rate</div>
+  <div class="f"><b>SPI = EV ÷ PV</b> · <b>CPI = EV ÷ AC</b> · <b>SV = EV − PV</b> · <b>CV = EV − AC</b></div>
+  <div class="f"><b>EAC = BAC ÷ CPI</b>, or <b>AC + (BAC − EV) ÷ (CPI × SPI)</b> · <b>VAC = BAC − EAC</b> · <b>TCPI = (BAC − EV) ÷ (BAC − AC)</b></div>
   <h3>Cost</h3>
-  <div class="f"><b>Own labour = workers × (regular hours + 1.5 × overtime hours) × trade rate on the report date</b></div>
-  <div class="f"><b>Rental manpower = workers × hours × PO manhour rate</b></div>
-  <div class="f"><b>Measured subcontract = quantity executed × PO unit rate</b></div>
-  <h3>Unit rates</h3>
-  <div class="f"><b>Original manhours per unit = budget manhours ÷ budget quantity</b></div>
-  <div class="f"><b>Actual manhours per unit = manhours consumed ÷ quantity executed by own and rental crews</b></div>
-  <div class="f"><b>Actual cost per unit = total executed cost ÷ quantity executed</b>, split into own, rental and subcontract</div>
-  <div class="f"><b>Forecast cost to complete = remaining quantity × actual cost per unit</b></div>
-  <p>Measured subcontract quantities carry no manhours on your books, so they appear in the cost rates but not the manhour rates.</p>
+  <div class="f"><b>Trade hourly rate = basic salary ÷ hours per month × loaded factor</b>, taken from the rate effective on the report date</div>
+  <div class="f"><b>Own labour = workers × (regular + 1.5 × overtime) × trade rate</b></div>
+  <div class="f"><b>Measured subcontract = quantity × PO unit rate</b> · <b>Manpower supply = workers × hours × PO manhour rate</b></div>
   <h3>Planning</h3>
-  <div class="f"><b>Planned headcount = baseline daily quantity ÷ planned rate ÷ 8 hours</b></div>
-  <div class="f"><b>Crew needed to recover = remaining quantity ÷ remaining working days ÷ current rate ÷ 9 hours</b></div>
-  <div class="f"><b>Forecast finish = today + (BAC − EV) ÷ recent daily earned value</b></div>
-  <div class="f"><b>Forecast headcount = planned headcount × (planned rate ÷ actual rate over the last 21 days)</b></div>
-  <div class="f"><b>To mobilise = forecast average headcount − current average headcount</b>, per trade</div>
+  <div class="f"><b>Planned headcount = baseline daily quantity ÷ planned rate ÷ 8</b>, split by the P6 trade mix</div>
+  <div class="f"><b>Forecast headcount = planned headcount × (planned rate ÷ actual rate over 21 days)</b> · <b>To mobilise = forecast − current</b></div>
+  <h3>Unit rates and reconciliation</h3>
+  <div class="f"><b>Actual cost per unit = executed cost ÷ quantity executed</b>, split into own, rental and subcontract</div>
+  <div class="f"><b>Carried in + own + rental + subcontract = executed</b> · <b>Executed + remaining = scope</b></div>
+</section>
+
+<section id="billing">
+  <h2>10. Billing and collection</h2>
+  <h3>Invoiceable value</h3>
+  <div class="f"><b>Earned price per phase = phase price × price progress</b>, where price comes from the P6 weighting resource</div>
+  <div class="f"><b>Billable per phase = min(earned price, phase price × progress cap) + releases whose milestone is achieved</b></div>
+  <div class="f"><b>Net invoiceable = Σ billable − separate retention (if any) + retention released − advance recovered</b></div>
+  <p>Example: construction 80% on progress, 10% at TCC, 10% at FAC. At full progress before TCC, 80% is billable. Set separate retention to zero unless the contract deducts it on top of the phase split. Advance recovery is a percentage of each invoice and stops once the advance is repaid.</p>
+  <h3>From the invoice register</h3>
+  <table>
+    <thead><tr><th>Figure</th><th>Formula</th></tr></thead>
+    <tbody>
+      <tr><td>Invoiced</td><td>Σ submitted amounts, including the advance</td></tr>
+      <tr><td>Approved</td><td>Σ approved amounts</td></tr>
+      <tr><td>Collected</td><td>Σ collected amounts</td></tr>
+      <tr><td>Under-billed against invoiceable</td><td>Invoiceable − invoiced (never below zero)</td></tr>
+      <tr><td>Short of invoiceable after approval</td><td>Invoiceable − approved</td></tr>
+      <tr><td>Outstanding collection</td><td>Approved − collected</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="reports">
+  <h2>11. Reports and presentations</h2>
+  <p>Every report follows Scope, Sector and Measure against, previews on screen, and exports to Excel and PDF; the Full report pack saves all of them in one workbook.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Report</th><th>Answers</th></tr></thead>
+    <tbody>
+      <tr><td>Progress by activity, project, region</td><td>Planned against actual, variance, SPI</td></tr>
+      <tr><td>Manpower histogram</td><td>Plan, actual and forecast headcount by trade, with what to mobilise</td></tr>
+      <tr><td>Productivity</td><td>Planned and actual rates, index, manhours gained or lost</td></tr>
+      <tr><td>EAC</td><td>Two EAC methods, ETC, VAC, TCPI, forecast finish</td></tr>
+      <tr><td>Baseline comparison</td><td>Original, revised, recovery against forecast</td></tr>
+      <tr><td>Quantity reconciliation</td><td>Scope against executed by own, rental and subcontract</td></tr>
+      <tr><td>Unit rate analysis</td><td>Budget against actual per unit, and forecast to complete</td></tr>
+      <tr><td>Invoiceable value</td><td>After phase caps, releases, retention and advance</td></tr>
+      <tr><td>Invoicing and collection</td><td>Each invoice, shortfalls, outstanding</td></tr>
+      <tr><td>Budget manhour reconciliation</td><td>P6 against the costing file</td></tr>
+      <tr><td>Early warnings</td><td>Thresholds breached, with the action</td></tr>
+      <tr><td>P6 progress update</td><td>File to load back into Primavera</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>Presentation</b> builds a PowerPoint: tick up to fifteen slide types, set title, presenter and rows per table, choose whether charts come through as pictures, and download. The numbers are the same as the reports for the scope selected.</p>
+</section>
+
+<section id="server">
+  <h2>12. Server and demo mode</h2>
+  <table>
+    <thead><tr><th></th><th>Demo mode</th><th>Signed in to the server</th></tr></thead>
+    <tbody>
+      <tr><td>Who you are</td><td>Demo accounts, "Acting as" switch</td><td>Your Supabase account and role</td></tr>
+      <tr><td>Projects</td><td>Six sample projects in this browser</td><td>Shared by everyone with an account</td></tr>
+      <tr><td>Daily reports, baselines, costing, invoices</td><td>This browser</td><td>This browser for now; moving to the server in the next stages</td></tr>
+      <tr><td>Password reset</td><td>Simulated</td><td>Real email</td></tr>
+    </tbody>
+  </table>
+  <p>The sign-in page shows <b>Connected to the ProTrack server</b> in green when <code>config.js</code> holds a valid key.</p>
 </section>
 
 <section id="rules">
-  <h2>16. Rules the system enforces</h2>
+  <h2>13. Rules the system enforces</h2>
   <ul>
-    <li>Only submitted, reviewed and approved reports count. Drafts and rejected reports never reach a dashboard.</li>
-    <li>Construction progress comes only from daily reports; engineering and procurement only from the weekly update. Neither can overwrite the other.</li>
-    <li>Design and procurement progress is set by milestone, never typed as a percentage.</li>
-    <li>Rates are dated. Changing a salary or a PO rate never restates a report already filed.</li>
-    <li>Re-baselining moves the plan, never the earned progress.</li>
-    <li>The original baseline is the default for every report; measuring against another is a deliberate choice and is stated on screen.</li>
-    <li>Rejecting or returning a report requires a comment, and every action is written to the audit trail.</li>
-    <li>Master data in use cannot be deleted; users are deactivated rather than removed.</li>
-    <li>Each subcontractor holds one purchase order per project; a missing PO shows as an estimate rather than a silent zero.</li>
-  </ul>
-</section>
-
-<section id="pilot">
-  <h2>17. Running a pilot</h2>
-  <p>The fastest way to prove the system is one live project for one month.</p>
-  <ol class="steps">
-    <li><b>Week 0 — setup.</b> Load the real P6 baseline, agree the work locations and work types with the site team, set the trade rates from payroll, and load the subcontractor POs.</li>
-    <li><b>Week 0 — access.</b> Create the project manager, site engineers, foremen and planning engineer, and walk each through their own screen once.</li>
-    <li><b>Weeks 1 to 4 — run it in parallel.</b> Keep the existing Excel DPR for one week as a safety net, then stop it. Agree that approval happens the same evening.</li>
-    <li><b>Weekly.</b> The planning engineer uploads the design and procurement update every Sunday, and exports the P6 progress file the same day.</li>
-    <li><b>Month end.</b> Compare the ProTrack reports with the manual monthly report, and review the unit rate analysis to see which activities need a revised estimate.</li>
-  </ol>
-  <h3>What to decide before going live</h3>
-  <ul>
-    <li>The critical thresholds (0.95 for SPI and CPI by default; some clients use 0.90)</li>
-    <li>Class weightings per project (60 / 30 / 10 by default)</li>
-    <li>The loaded cost factor for trade rates, agreed with finance</li>
-    <li>Whether office staff sign in with company Microsoft accounts (single sign-on) while site staff use email and password</li>
+    <li>Only submitted, reviewed and approved reports count; drafts and rejected reports never reach a dashboard.</li>
+    <li>Construction progress only from daily reports; engineering and procurement only from the weekly update.</li>
+    <li>Price only from P6; cost only from the costing file. Each project names which file owns budget manhours.</li>
+    <li>Rates and PO rates are dated; a change never restates a filed report.</li>
+    <li>One purchase order per subcontractor per project; a second one for the same company is refused.</li>
+    <li>Re-baselining moves the plan, never earned progress; every import can be undone.</li>
+    <li>A subcontractor's quantity is entered once per company; all their trades' hours count.</li>
+    <li>Rejecting or returning needs a comment; every change is logged with a name and time.</li>
   </ul>
 </section>
 
 <section id="faq">
-  <h2>18. FAQ and troubleshooting</h2>
-  <h4>An activity is missing from the daily report</h4>
-  <p>Check three things: it is a Construction class activity, its work location and work type match what you selected, and it belongs to the project you have access to. Engineering and procurement activities never appear here.</p>
-  <h4>The productivity index looks wrong</h4>
-  <p>Compare the quantity and the manhours on the report. The most common cause is a crew recorded on the wrong activity, or a subcontractor quantity recorded without their crew.</p>
-  <h4>The cost of an old report changed</h4>
-  <p>It should not. Rates are dated; if a figure moved, check whether someone entered a new rate with a past effective date.</p>
-  <h4>A subcontractor line says "estimated"</h4>
-  <p>There is no purchase order for that vendor on that project, or no rate for that activity or trade. Add it in Settings → Subcontractors.</p>
-  <h4>SPI moved but nothing was built</h4>
-  <p>Check the "Measure against" selector at the top. You may be looking at the revised or recovery baseline.</p>
-  <h4>A download did not appear</h4>
-  <p>Excel and PDF exports need an internet connection the first time, because the file libraries load on demand. Confirm the download, then retry.</p>
-  <h4>I was signed out</h4>
-  <p>Sessions end after 20 minutes of inactivity, and after 12 hours in any case. Tick "Remember me" on your own device.</p>
-  <h4>Someone left the company</h4>
-  <p>Settings → Users and access → Edit → set Inactive. Their past reports and approvals stay intact.</p>
+  <h2>14. FAQ and troubleshooting</h2>
+  <h4>Productivity reads very high</h4><p>A subcontractor quantity is entered without their workers and hours. The form warns in amber.</p>
+  <h4>DCMA shows float as not assessed</h4><p>The XER was exported without scheduling. Press F9 in P6, then export again.</p>
+  <h4>A project shows zero everywhere</h4><p>No baseline yet, or the costing file and labour loading are both missing, so there is no planned rate.</p>
+  <h4>Invoiced is higher than invoiceable</h4><p>Either invoicing is ahead of certified progress, or the payment terms or price weighting are not set. Check the terms on the project.</p>
+  <h4>A subcontractor line says "estimated"</h4><p>That company has no purchase order on the project, or no rate for that activity or trade. The project's costing engineer adds it on the Baselines page.</p>
+  <h4>"Invalid API key" at sign-in</h4><p>The key in <code>config.js</code> is incomplete or from another project. Copy the anon key again with the copy icon.</p>
+  <h4>Delete or undo did nothing</h4><p>You are on an old version. Upload the latest <code>index.html</code> and press Ctrl+F5.</p>
 </section>
 
 <section id="glossary">
-  <h2>19. Glossary</h2>
-  <table>
-    <tbody>
-      <tr><td><b>AC</b></td><td>Actual cost of the work done</td></tr>
-      <tr><td><b>BAC</b></td><td>Budget at completion</td></tr>
-      <tr><td><b>CPI</b></td><td>Cost performance index, EV ÷ AC</td></tr>
-      <tr><td><b>Data date</b></td><td>The cut-off date an update refers to</td></tr>
-      <tr><td><b>DPR</b></td><td>Daily progress report</td></tr>
-      <tr><td><b>EAC</b></td><td>Estimate at completion</td></tr>
-      <tr><td><b>EOT</b></td><td>Extension of time</td></tr>
-      <tr><td><b>ETC</b></td><td>Estimate to complete, the cost still to come</td></tr>
-      <tr><td><b>EV</b></td><td>Earned value, the budget cost of work actually done</td></tr>
-      <tr><td><b>FAT</b></td><td>Factory acceptance test</td></tr>
-      <tr><td><b>IDC / IFC</b></td><td>Inter-discipline check / issued for construction</td></tr>
-      <tr><td><b>OHTL</b></td><td>Overhead transmission line</td></tr>
-      <tr><td><b>PAC / FAC</b></td><td>Provisional / final acceptance certificate</td></tr>
-      <tr><td><b>PV</b></td><td>Planned value, the budget cost of work scheduled</td></tr>
-      <tr><td><b>SPI</b></td><td>Schedule performance index, EV ÷ PV</td></tr>
-      <tr><td><b>TCC</b></td><td>Technical completion certificate</td></tr>
-      <tr><td><b>TCPI</b></td><td>To-complete performance index, the efficiency needed to finish on budget</td></tr>
-      <tr><td><b>VAC</b></td><td>Variance at completion, BAC − EAC</td></tr>
-      <tr><td><b>WBS</b></td><td>Work breakdown structure</td></tr>
-    </tbody>
-  </table>
-</section>
-<section id="changes">
-  <h2>20. What changed recently</h2>
-  <p>The prototype is being extended as the process is agreed. The most recent additions, newest first:</p>
-  <table>
-    <thead><tr><th>Area</th><th>What was added</th></tr></thead>
-    <tbody>
-      <tr><td>Manpower histogram</td><td>Trade filter, daily or weekly view, and a forecast line showing the headcount needed to hold the baseline at current productivity, with a by-trade "to mobilise" column</td></tr>
-      <tr><td>Reports</td><td>Quantity reconciliation (scope against executed, split by own, rental and subcontract) and unit rate analysis (original against actual, with a revised rate for estimating)</td></tr>
-      <tr><td>Subcontractors</td><td>One purchase order per project per vendor, so the same company can work on several projects at different rates; measured POs priced per activity, manpower supply POs priced per trade per manhour</td></tr>
-      <tr><td>Trades</td><td>Super Admin can create any trade and set the cost rate from basic salary, hours per month and a loaded factor, with a dated history so a pay rise never restates past reports</td></tr>
-      <tr><td>Executive summary</td><td>Milestones with TCC, PAC and FAC, the EOT claim status, and the nine key activities for overhead transmission line projects</td></tr>
-      <tr><td>Access</td><td>Executive Manager and Portfolio Manager roles; regional managers can cover several regions; the executive dashboard is open to project roles within their own access</td></tr>
-      <tr><td>Baselines</td><td>Original, revised and recovery sets, the "Measure against" selector, the three-line S-curve and the baseline comparison report</td></tr>
-      <tr><td>Engineering and procurement</td><td>Activity classes, milestone weighting and the weekly Excel update loop with validation and dated batches</td></tr>
-      <tr><td>Primavera P6</td><td>Real XER, XML and Excel import for baselines, and a progress update export back to P6</td></tr>
-      <tr><td>Daily report</td><td>Work location, work type and WBS narrowing the activity list; several activities on one report, each with its own resources</td></tr>
-    </tbody>
-  </table>
-  <div class="note"><b>Still to build for production</b>A server with a real authentication service and per-user data isolation, single sign-on for office staff, material and plant costs feeding EAC, a BOQ item layer between purchase orders and activities, and per-project class weightings and thresholds set by the planning manager rather than fixed defaults.</div>
+  <h2>15. Glossary</h2>
+  <table><tbody>
+    <tr><td><b>AC, EV, PV</b></td><td>Actual cost, earned value, planned value</td></tr>
+    <tr><td><b>BAC, EAC, ETC, VAC</b></td><td>Budget, estimate, estimate to complete, variance, at completion</td></tr>
+    <tr><td><b>CPI, SPI, TCPI</b></td><td>Cost, schedule and to-complete performance indices</td></tr>
+    <tr><td><b>DCMA</b></td><td>Defense Contract Management Agency 14-point schedule assessment</td></tr>
+    <tr><td><b>DPR</b></td><td>Daily progress report</td></tr>
+    <tr><td><b>EOT</b></td><td>Extension of time</td></tr>
+    <tr><td><b>IPC</b></td><td>Interim payment certificate</td></tr>
+    <tr><td><b>OHTL</b></td><td>Overhead transmission line</td></tr>
+    <tr><td><b>PI</b></td><td>Productivity index, earned ÷ actual manhours</td></tr>
+    <tr><td><b>TCC, PAC, FAC</b></td><td>Technical completion, provisional and final acceptance certificates</td></tr>
+    <tr><td><b>WBS</b></td><td>Work breakdown structure</td></tr>
+  </tbody></table>
 </section>
 </main>
 </div>
+
 
 <footer>ProTrack user guide. Prototype documentation, sample data. Figures shown in the application are illustrative.</footer>
 
