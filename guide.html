@@ -188,8 +188,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>ProTrack AI</b></span>
     </div>
-    <div class="meta"><span>Version 2.0</span><span>Prototype documentation</span><span>Sample data</span></div>
-    <a class="cta" href="#intro">Start reading →</a>
+    <div class="meta"><span>Version 2.1, September 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
 <div class="wrap">
@@ -199,10 +199,13 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <a href="#process">2. How the application works</a>
   <a href="#owners">3. Who owns which number</a>
   <a href="#roles">4. Roles, access and responsibilities</a>
+  <a href="#matrix" class="sub">Approval matrix</a>
+  <a href="#email" class="sub">Approval email</a>
   <a href="#features">5. Features at a glance</a>
   <a href="#steps">6. Step by step, by role</a>
   <a href="#s-foreman" class="sub">Foreman</a>
   <a href="#s-eng" class="sub">Site engineer</a>
+  <a href="#s-sm" class="sub">Site manager</a>
   <a href="#s-pm" class="sub">Project manager</a>
   <a href="#s-plan" class="sub">Planning engineer</a>
   <a href="#s-cost" class="sub">Costing engineer</a>
@@ -216,6 +219,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <a href="#p-cost" class="sub">Costing engineer score</a>
   <a href="#p-comp" class="sub">Reporting compliance score</a>
   <a href="#p-sub" class="sub">Subcontractors</a>
+  <a href="#p-time" class="sub">Report handling time</a>
+  <a href="#p-vis" class="sub">Who sees which scorecard</a>
   <a href="#dcma">8. DCMA 14-point check</a>
   <a href="#formulas">9. Formula reference</a>
   <a href="#billing">10. Billing and collection</a>
@@ -237,6 +242,16 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, identity and projects are shared; daily reports, baselines and costing are moving to the server in stages. Section 12 explains which is which.</div>
+  <div class="note"><b>New in version 2.1</b>
+    <b>Site manager</b> role, approving every daily report the same day. ·
+    <b>Approval chain</b> foreman → site engineer → site manager, set per project by the super admin in the approval matrix. ·
+    <b>Timers</b> on preparing, reviewing and approving each report, with a report on time spent per person. ·
+    <b>Approval email</b> with a summary and a link, to everyone on the project. ·
+    <b>Role access</b>: the super admin decides which reports site roles may open and what their executive summary shows; they never see cost. ·
+    <b>Foremen</b> see only daily reports, new reports and their own performance. ·
+    <b>Project managers</b> reach costing, invoices and purchase orders for their projects. ·
+    <b>Purchase orders</b> kept by the costing engineer on the Baselines page. ·
+    <b>Manpower histogram</b> 25 times faster.</div>
 </section>
 
 <section id="process">
@@ -247,7 +262,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Baseline.</b> The planning engineer imports the P6 schedule. ProTrack reads activities, WBS, dates, labour hours, material quantities, the price weighting resource and the trade mix, then runs the DCMA 14-point check.</li>
     <li><b>Budget and purchase orders.</b> The costing engineer downloads the costing template, pre-filled with every activity ID, adds budget quantity, unit, unit rate, cost and manhours, and uploads it. He then enters each subcontractor's purchase order for the project, with its rates.</li>
     <li><b>Daily reporting.</b> Every working day the foreman or site engineer reports, per activity, the quantity executed and the crews that produced it: own labour, subcontractors with their trades, and equipment.</li>
-    <li><b>Approval.</b> The project manager reviews and approves the same evening. Nothing counts until it is submitted, and only approval closes the audit trail.</li>
+    <li><b>Review and approval.</b> The site engineer reviews what the foreman submitted; the site manager approves it the same evening. The project manager can do either. Nothing counts until it is submitted, and only approval closes the audit trail. Every step is timed.</li>
     <li><b>Weekly update.</b> The planning engineer updates design and procurement by milestone from one Excel file, until those phases are complete.</li>
     <li><b>Invoicing.</b> The costing engineer uploads the invoice register weekly: invoice number, amount, submitted, approved and collected, including the advance.</li>
     <li><b>Analysis.</b> ProTrack calculates productivity, earned value, EAC, manpower forecasts, unit rates, reconciliation and invoiceable value against the contract terms, and raises early warnings.</li>
@@ -263,7 +278,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <thead><tr><th>Number</th><th>Owner</th><th>Source</th><th>Drives</th></tr></thead>
     <tbody>
       <tr><td>Quantity executed, crews, hours, equipment</td><td>Foreman, site engineer</td><td>Daily report</td><td>Productivity, earned value, actual cost</td></tr>
-      <tr><td>Approval of the daily report</td><td>Project manager</td><td>Review screen</td><td>Whether the report counts and is final</td></tr>
+      <tr><td>Review of the daily report</td><td>Site engineer</td><td>Review screen</td><td>Whether the quantities and crews are right</td></tr>
+      <tr><td>Approval of the daily report</td><td>Site manager, or project manager</td><td>Review screen</td><td>Whether the report is final</td></tr>
       <tr><td>Dates, logic, WBS, labour loading, price weighting</td><td>Planning engineer</td><td>P6 schedule</td><td>Plan, progress weighting, invoiceable value, trade mix</td></tr>
       <tr><td>Design and procurement milestones</td><td>Planning engineer</td><td>Weekly Excel</td><td>Engineering and procurement progress</td></tr>
       <tr><td>Budget quantity, unit, rate, cost, manhours</td><td>Costing engineer</td><td>Costing Excel</td><td>Budget analysis, unit rates, EAC</td></tr>
@@ -287,13 +303,36 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <tr><td><b>Portfolio manager</b></td><td>Exactly one region</td><td>Portfolio oversight, sending reminders</td><td>Enter or approve data</td></tr>
       <tr><td><b>Planning engineer</b></td><td>Assigned projects</td><td>P6 baselines, resource-to-trade mapping, weekly design and procurement update, P6 progress export, schedule quality</td><td>Create daily reports, approve, set rates</td></tr>
       <tr><td><b>Costing engineer</b></td><td>Assigned projects</td><td>Costing file, invoice register, <b>subcontractor purchase orders and their rates</b> for his projects, including adding a new subcontractor</td><td>Import schedules, approve reports, set salaries or payment terms</td></tr>
-      <tr><td><b>Project manager</b></td><td>Assigned projects</td><td>Approving daily reports, delivery against plan, monthly invoicing</td><td>Create reports, change baselines or settings</td></tr>
-      <tr><td><b>Site engineer</b></td><td>Assigned projects</td><td>Accuracy of daily reports in his area</td><td>Approve his own reports</td></tr>
-      <tr><td><b>Foreman</b></td><td>Assigned projects</td><td>The daily report for his crews</td><td>Approve, see management screens</td></tr>
+      <tr><td><b>Project manager</b></td><td>Every module for his projects, including costing, invoicing and purchase orders</td><td>Delivery, cost and monthly invoicing; may review and approve; sees the whole team's performance</td><td>Import schedules, change settings</td></tr>
+      <tr><td><b>Site manager</b></td><td>Daily reports, executive summary and dashboard without cost, reports granted to his role, presentation, performance of foremen and site engineers</td><td><b>Approving every daily report</b> once the site engineer has reviewed it, the same day</td><td>Create reports, see costing, change his executive layout</td></tr>
+      <tr><td><b>Site engineer</b></td><td>Daily reports and new report, executive summary and dashboard without cost, reports granted to his role, his own and his foremen's performance</td><td><b>Reviewing</b> each foreman's report for accuracy</td><td>Approve, see costing, change his executive layout</td></tr>
+      <tr><td><b>Foreman</b></td><td>Daily reports, new report, his own performance</td><td>The daily report for his crews</td><td>Review, approve, see dashboards, reports or anyone else's performance</td></tr>
       <tr><td><b>Read-only</b></td><td>As given</td><td>Viewing</td><td>Anything that changes data</td></tr>
     </tbody>
   </table></div>
   <p>Reminders for reporting gaps can be sent by the super admin, executive, regional and portfolio managers, and planning engineers.</p>
+  <p>What site engineers and site managers see is set by the super admin in <b>Settings → Role access</b>: which reports they may open, and the tiles and columns of their executive summary. Cost and billing figures are never offered to site roles, and they cannot change their own layout.</p>
+
+  <h3 id="matrix">Approval matrix</h3>
+  <p>The super admin decides, project by project, who reviews and who approves. In <b>Settings → Approval matrix</b> each project lists its foremen and site engineers, with a choice beside each name:</p>
+  <ul>
+    <li><b>Foreman → site engineer who reviews</b> his reports on that project</li>
+    <li><b>Site engineer → site manager who approves</b> the reports he has reviewed on that project</li>
+  </ul>
+  <p>Only people with access to that project are offered. Someone working on several projects is assigned separately on each, so the chain follows the site team of each project. Anyone left unassigned has that step done by the project manager, and the project heading says how many are unassigned.</p>
+  <p><b>Example: one foreman and one site engineer on two projects each</b></p>
+  <table><thead><tr><th>Project</th><th>Foreman</th><th>Reviewed by</th><th>Approved by</th></tr></thead><tbody>
+    <tr><td>Ras Tanura Tank Farm</td><td>Bilal Ahmed</td><td>Eng. Suresh Pillai</td><td>Eng. Yousef Al-Harbi</td></tr>
+    <tr><td>Jazan Water Pipeline</td><td>Bilal Ahmed</td><td>Eng. Hassan Mahdi</td><td>Eng. Yousef Al-Harbi</td></tr>
+    <tr><td>Jeddah Data Center</td><td>Faisal Al-Otaibi</td><td>Eng. Rafiq Ali</td><td>Eng. Fahad Al-Dosari</td></tr>
+    <tr><td>Jubail Substation</td><td>Faisal Al-Otaibi</td><td>Eng. Rafiq Ali</td><td>Eng. Sameer Khan</td></tr>
+  </tbody></table>
+  <p>Bilal's Ras Tanura report goes only to Suresh; his Jazan report only to Hassan. Rafiq reviews on both projects, but what he reviews on Jeddah goes to Fahad, and on Jubail to Sameer. A site engineer sees the Review button only on reports assigned to him; a site manager sees Approve only on reports from his engineers. Every report shows its route at the top, and every change to the matrix is logged.</p>
+
+  <h3 id="email">Approval email</h3>
+  <p>The moment a report is approved, ProTrack emails a summary to everyone with access to that project in the chosen roles: by default site engineers, site managers, project managers, portfolio managers, planning and costing engineers, executives and super admins. Site engineers and site managers receive only the reports they reviewed or approved. Recipients are blind-copied.</p>
+  <p>The email carries the project, date, discipline and foreman; activities, manpower, manhours and productivity; each activity's quantity today, percent complete and index; anything below 85% productivity; site remarks; who prepared, reviewed and approved it and how long each took; and an <b>Open in ProTrack</b> button that goes straight to the report after sign-in.</p>
+  <p>The super admin chooses the roles, or switches it off, in <b>Settings → Email</b>, which also lists every email with its recipients, status and a preview. Sending needs the mail function set up on the server once; until then emails are prepared and listed but not sent.</p>
 </section>
 
 <section id="features">
@@ -301,15 +340,16 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <div class="grid2">
     <div class="card"><b>Executive summary</b><span>Landing page for managers. Pick any of 18 tiles; group the breakdown by region, sector, city or project; choose its columns; add a billing and collection panel. Each person keeps their own layout.</span></div>
     <div class="card"><b>Dashboard</b><span>Productivity index, workforce, manhours, SPI, CPI, warnings, portfolio by region and sector, project health.</span></div>
-    <div class="card"><b>Daily reports</b><span>Location, work type, WBS, activity; quantity; own labour; subcontractor companies each with one quantity and several trades; equipment; photos and remarks; live productivity with own and subcontract split.</span></div>
+    <div class="card"><b>Daily reports</b><span>Location, work type, WBS, activity; quantity; own labour; subcontractor companies each with one quantity and several trades; equipment; photos and remarks; live productivity with own and subcontract split. A clock records the time taken to prepare, review and approve each report.</span></div>
     <div class="card"><b>Weekly update</b><span>Design and procurement by milestone from one Excel file, validated before it is applied.</span></div>
     <div class="card"><b>Baselines</b><span>P6 XER, XML or Excel import with branch and class pickers, DCMA check, revised and recovery sets, undo and remove, costing file, invoice register, resource mapping.</span></div>
     <div class="card"><b>Earned value</b><span>PV, EV, AC, SPI, CPI, EAC, VAC and the S-curve against any baseline.</span></div>
-    <div class="card"><b>Reports</b><span>Fifteen reports in Excel and PDF, including reconciliation, unit rates, manpower forecast, invoiceable value and invoicing and collection.</span></div>
+    <div class="card"><b>Reports</b><span>Sixteen reports in Excel and PDF, including reconciliation, unit rates, manpower forecast, invoiceable value, invoicing and collection, and report handling time. Site roles see only the reports the super admin grants them.</span></div>
     <div class="card"><b>Presentation</b><span>Tick the slides, download a PowerPoint built from the same numbers.</span></div>
     <div class="card"><b>Performance</b><span>Scorecards for foremen, site engineers, project managers, planning engineers, costing engineers, subcontractors, and reporting compliance by project.</span></div>
     <div class="card"><b>ProTrack AI</b><span>Ask in plain words; answers come from the reports, with voice in and out.</span></div>
-    <div class="card"><b>Settings</b><span>Projects, users, trades and dated rates, subcontractors and purchase orders per project, regions, cities, sectors, change log.</span></div>
+    <div class="card"><b>Approval email</b><span>The moment a report is approved, a summary with a link goes to everyone on the project in the chosen roles.</span></div>
+    <div class="card"><b>Settings</b><span>Projects, users, role access, approval matrix, approval email, trades and dated rates, subcontractors and purchase orders, regions, cities, sectors, change log.</span></div>
   </div>
 </section>
 
@@ -318,7 +358,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
 
   <h3 id="s-foreman">Foreman — every working day, about five minutes</h3>
   <ol class="steps">
-    <li><b>Sign in on your phone.</b> You see only your project.</li>
+    <li><b>Sign in on your phone.</b> You see daily reports, new report and your own performance, for your projects only.</li>
     <li><b>New report.</b> Date and project are filled in; choose yourself as foreman.</li>
     <li><b>Work location, work type, WBS, activity.</b> Each choice narrows the next, so the activity list is short.</li>
     <li><b>Quantity executed today</b> — the <b>total</b> placed on that activity, including anything done by subcontractors.</li>
@@ -328,12 +368,15 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Add another activity</b> for everything else your crews did today.</li>
     <li><b>Check the productivity panel.</b> It shows the combined index and, where a subcontractor worked, your own figure and theirs separately. An amber line means a subcontractor quantity has no hours.</li>
     <li><b>Remarks and photos</b> — delays, access, weather, instructions.</li>
-    <li><b>Submit for approval.</b></li>
+    <li><b>Submit.</b> It goes to your site engineer for review, then your site manager for approval.</li>
   </ol>
+  <p>A clock at the top of the form starts when you open it and stops when you save or submit; it carries on if you return to a saved draft. Time with the app in the background is not counted.</p>
   <div class="tip"><b>Example: 80 m³ poured, 30 of it by a subcontractor</b>Enter 80 as the quantity. Add your own crew. Add the subcontractor with quantity 30 and each of his trades with their hours. ProTrack derives your share as 50 and counts both crews' hours in the index.</div>
 
-  <h3 id="s-eng">Site engineer — daily verification, weekly look</h3>
+  <h3 id="s-eng">Site engineer — review every foreman's report, daily</h3>
   <ol class="steps">
+    <li><b>Daily reports → Submitted.</b> Open each report the foremen sent; a timer runs while it is open.</li>
+    <li><b>Mark as reviewed</b> once quantity and crews are right, or <b>return with comments</b>. It then goes to the site manager assigned to you on that project. You only see the Review button on reports from foremen assigned to you.</li>
     <li><b>Daily reports → Draft.</b> Nothing should stay in draft overnight.</li>
     <li><b>Check quantities against survey or measurement,</b> and crews against the gate count.</li>
     <li><b>Correct and submit.</b> Your edits are logged.</li>
@@ -341,11 +384,19 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Weekly:</b> Reports → Productivity and the Manpower histogram for your trades; Executive summary → Project view for bottlenecks and foreman performance.</li>
   </ol>
 
-  <h3 id="s-pm">Project manager — every evening, Monday review, monthly invoice</h3>
+  <h3 id="s-sm">Site manager — approve every reviewed report, the same day</h3>
   <ol class="steps">
-    <li><b>Daily reports → Submitted.</b> Open each: quantity, crews, equipment, photos, audit trail.</li>
-    <li><b>Three checks:</b> is the quantity credible for that crew, was that crew really on site, is the index explainable.</li>
-    <li><b>Approve,</b> or <b>return with a comment</b>, or reject with a comment.</li>
+    <li><b>Daily reports → Reviewed.</b> You can approve those reviewed by the site engineers assigned to you on each project.</li>
+    <li><b>Open each one.</b> A timer runs while it is open; the time you take is recorded.</li>
+    <li><b>Approve</b>, or <b>return</b> or <b>reject</b> with a comment.</li>
+    <li><b>Performance</b> shows your foremen and site engineers, and which projects have gone quiet; <b>Reports → Report handling time</b> shows how long each person takes.</li>
+    <li><b>Presentation</b> builds the site progress deck for your meeting.</li>
+  </ol>
+
+  <h3 id="s-pm">Project manager — oversight, commercial, monthly invoice</h3>
+  <ol class="steps">
+    <li><b>Daily reports.</b> Site managers approve day to day; step in to review or approve when they are absent. Three checks: is the quantity credible for that crew, was that crew on site, is the index explainable.</li>
+    <li><b>Baselines → Costing file, Invoice register, Purchase orders</b> are open to you for your projects.</li>
     <li><b>Monday:</b> Dashboard, Executive summary → Project view, Reports → Early warnings, Manpower histogram, EAC.</li>
     <li><b>Monthly:</b> make sure an invoice goes in <b>every month</b> until invoicing reaches 80% of the contract value. Performance → Project managers shows your monthly invoicing record; months with nothing submitted are listed by name.</li>
     <li><b>Before the review meeting:</b> Presentation → pick the slides → download.</li>
@@ -389,10 +440,13 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Regions, cities, sectors</b> with their managers.</li>
     <li><b>Trades and rates:</b> basic salary, hours per month, loaded factor, effective date.</li>
     <li><b>Project:</b> code in any format, sector, region, city, dates, value, type, budget manhours source.</li>
-    <li><b>Users and access:</b> role and projects or regions for each person.</li>
+    <li><b>Users and access:</b> role and projects or regions for each person, including site managers. Someone on two projects gets access to both.</li>
     <li><b>Project team:</b> project manager, site engineer, foremen.</li>
     <li><b>Milestones</b> with TCC, PAC, FAC, and the EOT claim.</li>
     <li><b>Payment terms:</b> per phase the progress cap and up to two milestone releases; separate retention only if the contract has one; advance and its recovery rate.</li>
+    <li><b>Settings → Approval matrix:</b> for each project, choose the site engineer who reviews each foreman, and the site manager who approves each site engineer. Repeat whenever the site team changes.</li>
+    <li><b>Settings → Email:</b> choose who receives the approval summary.</li>
+    <li><b>Settings → Role access:</b> for site engineers and site managers, tick the reports they may open and set the tiles, breakdown and columns of their executive summary. Cost and billing are never offered.</li>
     <li><b>Hand purchase orders to costing.</b> Each project's costing engineer keeps its subcontractor POs on the Baselines page. Settings → Subcontractors still shows every company and PO across all projects, for review or correction.</li>
     <li><b>Hand over</b> to planning and costing. Afterwards: leavers set inactive, pay rises as new dated rates, wrong baselines undone, change log reviewed.</li>
   </ol>
@@ -461,6 +515,22 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li>Issues are graded: no report for more than a day is <b>High</b>; more than two missing days, an approval backlog, or an overdue weekly update is <b>Medium</b>; an overdue register is <b>Low</b>.</li>
   </ul>
   <p>Scores are coloured green at 85 and above, amber from 60, red below 60.</p>
+
+  <h3 id="p-time">Report handling time</h3>
+  <p>Reports → <b>Time spent preparing, reviewing and approving daily reports</b>. Per person, over 30 days: reports handled, average, median, fastest, slowest, time per activity line and total, for each step.</p>
+  <div class="f"><b>Preparation</b> = time the new report form is open, from opening to save or submit, summed across draft sessions</div>
+  <div class="f"><b>Review</b> = time a submitted report is open with the review action available, until the site engineer acts</div>
+  <div class="f"><b>Approval</b> = time a reviewed report is open with the approve action available, until the site manager or project manager acts</div>
+  <p>Time with the tab in the background is excluded; opening and closing without acting records nothing.</p>
+
+  <h3 id="p-vis">Who sees which scorecard</h3>
+  <table><thead><tr><th>Role</th><th>Performance tabs</th></tr></thead><tbody>
+    <tr><td>Foreman</td><td>Foremen, his own row only</td></tr>
+    <tr><td>Site engineer</td><td>Foremen of his projects; site engineers, his own row only</td></tr>
+    <tr><td>Site manager</td><td>Foremen, site engineers, reporting compliance, for his projects</td></tr>
+    <tr><td>Project manager, planning engineer, costing engineer</td><td>Every tab, for the whole team on their projects</td></tr>
+    <tr><td>Executive, regional, portfolio, super admin</td><td>Every tab, for their scope</td></tr>
+  </tbody></table>
 
   <h3 id="p-sub">Subcontractors</h3>
   <p>Productivity (their earned ÷ their hours), days on site, average crew, cost to date at PO rates, and cost per earned manhour, with the commercial basis and PO numbers shown.</p>
@@ -553,6 +623,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <tr><td>Invoicing and collection</td><td>Each invoice, shortfalls, outstanding</td></tr>
       <tr><td>Budget manhour reconciliation</td><td>P6 against the costing file</td></tr>
       <tr><td>Early warnings</td><td>Thresholds breached, with the action</td></tr>
+      <tr><td>Report handling time</td><td>How long each person takes to prepare, review and approve</td></tr>
       <tr><td>P6 progress update</td><td>File to load back into Primavera</td></tr>
     </tbody>
   </table></div>
@@ -567,6 +638,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <tr><td>Who you are</td><td>Demo accounts, "Acting as" switch</td><td>Your Supabase account and role</td></tr>
       <tr><td>Projects</td><td>Six sample projects in this browser</td><td>Shared by everyone with an account</td></tr>
       <tr><td>Daily reports, baselines, costing, invoices</td><td>This browser</td><td>This browser for now; moving to the server in the next stages</td></tr>
+      <tr><td>Approval email</td><td>Prepared and listed in Settings → Email, not sent</td><td>Sent once the mail function is set up on the server</td></tr>
       <tr><td>Password reset</td><td>Simulated</td><td>Real email</td></tr>
     </tbody>
   </table>
@@ -583,12 +655,19 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li>One purchase order per subcontractor per project; a second one for the same company is refused.</li>
     <li>Re-baselining moves the plan, never earned progress; every import can be undone.</li>
     <li>A subcontractor's quantity is entered once per company; all their trades' hours count.</li>
+    <li>Foreman submits, site engineer reviews, site manager approves, as assigned in the approval matrix for that project; the project manager covers anyone unassigned.</li>
+    <li>Every approval emails a summary to the project's stakeholders.</li>
+    <li>Site roles never see cost or billing, and their executive view is set by the super admin.</li>
     <li>Rejecting or returning needs a comment; every change is logged with a name and time.</li>
   </ul>
 </section>
 
 <section id="faq">
   <h2>14. FAQ and troubleshooting</h2>
+  <h4>I cannot see Review or Approve on a report</h4><p>The approval matrix routes each report to one site engineer and one site manager per project. If it is not assigned to you, the button does not appear. The route is shown at the top of every report; the super admin changes it in Settings → Approval matrix.</p>
+  <h4>A report went to the project manager instead of a site engineer</h4><p>That foreman, or his site engineer, has no assignment on that project. The project heading in Settings → Approval matrix shows how many are unassigned.</p>
+  <h4>Settings → Email says "Demo: not sent"</h4><p>Emails are prepared and listed, but the mail function is not set up on the server yet. Follow EMAIL-SETUP.md once.</p>
+  <h4>The timer shows zero or stops</h4><p>It pauses while the app is in the background and resets if you leave the form without saving. Save as draft to keep the time.</p>
   <h4>Productivity reads very high</h4><p>A subcontractor quantity is entered without their workers and hours. The form warns in amber.</p>
   <h4>DCMA shows float as not assessed</h4><p>The XER was exported without scheduling. Press F9 in P6, then export again.</p>
   <h4>A project shows zero everywhere</h4><p>No baseline yet, or the costing file and labour loading are both missing, so there is no planned rate.</p>
@@ -602,6 +681,9 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <h2>15. Glossary</h2>
   <table><tbody>
     <tr><td><b>AC, EV, PV</b></td><td>Actual cost, earned value, planned value</td></tr>
+    <tr><td><b>Approval matrix</b></td><td>Per project: which site engineer reviews each foreman, and which site manager approves each site engineer</td></tr>
+    <tr><td><b>Report handling time</b></td><td>Time spent preparing, reviewing and approving a daily report, measured by the app</td></tr>
+    <tr><td><b>Role access</b></td><td>The reports and executive layout the super admin sets for site engineers and site managers</td></tr>
     <tr><td><b>BAC, EAC, ETC, VAC</b></td><td>Budget, estimate, estimate to complete, variance, at completion</td></tr>
     <tr><td><b>CPI, SPI, TCPI</b></td><td>Cost, schedule and to-complete performance indices</td></tr>
     <tr><td><b>DCMA</b></td><td>Defense Contract Management Agency 14-point schedule assessment</td></tr>

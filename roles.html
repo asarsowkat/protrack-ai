@@ -93,6 +93,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <a href="#map">Who does what</a>
     <a href="#foreman">Foreman</a>
     <a href="#engineer">Site engineer</a>
+    <a href="#sm">Site manager</a>
     <a href="#pm">Project manager</a>
     <a href="#planning">Planning engineer</a>
     <a href="#costing">Costing engineer</a>
@@ -115,7 +116,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <thead><tr><th>Number</th><th>Owner</th><th>Where it comes from</th><th>Used for</th></tr></thead>
     <tbody>
       <tr><td>Quantity executed today, crews, hours, equipment</td><td><b>Foreman</b> and <b>site engineer</b></td><td>Daily report</td><td>Productivity, earned value, cost</td></tr>
-      <tr><td>Approval of that report</td><td><b>Project manager</b></td><td>Review and approve</td><td>Nothing counts until approved or submitted</td></tr>
+      <tr><td>Review of that report</td><td><b>Site engineer</b></td><td>Mark as reviewed</td><td>Accuracy</td></tr>
+      <tr><td>Approval of that report</td><td><b>Site manager</b>, or project manager</td><td>Approve</td><td>Nothing is final until approved</td></tr>
       <tr><td>Dates, logic, WBS, price weighting, labour resource loading</td><td><b>Planning engineer</b></td><td>P6 schedule</td><td>Plan, progress weighting, invoicing, trade proportions</td></tr>
       <tr><td>Design and procurement milestones</td><td><b>Planning engineer</b></td><td>Weekly Excel update</td><td>Engineering and procurement progress</td></tr>
       <tr><td>Budget quantity, unit, unit rate, budget cost, budget manhours</td><td><b>Costing engineer</b></td><td>Costing Excel</td><td>Budget analysis, unit rates, EAC</td></tr>
@@ -149,7 +151,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Add another activity</b> for every other activity your crews touched today. Each gets its own location, quantity and crew.</li>
     <li><b>Check the productivity panel on the right.</b> If it is red, look at it before submitting: usually the crew is right and the quantity was mis-measured, or the crew was waiting.</li>
     <li><b>Write a remark</b> if anything held you up: no access, no material, crane breakdown, rain, client instruction. Managers read these.</li>
-    <li><b>Submit for approval.</b> It reaches your project manager immediately.</li>
+    <li><b>Submit.</b> It goes to your site engineer for review, then to your site manager for approval. A clock at the top of the form records how long the report took.</li>
   </ol>
 
   <h3>Rules that matter</h3>
@@ -163,13 +165,14 @@ a.tool:hover{background:rgba(255,255,255,.2)}
 </section>
 
 <section id="engineer">
-  <h2>Site engineer<span class="who">Owns the accuracy of the daily report for his area</span></h2>
+  <h2>Site engineer<span class="who">Reviews every foreman's report for accuracy</span></h2>
   <div class="rule"></div>
   <span class="when">Daily, plus a weekly look at productivity</span>
   <p>You either enter the reports yourself or check what the foremen entered. You can edit any report until the project manager approves it.</p>
 
   <h3>Daily</h3>
   <ol class="steps">
+    <li><b>Review what your foremen submitted:</b> Daily reports → Submitted → open → Mark as reviewed, or return with comments. You see the button only on reports from foremen assigned to you; it then goes to the site manager assigned to you on that project.</li>
     <li><b>Check the drafts</b> in Daily reports, filtered to Draft. Nothing should stay in draft overnight.</li>
     <li><b>Verify the quantity against the survey or the measurement sheet</b> before submitting. This is the single check that protects every number above you.</li>
     <li><b>Verify the crew</b> against the gate count or attendance. The resources total on the right of the form should reconcile.</li>
@@ -185,6 +188,26 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li>Ask ProTrack AI: "which activity is underperforming and why", "what manpower is needed to finish on time".</li>
   </ul>
   <div class="warn"><b>What you cannot do</b>You cannot approve your own reports, change the baseline, or change design and procurement progress. That separation is deliberate.</div>
+</section>
+
+<section id="sm">
+  <h2>Site manager<span class="who">Approves every reviewed daily report, the same day</span></h2>
+  <div class="rule"></div>
+  <span class="when">Every evening, and before site meetings</span>
+  <p>The foreman submits, the site engineer reviews, and you approve. Which engineers' reports come to you is set by the super admin in the approval matrix, separately for each project. Your approval makes the report final and emails a summary to the project's stakeholders.</p>
+  <h3>Every evening</h3>
+  <ol class="steps">
+    <li><b>Daily reports → Reviewed.</b> These have been checked by your site engineers.</li>
+    <li><b>Open each report.</b> A clock runs while it is open; the time you take is recorded.</li>
+    <li><b>Approve,</b> or <b>return</b> or <b>reject</b> with a comment the site team will see.</li>
+  </ol>
+  <h3>Weekly</h3>
+  <ul>
+    <li><b>Performance:</b> foremen, site engineers and reporting compliance for your projects.</li>
+    <li><b>Reports → Report handling time:</b> who is slow to prepare, review or approve.</li>
+    <li><b>Presentation:</b> build the site progress deck for your meeting.</li>
+  </ul>
+  <div class="warn"><b>What you do not see</b>Cost and billing figures. Your executive summary and the reports you may open are set by the super admin in Settings → Role access.</div>
 </section>
 
 <section id="pm">
@@ -328,6 +351,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Milestones and EOT</b> for the project, including TCC, PAC and FAC.</li>
     <li><b>Payment terms:</b> phase caps, milestone releases, retention percentage and cap, the TCC and FAC release split, advance payment and recovery.</li>
     <li><b>Budget manhours source:</b> costing file or P6 resource loading, per project.</li>
+    <li><b>Settings → Approval matrix:</b> on every project, assign each foreman a reviewing site engineer and each site engineer an approving site manager. A person on two projects is assigned on each. Aim for no project heading showing "not assigned".</li>
+    <li><b>Settings → Email:</b> choose which roles receive the approval summary.</li>
     <li><b>Hand subcontractor purchase orders to each project's costing engineer.</b> You can still review every PO in Settings → Subcontractors.</li>
     <li>Hand over to planning and costing to load the baseline and the costing file.</li>
   </ol>

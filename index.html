@@ -438,6 +438,10 @@ label.btn{display:inline-block}
 .subgroup .subcrew{padding-inline-start:10px}
 .subgroup .btn.sm{margin-top:4px}
 .line.subhead{align-items:end}
+.timerpill{display:inline-flex;gap:4px;align-items:center;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-weight:600;font-size:12.5px;margin-inline-end:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel select[data-mx]{width:100%;min-width:180px}
 </style>
 </head>
 <body>
@@ -579,6 +583,12 @@ function seedMaster(){
       U('U32','Saud Al-Rashed','exec','Executive Director, Operations'),
       U('U35','Khalid Al Solami','exec','Executive Manager',{email:'khalid.alsolami@company.com'}),
       U('U36','Bandar Al-Juhani','pm','Project Manager',P(['QOT'])),
+      U('U42','Eng. Mansour Al-Qahtani','sm','Site Manager',P(['RMX','QOT'])),
+      U('U43','Eng. Fahad Al-Dosari','sm','Site Manager',P(['JDC','JBS'])),
+      U('U44','Eng. Yousef Al-Harbi','sm','Site Manager',P(['RTT','JWP'])),
+      U('U46','Eng. Sameer Khan','sm','Site Manager, Electrical and Mechanical',P(['QOT','JDC','JBS'])),
+      U('U45','Eng. Ahmed Zaki','eng','Site Engineer, Electrical',P(['QOT'])),
+      U('U47','Eng. Rafiq Ali','eng','Site Engineer, Civil',P(['JDC','JBS'])),
       U('U40','Priya Raman','costing','Costing Engineer',P(['RMX','JDC','QOT'])),
       U('U41','Hassan Qureshi','costing','Costing Engineer',P(['JBS','RTT','JWP'])),
       U('U37','Eng. Vinod Kurian','eng','Site Engineer',P(['QOT'])),
@@ -613,7 +623,7 @@ function seedMaster(){
       U('U26','Joseph Thomas','foreman','Foreman, Civil',P(['JWP'])),
       U('U27','Lina Saleh','ro','Finance, Head Office',{regions:['C','E','W','S']})
     ],
-    trades:seedTrades(),subs:seedSubs(),acts:[],nextUser:42,
+    trades:seedTrades(),subs:seedSubs(),acts:[],nextUser:48,
     log:[{t:`${addDays(TODAY,-40)} 09:00`,who:'Asarudeen Sowkath Ali',text:'Imported projects, users and baselines from Primavera P6.'}]
   };
 }
@@ -938,7 +948,7 @@ function notify(text,w){DB.notes.unshift({t:stamp(),text,w:!!w});save();renderBe
 function logChange(text){DB.master.log.unshift({t:stamp(),who:me().name,text})}
 const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
 
-const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
+const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
   en:{dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'ProTrack AI',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
   ar:{dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'ProTrack AI',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
@@ -962,7 +972,7 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
 
 /* ---------- shell ---------- */
 function renderNav(){
-  const L=T[state.lang];const views=['exec','dash','dpr','new','upd','base','eva','rep','deck','perf','admin'].filter(v=>(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec()));
+  const L=T[state.lang];const views=['exec','dash','dpr','new','upd','base','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec()));
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
   $('#nav').innerHTML=views.map(b).join('');$('#bottom').innerHTML=views.map(b).join('');
   $('#pageTitle').textContent=L[state.view];
@@ -989,6 +999,7 @@ function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
   ({exec:renderExec,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   if(!$('#aiPanel').hidden)renderChat();
+  if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
   renderBell();
 }
 function go(v){if(v!=='new'){state.form=null;state.editing=null}state.view=v;render();window.scrollTo(0,0)}
@@ -1072,7 +1083,7 @@ function renderDash(){
     <div class="panel kpi"><div class="l">Workforce on site</div><div class="v">${fmt(today.heads)}</div><div class="s">Reported ${lastDate?fmtD(lastDate):'—'}, own crews and subcontractors</div>${sparkline(series.map(o=>o.heads))}</div>
     <div class="panel kpi"><div class="l">Manhours, 30 days</div><div class="v">${fmt(p30.mh)}</div><div class="s">Earned ${fmt(p30.earned)} (${pct(p30.pi)}), overtime ${pct(p30.mh?p30.ot/p30.mh:0,0)}</div>${sparkline(series.map(o=>o.mh),{color:'var(--bar)',fillOp:.35})}</div>
     <div class="panel kpi"><div class="l">Schedule (SPI)</div><div class="gaugerow">${gauge(e.spi,'SPI')}<div class="s">EV ${sar(e.ev)}<br>PV ${sar(e.pv)}<br>${e.sv>=0?'Ahead':'Behind'} by ${sar(Math.abs(e.sv))}</div></div></div>
-    <div class="panel kpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(e.cpi,'CPI')}<div class="s">EV ${sar(e.ev)}<br>AC ${sar(e.ac)}<br>${e.cv>=0?'Under':'Over'} by ${sar(Math.abs(e.cv))}</div></div></div>
+    ${SITE_ROLES.includes(state.role)?'':`<div class="panel kpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(e.cpi,'CPI')}<div class="s">EV ${sar(e.ev)}<br>AC ${sar(e.ac)}<br>${e.cv>=0?'Under':'Over'} by ${sar(Math.abs(e.cv))}</div></div></div>`}
     <div class="panel kpi"><div class="l">Portfolio complete</div><div class="gaugerow">${donut(e.bac?e.ev/e.bac:0,'Portfolio complete')}<div class="s">Plan ${pct(e.bac?e.pv/e.bac:0,0)} by today<br>${fmt(acts.length)} activities<br>${fmt(scopeProjects().length)} project${scopeProjects().length===1?'':'s'}</div></div></div>
     <div class="panel kpi warncard ${state.role==='foreman'?'':'click'}" ${state.role==='foreman'?'':'data-go="rep" data-rep="warn"'}><div class="l">Early warnings</div>
       <div class="sevs">${['High','Medium','Low'].map(k=>`<span class="sev ${k}">${warn.filter(w=>w.sev===k).length} ${k.toLowerCase()}</span>`).join('')}</div>
@@ -1152,7 +1163,8 @@ function renderDpr(){
 function actionsFor(d){
   const r=state.role,s=d.status;
   if(r==='pm'||r==='sa')return s==='Submitted'?['review','return','reject']:s==='Reviewed'?['approve','return','reject']:[];
-  if(r==='eng')return s==='Draft'?['submit','edit']:(s==='Submitted'||s==='Reviewed')?['edit']:[];
+  if(r==='sm'){const R=routeOf(d);return s==='Reviewed'&&isMe(R.apr)?['approve','return','reject']:[]}
+  if(r==='eng'){const R=routeOf(d);return s==='Draft'?['submit','edit']:s==='Submitted'&&isMe(R.rev)?['review','return','edit']:s==='Reviewed'&&isMe(R.rev)?['edit']:[]}
   if(r==='foreman')return s==='Draft'?['submit','edit']:[];
   return [];
 }
@@ -1177,8 +1189,9 @@ function lineHTML(l,i,n,rep){
 }
 function openDpr(id){
   const d=DB.dprs.find(x=>x.id===id);if(!d)return;state.open=id;
+  {const a0=actionsFor(d);if(a0.includes('approve'))timerStart('approve',d.id);else if(a0.includes('review'))timerStart('review',d.id);}
   const p=projById(d.p),g=repAgg(d),acts=actionsFor(d);
-  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${d.id}</h2><span class="st ${d.status}">${d.status}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${d.id}</h2><span class="st ${d.status}">${d.status}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>${(()=>{const R=routeOf(d);return `<p class="small muted" style="margin:0 0 12px">Prepared by ${esc(d.foreman)} · reviewed by ${esc(R.revName)}${R.rev?'':' (project manager, no site engineer assigned)'} · approved by ${esc(R.aprName)}${R.apr?'':' (project manager, no site manager assigned)'}${d.mailed?` · <b>summary emailed to ${d.mailed.n}</b>`:''}</p>`})()}
   <div class="small muted">${fmtDY(d.date)}, ${esc(p.short)}. Foreman ${esc(d.foreman)}, site engineer ${esc(d.engineer)}.</div>
   <div class="facts" style="grid-template-columns:repeat(2,minmax(0,1fr))">
     <div><div class="l">Activities</div><div class="v">${d.lines.length}</div></div>
@@ -1212,7 +1225,7 @@ function confirmBox(msg,okText){
     setTimeout(()=>{const ok=w.querySelector('[data-cfm="1"]');ok&&ok.focus()},30);
   });
 }
-function closeDrawer(){$('#drawer').hidden=true;state.open=null}
+function closeDrawer(){if(TIMER.kind==='review'||TIMER.kind==='approve')timerStop(true);$('#drawer').hidden=true;state.open=null}
 function notifyLow(d){d.lines.filter(l=>lpi(l)<0.9).forEach(l=>notify(`Productivity below target: ${actById(l.act).name} reported at ${pct(lpi(l))} in ${d.id}.`,true))}
 function doAction(k){
   const d=DB.dprs.find(x=>x.id===state.open);if(!d)return;const p=projById(d.p);
@@ -1221,12 +1234,43 @@ function doAction(k){
   if((k==='reject'||k==='return')&&!note){$('#actErr').textContent='Add a comment so the site team knows what to fix.';return}
   const who=me().name;
   const map={review:['Reviewed','Reviewed'],approve:['Approved','Approved'],reject:['Rejected','Rejected'],return:['Draft','Returned'],submit:['Submitted',d.returned?'Resubmitted':'Submitted']};
+  if(TIMER.id===d.id&&(TIMER.kind==='review'||TIMER.kind==='approve')){const kind=TIMER.kind,secs=timerStop();logTime(d,kind,secs)}
   const [st,label]=map[k];d.status=st;if(k==='return')d.returned=true;
   d.audit.push({t:stamp(),who,action:label,note:note||undefined});
   save();
   if(k==='submit'){notify(`${d.id} submitted for ${p.short} with ${d.lines.length} activit${d.lines.length>1?'ies':'y'}, waiting for ${p.pm} to review.`);notifyLow(d)}
   else notify(`${d.id} ${label.toLowerCase()} by ${who}.${note?' Comment: '+note:''}`,k==='reject');
   toast(`${d.id} ${label.toLowerCase()}`);openDpr(d.id);render();
+  if(k==='approve')sendApprovalMail(d).then(n=>{if(n){toast(`${d.id} approved. Summary emailed to ${n} ${n>1?'people':'person'}${CLOUD?'':' (demo: prepared, not sent)'}`);if(state.open===d.id)openDpr(d.id)}});
+}
+
+/* ---------- time spent preparing, reviewing and approving each report ---------- */
+const TIMER={kind:null,id:null,start:0,acc:0,hidden:false};
+function timerStart(kind,id,carry){
+  if(TIMER.kind===kind&&TIMER.id===id&&TIMER.start)return;
+  timerStop(true);
+  Object.assign(TIMER,{kind,id,start:Date.now(),acc:carry||0,hidden:document.hidden});
+  paintTimer();
+}
+function timerElapsed(){return Math.round((TIMER.acc+(TIMER.start&&!TIMER.hidden?Date.now()-TIMER.start:0))/1000)}
+function timerStop(discard){
+  const s=timerElapsed();const k=TIMER.kind;
+  Object.assign(TIMER,{kind:null,id:null,start:0,acc:0});
+  return discard?0:(k?s:0);
+}
+document.addEventListener('visibilitychange',()=>{
+  if(!TIMER.kind)return;
+  if(document.hidden){TIMER.acc+=Date.now()-TIMER.start;TIMER.hidden=true}
+  else{TIMER.start=Date.now();TIMER.hidden=false}
+});
+const fmtDur=s=>{s=Math.max(0,Math.round(+s||0));const m=Math.floor(s/60),x=s%60;return m>=60?`${Math.floor(m/60)} h ${m%60} min`:m?`${m} min ${String(x).padStart(2,'0')} s`:`${x} s`};
+function paintTimer(){const el=document.getElementById('formTimer');if(el&&TIMER.kind==='create')el.textContent=fmtDur(timerElapsed())}
+setInterval(paintTimer,1000);
+function logTime(d,kind,secs){
+  if(!d||!(secs>0))return;
+  d.timing=d.timing||{};
+  const o=d.timing[kind]||(d.timing[kind]={secs:0,by:null,sessions:0});
+  o.secs+=secs;o.by=me().name;o.role=state.role;o.sessions++;o.at=stamp();
 }
 
 /* ---------- new / edit report form ---------- */
@@ -1294,9 +1338,10 @@ function lineForm(l,i,f){
 }
 function renderForm(){
   if(!canCreate()){go('dpr');return}
+  {const key=state.editing||'new';if(!(TIMER.kind==='create'&&TIMER.id===key))timerStart('create',key,0);}
   if(!state.form){const b=blankForm();if(!b){document.getElementById('view').innerHTML=crumb()+'<section class="panel"><h2>No project is ready for daily reporting</h2><p class="muted" style="margin:0">None of your active projects has both a baseline and a foreman yet. Ask the planning manager to finish the project setup in Settings.</p></section>';return}state.form=b}
   const f=state.form,p=projById(f.p),left=ACTS.filter(x=>x.p===f.p&&isCon(x)&&!f.lines.some(l=>l.act===x.id)).length;
-  document.getElementById('view').innerHTML=`<div class="crumb">${state.editing?`Editing ${state.editing}. Changes are logged in the audit trail.`:'One report per foreman per day. Add every activity the crews worked on, each with the resources engaged on it.'}</div>
+  document.getElementById('view').innerHTML=`<div class="crumb"><span class="timerpill" title="Time spent on this report">⏱ <span id="formTimer">0 s</span></span> ${state.editing?`Editing ${state.editing}. Changes are logged in the audit trail.`:'One report per foreman per day. Add every activity the crews worked on, each with the resources engaged on it.'}</div>
   <div class="form-grid"><div style="display:flex;flex-direction:column;gap:16px">
     <section class="panel"><h2>Report details</h2><div class="fields">
       <label class="field">Date<input type="date" data-k="date" value="${f.date}" max="${TODAY}"></label>
@@ -1353,8 +1398,9 @@ function saveForm(mode){
     if(mode==='submit'&&d.status==='Draft'){d.status='Submitted';d.audit.push({t,who,action:d.returned?'Resubmitted':'Submitted'})}}
   else{d={id:'DPR-'+String(DB.next++).padStart(4,'0'),date:f.date,p:f.p,foreman:f.foreman,engineer:p.eng,lines:cleanLines,remarks:f.remarks,attachments:f.attachments,status:mode==='submit'?'Submitted':'Draft',audit:[{t,who,action:'Draft created'}],late:false,returned:false};
     if(mode==='submit')d.audit.push({t,who,action:'Submitted'});DB.dprs.push(d)}
+  if(TIMER.kind==='create'){const secs=timerStop();logTime(d,'create',secs)}
   save();
-  if(d.status==='Submitted'&&mode==='submit'){notify(`${d.id} submitted for ${p.short} with ${d.lines.length} activit${d.lines.length>1?'ies':'y'}, waiting for ${p.pm} to review.`);notifyLow(d)}
+  if(d.status==='Submitted'&&mode==='submit'){notify(`${d.id} submitted for ${p.short} with ${d.lines.length} activit${d.lines.length>1?'ies':'y'}, waiting for ${p.eng} to review and the site manager to approve.`);notifyLow(d)}
   toast(`${d.id} ${mode==='submit'?(state.editing?'saved':'submitted'):'saved as draft'}`);state.dprFilter='All';go('dpr');
 }
 
@@ -1557,7 +1603,10 @@ function seedHistories(){
 
 function renderPerf(){
   seedHistories();
-  const tabs={foremen:'Foremen',engineers:'Site engineers',pms:'Project managers',planners:'Planning engineers',costing:'Costing engineers',compliance:'Reporting compliance',subs:'Subcontractors'};let body='';
+  const ALLTABS={foremen:'Foremen',engineers:'Site engineers',pms:'Project managers',planners:'Planning engineers',costing:'Costing engineers',compliance:'Reporting compliance',subs:'Subcontractors'};
+  const ROLE_TABS={foreman:['foremen'],eng:['foremen','engineers'],sm:['foremen','engineers','compliance']};
+  const tabs=Object.fromEntries(Object.entries(ALLTABS).filter(([k])=>!ROLE_TABS[state.role]||ROLE_TABS[state.role].includes(k)));
+  if(!tabs[state.perfTab])state.perfTab=Object.keys(tabs)[0];let body='';
   if(state.perfTab==='planners'){const r=plannerRows();body=r.length?`<table class="tbl"><thead><tr><th>Planning engineer</th><th class="n">DCMA score</th><th>Checks failed</th><th class="n">Weekly updates</th><th class="n">Compliance</th><th>Last update</th><th class="n">Score</th></tr></thead><tbody>
     ${r.map(x=>`<tr><td><b>${esc(x.name)}</b><span class="t2">${esc(x.projects)}</span></td>
       <td class="n">${x.dc==null?'<span class="muted">No XER</span>':`<b class="${x.dc>=0.85?'g-c':x.dc>=0.6?'a-c':'r-c'}">${pct(x.dc,0)}</b><span class="t2">${x.assessed} of ${x.n} projects</span>`}</td>
@@ -1605,8 +1654,8 @@ function renderPerf(){
       ${canNotify()?`<td class="n"><button class="btn sm" type="button" data-nudge="${x.p.id}" ${x.issues.length?'':'disabled'}>Notify team</button></td>`:''}</tr>`).join('')}
     </tbody></table><p class="small muted">Expected: one daily report per working day (Friday excluded). A weekly design and procurement update within nine days where the project has those activities, and an invoice register within nine days where payment terms are set. Notify team sends a reminder naming the gaps to the project manager, site engineer and foremen.</p>
     ${(DB.nudges||[]).filter(n=>SCOPE.has(n.p)).length?`<h3 style="margin-top:18px">Reminders sent</h3><table class="tbl"><thead><tr><th>When</th><th>Project</th><th>By</th><th>Message</th></tr></thead><tbody>${(DB.nudges||[]).filter(n=>SCOPE.has(n.p)).slice(0,10).map(n=>`<tr><td class="small">${esc(n.at)}</td><td>${esc((projById(n.p)||{}).short||n.p)}</td><td>${esc(n.by)}</td><td class="small">${esc(n.msg)}</td></tr>`).join('')}</tbody></table>`:''}`}
-  if(state.perfTab==='foremen'){const r=foremanRows();body=`<table class="tbl"><thead><tr><th>Foreman</th><th class="n">Reports</th><th class="n">Earned mh</th><th class="n">Productivity</th><th class="n">Overtime</th><th class="n">Rework</th><th class="n">Approval</th><th class="n">Score</th></tr></thead><tbody>${r.map((x,i)=>`<tr><td>${esc(x.n)}${i<2&&r.length>3?'<span class="tag up">Top</span>':''}${i>=r.length-2&&r.length>3?'<span class="tag down">Needs support</span>':''}<span class="t2">${esc(x.proj)}</span></td><td class="n">${x.nr}</td><td class="n">${fmt(x.g.earned)}</td><td class="n">${tl(x.g.pi)}</td><td class="n">${pct(x.ot)}</td><td class="n">${pct(x.rework)}</td><td class="n">${pct(x.appr,0)}</td><td class="n"><b>${x.score}</b></td></tr>`).join('')}</tbody></table><p class="small muted">Monthly scorecard: productivity 60%, approval rate 25%, first-time-right reports 15%. Rework counts reports that were returned or rejected.</p>`}
-  if(state.perfTab==='engineers'){const r=engineerRows();body=`<table class="tbl"><thead><tr><th>Site engineer</th><th class="n">Report compliance</th><th class="n">On time</th><th class="n">Approval</th><th class="n">Project productivity</th><th class="n">Index</th></tr></thead><tbody>${r.map(x=>`<tr><td>${esc(x.n)}<span class="t2">${esc(x.proj)}</span></td><td class="n">${pct(x.comp,0)}</td><td class="n">${pct(x.timely,0)}</td><td class="n">${pct(x.appr,0)}</td><td class="n">${tl(x.g.pi)}</td><td class="n"><b>${x.idx}</b></td></tr>`).join('')}</tbody></table><p class="small muted">Compliance is working days with at least one report. On time means submitted by 20:00 the same day. Index weighs compliance 30%, timeliness 25%, approval 20%, productivity 25%.</p>`}
+  if(state.perfTab==='foremen'){const r=foremanRows().filter(x=>state.role!=='foreman'||x.name===me().name);body=`<table class="tbl"><thead><tr><th>Foreman</th><th class="n">Reports</th><th class="n">Earned mh</th><th class="n">Productivity</th><th class="n">Overtime</th><th class="n">Rework</th><th class="n">Approval</th><th class="n">Score</th></tr></thead><tbody>${r.map((x,i)=>`<tr><td>${esc(x.n)}${i<2&&r.length>3?'<span class="tag up">Top</span>':''}${i>=r.length-2&&r.length>3?'<span class="tag down">Needs support</span>':''}<span class="t2">${esc(x.proj)}</span></td><td class="n">${x.nr}</td><td class="n">${fmt(x.g.earned)}</td><td class="n">${tl(x.g.pi)}</td><td class="n">${pct(x.ot)}</td><td class="n">${pct(x.rework)}</td><td class="n">${pct(x.appr,0)}</td><td class="n"><b>${x.score}</b></td></tr>`).join('')}</tbody></table><p class="small muted">Monthly scorecard: productivity 60%, approval rate 25%, first-time-right reports 15%. Rework counts reports that were returned or rejected.</p>`}
+  if(state.perfTab==='engineers'){const r=engineerRows().filter(x=>state.role!=='eng'||x.name===me().name);body=`<table class="tbl"><thead><tr><th>Site engineer</th><th class="n">Report compliance</th><th class="n">On time</th><th class="n">Approval</th><th class="n">Project productivity</th><th class="n">Index</th></tr></thead><tbody>${r.map(x=>`<tr><td>${esc(x.n)}<span class="t2">${esc(x.proj)}</span></td><td class="n">${pct(x.comp,0)}</td><td class="n">${pct(x.timely,0)}</td><td class="n">${pct(x.appr,0)}</td><td class="n">${tl(x.g.pi)}</td><td class="n"><b>${x.idx}</b></td></tr>`).join('')}</tbody></table><p class="small muted">Compliance is working days with at least one report. On time means submitted by 20:00 the same day. Index weighs compliance 30%, timeliness 25%, approval 20%, productivity 25%.</p>`}
   if(state.perfTab==='subs'){const r=subRows();body=r.length?`<table class="tbl"><thead><tr><th>Subcontractor</th><th>Commercial basis</th><th class="n">Days on site</th><th class="n">Avg crew</th><th class="n">Earned mh</th><th class="n">Productivity</th><th class="n">Cost to date</th><th class="n">Cost per earned mh</th></tr></thead><tbody>${r.map((x,i)=>`<tr><td>${i+1}. ${esc(subById(x.id).name)}<span class="t2">${subById(x.id).code}</span></td><td>${esc(x.type)}<span class="t2">${[...x.pos].join(', ')||'estimated'}, ${x.projects.size} project${x.projects.size===1?'':'s'}</span></td><td class="n">${x.days.size}</td><td class="n">${fmt(x.avgHeads,1)}</td><td class="n">${fmt(x.earned)}</td><td class="n">${tl(x.pi)}</td><td class="n">${sar(x.cost)}</td><td class="n">SAR ${fmt(x.cpe,1)}</td></tr>`).join('')}</tbody></table><p class="small muted">Measured subcontractors are costed on quantity executed at the PO unit rate. Manpower supply is costed on manhours at the PO manhour rate. Both come from the daily report.</p>`:'<p class="muted">No subcontractor crews reported in this scope.</p>'}
   document.getElementById('view').innerHTML=`${crumb()}<div class="chips" role="tablist">${Object.entries(tabs).map(([k,v])=>`<button type="button" role="tab" class="chip" data-tab="${k}" aria-pressed="${state.perfTab===k}">${v}</button>`).join('')}</div><section class="panel"><h2>${tabs[state.perfTab]}${state.perfTab==='compliance'?', last 14 days':', last 30 days'}</h2><div class="scroll">${body}</div></section>`;
 }
@@ -1865,6 +1914,202 @@ function ohtlHTML(p){
 }
 
 /* ---------- executive summary: choose the tiles and the breakdown ---------- */
+/* ---------- approval matrix, assigned by the super admin per project ---------- */
+/* DB.matrix[pid] = {fm:{foremanId:engineerId}, eng:{engineerId:siteManagerId}}
+   A foreman's report on a project is reviewed by the site engineer assigned to that foreman on that
+   project, and approved by the site manager assigned to that engineer on that project. Anything not
+   assigned falls to the project manager. The same person can have different assignments per project. */
+const DEMO_MATRIX={
+  RMX:{fm:{U16:'U11',U17:'U11',U18:'U11'},eng:{U11:'U42'}},
+  QOT:{fm:{U38:'U37',U39:'U45'},eng:{U37:'U42',U45:'U46'}},
+  JDC:{fm:{U19:'U12',U20:'U12'},eng:{U12:'U46',U47:'U43'}},
+  JBS:{fm:{U21:'U47',U22:'U13'},eng:{U13:'U46',U47:'U46'}},
+  RTT:{fm:{U23:'U14',U24:'U14'},eng:{U14:'U44'}},
+  JWP:{fm:{U25:'U15',U26:'U15',U24:'U15'},eng:{U15:'U44'}}};
+function seedMatrix(){
+  if(DB.matrixSeeded)return;
+  const u24=userById('U24');if(u24&&!u24.projects.includes('JWP')){u24.projects.push('JWP');if(typeof syncTeams==='function')syncTeams()}
+  DB.matrix=DB.matrix||{};
+  Object.entries(DEMO_MATRIX).forEach(([pid,m])=>{const x=DB.matrix[pid]||(DB.matrix[pid]={fm:{},eng:{}});
+    Object.entries(m.fm).forEach(([a,b])=>{if(userById(a)&&userById(b)&&!x.fm[a])x.fm[a]=b});
+    Object.entries(m.eng).forEach(([a,b])=>{if(userById(a)&&userById(b)&&!x.eng[a])x.eng[a]=b})});
+  DB.matrixSeeded=true;save();
+}
+const mx=pid=>{DB.matrix=DB.matrix||{};return DB.matrix[pid]||(DB.matrix[pid]={fm:{},eng:{}})};
+const onProject=(u,pid)=>u&&u.active!==false&&accessIds(u).includes(pid);
+const teamOf=(pid,role)=>DB.master.users.filter(u=>u.role===role&&onProject(u,pid));
+function assigned(pid,kind,from){const id=mx(pid)[kind][from],u=id&&userById(id);return onProject(u,pid)?u:null}
+function routeOf(d){
+  const p=projById(d.p)||{},fu=DB.master.users.find(u=>u.role==='foreman'&&u.name===d.foreman);
+  const rev=fu?assigned(d.p,'fm',fu.id):null;
+  const didRev=[...(d.audit||[])].reverse().find(a=>a.action==='Reviewed');
+  const revU=(didRev&&DB.master.users.find(u=>u.name===didRev.who&&u.role==='eng'))||rev;
+  const apr=revU?assigned(d.p,'eng',revU.id):null;
+  return {rev,apr,pm:p.pm,revName:rev?rev.name:p.pm,aprName:apr?apr.name:p.pm};
+}
+const isMe=u=>!!u&&u.id===me().id;
+function matrixHTML(){
+  const opt=(list,cur,pm)=>`<option value="">${esc(pm)} (project manager)</option>`+list.map(u=>`<option value="${u.id}" ${u.id===cur?'selected':''}>${esc(u.name)}</option>`).join('');
+  const multi=u=>{const n=accessIds(u).length;return n>1?`<span class="t2">on ${n} projects</span>`:''};
+  return scopeProjects().filter(p=>p.status==='Active').map(p=>{
+    const fms=teamOf(p.id,'foreman'),engs=teamOf(p.id,'eng'),sms=teamOf(p.id,'sm'),M=mx(p.id);
+    const gapF=fms.filter(u=>!assigned(p.id,'fm',u.id)).length,gapE=engs.filter(u=>!assigned(p.id,'eng',u.id)).length;
+    return `<section class="panel" style="margin-bottom:14px"><div class="card-head"><h2>${esc(p.name)}</h2>
+      <span class="small ${gapF+gapE?'a-c':'muted'}">${gapF+gapE?`${gapF+gapE} not assigned, ${esc(p.pm)} covers them`:'Every foreman and site engineer assigned'}</span></div>
+    <div class="grid2" style="gap:18px">
+      <div><h3>Foreman → site engineer who reviews</h3><div class="scroll"><table class="tbl"><thead><tr><th>Foreman</th><th>Reviewed by</th></tr></thead><tbody>
+        ${fms.map(u=>`<tr><td><b>${esc(u.name)}</b>${multi(u)}</td><td><select data-mx="${p.id}:fm:${u.id}" aria-label="Reviewer for ${esc(u.name)}">${opt(engs,M.fm[u.id],p.pm)}</select></td></tr>`).join('')||'<tr><td colspan="2" class="muted">No foreman has access to this project.</td></tr>'}
+      </tbody></table></div></div>
+      <div><h3>Site engineer → site manager who approves</h3><div class="scroll"><table class="tbl"><thead><tr><th>Site engineer</th><th>Approved by</th></tr></thead><tbody>
+        ${engs.map(u=>`<tr><td><b>${esc(u.name)}</b>${multi(u)}</td><td><select data-mx="${p.id}:eng:${u.id}" aria-label="Approver for ${esc(u.name)}">${opt(sms,M.eng[u.id],p.pm)}</select></td></tr>`).join('')||'<tr><td colspan="2" class="muted">No site engineer has access to this project.</td></tr>'}
+      </tbody></table></div></div>
+    </div></section>`}).join('')+`<p class="small muted">Only people with access to the project are offered. A foreman or site engineer on several projects is assigned separately on each. Anyone left on "project manager" has his reports reviewed or approved by that project's manager. Give access under Users and access first.</p>`;
+}
+
+/* ---------- approval email ---------- */
+const MAIL_ROLES=[['eng','Site engineers'],['sm','Site managers'],['pm','Project managers'],['pf','Portfolio managers'],['rm','Regional managers'],['plan','Planning engineers'],['costing','Costing engineers'],['exec','Executives'],['sa','Super admins']];
+function mailCfg(){DB.mailCfg=DB.mailCfg||{on:true,roles:['eng','sm','pm','pf','plan','costing','exec','sa'],siteDisc:true};return DB.mailCfg}
+const siteUrl=()=>String(CFG.SITE_URL||'https://asarsowkat.github.io/protrack-ai/').replace(/#.*$/,'');
+const dprLink=d=>siteUrl()+'#dpr='+encodeURIComponent(d.id);
+function mailRecipients(d){const c=mailCfg(),R=routeOf(d),chain=new Set([R.rev&&R.rev.id,R.apr&&R.apr.id].filter(Boolean));
+  return DB.master.users.filter(u=>u.active!==false&&u.email&&c.roles.includes(u.role)&&accessIds(u).includes(d.p)&&(!c.siteDisc||!SITE_ROLES.includes(u.role)||chain.has(u.id)))}
+const mailSubject=d=>{const p=projById(d.p);return `Daily report approved: ${p.short}, ${d.foreman}, ${fmtDY(d.date)} (${d.id})`};
+function mailHTML(d){
+  const p=projById(d.p),g=repAgg(d),T=d.timing||{},link=dprLink(d);
+  const last=a=>[...d.audit].reverse().find(x=>x.action===a);const rv=last('Reviewed'),ap=last('Approved');
+  const cell='padding:8px 10px;border-bottom:1px solid #E3E8EF;font:14px Arial,sans-serif;color:#1F2A37',th=cell.replace('#1F2A37','#5B6B7F')+';text-align:left;font-weight:bold;background:#F4F6F9';
+  const subH=d.lines.reduce((t,l)=>t+subFlat(l).reduce((s,u)=>s+(+u.count||0),0),0);
+  const rows=d.lines.map(l=>{const a=actById(l.act)||{name:l.act,uom:''},x=agg([l]);
+    const done=lines().filter(y=>y.act===l.act&&VALID.has(y.status)&&y.date<=d.date).reduce((t,y)=>t+(+y.qty||0),0),cum=a.qty?done/a.qty:0;
+    return `<tr><td style="${cell}"><b>${esc(a.name)}</b><br><span style="color:#5B6B7F;font-size:12px">${esc(l.act)}</span></td>
+      <td style="${cell};text-align:right">${fmt(+l.qty,1)} ${esc(a.uom||'')}</td><td style="${cell};text-align:right">${pct(cum,0)}</td>
+      <td style="${cell};text-align:right">${fmt(x.heads)}</td><td style="${cell};text-align:right">${fmt(x.mh,0)}</td>
+      <td style="${cell};text-align:right;font-weight:bold;color:${x.pi>=1?'#1E7B4B':x.pi>=0.85?'#B26B00':'#C0392B'}">${pct(x.pi,0)}</td></tr>`}).join('');
+  const low=d.lines.map(l=>({a:actById(l.act),x:agg([l])})).filter(o=>o.a&&o.x.pi&&o.x.pi<0.85);
+  const kpi=(l,v)=>`<td style="padding:10px 12px;background:#F4F6F9;border-radius:8px;font:12px Arial,sans-serif;color:#5B6B7F">${l}<br><b style="font-size:20px;color:#0B2545">${v}</b></td>`;
+  return `<!doctype html><html><body style="margin:0;background:#EEF1F5;padding:20px 0">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center">
+<table role="presentation" width="640" cellspacing="0" cellpadding="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:640px">
+<tr><td style="background:#04101F;padding:18px 24px;font:bold 22px Arial,sans-serif;color:#fff">Pro<span style="color:#4DA3FF">Track</span>
+  <span style="float:right;font:13px Arial,sans-serif;color:#9FB6D6;padding-top:6px">Daily report approved</span></td></tr>
+<tr><td style="padding:22px 24px 6px;font:14px Arial,sans-serif;color:#1F2A37">
+  <div style="font:bold 20px Arial,sans-serif;color:#0B2545">${esc(p.name)}</div>
+  <div style="color:#5B6B7F;margin-top:4px">${esc(d.id)} · ${fmtDY(d.date)} · foreman ${esc(d.foreman)}</div></td></tr>
+<tr><td style="padding:14px 24px"><table role="presentation" width="100%" cellspacing="6" cellpadding="0"><tr>
+  ${kpi('Activities',d.lines.length)}${kpi('Manpower',fmt(g.heads)+(subH?`<span style="font-size:12px;color:#5B6B7F"> (${fmt(subH)} sub)</span>`:''))}${kpi('Manhours',fmt(g.mh,0))}${kpi('Productivity',pct(g.pi,0))}</tr></table></td></tr>
+<tr><td style="padding:4px 24px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+  <tr><th style="${th}">Activity</th><th style="${th};text-align:right">Today</th><th style="${th};text-align:right">Complete</th><th style="${th};text-align:right">Heads</th><th style="${th};text-align:right">Mh</th><th style="${th};text-align:right">Index</th></tr>${rows}</table></td></tr>
+${low.length?`<tr><td style="padding:14px 24px 0;font:14px Arial,sans-serif;color:#C0392B"><b>Below 85% productivity:</b> ${low.map(o=>esc(o.a.name)+' '+pct(o.x.pi,0)).join('; ')}</td></tr>`:''}
+${d.remarks?`<tr><td style="padding:14px 24px 0;font:14px Arial,sans-serif;color:#1F2A37"><b>Site remarks:</b> ${esc(d.remarks)}</td></tr>`:''}
+<tr><td style="padding:14px 24px 0;font:13px Arial,sans-serif;color:#5B6B7F">
+  Prepared by ${esc(d.foreman)}${T.create?` in ${fmtDur(T.create.secs)}`:''}.
+  ${rv?`Reviewed by ${esc(rv.who)}${T.review?` in ${fmtDur(T.review.secs)}`:''}.`:''}
+  ${ap?`Approved by ${esc(ap.who)}${T.approve?` in ${fmtDur(T.approve.secs)}`:''}, ${esc(ap.t)}.`:''}
+  ${(d.attachments||[]).length?` ${d.attachments.length} photograph${d.attachments.length>1?'s':''} attached in ProTrack.`:''}</td></tr>
+<tr><td style="padding:22px 24px 26px" align="left"><a href="${link}" style="display:inline-block;background:#1763D8;color:#fff;text-decoration:none;font:bold 15px Arial,sans-serif;padding:12px 22px;border-radius:8px">Open ${esc(d.id)} in ProTrack</a>
+  <div style="font:12px Arial,sans-serif;color:#8A97A8;margin-top:10px">Or paste this link: ${link}</div></td></tr>
+<tr><td style="background:#F4F6F9;padding:12px 24px;font:11px Arial,sans-serif;color:#8A97A8">Sent automatically by ProTrack because you have access to ${esc(p.short)}. Figures are as approved; later corrections appear in the app.</td></tr>
+</table></td></tr></table></body></html>`;
+}
+async function sendApprovalMail(d){
+  const c=mailCfg();if(!c.on)return 0;
+  const to=mailRecipients(d);if(!to.length)return 0;
+  const m={id:'M'+Date.now().toString(36),dpr:d.id,p:d.p,at:stamp(),to:to.map(u=>({name:u.name,email:u.email,role:u.role})),subject:mailSubject(d),html:mailHTML(d),
+    status:CLOUD?'Sending':'Demo: not sent'};
+  DB.outbox=DB.outbox||[];DB.outbox.unshift(m);if(DB.outbox.length>150)DB.outbox.length=150;
+  d.mailed={id:m.id,n:to.length,at:m.at};save();
+  if(CLOUD){try{const {error}=await SB.functions.invoke('send-daily-report',{body:{to:m.to.map(x=>x.email),subject:m.subject,html:m.html}});
+      m.status=error?'Failed: '+(error.message||String(error)):'Sent'}catch(e){m.status='Failed: '+e.message}save();if(state.view==='admin')render()}
+  return to.length;
+}
+function mailAdminHTML(){
+  const c=mailCfg(),box=(DB.outbox||[]).filter(m=>SCOPE.has(m.p)),cur=box.find(m=>m.id===state.mailOpen);
+  return `<section class="panel" style="margin-bottom:16px"><h2>Approval email</h2>
+    <label class="chk"><input type="checkbox" data-mailcfg="on" ${c.on?'checked':''}><span><b>Send a summary email when a daily report is approved</b></span></label>
+    <h3 style="margin-top:14px">Who receives it</h3><p class="small muted" style="margin:0 0 8px">Everyone in these roles who has access to the report's project.</p>
+    <div class="checks" style="max-height:none">${MAIL_ROLES.map(([k,l])=>`<label class="chk"><input type="checkbox" data-mailrole="${k}" ${c.roles.includes(k)?'checked':''}><span>${l}</span></label>`).join('')}</div>
+    <label class="chk" style="margin-top:8px"><input type="checkbox" data-mailcfg="siteDisc" ${c.siteDisc?'checked':''}><span>Site engineers and site managers receive only reports they review or approve</span></label>
+    <p class="small muted" style="margin-top:10px">Link in the email: <b>${esc(siteUrl())}</b>, set as SITE_URL in config.js. ${CLOUD?'Emails are sent through the server.':'This copy runs on demo data, so emails are prepared and listed below but not sent. Once the server mail function is set up, they go out automatically.'}</p></section>
+  <section class="panel"><div class="card-head"><h2>Sent emails</h2><span class="small muted">${box.length} in your scope</span></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>When</th><th>Report</th><th>Subject</th><th class="n">Recipients</th><th>Status</th></tr></thead><tbody>
+    ${box.slice(0,60).map(m=>`<tr class="click ${m.id===state.mailOpen?'rowsel':''}" data-mailopen="${m.id}"><td class="small">${esc(m.at)}</td><td>${esc(m.dpr)}</td><td class="small">${esc(m.subject)}</td><td class="n">${m.to.length}</td>
+      <td><span class="sev ${m.status==='Sent'?'Low':/Fail/.test(m.status)?'High':'Medium'}">${esc(m.status)}</span></td></tr>`).join('')||'<tr><td colspan="5" class="muted">No report has been approved since email was switched on.</td></tr>'}
+    </tbody></table></div>
+    ${cur?`<h3 style="margin-top:16px">To</h3><p class="small">${cur.to.map(x=>`${esc(x.name)} &lt;${esc(x.email)}&gt;, ${esc(ROLES[x.role]||x.role)}`).join('<br>')}</p>
+      <h3>Preview</h3><iframe title="Email preview" style="width:100%;height:760px;border:1px solid var(--line);border-radius:10px;background:#EEF1F5" srcdoc="${esc(cur.html)}"></iframe>`:'<p class="small muted" style="margin-top:10px">Select an email to see its recipients and a preview.</p>'}
+  </section>`;
+}
+function checkDeepLink(){
+  const m=(location.hash||'').match(/^#dpr=([\w-]+)/);if(!m)return;
+  const id=decodeURIComponent(m[1]);
+  try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+  const d=DB.dprs.find(x=>x.id===id);if(!d)return toast(`${id} is not available to you`);
+  if(!accessIds().includes(d.p))return toast(`You do not have access to ${id}`);
+  state.view='dpr';state.scope='ALL';render();setTimeout(()=>openDpr(id),60);
+}
+
+/* ---------- role access: what site roles see, set by the super admin ---------- */
+const SITE_ROLES=['eng','sm'];
+const COST_KPIS=['value','cpi','eac','invoiceable','invoiced','approved','collected','shortsub','shortappr','outstanding','advance'];
+const COST_COLS=['value','cpi','invoiceable','invoiced','approved','collected','shortsub','shortappr','outstanding'];
+const ROLE_VIEWS={foreman:['dpr','new','perf'],eng:['exec','dash','dpr','new','rep','perf'],sm:['exec','dash','dpr','rep','deck','perf']};
+const DEF_ROLECFG={
+  reports:{eng:['actprog','projprog','prod','histo','warn'],sm:['actprog','projprog','regprog','prod','histo','recon','warn','timing']},
+  exec:{eng:{kpis:['projects','complete','spi','prod','heads','crit'],group:'project',second:'',cols:['bar','spi','prod','crit']},
+        sm:{kpis:['projects','complete','spi','prod','heads','crit','warn'],group:'project',second:'',cols:['bar','spi','prod','crit']}}};
+function roleCfg(){
+  DB.roleCfg=DB.roleCfg||JSON.parse(JSON.stringify(DEF_ROLECFG));
+  ['reports','exec'].forEach(k=>{DB.roleCfg[k]=DB.roleCfg[k]||{};SITE_ROLES.forEach(r=>{if(!DB.roleCfg[k][r])DB.roleCfg[k][r]=JSON.parse(JSON.stringify(DEF_ROLECFG[k][r]))})});
+  return DB.roleCfg;
+}
+const reportAllowed=id=>SITE_ROLES.includes(state.role)?roleCfg().reports[state.role].includes(id):state.role!=='foreman';
+function siteExecPrefs(){
+  const c=roleCfg().exec[state.role];
+  return {kpis:c.kpis.filter(k=>!COST_KPIS.includes(k)),group:c.group||'project',second:c.second||'',
+    cols:c.cols.filter(k=>!COST_COLS.includes(k)),hideBilling:true,locked:true};
+}
+function roleAccessHTML(){
+  const C=roleCfg();
+  return SITE_ROLES.map(r=>{const e=C.exec[r],rep=C.reports[r];
+    return `<section class="panel" style="margin-bottom:16px"><h2>${ROLES[r]}</h2>
+    <h3>Reports this role may open</h3>
+    <div class="checks" style="max-height:none">${Object.entries(REPORTS).map(([id,R])=>`<label class="chk"><input type="checkbox" data-rolerep="${r}:${id}" ${rep.includes(id)?'checked':''}><span>${esc(R.title)}</span></label>`).join('')}</div>
+    <h3 style="margin-top:16px">Executive summary for this role</h3>
+    <p class="small muted" style="margin:0 0 8px">People in this role cannot change it. Cost and billing figures are never offered to site roles.</p>
+    <div class="checks" style="max-height:none">${KPI_DEFS.filter(([k])=>!COST_KPIS.includes(k)).map(([k,l])=>`<label class="chk"><input type="checkbox" data-rolekpi="${r}:${k}" ${e.kpis.includes(k)?'checked':''}><span>${esc(l)}</span></label>`).join('')}</div>
+    <div class="fields" style="margin-top:10px">
+      ${F('Breakdown by',sel('rolegroup_'+r,[['project','Project'],['region','Region'],['sector','Sector'],['city','City']],e.group))}
+      ${F('Second table',sel('rolesecond_'+r,[['','None'],['project','Project'],['region','Region'],['sector','Sector'],['city','City']],e.second||''))}
+    </div>
+    <div class="checks" style="max-height:none">${COL_DEFS.filter(([k])=>!COST_COLS.includes(k)).map(([k,l])=>`<label class="chk"><input type="checkbox" data-rolecol="${r}:${k}" ${e.cols.includes(k)?'checked':''}><span>${esc(l)}</span></label>`).join('')}</div>
+    </section>`}).join('')+`<p class="small muted">Foremen see daily reports, new reports and their own performance only. Project managers, planning and costing engineers, executives and regional managers see everything for their projects.</p>`;
+}
+/* ---------- report handling time ---------- */
+function seedTimings(){
+  if(DB.seededTiming)return;
+  let k=0;
+  DB.dprs.forEach(d=>{if(d.timing)return;k++;
+    const p=projById(d.p)||{},r=(n)=>((k*9301+n*49297)%233280)/233280;
+    const nl=d.lines.length;d.timing={};
+    d.timing.create={secs:Math.round(120+nl*110+r(1)*420),by:d.foreman,role:'foreman',sessions:1};
+    if(['Reviewed','Approved','Rejected'].includes(d.status)||d.returned)d.timing.review={secs:Math.round(45+nl*40+r(2)*260),by:p.eng,role:'eng',sessions:1};
+    const smu=DB.master.users.find(u=>u.role==='sm'&&(u.projects||[]).includes(d.p));
+    if(['Approved','Rejected'].includes(d.status))d.timing.approve={secs:Math.round(30+nl*25+r(3)*200),by:smu?smu.name:p.pm,role:smu?'sm':'pm',sessions:1};
+  });
+  DB.seededTiming=true;save();
+}
+function timingRows(){
+  seedTimings();
+  const from=addDays(TODAY,-30),m={};
+  DB.dprs.filter(d=>SCOPE.has(d.p)&&d.date>=from&&d.timing).forEach(d=>{
+    [['create','Preparation'],['review','Review'],['approve','Approval']].forEach(([k,lab])=>{const t=d.timing[k];if(!t||!t.secs||!t.by)return;
+      const key=t.by+'|'+k,o=m[key]||(m[key]={who:t.by,role:ROLES[t.role]||t.role||'',step:lab,n:0,tot:0,list:[],lines:0});
+      o.n++;o.tot+=t.secs;o.list.push(t.secs);o.lines+=d.lines.length})});
+  return Object.values(m).map(o=>{const s=o.list.sort((a,b)=>a-b);
+    return {...o,avg:o.tot/o.n,med:s[Math.floor(s.length/2)],min:s[0],max:s[s.length-1],perLine:o.tot/Math.max(1,o.lines)}})
+    .sort((a,b)=>a.step.localeCompare(b.step)||b.avg-a.avg);
+}
+
 const KPI_DEFS=[
   ['projects','Projects',g=>({v:String(g.ks.length),s:`${new Set(g.ks.map(k=>k.p.region)).size} regions, ${new Set(g.ks.map(k=>k.p.sector)).size} sectors`})],
   ['value','Contract value',g=>({v:`SAR ${fmt(g.ks.reduce((t,k)=>t+(+k.p.value||0),0))}M`,s:'Signed value in scope'})],
@@ -1902,6 +2147,7 @@ const COL_DEFS=[
 const DEF_PREFS={kpis:['projects','complete','spi','cpi','prod','crit'],group:'region',
   cols:['n','value','bar','spi','cpi','prod','crit'],second:'sector'};
 function execPrefs(){
+  if(SITE_ROLES.includes(state.role))return siteExecPrefs();
   DB.prefs=DB.prefs||{};
   const key=(me()&&me().id)||'local';
   DB.prefs[key]=Object.assign(JSON.parse(JSON.stringify(DEF_PREFS)),DB.prefs[key]||{});
@@ -1936,6 +2182,7 @@ function execTable(ks,by,cols){
 }
 function execCustomHTML(){
   const P=execPrefs();
+  if(SITE_ROLES.includes(state.role))return '';
   if(!state.execEdit)return `<button class="btn sm" type="button" data-execedit="1">Customise this view</button>`;
   return `<section class="panel"><div class="card-head"><h2>Customise the executive summary</h2>
     <div class="actions" style="margin:0"><button class="btn sm" type="button" data-execreset>Reset to default</button><button class="btn sm primary" type="button" data-execedit="0">Done</button></div></div>
@@ -1953,7 +2200,7 @@ function execCustomHTML(){
 }
 
 /* ---------- executive summary ---------- */
-const canExec=()=>['sa','exec','rm','pf','plan','costing','pm','eng'].includes(state.role);
+const canExec=()=>['sa','exec','rm','pf','plan','costing','pm','sm','eng'].includes(state.role);
 function projKPI(p){
   const acts=ACTS.filter(a=>a.p===p.id),e=evm(acts,ASOF),f=forecast(p),x=eacOf(f);
   const plan=e.bac?e.pv/e.bac:0,act=e.bac?e.ev/e.bac:0;
@@ -2045,10 +2292,10 @@ function execProject(){
     <div class="panel kpi"><div class="l">Schedule (SPI)</div><div class="gaugerow">${gauge(k.f.spi,'SPI')}<div class="s">Forecast finish<br><b>${k.f.fin?fmtDY(k.f.fin):'—'}</b><br>${k.f.slip>900?'':k.f.slip>0?`<span class="r-c">${k.f.slip} days late</span>`:`<span class="g-c">${Math.abs(k.f.slip)} days early</span>`}</div></div></div>
     <div class="panel kpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(k.f.cpi,'CPI')}<div class="s">EAC ${sar(k.x.eac1)}<br>VAC ${sar(k.x.vac)}<br>${k.x.vac<0?'<span class="r-c">Overrun forecast</span>':'<span class="g-c">Within budget</span>'}</div></div></div>
     <div class="panel kpi"><div class="l">Productivity, 30 days</div><div class="gaugerow">${gauge(k.pi||0,'Productivity',{max:1.4})}<div class="s">${fmt(head.heads)} workers on the last reported day<br>${fmt(agg(V).mh)} manhours in 30 days</div></div></div>
-    <div class="panel kpi"><div class="l">Earned value</div><div class="v" style="font-size:24px">${sar(k.e.ev)}</div><div class="s">PV ${sar(k.e.pv)}, AC ${sar(k.e.ac)}<br>BAC ${sar(k.e.bac)}, ETC ${sar(k.x.etc)}</div></div>
+    ${SITE_ROLES.includes(state.role)?'':`<div class="panel kpi"><div class="l">Earned value</div><div class="v" style="font-size:24px">${sar(k.e.ev)}</div><div class="s">PV ${sar(k.e.pv)}, AC ${sar(k.e.ac)}<br>BAC ${sar(k.e.bac)}, ETC ${sar(k.x.etc)}</div></div>`}
     <div class="panel kpi"><div class="l">Engineering and procurement</div><div class="v" style="font-size:24px">${(()=>{const S=engProcStats().rows.filter(r=>r.proj===p.short);return S.length?pct(S.reduce((t,r)=>t+r.bac*r.pct,0)/S.reduce((t,r)=>t+r.bac,0),0):'—'})()}</div><div class="s">${(()=>{const S=engProcStats().rows.filter(r=>r.proj===p.short);const l=S.filter(r=>r.slip>0).length;return S.length?`${S.length} items, ${l?`<span class="r-c">${l} forecast late</span>`:'<span class="g-c">none late</span>'}`:'No design or procurement items'})()}</div></div>
   </section>
-  ${(()=>{const X=billPosition(p);if(!X.b.contract&&!X.t.n)return '';
+  ${(()=>{if(SITE_ROLES.includes(state.role))return '';const X=billPosition(p);if(!X.b.contract&&!X.t.n)return '';
     return `<section class="g g-kpi">
       <div class="panel kpi"><div class="l">Invoiceable</div><div class="v" style="font-size:22px">${sar(X.invoiceable)}</div><div class="s">Price progress ${pct(X.b.progress,0)}</div></div>
       <div class="panel kpi"><div class="l">Invoiced</div><div class="v" style="font-size:22px">${sar(X.t.submitted)}</div><div class="s">${X.gapSub>1?`<span class="r-c">${sar(X.gapSub)} still to bill</span>`:'Up to date'}</div></div>
@@ -2595,7 +2842,7 @@ function costingHTML(pid){
 /* ---------- baselines (planning engineer) ---------- */
 const BSETS={ORG:'Original baseline',REV:'Revised baseline',REC:'Recovery baseline'};
 const canBaseline=()=>['sa','plan'].includes(state.role);
-const canCost=()=>['sa','costing'].includes(state.role);
+const canCost=()=>['sa','costing','pm'].includes(state.role);
 const impPid=()=>state.impPid||(state.adm&&state.adm.id);
 function bsetOf(pid,k){return ((DB.baselines||{})[pid]||{})[k]}
 /* ---------- purchase orders on the Baselines page, owned by costing ---------- */
@@ -2706,7 +2953,7 @@ function renderBaseline(){
   ${pid&&canCost()?poPanelHTML(pid):''}
   ${pid&&canBaseline()?resMapHTML(pid):''}
   ${pid&&canBaseline()?baseHistHTML(pid):''}
-  ${pid&&canBaseline()?dcmaHTML(pid):''}
+  ${pid&&(canBaseline()||state.role==='pm')?dcmaHTML(pid):''}
   ${pid?`<section class="panel"><h2>${esc(projById(pid).short)} baseline summary</h2>
     <div class="scroll"><table class="tbl"><thead><tr><th>Class</th><th class="n">Activities</th><th class="n">Budget manhours</th><th>Earliest start</th><th>Latest finish</th></tr></thead><tbody>
     ${Object.entries(CLASSES).map(([k,t])=>{const g=acts.filter(a=>clsOf(a)===k);return g.length?`<tr><td>${t}</td><td class="n">${g.length}</td><td class="n">${fmt(g.reduce((x,a)=>x+a.bmh,0))}</td><td>${fmtD(g.map(a=>a.bs).sort()[0])}</td><td>${fmtD(g.map(a=>a.bf).sort().pop())}</td></tr>`:''}).join('')||'<tr><td colspan="5" class="muted">No baseline loaded for this project yet.</td></tr>'}
@@ -2947,6 +3194,7 @@ function renderUpd(){
 /* ---------- reports ---------- */
 const ASOF=addDays(TODAY,-1);
 const fmtType={
+  dur:v=>v==null||v===''?'':fmtDur(v),
   text:v=>esc(v),int:v=>fmt(v),dec1:v=>fmt(v,1),dec2:v=>fmt(v,2),dec3:v=>fmt(v,3),pct:v=>pct(v),sar:v=>'SAR '+fmt(v),date:v=>v?fmtDY(v):'—',
   pctv:v=>`<span class="${v>=0?'g':'r'}-c">${v>=0?'+':''}${fmt(v*100,1)} pts</span>`,
   idx2:v=>v?`<span class="${light(v)}-c">${fmt(v,2)}</span>`:'—',pcti:v=>v?`<span class="${light(v)}-c">${pct(v)}</span>`:'—',
@@ -3033,16 +3281,22 @@ const REPORTS={
     const trade=state.repTrade||'ALL',mode=state.repMode||'day';
     const acts=scopeActs().filter(isCon),V=valid();
     const days=[];for(let k=-30;k<=42;k++){const d=addDays(TODAY,k);if(D(d).getUTCDay()!==5)days.push(d)}
-    const share=(a,t)=>tradeShare(a,t);
-    const actRate=a=>{const g=agg(V.filter(l=>l.act===a.id&&l.date>=addDays(TODAY,-21)));return g.mh&&g.qty?g.qty/g.mh:a.pp};
-    const factor=a=>clamp(a.pp/Math.max(1e-9,actRate(a)),0.4,3);
-    const daily=days.map(d=>{
-      const past=d<=ASOF;let plan=0,fc=0,act=0;
-      acts.forEach(a=>{const ph=plannedHeads(a,d)*share(a,trade);plan+=ph;if(!past)fc+=ph*factor(a)});
-      if(past)V.filter(l=>l.date===d).forEach(l=>{
-        (l.labour||[]).forEach(x=>{if(trade==='ALL'||x.cat===trade)act+=+x.count||0});
-        subFlat(l).forEach(u=>{if(trade==='ALL'||u.cat===trade)act+=+u.count||0})});
-      return {date:d,past,plan,act:past?act:null,fc:past?null:fc,var:past?act-plan:null};
+    /* one pass over everything, then look-ups: this report used to rescan every line for every day and trade */
+    const shareCache=new Map(),share=(a,t)=>{if(t==='ALL')return 1;let m=shareCache.get(a.id);if(!m){m={};shareCache.set(a.id,m)}if(m[t]==null)m[t]=tradeShare(a,t);return m[t]};
+    const recent=addDays(TODAY,-21),rateBy={};
+    V.forEach(l=>{if(l.date<recent)return;const o=rateBy[l.act]||(rateBy[l.act]={q:0,mh:0});o.q+=(+l.qty||0);o.mh+=mhOf(l)});
+    const factor=a=>{const r=rateBy[a.id];const ar=r&&r.mh&&r.q?r.q/r.mh:a.pp;return clamp(a.pp/Math.max(1e-9,ar),0.4,3)};
+    const fac={};acts.forEach(a=>fac[a.id]=factor(a));
+    const ph={};acts.forEach(a=>{ph[a.id]=days.map(d=>plannedHeads(a,d))});
+    const actual={};                         /* actual[date][trade] */
+    V.forEach(l=>{if(l.date<days[0]||l.date>ASOF)return;const m=actual[l.date]||(actual[l.date]={ALL:0});
+      (l.labour||[]).forEach(x=>{const c=+x.count||0;m[x.cat]=(m[x.cat]||0)+c;m.ALL+=c});
+      subFlat(l).forEach(u=>{const c=+u.count||0;m[u.cat]=(m[u.cat]||0)+c;m.ALL+=c})});
+    const daily=days.map((d,di)=>{
+      const past=d<=ASOF;let plan=0,fc=0;
+      acts.forEach(a=>{const h=ph[a.id][di];if(!h)return;const x=h*share(a,trade);plan+=x;if(!past)fc+=x*fac[a.id]});
+      const act=past?((actual[d]||{})[trade]||0):null;
+      return {date:d,past,plan,act,fc:past?null:fc,var:past?act-plan:null};
     });
     let rows=daily;
     if(mode==='week'){
@@ -3050,16 +3304,15 @@ const REPORTS={
         o.n++;o.plan+=r.plan;if(r.past){o.act+=r.act;o.na++}else{o.fc+=r.fc;o.nf++}});
       rows=Object.values(m).map(o=>({date:o.date,past:o.na>0,plan:o.plan/o.n,act:o.na?o.act/o.na:null,fc:o.nf?o.fc/o.nf:null,var:o.na?o.act/o.na-o.plan/o.n:null}));
     }
-    const win=(from,to,k)=>{const g=daily.filter(r=>r.date>=from&&r.date<=to&&r[k]!=null);return g.length?g.reduce((t,r)=>t+r[k],0)/g.length:0};
+    const pastIdx=days.map((d,i)=>[d,i]).filter(([d])=>d<=ASOF&&d>=addDays(TODAY,-30)).map(([,i])=>i);
+    const futIdx=days.map((d,i)=>[d,i]).filter(([d])=>d>ASOF).map(([,i])=>i);
     const trades={};
     CATS.forEach(t=>{
-      const pl=days.filter(d=>d<=ASOF&&d>=addDays(TODAY,-30)).reduce((x,d)=>x+acts.reduce((y,a)=>y+plannedHeads(a,d)*share(a,t),0),0)/Math.max(1,days.filter(d=>d<=ASOF&&d>=addDays(TODAY,-30)).length);
-      const fut=days.filter(d=>d>ASOF);
-      const fc=fut.reduce((x,d)=>x+acts.reduce((y,a)=>y+plannedHeads(a,d)*share(a,t)*factor(a),0),0)/Math.max(1,fut.length);
-      const pk=Math.max(0,...fut.map(d=>acts.reduce((y,a)=>y+plannedHeads(a,d)*share(a,t)*factor(a),0)));
-      let ac=0,n=0;days.filter(d=>d<=ASOF&&d>=addDays(TODAY,-30)).forEach(d=>{let c=0;V.filter(l=>l.date===d).forEach(l=>{
-        (l.labour||[]).forEach(x=>{if(x.cat===t)c+=+x.count||0});subFlat(l).forEach(u=>{if(u.cat===t)c+=+u.count||0})});ac+=c;n++});
-      const avgAct=n?ac/n:0;
+      let pl=0,fcSum=0,pk=0;
+      pastIdx.forEach(i=>{acts.forEach(a=>{const h=ph[a.id][i];if(h)pl+=h*share(a,t)})});
+      futIdx.forEach(i=>{let v=0;acts.forEach(a=>{const h=ph[a.id][i];if(h)v+=h*share(a,t)*fac[a.id]});fcSum+=v;if(v>pk)pk=v});
+      pl/=Math.max(1,pastIdx.length);const fc=fcSum/Math.max(1,futIdx.length);
+      let ac=0;pastIdx.forEach(i=>{ac+=((actual[days[i]]||{})[t]||0)});const avgAct=pastIdx.length?ac/pastIdx.length:0;
       if(pl>0.05||avgAct>0.05||fc>0.05)trades[t]={trade:t,plan:pl,act:avgAct,v:avgAct-pl,fc,pk,add:Math.max(0,fc-avgAct)};
     });
     const trows=Object.values(trades).sort((a,b)=>b.fc-a.fc);
@@ -3159,6 +3412,14 @@ const REPORTS={
       chart:pal=>({type:'bar',data:{labels:['Invoiceable','Invoiced','Approved','Collected'],datasets:[{label:'SAR thousands',data:[T.inv,T.sub,T.ap,T.co].map(v=>Math.round(v/1e3)),backgroundColor:[pal.bar,pal.accent,pal.amber,pal.green]}]},
         options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'SAR thousands'}}}}}),
       notes:`Invoiceable ${sar(T.inv)}, invoiced ${sar(T.sub)}, approved ${sar(T.ap)}, collected ${sar(T.co)}. Under-billed against invoiceable ${sar(Math.max(0,T.inv-T.sub))}. Short of invoiceable after approval ${sar(Math.max(0,T.inv-T.ap))}. Outstanding collection ${sar(Math.max(0,T.ap-T.co))}. Invoiceable comes from the contract payment terms; invoiced, approved and collected come from the register uploaded weekly by costing.`}}},
+  timing:{sheet:'Report handling time',title:'Time spent preparing, reviewing and approving daily reports',desc:'Per person: how long each step takes, last 30 days',build(){
+    const rows=timingRows();
+    const step=k=>rows.filter(r=>r.step===k),tot=k=>{const r=step(k),n=r.reduce((t,x)=>t+x.n,0);return n?r.reduce((t,x)=>t+x.tot,0)/n:0};
+    return {cols:[C('Person','who'),C('Role','role'),C('Step','step'),C('Reports','n','int'),C('Average','avg','dur'),C('Median','med','dur'),C('Fastest','min','dur'),C('Slowest','max','dur'),C('Per activity line','perLine','dur'),C('Total time','tot','dur')],rows,
+      chart:pal=>({type:'bar',data:{labels:rows.map(r=>`${r.who.replace(/^Eng\.\s*/,'')}, ${r.step.toLowerCase()}`),datasets:[{label:'Average minutes',data:rows.map(r=>+(r.avg/60).toFixed(1)),
+        backgroundColor:rows.map(r=>r.step==='Preparation'?pal.bar:r.step==='Review'?pal.accent:pal.green)}]},
+        options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,title:{display:true,text:'Minutes per report'}}}}}),
+      notes:`Average time per report: preparation ${fmtDur(tot('Preparation'))}, review ${fmtDur(tot('Review'))}, approval ${fmtDur(tot('Approval'))}. The clock starts when the foreman opens the new report form and stops when he saves or submits; it resumes on a saved draft. Review time runs while the site engineer has a submitted report open, and approval time while the site manager or project manager has a reviewed one open; each stops at the action taken. Time with the tab in the background is not counted.`}}},
   mhrec:{sheet:'Budget manhour check',title:'Budget manhour reconciliation, P6 against costing',desc:'Where the schedule and the costing file disagree on hours',build(){
     const rows=scopeActs().map(a=>{const p6=+a.p6mh||0,cf=+a.costmh||0,used=+a.bmh||0;
       return {proj:projById(a.p).short,id:a.id,name:a.name,cls:CLASSES[clsOf(a)],p6,cf,used,
@@ -3255,11 +3516,12 @@ const palette=light=>light?{accent:'#24508A',bar:'#B7C2CD',ink:'#1B252E',green:'
 function chartCfg(cfg,pal,anim=true){cfg.options=cfg.options||{};const o=cfg.options;o.responsive=true;o.maintainAspectRatio=false;o.animation=anim?undefined:false;o.plugins={legend:{position:'bottom',labels:{color:pal.text,boxWidth:12}}};o.scales=o.scales||{};['x','y'].forEach(k=>{o.scales[k]=Object.assign({grid:{color:pal.line},ticks:{color:pal.text}},o.scales[k]||{});if(o.scales[k].title)o.scales[k].title.color=pal.text});return cfg}
 let CUR=null;
 function renderReports(){
-  const k=state.report||'actprog',R=REPORTS[k];CUR={k,...R.build()};
+  if(state.report&&!reportAllowed(state.report))state.report=null;
+  const k=state.report||Object.keys(REPORTS).find(reportAllowed)||'actprog',R=REPORTS[k];CUR={k,...R.build()};
   const meta=`${esc(me().name)}, ${scopeLabel()}, progress as of ${fmtDY(ASOF)}, measured against the ${baseLabel().toLowerCase()}`;
   document.getElementById('view').innerHTML=`${crumb()}
   <div class="rep-grid">
-    <nav class="panel replist" aria-label="Report types">${Object.entries(REPORTS).map(([id,r])=>`<button type="button" data-rep="${id}" aria-pressed="${id===k}"><b>${r.title}</b><span>${r.desc}</span></button>`).join('')}
+    <nav class="panel replist" aria-label="Report types">${Object.entries(REPORTS).filter(([id])=>reportAllowed(id)).map(([id,r])=>`<button type="button" data-rep="${id}" aria-pressed="${id===k}"><b>${r.title}</b><span>${r.desc}</span></button>`).join('')}
       <button type="button" class="pack" data-export="pack"><b>Full report pack</b><span>Every report as a sheet in one Excel workbook</span></button></nav>
     <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>${R.title}</h2><div class="actions" style="margin:0">${k==='p6upd'?'<button class="btn" type="button" data-p6="xer">Download XER</button><button class="btn" type="button" data-p6="xml">Download P6 XML</button><button class="btn primary" type="button" data-p6="xlsx">Download Excel for P6</button>':'<button class="btn" type="button" data-export="xlsx">Download Excel</button><button class="btn primary" type="button" data-export="pdf">Download PDF</button>'}</div></div>
       <p class="small muted" style="margin:0 0 12px">${meta}</p>
@@ -3339,14 +3601,14 @@ function portfolioHTML(){
 }
 
 /* ---------- settings (super admin) ---------- */
-const ATABS={projects:'Projects',users:'Users and access',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',log:'Change log'};
+const ATABS={projects:'Projects',users:'Users and access',roles:'Role access',matrix:'Approval matrix',mail:'Email',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',log:'Change log'};
 const NOUN={projects:'project',users:'user',trades:'trade',subs:'subcontractor',regions:'region',cities:'city',sectors:'sector'};
 function usedBy(type,id){if(type==='regions')return PROJECTS.filter(p=>p.region===id).length+DB.master.cities.filter(c=>c.region===id).length;if(type==='cities')return PROJECTS.filter(p=>p.city===id).length;if(type==='sectors')return PROJECTS.filter(p=>p.sector===id).length;return 0}
 function accessText(u){if(u.role==='sa')return 'Everything, including settings';const r=u.regions.map(id=>regById(id)?.name).filter(Boolean),ps=u.projects.map(id=>projById(id)?.short).filter(Boolean);return [r.length?r.join(', ')+(r.length>1?' regions':' region'):'',ps.join(', ')].filter(Boolean).join('; ')||'No access yet'}
 const stCls=s=>s==='Active'?'Approved':s==='On hold'?'Reviewed':'Draft';
 function renderAdmin(){
   if(state.role!=='sa'){go('dash');return}
-  const m=DB.master,t=state.adminTab,add=t==='log'?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>`;
+  const m=DB.master,t=state.adminTab,add=['log','roles','matrix','mail'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>`;
   const edit=(k,id,del)=>`<td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-aedit="${k}:${id}">Edit</button>${del===undefined?'':del?` <button class="btn sm" type="button" disabled title="In use, cannot delete">In use</button>`:` <button class="btn sm danger" type="button" data-adel="${k}:${id}">Delete</button>`}</td>`;
   let body='',count=0;
   if(t==='projects'){count=PROJECTS.length;body=`<table class="tbl"><thead><tr><th>Project</th><th>Sector</th><th>Region and city</th><th>Team</th><th class="n">Activities</th><th class="n">Value</th><th>Status</th><th></th></tr></thead><tbody>${PROJECTS.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${p.id}, ${esc(p.name)}</span></td><td>${esc(secById(p.sector)?.name||'—')}</td><td>${esc(regName(p))}<span class="t2">${esc(cityName(p))}</span></td><td>${esc(p.pm)}<span class="t2">${esc(p.eng)}, ${p.foremen.length} foreman${p.foremen.length===1?'':'en'}</span></td><td class="n">${ACTS.filter(a=>a.p===p.id).length}</td><td class="n">SAR ${fmt(p.value)}M</td><td><span class="st ${stCls(p.status)}">${p.status}</span></td>${edit('projects',p.id,false)}</tr>`).join('')}</tbody></table>`}
@@ -3358,6 +3620,9 @@ function renderAdmin(){
   if(t==='regions'){count=m.regions.length;body=`<table class="tbl"><thead><tr><th>Region</th><th>Regional manager</th><th class="n">Cities</th><th class="n">Projects</th><th class="n">Contract value</th><th></th></tr></thead><tbody>${m.regions.map(r=>`<tr><td><b>${esc(r.name)}</b><span class="t2">Code ${r.id}</span></td><td>${esc(userById(r.manager)?.name||'Not assigned')}</td><td class="n">${m.cities.filter(c=>c.region===r.id).length}</td><td class="n">${PROJECTS.filter(p=>p.region===r.id).length}</td><td class="n">SAR ${fmt(PROJECTS.filter(p=>p.region===r.id).reduce((x,p)=>x+(+p.value||0),0))}M</td>${edit('regions',r.id,usedBy('regions',r.id))}</tr>`).join('')}</tbody></table>`}
   if(t==='cities'){count=m.cities.length;body=`<table class="tbl"><thead><tr><th>City</th><th>Region</th><th class="n">Projects</th><th></th></tr></thead><tbody>${m.cities.slice().sort((a,b)=>a.region.localeCompare(b.region)||a.name.localeCompare(b.name)).map(c=>`<tr><td><b>${esc(c.name)}</b><span class="t2">Code ${c.id}</span></td><td>${esc(regById(c.region)?.name||'—')}</td><td class="n">${usedBy('cities',c.id)}</td>${edit('cities',c.id,usedBy('cities',c.id))}</tr>`).join('')}</tbody></table>`}
   if(t==='sectors'){count=m.sectors.length;body=`<table class="tbl"><thead><tr><th>Sector</th><th class="n">Projects</th><th class="n">Contract value</th><th></th></tr></thead><tbody>${m.sectors.map(x=>`<tr><td><b>${esc(x.name)}</b><span class="t2">Code ${x.id}</span></td><td class="n">${usedBy('sectors',x.id)}</td><td class="n">SAR ${fmt(PROJECTS.filter(p=>p.sector===x.id).reduce((a,p)=>a+(+p.value||0),0))}M</td>${edit('sectors',x.id,usedBy('sectors',x.id))}</tr>`).join('')}</tbody></table>`}
+  if(t==='roles'){count=SITE_ROLES.length;body=roleAccessHTML()}
+  if(t==='matrix'){count=scopeProjects().length;body=matrixHTML()}
+  if(t==='mail'){count=(DB.outbox||[]).length;body=mailAdminHTML()}
   if(t==='log'){count=m.log.length;body=`<ul class="audit">${m.log.map(x=>`<li><b>${esc(x.text)}</b><br><span class="muted small">${esc(x.who)}, ${esc(x.t)}</span></li>`).join('')}</ul>`}
   document.getElementById('view').innerHTML=`<div class="crumb">Head office settings. Only the planning manager (Super Admin) can change projects, master data and user access. Every change is logged.</div>
   <div class="chips" role="tablist">${Object.entries(ATABS).map(([k,v])=>`<button type="button" role="tab" class="chip" data-atab="${k}" aria-pressed="${t===k}">${v}</button>`).join('')}</div>
@@ -3410,6 +3675,7 @@ function admDrawer(type,id){
     <div id="accSA" class="note-box">Full access to every project. Super Admin can also change settings; an Executive Manager is read only.</div>
     <div id="accR" class="field" style="margin-top:12px">Region access<div class="checks">${m.regions.map(r=>chk('regions',r.id,u.regions.includes(r.id),r.name+' Region',PROJECTS.filter(p=>p.region===r.id).length+' projects')).join('')}</div></div>
     <div id="accP" class="field" style="margin-top:12px">Project access<div class="checks">${projectChecks(u.projects)}</div></div>
+    <p class="small muted" style="margin-top:10px">Who reviews and approves this person's reports is set per project in Settings → Approval matrix.</p>
     <p class="small muted" id="accHint"></p>`;
   }
   if(type==='trades'){
@@ -3506,7 +3772,7 @@ function saveAdm(fd){
     const regions=fd.getAll('regions'),projects=fd.getAll('projects');
     if(role==='rm'&&!regions.length)return err('Choose at least one region for this regional manager.');
     if(role==='pf'&&regions.length!==1)return err('A portfolio manager covers exactly one region. Tick one.');
-    if(['pm','eng','foreman'].includes(role)&&!projects.length)return err('Give access to at least one project.');
+    if(['pm','sm','eng','foreman'].includes(role)&&!projects.length)return err('Give access to at least one project.');
     if(role==='ro'&&!regions.length&&!projects.length)return err('Give read-only access to at least one region or project.');
     const data={name:v('name'),email,title:v('title')||ROLES[role],role,regions:['rm','pf','ro'].includes(role)?regions:[],projects:['sa','exec','rm','pf'].includes(role)?[]:projects,active:self?true:v('status')!=='Inactive'};
     let u=id?userById(id):null;if(u)Object.assign(u,data);else{u={id:'U'+String(m.nextUser++).padStart(2,'0'),...data};m.users.push(u)}
@@ -3821,7 +4087,7 @@ async function doReset(){
 function pwMeter(){const p=$('#rsPw').value,ok=pwRules(p).filter(([o])=>o).length;const m=$('#rsMeter');[...m.children].forEach((b,i)=>{b.className=i<ok?['','w','w','m','s'][ok]:''});
   const miss=pwRules(p).filter(([o])=>!o).map(([,t])=>t);$('#rsHint').textContent=p?(miss.length?'Still needs '+miss.join(', ')+'.':'Strong enough.'):'Needs at least 10 characters, an uppercase letter, a lowercase letter and a number.'}
 async function boot(){
-  seedTopUp();await ensureHashes();
+  seedTopUp();seedMatrix();await ensureHashes();
   const s=readSession();
   if(s&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');
@@ -4125,7 +4391,7 @@ async function templateXlsx(){
 document.addEventListener('click',e=>{
   if(e.target.closest('#lgEye'))return togglePw('lgPw',e.target.closest('#lgEye'));
   if(e.target.closest('#rsEye'))return togglePw('rsPw',e.target.closest('#rsEye'));
-  const t=e.target.closest('[data-basepo],[data-basepodel],[data-baseratedel],[data-nudge],[data-execedit],[data-execreset],[data-addcrew],[data-rmcrew],[data-invtpl],[data-invgo],[data-invcancel],[data-dgo],[data-dall],[data-delproj],[data-bsetdel],[data-brall],[data-resauto],[data-costtpl],[data-costgo],[data-costcancel],[data-brestore],[data-bclear],[data-posel],[data-podel],[data-srdel],[data-msdel],[data-etab],[data-execp],[data-escope],[data-p6],[data-bproj],[data-bset],[data-updtpl],[data-updgo],[data-updcancel],[data-template],[data-impgo],[data-impcancel],[data-signout],[data-auth],[data-fill],[data-pwreset],[data-rep],[data-export],[data-atab],[data-aadd],[data-aedit],[data-adel],[data-import],[data-sector],[data-go],[data-scope],[data-filter],[data-open],[data-close],[data-do],[data-add],[data-rm],[data-addline],[data-rmline],[data-save],[data-tab],[data-q],[data-more],[data-reset]');
+  const t=e.target.closest('[data-mailopen],[data-basepo],[data-basepodel],[data-baseratedel],[data-nudge],[data-execedit],[data-execreset],[data-addcrew],[data-rmcrew],[data-invtpl],[data-invgo],[data-invcancel],[data-dgo],[data-dall],[data-delproj],[data-bsetdel],[data-brall],[data-resauto],[data-costtpl],[data-costgo],[data-costcancel],[data-brestore],[data-bclear],[data-posel],[data-podel],[data-srdel],[data-msdel],[data-etab],[data-execp],[data-escope],[data-p6],[data-bproj],[data-bset],[data-updtpl],[data-updgo],[data-updcancel],[data-template],[data-impgo],[data-impcancel],[data-signout],[data-auth],[data-fill],[data-pwreset],[data-rep],[data-export],[data-atab],[data-aadd],[data-aedit],[data-adel],[data-import],[data-sector],[data-go],[data-scope],[data-filter],[data-open],[data-close],[data-do],[data-add],[data-rm],[data-addline],[data-rmline],[data-save],[data-tab],[data-q],[data-more],[data-reset]');
   if(!t){if(!e.target.closest('#notes,#bell'))$('#notes').hidden=true;if(e.target.id==='drawer')closeDrawer();return}
   const ds=t.dataset,f=state.form;
   if('signout' in ds){confirmBox('Sign out of ProTrack?','Sign out').then(v=>{if(v)signOut()});return}
@@ -4139,6 +4405,7 @@ document.addEventListener('click',e=>{
   if('costgo' in ds){runCosting();return}
   if('costcancel' in ds){state.cost=null;$('#costBox').innerHTML='';$('#costfile').value='';return}
   if(ds.execedit!==undefined){state.execEdit=ds.execedit==='1';render();return}
+  if(ds.mailopen){state.mailOpen=state.mailOpen===ds.mailopen?null:ds.mailopen;render();return}
   if(ds.basepodel){const [sid,poid]=ds.basepodel.split(':');const sb=subById(sid),po=(sb.pos||[]).find(o=>o.id===poid);
     confirmBox(`Remove ${po.no} for ${sb.name}?\nCosts on reports already filed will fall back to an estimate.`,'Remove').then(ok=>{if(!ok)return;
       sb.pos=sb.pos.filter(o=>o.id!==poid);if(state.basePo===poid)state.basePo=null;logChange(`Removed purchase order ${po.no} from ${sb.name}`);applyMaster();save();render()});return}
@@ -4250,6 +4517,14 @@ document.addEventListener('change',e=>{const el=e.target;
   if(el.name==='egroup'){execPrefs().group=el.value;savePrefs();return}
   if(el.name==='esecond'){execPrefs().second=el.value;savePrefs();return}
   if(el.name==='ebill'){execPrefs().hideBilling=el.value==='1';savePrefs();return}
+  if(el.matches('[data-mailcfg]')){mailCfg()[el.dataset.mailcfg]=el.checked;logChange(`Approval email: ${el.dataset.mailcfg==='on'?(el.checked?'switched on':'switched off'):'site roles by discipline '+(el.checked?'on':'off')}`);save();return}
+  if(el.matches('[data-mailrole]')){const c=mailCfg(),k=el.dataset.mailrole;c.roles=el.checked?[...new Set(c.roles.concat(k))]:c.roles.filter(x=>x!==k);save();return}
+  if(el.matches('[data-mx]')){const [pid,kind,uid]=el.dataset.mx.split(':'),M=mx(pid),u=userById(uid),t=userById(el.value);if(el.value)M[kind][uid]=el.value;else delete M[kind][uid];
+    logChange(`${projById(pid).short}: ${u.name}'s reports ${kind==='fm'?'reviewed':'approved'} by ${t?t.name:projById(pid).pm+' (project manager)'}`);save();render();toast('Approval matrix updated');return}
+  if(el.matches('[data-rolerep]')){const [r,id]=el.dataset.rolerep.split(':'),C=roleCfg();C.reports[r]=el.checked?[...new Set(C.reports[r].concat(id))]:C.reports[r].filter(x=>x!==id);logChange(`${ROLES[r]} ${el.checked?'may now open':'can no longer open'} ${REPORTS[id].title.toLowerCase()}`);save();return}
+  if(el.matches('[data-rolekpi]')){const [r,k]=el.dataset.rolekpi.split(':'),E=roleCfg().exec[r];E.kpis=el.checked?[...E.kpis.filter(x=>x!==k),k]:E.kpis.filter(x=>x!==k);logChange(`Changed the ${ROLES[r].toLowerCase()} executive summary tiles`);save();return}
+  if(el.matches('[data-rolecol]')){const [r,k]=el.dataset.rolecol.split(':'),E=roleCfg().exec[r];E.cols=el.checked?[...E.cols.filter(x=>x!==k),k]:E.cols.filter(x=>x!==k);save();return}
+  if(/^role(group|second)_/.test(el.name||'')){const [,kind,r]=el.name.match(/^role(group|second)_(.+)$/);roleCfg().exec[r][kind]=el.value;save();return}
   if(el.matches('[data-dslide]')){const D=deckState();D.pick[el.dataset.dslide]=el.checked?1:0;return}
   if(el.matches('[data-dchart]')){deckState().charts=el.checked;return}
   if(['dtitle','dsub','dwho','drows'].includes(el.name)){const D=deckState();D[{dtitle:'title',dsub:'sub',dwho:'who',drows:'rows'}[el.name]]=el.name==='drows'?+el.value:el.value;return}

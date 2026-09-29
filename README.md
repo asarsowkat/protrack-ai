@@ -148,6 +148,19 @@ Production needs:
 
 ---
 
+## Version 2.1
+
+- **Site Manager** role; approval chain foreman → site engineer → site manager
+- **Approval matrix** set per project by the super admin (Settings → Approval matrix)
+- **Timers** on preparing, reviewing and approving each report; new report
+  *Time spent preparing, reviewing and approving daily reports*
+- **Approval email** with a summary and a link (needs the Supabase mail function)
+- **Role access**: super admin sets the reports and executive view for site roles;
+  site roles never see cost
+- Foremen limited to daily reports, new report and their own performance
+- Project managers reach costing, invoices and purchase orders for their projects
+- Manpower histogram rebuilt: 8.3 s to 0.34 s
+
 ## Recent changes in this build
 
 - **Costing engineer role**, who owns the costing file, the invoice register and
