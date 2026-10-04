@@ -148,6 +148,18 @@ Production needs:
 
 ---
 
+## Version 2.2
+
+- **RASA**, Real-time Artificial Smart Assistant, replaces the old assistant face:
+  ten expression states from the RASA artwork, blinking, breathing and gestures
+- RASA **points at the live dashboard**: highlights the KPI tile, labels it and
+  draws a line to it, moving aside if it would hide the tile
+- **Proactive insights**, role-aware: approvals waiting, SPI and CPI below 0.95,
+  procurement delays, weakest activity, reporting gaps, un-invoiced work
+- Ten quick actions, a larger side-by-side mode, full-screen on phones
+- Voice-ready structure: `RASA.adapters` for text-to-speech, speech recognition,
+  a language model and an animated avatar
+
 ## Version 2.1
 
 - **Site Manager** role; approval chain foreman → site engineer → site manager

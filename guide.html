@@ -186,9 +186,9 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <span class="chip"><b>Earned value</b>, EAC and baselines</span>
       <span class="chip"><b>Manpower</b> plan, actual, forecast</span>
       <span class="chip"><b>Primavera P6</b> in and out</span>
-      <span class="chip"><b>ProTrack AI</b></span>
+      <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 2.1, September 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 2.2, September 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -225,6 +225,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <a href="#formulas">9. Formula reference</a>
   <a href="#billing">10. Billing and collection</a>
   <a href="#reports">11. Reports and presentations</a>
+  <a href="#rasa" class="sub">RASA, your project assistant</a>
   <a href="#server">12. Server and demo mode</a>
   <a href="#rules">13. Rules the system enforces</a>
   <a href="#faq">14. FAQ and troubleshooting</a>
@@ -242,7 +243,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, identity and projects are shared; daily reports, baselines and costing are moving to the server in stages. Section 12 explains which is which.</div>
-  <div class="note"><b>New in version 2.1</b>
+  <div class="note"><b>New in versions 2.1 and 2.2</b>
     <b>Site manager</b> role, approving every daily report the same day. ·
     <b>Approval chain</b> foreman → site engineer → site manager, set per project by the super admin in the approval matrix. ·
     <b>Timers</b> on preparing, reviewing and approving each report, with a report on time spent per person. ·
@@ -251,7 +252,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <b>Foremen</b> see only daily reports, new reports and their own performance. ·
     <b>Project managers</b> reach costing, invoices and purchase orders for their projects. ·
     <b>Purchase orders</b> kept by the costing engineer on the Baselines page. ·
-    <b>Manpower histogram</b> 25 times faster.</div>
+    <b>Manpower histogram</b> 25 times faster. · <b>RASA</b>, the new face of the assistant, with proactive insights and pointing at the dashboard.</div>
 </section>
 
 <section id="process">
@@ -266,7 +267,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Weekly update.</b> The planning engineer updates design and procurement by milestone from one Excel file, until those phases are complete.</li>
     <li><b>Invoicing.</b> The costing engineer uploads the invoice register weekly: invoice number, amount, submitted, approved and collected, including the advance.</li>
     <li><b>Analysis.</b> ProTrack calculates productivity, earned value, EAC, manpower forecasts, unit rates, reconciliation and invoiceable value against the contract terms, and raises early warnings.</li>
-    <li><b>Oversight.</b> Management reads the executive summary, the reports and ProTrack AI; the performance scorecards show who is keeping the chain alive, and reminders chase the gaps.</li>
+    <li><b>Oversight.</b> Management reads the executive summary, the reports and RASA; the performance scorecards show who is keeping the chain alive, and reminders chase the gaps.</li>
   </ol>
   <div class="note"><b>Why the order matters</b>Costing matches on activity IDs, so it cannot come before the baseline. Productivity needs the planned rate, so it cannot come before costing or the P6 labour loading. Invoiceable value needs the price weighting and the payment terms. If a screen reads zero, the link before it is usually missing.</div>
 </section>
@@ -347,7 +348,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <div class="card"><b>Reports</b><span>Sixteen reports in Excel and PDF, including reconciliation, unit rates, manpower forecast, invoiceable value, invoicing and collection, and report handling time. Site roles see only the reports the super admin grants them.</span></div>
     <div class="card"><b>Presentation</b><span>Tick the slides, download a PowerPoint built from the same numbers.</span></div>
     <div class="card"><b>Performance</b><span>Scorecards for foremen, site engineers, project managers, planning engineers, costing engineers, subcontractors, and reporting compliance by project.</span></div>
-    <div class="card"><b>ProTrack AI</b><span>Ask in plain words; answers come from the reports, with voice in and out.</span></div>
+    <div class="card"><b>RASA</b><span>Real-time Artificial Smart Assistant. Ask in plain words; RASA answers from the project data, points at the figures on your screen, and raises what needs attention before you ask. Voice in and out.</span></div>
     <div class="card"><b>Approval email</b><span>The moment a report is approved, a summary with a link goes to everyone on the project in the chosen roles.</span></div>
     <div class="card"><b>Settings</b><span>Projects, users, role access, approval matrix, approval email, trades and dated rates, subcontractors and purchase orders, regions, cities, sectors, change log.</span></div>
   </div>
@@ -432,7 +433,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Critical projects,</b> worst first, then open the worst in Project view.</li>
     <li><b>Performance → Reporting compliance.</b> Anything in red has gone quiet; press <b>Notify team</b>.</li>
     <li><b>Performance → Project managers</b> for approval backlog and monthly invoicing; Planning and Costing tabs for schedule quality and timeliness.</li>
-    <li><b>Ask ProTrack AI</b> what the screen does not answer.</li>
+    <li><b>Ask RASA</b> what the screen does not answer.</li>
   </ol>
 
   <h3 id="s-sa">Super admin — setup, then as things change</h3>
@@ -628,6 +629,40 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     </tbody>
   </table></div>
   <p><b>Presentation</b> builds a PowerPoint: tick up to fifteen slide types, set title, presenter and rows per table, choose whether charts come through as pictures, and download. The numbers are the same as the reports for the scope selected.</p>
+
+  <h3 id="rasa">RASA, your project assistant</h3>
+  <p><b>RASA</b> stands for Real-time Artificial Smart Assistant. It is the face of ProTrackAI's intelligence: it answers questions from the same data as the reports, points at the figures on your screen while it explains them, and tells you what needs attention before you ask. It only ever sees the projects you have access to, and never shows cost to site roles.</p>
+  <ol class="steps">
+    <li><b>Open RASA</b> with the round face at the bottom right. A number on it means RASA has noticed something; a bubble beside it says what.</li>
+    <li><b>Read what RASA noticed.</b> The first time you open it, RASA waves hello and then lists its insights as cards marked <i>Noticed for you</i>, separate from your own questions. Amber cards are alerts; blue cards are insights. Each says what it found, what it means and what to do.</li>
+    <li><b>Show me</b> on a card takes you to the figure: RASA points at the tile, outlines it, labels it, and draws a line to it from where it stands. If its own window would hide the tile, RASA moves aside.</li>
+    <li><b>Use a quick action</b> for the common questions, or <b>More questions</b> for the full list, or type, or press 🎤 and speak.</li>
+    <li><b>⤢</b> makes RASA larger, beside the conversation; <b>🔊</b> reads answers aloud; <b>✕</b> minimises it.</li>
+  </ol>
+  <table><thead><tr><th>Quick action</th><th>What RASA does</th></tr></thead><tbody>
+    <tr><td>Project health</td><td>Progress against plan, SPI, CPI, productivity, and which projects need attention</td></tr>
+    <tr><td>Schedule analysis</td><td>SPI by project, forecast finish and days late, then offers the activities behind the delay</td></tr>
+    <tr><td>Cost analysis</td><td>CPI and the estimate at completion by project (not shown to site roles)</td></tr>
+    <tr><td>Critical activities</td><td>Activities ranked by productivity over 14 days</td></tr>
+    <tr><td>Risk analysis</td><td>The early warnings in your scope</td></tr>
+    <tr><td>Manpower</td><td>Workforce on site against what the remaining plan needs</td></tr>
+    <tr><td>Procurement</td><td>Engineering and procurement against milestones, and what is forecast late</td></tr>
+    <tr><td>Progress report</td><td>Percent complete against planned, and today's productivity</td></tr>
+    <tr><td>Executive summary</td><td>Opens the executive summary with a one-line read-out</td></tr>
+    <tr><td>Ask RASA</td><td>Ready for your own question</td></tr>
+  </tbody></table>
+  <p><b>What RASA notices on its own:</b> reports waiting for your review or approval, drafts a foreman has not submitted, schedule performance below 0.95, cost performance below 0.95, procurement items forecast late, the activity with the lowest productivity, projects with gaps in daily reporting, and work that is invoiceable but not yet billed. Each person sees only what fits their role.</p>
+  <table><thead><tr><th>RASA's expression</th><th>Means</th></tr></thead><tbody>
+    <tr><td>Waving</td><td>Hello when you open it, goodbye when you close it</td></tr>
+    <tr><td>Listening, with a sound wave</td><td>You are typing or speaking</td></tr>
+    <tr><td>Hand on chin, rising dots</td><td>Working out the answer</td></tr>
+    <tr><td>Open hands</td><td>Explaining the answer</td></tr>
+    <tr><td>Pointing</td><td>Showing you the figure on the screen</td></tr>
+    <tr><td>Finger raised, gold glow</td><td>An insight worth acting on</td></tr>
+    <tr><td>Serious, amber glow</td><td>Something needs your attention</td></tr>
+    <tr><td>Thumbs up, green glow</td><td>Done, or everything is within tolerance</td></tr>
+  </tbody></table>
+  <p>RASA's figures always match the tiles: both measure at the data date, the last day with approved reports. On a phone, RASA steps aside when it points, and <b>Back to RASA</b> returns to the conversation.</p>
 </section>
 
 <section id="server">
@@ -683,6 +718,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <tr><td><b>AC, EV, PV</b></td><td>Actual cost, earned value, planned value</td></tr>
     <tr><td><b>Approval matrix</b></td><td>Per project: which site engineer reviews each foreman, and which site manager approves each site engineer</td></tr>
     <tr><td><b>Report handling time</b></td><td>Time spent preparing, reviewing and approving a daily report, measured by the app</td></tr>
+    <tr><td><b>RASA</b></td><td>Real-time Artificial Smart Assistant, the project assistant inside ProTrackAI</td></tr>
     <tr><td><b>Role access</b></td><td>The reports and executive layout the super admin sets for site engineers and site managers</td></tr>
     <tr><td><b>BAC, EAC, ETC, VAC</b></td><td>Budget, estimate, estimate to complete, variance, at completion</td></tr>
     <tr><td><b>CPI, SPI, TCPI</b></td><td>Cost, schedule and to-complete performance indices</td></tr>
