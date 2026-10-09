@@ -1,0 +1,171 @@
+{
+ "run_at": "2026-10-09 20:17",
+ "carpenter_rate": 21.63,
+ "results": [
+  {
+   "area": "C1 Productivity",
+   "check": "manhours = 10 x (8 + 2)",
+   "result": "PASS",
+   "expected": 100,
+   "actual": 100
+  },
+  {
+   "area": "C1 Productivity",
+   "check": "earned manhours = 50 / 0.5",
+   "result": "PASS",
+   "expected": 100,
+   "actual": 100
+  },
+  {
+   "area": "C1 Productivity",
+   "check": "productivity index = 100 / 100",
+   "result": "PASS",
+   "expected": 1.0,
+   "actual": 1
+  },
+  {
+   "area": "C2 Labour cost",
+   "check": "cost = 10 x rate x (8 + 1.5 x 2)",
+   "result": "PASS",
+   "expected": 2379.2999999999997,
+   "actual": 2379.2999999999997
+  },
+  {
+   "area": "C3 Earned value",
+   "check": "BAC = price weight 100,000",
+   "result": "PASS",
+   "expected": 100000,
+   "actual": 100000
+  },
+  {
+   "area": "C3 Earned value",
+   "check": "PV = 100,000 x 20/29 days",
+   "result": "PASS",
+   "expected": 68965.5172413793,
+   "actual": 68965.51724137932
+  },
+  {
+   "area": "C3 Earned value",
+   "check": "EV = 100,000 x 50/1000",
+   "result": "PASS",
+   "expected": 5000,
+   "actual": 5000
+  },
+  {
+   "area": "C3 Earned value",
+   "check": "AC = cost of the one report",
+   "result": "PASS",
+   "expected": 2379.2999999999997,
+   "actual": 2379.2999999999997
+  },
+  {
+   "area": "C3 Earned value",
+   "check": "SPI = EV / PV",
+   "result": "PASS",
+   "expected": 0.07250000000000001,
+   "actual": 0.0725
+  },
+  {
+   "area": "C3 Earned value",
+   "check": "CPI = EV / AC",
+   "result": "PASS",
+   "expected": 2.101458412138024,
+   "actual": 2.101458412138024
+  },
+  {
+   "area": "C3 Earned value",
+   "check": "EAC = BAC / CPI",
+   "result": "PASS",
+   "expected": 47585.99999999999,
+   "actual": 47585.99999999999
+  },
+  {
+   "area": "C4 Edge cases",
+   "check": "before the baseline starts PV = 0",
+   "result": "PASS",
+   "expected": 0,
+   "actual": 0
+  },
+  {
+   "area": "C4 Edge cases",
+   "check": "with PV = 0 the app shows SPI = 0 (Finance: should be \"not applicable\")",
+   "result": "PASS",
+   "expected": 0,
+   "actual": 0
+  },
+  {
+   "area": "C4 Edge cases",
+   "check": "with AC = 0 the app shows CPI = 0 (Finance: should be \"not applicable\")",
+   "result": "PASS",
+   "expected": 0,
+   "actual": 0
+  },
+  {
+   "area": "C5 Billing",
+   "check": "contract (sum of price weights) = 100,000",
+   "result": "PASS",
+   "expected": 100000,
+   "actual": 100000
+  },
+  {
+   "area": "C5 Billing",
+   "check": "billable = min(earned 90,000, cap 80,000) + TCC release 10,000",
+   "result": "PASS",
+   "expected": 90000,
+   "actual": 90000
+  },
+  {
+   "area": "C5 Billing",
+   "check": "retention held = min(10% x 90,000, 5% x 100,000)",
+   "result": "PASS",
+   "expected": 5000,
+   "actual": 5000
+  },
+  {
+   "area": "C5 Billing",
+   "check": "retention released at TCC = 50% x 5,000",
+   "result": "PASS",
+   "expected": 2500,
+   "actual": 2500
+  },
+  {
+   "area": "C5 Billing",
+   "check": "advance recovered = min(10,000, 10% x 90,000)",
+   "result": "PASS",
+   "expected": 9000,
+   "actual": 9000
+  },
+  {
+   "area": "C5 Billing",
+   "check": "invoiceable = 90,000 - 5,000 + 2,500 - 9,000",
+   "result": "PASS",
+   "expected": 78500,
+   "actual": 78500
+  },
+  {
+   "area": "C6 Zero cap",
+   "check": "0% cap: billable = TCC release only, 10,000",
+   "result": "PASS",
+   "expected": 10000,
+   "actual": 10000
+  },
+  {
+   "area": "C7 Report status",
+   "check": "a Submitted (not yet approved) report already counts in EV",
+   "result": "PASS",
+   "expected": 5000,
+   "actual": 5000
+  },
+  {
+   "area": "C7 Report status",
+   "check": "a Draft report does not count",
+   "result": "PASS",
+   "expected": 0,
+   "actual": 0
+  }
+ ],
+ "summary": {
+  "PASS": 23,
+  "FAIL": 0
+ }
+}

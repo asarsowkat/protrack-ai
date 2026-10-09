@@ -51,6 +51,10 @@ command and publish directory `.`.
 
 ## Demo accounts
 
+These work only in a copy **without** a server key in `config.js` (demo data in the
+browser). On a site connected to the ProTrack server they are switched off: everyone
+signs in with their work email.
+
 Password for every account: `ProTrack@2026`
 
 | Email | Role |
@@ -107,10 +111,16 @@ and purchase order rates.
 
 ## Read this before real use
 
-This is a **prototype**. All data lives in the browser's local storage on each
-device. There is no server, no database and no real authentication: the sign-in
-screen, roles and access rules demonstrate the intended behaviour, they are not
-security.
+This is a **prototype**. Without a server key, all data lives in the browser's
+local storage on each device and the sign-in screen and roles only demonstrate the
+intended behaviour.
+
+With a server key (Supabase), sign-in is real, and from version 2.5 projects,
+activities, daily reports, costing, invoices, weekly progress, people's access and
+the approval matrix are held on the server, which checks every change with
+row-level security and server functions. Some settings (rates, purchase orders,
+revised baselines, DCMA, role access, email settings) still live in each browser;
+see `guide.html` section 12.
 
 Do not use it as a production system for real staff passwords, client contract
 values or commercially sensitive schedules.
@@ -147,6 +157,32 @@ Production needs:
 `guide.html` section 15 lists every formula; section 16 lists these guarantees.
 
 ---
+
+## Version 2.5
+
+- Daily reports, activities, costing, invoices, weekly progress, approval matrix and
+  people's access on the server, every change checked there (`schema-update-v4.sql`)
+- Tamper-evident report history; imports all-or-nothing and safe to repeat
+- Backup and restore, and a guided move of browser data to the server with reconciliation
+- Demo accounts switched off on server sites
+- See RELEASE-NOTES-v2.5.md and STAGE-2B-SETUP.md
+
+## Version 2.4
+
+- Demo or live date: Settings → System; `DATE_MODE` in config.js locks it
+- A 0% payment cap now means 0% (blank = 100% / no cap); older saved terms unchanged
+- Formula reference for Finance; 158 automated checks in `tests/`
+
+## Version 2.3
+
+- **Every business domain in the menu**, grouped as in the target design: Projects &
+  Handover, Planning & Scheduling, Cost Control, Daily Reports, Materials & Procurement,
+  Claims & Variations, Invoices & Cash Flow, Reports & Dashboards, RASA, Imports &
+  Integrations, Administration. Working screens open as before; items not built yet
+  are greyed out with a **Planned** tag and cannot be opened.
+- **Project overview** page: lifecycle stages, key figures, contract and financial
+  summary, schedule by phase, cost trend, critical items and RASA, from real data only.
+- Regression suite in `tests/` (75 checks).
 
 ## Version 2.2
 

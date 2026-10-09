@@ -1,0 +1,70 @@
+{
+ "run_at": "2026-10-09 20:17",
+ "app": "/home/claude/p2/app/app.html",
+ "summary": {
+  "PASS": 10,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Backup",
+   "check": "System tab offers backup and restore",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Backup",
+   "check": "no server items shown in demo mode",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Backup",
+   "check": "backup file holds the whole browser data",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Restore",
+   "check": "preview compares the browser with the backup before anything changes",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Restore",
+   "check": "a backup of the current data downloads first",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Restore",
+   "check": "restore brings the data back",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Restore",
+   "check": "restored data survives a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Restore",
+   "check": "a file that is not a ProTrack backup is refused clearly",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Restore",
+   "check": "a damaged file is refused clearly",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

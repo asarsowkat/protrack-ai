@@ -1,0 +1,359 @@
+{
+ "run_at": "2026-10-09 20:17",
+ "app": "/home/claude/p2/app/app.html",
+ "results": [
+  {
+   "area": "Billing",
+   "check": "engine matches an independent re-calculation (contract, billable, retention, net)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "payment terms form opens",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "retention 10% with a 0% cap is refused with an explanation",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "blank phase cap (= 100%) plus milestone releases over 100% is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "blank retention cap saves as \"no cap\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "blank phase cap saves as 100%",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "saved terms carry the v2.4 marker",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "no cap: retention held = full percentage of billable",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "pre-v2.4 terms: 0 caps still read as \"no cap\" (historical figures unchanged)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "file is read into a preview",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "unknown activity ID is rejected",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "row without a budget quantity is rejected",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "nothing changes before Apply",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "valid rows applied: quantity, unit, cost, manhours",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "planned rate recalculated = quantity / manhours",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "upload logged with the number of rows applied",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "uploading the same file again is safe: no duplicated activities, same values",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "missing Activity ID column gives a clear message",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "template header lists Activity ID, budget quantity and UOM",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice register",
+   "check": "approved above submitted is rejected",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice register",
+   "check": "collected above approved is rejected",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice register",
+   "check": "only valid rows stored",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice register",
+   "check": "totals: submitted, approved, collected",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice register",
+   "check": "re-upload replaces the register, never doubles it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice register",
+   "check": "upload history kept",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice register",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Role access",
+   "check": "site engineer sees exactly the reports granted to the role",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Role access",
+   "check": "site engineer: no cost or billing on the executive summary",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Role access",
+   "check": "site engineer cannot customise the summary",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Role access",
+   "check": "cost tiles never offered to site roles",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Role access",
+   "check": "a new grant appears immediately",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Role access",
+   "check": "foreman: daily reports, new report, own performance only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Role access",
+   "check": "project manager reaches costing, invoices and purchase orders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Role access",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval matrix",
+   "check": "report routed to the assigned engineer and manager",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval matrix",
+   "check": "unassigned foreman falls to the project manager",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval matrix",
+   "check": "change written to the change log",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval matrix",
+   "check": "project manager can then review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval matrix",
+   "check": "former engineer can no longer review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval matrix",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "insights computed for the super admin",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "at most four insights, alerts first",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "site engineer gets no cost or billing insight",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "foreman gets only his own queue or drafts",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "schedule analysis quotes the SPI shown on the tile",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "RASA points at the tile it talks about",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Date switch",
+   "check": "System tab shows demo mode and its date",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Date switch",
+   "check": "after switching, the app runs on today's date",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Date switch",
+   "check": "live mode uses its own storage",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Date switch",
+   "check": "demo data left untouched",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Date switch",
+   "check": "sidebar shows the date basis",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Date switch",
+   "check": "switching back restores demo mode and its data",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Date switch",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Exports",
+   "check": "Excel export builds a sheet from the report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Exports",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ],
+ "summary": {
+  "PASS": 58,
+  "FAIL": 0,
+  "SKIPPED": 0
+ }
+}

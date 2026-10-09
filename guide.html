@@ -126,15 +126,13 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 .cover .inner.portrait .cta{margin-top:24px}
 @media (max-width:920px){.cover .inner.portrait{padding:22px 18px 26px;border-radius:18px}.cover img.cover-art{width:100%}}
 @media print{.cover .inner.portrait{background:rgba(6,20,38,.55) !important;box-shadow:none;border-color:rgba(126,171,235,.3)}.cover img.cover-art{width:360px}}
-a.tool{background:rgba(255,255,255,.1);color:#E8EEF8;border-radius:7px;padding:7px 12px;font:600 13px var(--font);text-decoration:none;display:inline-flex;align-items:center}
-a.tool:hover{background:rgba(255,255,255,.2)}
 </style>
 </head>
 <body>
 <header class="top">
   <img id="logo" alt="ProTrack">
   <b>User Guide</b>
-  <span class="sp"><a class="tool" href="index.html">Open ProTrack</a><a class="tool" href="roles.html">Role guide</a>
+  <span class="sp">
     <button id="menu" type="button">Contents</button>
     <button id="theme" type="button">Dark</button>
     <button onclick="window.print()" type="button">Print</button>
@@ -188,7 +186,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 2.2, September 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 2.5, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -202,6 +200,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <a href="#matrix" class="sub">Approval matrix</a>
   <a href="#email" class="sub">Approval email</a>
   <a href="#features">5. Features at a glance</a>
+  <a href="#domains" class="sub">Finding your way: the domains</a>
+  <a href="#overview" class="sub">Project overview</a>
   <a href="#steps">6. Step by step, by role</a>
   <a href="#s-foreman" class="sub">Foreman</a>
   <a href="#s-eng" class="sub">Site engineer</a>
@@ -227,6 +227,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <a href="#reports">11. Reports and presentations</a>
   <a href="#rasa" class="sub">RASA, your project assistant</a>
   <a href="#server">12. Server and demo mode</a>
+  <a href="#backup" class="sub">Backup and restore</a>
+  <a href="#move" class="sub">Moving browser data to the server</a>
   <a href="#rules">13. Rules the system enforces</a>
   <a href="#faq">14. FAQ and troubleshooting</a>
   <a href="#glossary">15. Glossary</a>
@@ -242,7 +244,20 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <div class="card"><b>For planning and costing</b><span>P6 in, P6 out; a costing file for budget quantity and rate; a weekly design and procurement update; an invoice register.</span></div>
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
-  <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, identity and projects are shared; daily reports, baselines and costing are moving to the server in stages. Section 12 explains which is which.</div>
+  <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 2.5</b>
+    <b>Daily reports on the server</b>: saving, submitting, reviewing and approving now go through the server, which checks your role, your project and the approval matrix. A hidden button can no longer be forced from the browser. ·
+    <b>Tamper-evident history</b>: a report's history cannot be edited or deleted, even from the database console, and each entry is sealed with the one before it. ·
+    <b>Safe imports</b>: costing files, invoice registers and baselines load all-or-nothing on the server; loading the same file twice changes nothing. ·
+    <b>Backup and restore</b> in Settings → System, and a guided <b>move to the server</b> for anything entered in a browser before this release, with a reconciliation of counts and totals. ·
+    <b>No demo accounts</b> on a site connected to the server.</div>
+  <div class="note"><b>New in version 2.4</b>
+    <b>Demo or live date</b>: Settings → System switches between the fixed demo date (22 Sept 2026) and today's date; each keeps its own data. ·
+    <b>A 0% payment cap now means 0%</b>; a blank cap means 100%, a blank retention cap means no cap. Terms saved earlier keep their old meaning. ·
+    <b>Formula reference for Finance</b>, with every formula proved on a reference project, and 158 automated checks behind this release.</div>
+  <div class="note"><b>New in version 2.3</b>
+    <b>Every business domain</b> now has its place in the menu, grouped as in the target design. What works opens as before; what is not built yet is shown greyed out with a <b>Planned</b> tag and cannot be clicked. ·
+    <b>Project overview</b>: one page per project with its lifecycle, key figures, contract and financial summary, schedule, cost trend, critical items and RASA. Figures ProTrackAI does not hold yet are shown as Planned, never estimated.</div>
   <div class="note"><b>New in versions 2.1 and 2.2</b>
     <b>Site manager</b> role, approving every daily report the same day. ·
     <b>Approval chain</b> foreman → site engineer → site manager, set per project by the super admin in the approval matrix. ·
@@ -338,6 +353,35 @@ a.tool:hover{background:rgba(255,255,255,.2)}
 
 <section id="features">
   <h2>5. Features at a glance</h2>
+  <h3 id="domains">Finding your way: the domains</h3>
+  <p>The menu on the left groups everything by business domain. Click a domain to open it. Items in white open a working screen; greyed items marked <b>Planned</b> show what is on the roadmap and cannot be opened yet. Each person sees only the domains their role uses; foremen and site staff do not see planned items.</p>
+  <table><thead><tr><th>Domain</th><th>Working today</th><th>Planned</th></tr></thead><tbody>
+    <tr><td>Home</td><td>Executive summary</td><td>—</td></tr>
+    <tr><td>Projects &amp; Handover</td><td>Project overview</td><td>Tender register, contract register, handover checklist</td></tr>
+    <tr><td>Planning &amp; Scheduling</td><td>Baselines and P6 import, weekly design and procurement update, baseline comparison, P6 progress update</td><td>Governed baseline register, look-ahead and alerts</td></tr>
+    <tr><td>Cost Control</td><td>Earned value and EAC, costing file, unit rate analysis</td><td>Budget revisions, commitments and accruals, cost reconciliation</td></tr>
+    <tr><td>Daily Reports</td><td>Daily reports, new report, report handling time</td><td>—</td></tr>
+    <tr><td>Materials &amp; Procurement</td><td>Subcontract purchase orders</td><td>Material tracking, deliveries and stock</td></tr>
+    <tr><td>Claims &amp; Variations</td><td>Extension of time status (on the project overview)</td><td>Variation register, claims register</td></tr>
+    <tr><td>Invoices &amp; Cash Flow</td><td>Invoiceable value, invoicing and collection, invoice register</td><td>Cash-flow forecast</td></tr>
+    <tr><td>Reports &amp; Dashboards</td><td>Dashboard, all reports, performance, presentation</td><td>—</td></tr>
+    <tr><td>RASA AI Assistant</td><td>Opens RASA</td><td>—</td></tr>
+    <tr><td>Imports &amp; Integrations</td><td>Primavera P6 (XER, XML), Excel templates</td><td>SAP ECC import centre; S/4HANA connector, disabled until IT, SAP, Cybersecurity and Finance approve</td></tr>
+    <tr><td>Administration</td><td>Users, role access, approval matrix, approval email, projects and payment terms</td><td>—</td></tr>
+  </tbody></table>
+  <h3 id="overview">Project overview</h3>
+  <ol class="steps">
+    <li><b>Projects &amp; Handover → Project overview.</b> If your scope holds several projects, pick one. This also sets the scope for every other screen and for RASA; <b>Projects</b> in the breadcrumb goes back to the list.</li>
+    <li><b>Lifecycle strip</b>: seven stages from tender to close-out. Click a stage to jump to its checklist below.</li>
+    <li><b>Key figures</b>: SPI, CPI, physical progress against plan, and forecast cost for the measured scope, each with its change since last week. Site roles see productivity and workforce instead of cost.</li>
+    <li><b>Contract and financial summary</b>: original contract, invoiceable, invoiced, collected, actual cost, open PO balance and forecast cost. Approved variations and revised contract show <b>Planned</b> until the variation register exists.</li>
+    <li><b>Project lifecycle</b>: a green tick means the data is present in ProTrackAI (a baseline is loaded, the matrix is assigned, reports are arriving); an amber mark needs attention. Ticks are not formal stage approvals, which are planned. Tender and award are not tracked yet.</li>
+    <li><b>Schedule overview</b>: baseline span and progress achieved by phase, key milestones, and the data date. The critical path stays with Primavera P6.</li>
+    <li><b>Critical items and actions</b>: early warnings, reports waiting for approval, milestones forecast late, and the extension-of-time claim.</li>
+    <li><b>Cost overview</b>: actual cost by month and cumulatively, against planned value. The cumulative line starts from the estimated cost of progress made before daily reporting began, so it ends exactly at the actual-cost figure above it.</li>
+    <li><b>RASA on this project</b>: ask the suggested questions, or open RASA for your own.</li>
+  </ol>
+  <p><b>Reading the cost figures.</b> Actual cost and forecast cost cover labour and subcontract work, from daily reports plus an estimate for earlier progress, not the full project cost. The invoiceable figure states what share of the contract the priced activities cover; on demo data that share is small, which is why invoiceable is far below invoiced.</p>
   <div class="grid2">
     <div class="card"><b>Executive summary</b><span>Landing page for managers. Pick any of 18 tiles; group the breakdown by region, sector, city or project; choose its columns; add a billing and collection panel. Each person keeps their own layout.</span></div>
     <div class="card"><b>Dashboard</b><span>Productivity index, workforce, manhours, SPI, CPI, warnings, portfolio by region and sector, project health.</span></div>
@@ -447,6 +491,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Payment terms:</b> per phase the progress cap and up to two milestone releases; separate retention only if the contract has one; advance and its recovery rate.</li>
     <li><b>Settings → Approval matrix:</b> for each project, choose the site engineer who reviews each foreman, and the site manager who approves each site engineer. Repeat whenever the site team changes.</li>
     <li><b>Settings → Email:</b> choose who receives the approval summary.</li>
+    <li><b>Settings → System, once after installing version 2.5:</b> move anything people entered in their browsers to the server (see <a href="#move">Moving browser data to the server</a>), and download a server backup every week.</li>
+    <li><b>Settings → System:</b> check the version, and choose the date basis: demo (fixed 22 Sept 2026) for demonstrations, live (today) for real work. Each keeps its own data in the browser. Once real data is on the server, set <code>DATE_MODE: 'live'</code> in config.js so nobody can switch it by mistake.</li>
     <li><b>Settings → Role access:</b> for site engineers and site managers, tick the reports they may open and set the tiles, breakdown and columns of their executive summary. Cost and billing are never offered.</li>
     <li><b>Hand purchase orders to costing.</b> Each project's costing engineer keeps its subcontractor POs on the Baselines page. Settings → Subcontractors still shows every company and PO across all projects, for review or correction.</li>
     <li><b>Hand over</b> to planning and costing. Afterwards: leavers set inactive, pay rises as new dated rates, wrong baselines undone, change log reviewed.</li>
@@ -592,7 +638,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <div class="f"><b>Earned price per phase = phase price × price progress</b>, where price comes from the P6 weighting resource</div>
   <div class="f"><b>Billable per phase = min(earned price, phase price × progress cap) + releases whose milestone is achieved</b></div>
   <div class="f"><b>Net invoiceable = Σ billable − separate retention (if any) + retention released − advance recovered</b></div>
-  <p>Example: construction 80% on progress, 10% at TCC, 10% at FAC. At full progress before TCC, 80% is billable. Set separate retention to zero unless the contract deducts it on top of the phase split. Advance recovery is a percentage of each invoice and stops once the advance is repaid.</p>
+  <p>Example: construction 80% on progress, 10% at TCC, 10% at FAC. At full progress before TCC, 80% is billable. Set separate retention to zero unless the contract deducts it on top of the phase split. Advance recovery is a percentage of each invoice and stops once the advance is repaid. <b>Blank or zero?</b> A blank progress cap means 100%; 0 means nothing is billed on progress, only at the milestone releases. A blank retention cap means no cap; a retention percentage with a 0% cap is refused, because nothing would be held. Terms saved before version 2.4 keep their earlier meaning, where 0 was read as no cap.</p>
   <h3>From the invoice register</h3>
   <table>
     <thead><tr><th>Figure</th><th>Formula</th></tr></thead>
@@ -670,14 +716,36 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <table>
     <thead><tr><th></th><th>Demo mode</th><th>Signed in to the server</th></tr></thead>
     <tbody>
-      <tr><td>Who you are</td><td>Demo accounts, "Acting as" switch</td><td>Your Supabase account and role</td></tr>
-      <tr><td>Projects</td><td>Six sample projects in this browser</td><td>Shared by everyone with an account</td></tr>
-      <tr><td>Daily reports, baselines, costing, invoices</td><td>This browser</td><td>This browser for now; moving to the server in the next stages</td></tr>
+      <tr><td>Who you are</td><td>Demo accounts, "Acting as" switch</td><td>Your work email and the role the super admin gave you. Demo accounts are switched off.</td></tr>
+      <tr><td>Projects, people, approval matrix</td><td>This browser</td><td>On the server, shared</td></tr>
+      <tr><td>Daily reports and their history</td><td>This browser</td><td>On the server. Every save, review and approval is checked by the server</td></tr>
+      <tr><td>Baseline activities, costing, invoices, weekly progress</td><td>This browser</td><td>On the server. Imports are all-or-nothing and recorded with a file fingerprint</td></tr>
+      <tr><td>Still in each browser</td><td>Everything</td><td>Trade rates, subcontractors and purchase orders, revised and recovery baselines, DCMA results, role access, email settings, notifications. These move in the next stage</td></tr>
       <tr><td>Approval email</td><td>Prepared and listed in Settings → Email, not sent</td><td>Sent once the mail function is set up on the server</td></tr>
       <tr><td>Password reset</td><td>Simulated</td><td>Real email</td></tr>
+      <tr><td>Date everything is measured at</td><td>22 Sept 2026, fixed, so demonstrations always match</td><td>Same by default; set <code>DATE_MODE: 'live'</code> in config.js, or switch in Settings → System, to use today's date</td></tr>
     </tbody>
   </table>
-  <p>The sign-in page shows <b>Connected to the ProTrack server</b> in green when <code>config.js</code> holds a valid key.</p>
+  <p>The sign-in page shows <b>Connected to the ProTrack server</b> in green when <code>config.js</code> holds a valid key. If the server cannot be reached after sign-in, an amber bar says so with a <b>Try again</b> button; nothing is quietly kept in the browser instead.</p>
+
+  <h3 id="backup">Backup and restore</h3>
+  <ol class="steps">
+    <li><b>Settings → System → Download server backup</b> (signed in to the server): one file with every project you can see, its activities, daily reports with their complete history, invoices, approval matrix and import records. The super admin should do this every week and keep the files somewhere safe.</li>
+    <li><b>Download browser backup</b>: everything this browser holds, including anything still waiting to move to the server.</li>
+    <li><b>Restore a backup</b> (demo mode): choose the file. ProTrackAI first shows what is in this browser and what is in the backup, side by side. Only when you press <b>Restore this backup</b> and confirm does it replace the data, and a backup of what was there downloads first, so a restore can itself be undone.</li>
+    <li>Signed in to the server, a browser backup is <b>never</b> written over server data. The super admin can load one to add its reports to the list waiting to move.</li>
+  </ol>
+
+  <h3 id="move">Moving browser data to the server</h3>
+  <p>Before version 2.5, daily reports, baselines, costing and invoices were saved in each person's browser. When someone signs in to version 2.5, anything their browser holds for a server project is set aside, untouched, and listed in <b>Settings → System → Browser data waiting for the server</b>.</p>
+  <ol class="steps">
+    <li><b>Sign in as super admin on the computer where the data was entered.</b> If it was entered on someone else's computer, ask them for a browser backup (Settings → System → Download browser backup) and load it with <b>Load a browser backup</b>.</li>
+    <li>Check the list: for each project, the number of activities, reports and invoices waiting.</li>
+    <li>Press <b>Move to server</b> and confirm. A browser backup downloads first. Then, in this order: activities the server does not have yet, costing, invoices (only if the server has no register for that project), and daily reports with their full history.</li>
+    <li>Read the result. Each step shows ✓ or ✗, and a <b>reconciliation</b> table compares the browser and the server: activities, budget manhours, reports, approved reports, quantity and manhours reported, invoices and their total. Every row should say <b>Match</b>.</li>
+    <li>A report the server already has (same number) is skipped, never overwritten. A report whose activity is missing, or that clashes with a report for the same foreman and date, is refused and listed with the reason. Pressing <b>Move again</b> is safe: nothing is created twice.</li>
+    <li>Re-assign the approval matrix in Settings → Approval matrix: assignments made in a browser before 2.5 referred to browser accounts and do not carry over.</li>
+  </ol>
 </section>
 
 <section id="rules">
@@ -694,6 +762,12 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li>Every approval emails a summary to the project's stakeholders.</li>
     <li>Site roles never see cost or billing, and their executive view is set by the super admin.</li>
     <li>Rejecting or returning needs a comment; every change is logged with a name and time.</li>
+    <li>On the server: a report is saved, reviewed and approved only through ProTrack's server functions. Writing to the tables directly is refused.</li>
+    <li>On the server: a foreman always reports under his own name, can edit only his own drafts, and cannot change a report once submitted.</li>
+    <li>On the server: an approved report cannot be changed or deleted by anyone, and a project that has approved reports cannot be deleted.</li>
+    <li>On the server: report history and the change log can only be added to. Each history entry is sealed with the one before it, so any alteration is detectable.</li>
+    <li>On the server: one report per foreman per day; no future dates; the same activity once per report; no more than 24 hours a day per worker.</li>
+    <li>On the server: loading the same costing file, invoice register or baseline again changes nothing; a failed row is refused and listed, never half-applied.</li>
   </ul>
 </section>
 
@@ -702,6 +776,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <h4>I cannot see Review or Approve on a report</h4><p>The approval matrix routes each report to one site engineer and one site manager per project. If it is not assigned to you, the button does not appear. The route is shown at the top of every report; the super admin changes it in Settings → Approval matrix.</p>
   <h4>A report went to the project manager instead of a site engineer</h4><p>That foreman, or his site engineer, has no assignment on that project. The project heading in Settings → Approval matrix shows how many are unassigned.</p>
   <h4>Settings → Email says "Demo: not sent"</h4><p>Emails are prepared and listed, but the mail function is not set up on the server yet. Follow EMAIL-SETUP.md once.</p>
+  <h4>All my figures look out of date</h4><p>The app may be in demo mode, which measures everything at 22 Sept 2026. Settings → System shows the mode; switch to live for today's date.</p>
   <h4>The timer shows zero or stops</h4><p>It pauses while the app is in the background and resets if you leave the form without saving. Save as draft to keep the time.</p>
   <h4>Productivity reads very high</h4><p>A subcontractor quantity is entered without their workers and hours. The form warns in amber.</p>
   <h4>DCMA shows float as not assessed</h4><p>The XER was exported without scheduling. Press F9 in P6, then export again.</p>
@@ -709,6 +784,12 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <h4>Invoiced is higher than invoiceable</h4><p>Either invoicing is ahead of certified progress, or the payment terms or price weighting are not set. Check the terms on the project.</p>
   <h4>A subcontractor line says "estimated"</h4><p>That company has no purchase order on the project, or no rate for that activity or trade. The project's costing engineer adds it on the Baselines page.</p>
   <h4>"Invalid API key" at sign-in</h4><p>The key in <code>config.js</code> is incomplete or from another project. Copy the anon key again with the copy icon.</p>
+  <h4>"The server refused this" when reviewing or approving</h4><p>The server checks the approval matrix itself. Only the site engineer assigned to that foreman on that project can review, and only the site manager assigned to that engineer can approve; the project manager can do both. Ask the super admin to check Settings → Approval matrix.</p>
+  <h4>"This foreman already has a report for that date"</h4><p>Open the existing report and edit it instead of creating a second one.</p>
+  <h4>"This is the same file as the last one loaded, so nothing changed"</h4><p>The server recognised the file. If you meant to load corrected figures, check you chose the corrected file.</p>
+  <h4>Undo import or Remove baseline says it is not available</h4><p>On the server a baseline is never removed, so report history always keeps its activities. Import the correct file again; activities are matched by ID and updated.</p>
+  <h4>An amber bar says the server data could not be loaded</h4><p>Your connection or the server was unavailable. Press <b>Try again</b>. Anything you change is still sent to the server, which checks it; nothing is saved only in the browser.</p>
+  <h4>I cannot sign in with a demo account</h4><p>Demo accounts are switched off on a site connected to the server. Use your work email; the super admin creates accounts in Supabase.</p>
   <h4>Delete or undo did nothing</h4><p>You are on an old version. Upload the latest <code>index.html</code> and press Ctrl+F5.</p>
 </section>
 
@@ -718,6 +799,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <tr><td><b>AC, EV, PV</b></td><td>Actual cost, earned value, planned value</td></tr>
     <tr><td><b>Approval matrix</b></td><td>Per project: which site engineer reviews each foreman, and which site manager approves each site engineer</td></tr>
     <tr><td><b>Report handling time</b></td><td>Time spent preparing, reviewing and approving a daily report, measured by the app</td></tr>
+    <tr><td><b>Planned</b></td><td>A feature on the roadmap, shown greyed out and not yet available</td></tr>
     <tr><td><b>RASA</b></td><td>Real-time Artificial Smart Assistant, the project assistant inside ProTrackAI</td></tr>
     <tr><td><b>Role access</b></td><td>The reports and executive layout the super admin sets for site engineers and site managers</td></tr>
     <tr><td><b>BAC, EAC, ETC, VAC</b></td><td>Budget, estimate, estimate to complete, variance, at completion</td></tr>
