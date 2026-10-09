@@ -10,6 +10,7 @@ project data.
 | File | What it is |
 |---|---|
 | `index.html` | The application |
+| `demo.html` | The same application on sample data, for demonstrations (never connects to the server) |
 | `guide.html` | User guide: every screen, every formula, FAQ |
 | `roles.html` | Step by step by role: foreman, site engineer, project manager, planning engineer, costing engineer, executives, super admin |
 | `404.html` | Not-found page |
@@ -51,9 +52,11 @@ command and publish directory `.`.
 
 ## Demo accounts
 
-These work only in a copy **without** a server key in `config.js` (demo data in the
-browser). On a site connected to the ProTrack server they are switched off: everyone
-signs in with their work email.
+These work on `demo.html` (the demo page next to the live site, sample data only,
+never connected to the server) and in any copy **without** a server key in
+`config.js`. On the live site they are switched off: everyone signs in with their
+work email. `demo.html` is built from `index.html` with `tools/make_demo.py`; rebuild
+it whenever `index.html` changes.
 
 Password for every account: `ProTrack@2026`
 
@@ -164,7 +167,7 @@ Production needs:
   people's access on the server, every change checked there (`schema-update-v4.sql`)
 - Tamper-evident report history; imports all-or-nothing and safe to repeat
 - Backup and restore, and a guided move of browser data to the server with reconciliation
-- Demo accounts switched off on server sites
+- Demo accounts switched off on server sites; `demo.html` keeps a sample-data demo next to the live site
 - See RELEASE-NOTES-v2.5.md and STAGE-2B-SETUP.md
 
 ## Version 2.4

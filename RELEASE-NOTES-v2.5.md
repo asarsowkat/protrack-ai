@@ -49,6 +49,10 @@ When `config.js` has a key:
 - "Reset demo data" is hidden.
 - A browser session saved in demo mode is not restored.
 
+### Demo page (added 9 Oct 2026, after release)
+
+`demo.html` sits next to the live site and is linked from its sign-in page. It runs the same app on sample data with the demo accounts, for demonstrations and training. It never loads `config.js` or the Supabase library, so it cannot reach the server. It stores its data in the visitor's browser under its own key (`protrack-demopage-v1`), separate from the live site. It is built from `index.html` by `tools/make_demo.py`, so the two never drift apart.
+
 ### Errors are shown, never hidden
 
 If server data cannot be loaded, an amber bar says so and offers **Try again**. Every refusal from the server is shown with its reason. Nothing falls back to saving only in the browser.
