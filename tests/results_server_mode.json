@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-09 22:04",
- "app": "/home/claude/p3/app.html",
+ "run_at": "2026-10-09 23:46",
+ "app": "/home/claude/p4/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 68,
+  "PASS": 78,
   "FAIL": 0
  },
  "results": [
@@ -286,6 +286,66 @@
   {
    "area": "Weekly update",
    "check": "a foreman cannot change progress (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "twelve stages shown, all Not started on a new server project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "the project manager assigns the owner on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "a foreman calling the server directly is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "the owner ticks and submits through the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "the owner cannot approve (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "the project manager finds it in Actions and approvals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "the project manager approves through the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "history in the app comes from the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboards",
+   "check": "planning dashboard shows the server project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboards",
+   "check": "cost dashboard reconciles the costing and invoice batches",
    "result": "PASS",
    "detail": ""
   },

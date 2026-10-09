@@ -68,7 +68,7 @@ with sync_playwright() as p:
     ck('Formulas','terms saved before v2.4 keep their old meaning (0 read as no cap)',bl['billable']>0,bl)
     # --- workflow, matrix and timers
     def as_(uid):pg.select_option('#role',uid);pg.wait_for_timeout(700)
-    as_('U18');ck('Roles','foreman menu limited',nav(pg)==['dpr','new','perf'],nav(pg))
+    as_('U18');ck('Roles','foreman menu limited (v2.7 adds Actions and approvals)',nav(pg)==['act','dpr','new','perf'],nav(pg))
     pg.evaluate("go('new')");pg.wait_for_timeout(1500)
     ck('Timers','preparation clock visible',pg.locator('#formTimer').count()==1)
     pg.select_option('[data-lk="area"][data-l="0"]','Zone A');pg.select_option('[data-lk="wbs"][data-l="0"]','Structure Works');pg.fill('[data-lk="qty"][data-l="0"]','40');pg.wait_for_timeout(1200)
@@ -106,7 +106,7 @@ with sync_playwright() as p:
     tops=pg.locator('#nav .nav-top').all_inner_texts()
     ck('Navigation v2.3','super admin sees all 12 domains',len(tops)==12,tops)
     planned=pg.locator('#nav .nav-item.planned')
-    ck('Navigation v2.3','planned items present and disabled',planned.count()>=15 and planned.evaluate_all("e=>e.every(b=>b.disabled&&/Planned/.test(b.textContent))"),planned.count())
+    ck('Navigation v2.3','planned items present and disabled (v2.7: cost reconciliation is now live)',planned.count()>=14 and planned.evaluate_all("e=>e.every(b=>b.disabled&&/Planned/.test(b.textContent))"),planned.count())
     pg.click('[data-navgrp="cost"]');pg.wait_for_timeout(200)
     pl=pg.locator('[data-navgrp="cost"] + .nav-sub .planned').first
     pl.click(force=True);pg.wait_for_timeout(300)
@@ -122,8 +122,8 @@ with sync_playwright() as p:
     pg.click('[data-projpick="QOT"]');pg.wait_for_timeout(1000)
     v=pg.inner_text('#view')
     ck('Overview','picking sets the app scope',pg.evaluate("state.scope")=='QOT')
-    ck('Overview','seven lifecycle stages',pg.locator('.lc-card').count()==7 and pg.locator('.lc-chip').count()==7)
-    ck('Overview','untracked stages marked Planned',pg.locator('.lc-card.plan').count()>=2)
+    ck('Overview','twelve governed lifecycle stages (v2.7)',pg.locator('.lc-card').count()==12 and pg.locator('.lc-chip').count()==12)
+    ck('Overview','every stage shows a status from the governed workflow (v2.7)',pg.evaluate("[...document.querySelectorAll('.lc-card .lc-st')].every(e=>/Not started|In progress|Awaiting approval|Complete|Not applicable/.test(e.textContent))"))
     ck('Overview','untracked figures show Planned, not numbers','Approved variations' in v and pg.locator('.fins .pend').count()>=2)
     ck('Overview','no NaN or undefined on the page',not any(x in v for x in ['NaN','undefined','Infinity']),[x for x in ['NaN','undefined','Infinity'] if x in v])
     ck('Overview','SPI tile matches the executive figure',pg.inner_text('[data-kpi="spi"] .v')==pg.evaluate("evm(ACTS.filter(a=>a.p==='QOT'),ASOF).spi.toFixed(2)"))
@@ -135,7 +135,7 @@ with sync_playwright() as p:
     ck('Overview','site engineer: no cost figures',pg.locator('[data-kpi="cpi"]').count()==0 and 'Contract and financial summary' not in v and 'Open PO' not in v)
     ck('Navigation v2.3','site engineer sees no planned items',pg.locator('#nav .nav-item.planned').count()==0)
     as_('U18')
-    ck('Navigation v2.3','foreman domains: daily reports, reports, RASA',[t.split('\n')[0] for t in pg.locator('#nav .nav-top').all_inner_texts()]==['Daily Reports','Reports & Dashboards','RASA AI Assistant'],pg.locator('#nav .nav-top').all_inner_texts())
+    ck('Navigation v2.3','foreman domains: actions, daily reports, reports, RASA (v2.7)',[t.split('\n')[0] for t in pg.locator('#nav .nav-top').all_inner_texts()]==['Projects & Handover','Daily Reports','Reports & Dashboards','RASA AI Assistant'],pg.locator('#nav .nav-top').all_inner_texts())
     ck('Navigation v2.3','foreman cannot open the overview',pg.evaluate("[...document.querySelectorAll('#nav [data-go]')].map(b=>b.dataset.go).includes('proj')")==False)
     # --- RASA
     as_('U28');pg.click('#aiFab');pg.wait_for_timeout(600)

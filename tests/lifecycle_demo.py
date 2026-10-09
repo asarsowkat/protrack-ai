@@ -1,0 +1,127 @@
+"""ProTrackAI v2.7 in demo (browser) mode: governed lifecycle, actions and approvals register, planning
+and cost control dashboards. Usage: python3 lifecycle_demo.py /path/to/index.html > results_lifecycle_demo.json"""
+import sys, json, time
+from playwright.sync_api import sync_playwright
+APP = sys.argv[1] if len(sys.argv) > 1 else 'index.html'
+R = []
+CHART = "window.Chart=function(){return{destroy(){},update(){},resize(){},data:{datasets:[]},options:{}}};window.Chart.register=function(){};window.Chart.defaults={font:{},plugins:{legend:{labels:{}},tooltip:{}},scale:{grid:{}},color:''};"
+def ck(area, name, cond, detail=''):
+    R.append({'area': area, 'check': name, 'result': 'PASS' if cond else 'FAIL', 'detail': '' if cond else str(detail)[:240]})
+def route(r):
+    u = r.request.url
+    if u.startswith('http'):
+        if 'chart' in u.lower(): return r.fulfill(body=CHART, content_type='application/javascript')
+        return r.abort()
+    return r.continue_()
+with sync_playwright() as p:
+    b = p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
+    pg = b.new_page(viewport={'width': 1440, 'height': 900}); errs = []; pg.on('pageerror', lambda e: errs.append(str(e))); pg.route('**/*', route)
+    pg.goto('file://' + APP); pg.wait_for_timeout(800)
+    pg.fill('#lgId', 'asarudeen@company.com'); pg.fill('#lgPw', 'ProTrack@2026'); pg.click('#lgBtn'); pg.wait_for_timeout(1400)
+    pg.evaluate("aiHint=()=>{};rasaBubble=()=>{}")
+    who = lambda role, pid: pg.evaluate(f"(teamOf('{pid}','{role}')[0]||{{}}).id")
+    def as_(uid): pg.select_option('#role', uid); pg.wait_for_timeout(500)
+    PID = pg.evaluate("PROJECTS[0].id")
+    PM, PM2, PL, FM = who('pm', PID), pg.evaluate(f"(teamOf('{PID}','pm')[1]||{{}}).id"), who('plan', PID), who('foreman', PID)
+    SA = pg.evaluate("me().id")
+
+    # ---- project overview shows 12 governed stages
+    pg.evaluate(f"state.scope='{PID}';go('proj')"); pg.wait_for_timeout(900)
+    ck('Lifecycle', 'twelve stages in the strip and the grid', pg.locator('.lc-strip.lc12 .lc-chip').count() == 12 and pg.locator('.lc12g .lc-card').count() == 12,
+       (pg.locator('.lc-chip').count(), pg.locator('.lc-card').count()))
+    names = pg.evaluate("LC_STAGES.map(s=>s.name)")
+    ck('Lifecycle', 'stages follow the master prompt from tender notification to closeout', names[0] == 'Tender notification' and names[-1] == 'Final account and closeout' and len(names) == 12, names)
+    ck('Lifecycle', 'demo projects carry clearly sample stage states', pg.evaluate(f"Object.keys(DB.lifecycle['{PID}']||{{}}).length") == 12)
+    pg.click('.lc12g .lc-card >> nth=6'); pg.wait_for_timeout(500)
+    d = pg.inner_text('#sheet')
+    ck('Stage detail', 'drawer shows owner, due date, approver, deliverables, evidence and history',
+       all(x in d for x in ['Owner', 'Due date', 'Approver', 'Deliverables', 'ProTrackAI holds', 'History']), d[:400])
+    ev = pg.evaluate(f"(()=>{{const s=lcGet('{PID}',6);return s.deliverables.map(x=>x.k+':'+x.done)}})()")
+    pg.evaluate("closeDrawer()")
+
+    # ---- a fresh stage on a fresh state: work it through
+    pg.evaluate(f"(()=>{{delete DB.lifecycle['{PID}'][8];save()}})()")
+    ck('Evidence', 'evidence never ticks a box: a fresh stage starts with nothing done', pg.evaluate(f"lcGet('{PID}',8).deliverables.every(x=>!x.done)") and pg.evaluate(f"lcGet('{PID}',8).status") == 'Not started')
+    as_(FM)
+    pg.evaluate(f"go('proj');openStage('{PID}',8)"); pg.wait_for_timeout(400)
+    ck('Permissions', 'a foreman sees the stage read-only', pg.locator('[data-lcdo]').count() == 0 and 'View only' in pg.inner_text('#sheet'))
+    r = pg.evaluate(f"lcAct('{PID}',8,'update',{{fields:{{next_action:'x'}}}})")
+    ck('Permissions', 'a foreman forcing a change through the code is refused', r is False and pg.evaluate(f"lcGet('{PID}',8).next_action") in ('', None))
+    pg.evaluate("closeDrawer()")
+    as_(PM)
+    pg.evaluate(f"openStage('{PID}',8)"); pg.wait_for_timeout(400)
+    pg.select_option('#lcForm [name="owner"]', PL); pg.fill('#lcForm [name="due_date"]', '2026-10-30'); pg.fill('#lcForm [name="next_action"]', 'List long-lead items')
+    pg.click('[data-lcdo="update"]'); pg.wait_for_timeout(500)
+    s = pg.evaluate(f"lcGet('{PID}',8)")
+    ck('Workflow', 'the project manager assigns owner, due date and next action', s['owner'] == PL and s['due_date'] == '2026-10-30' and s['next_action'] == 'List long-lead items', s)
+    pg.evaluate("closeDrawer()")
+    as_(PL)
+    pg.evaluate(f"openStage('{PID}',8)"); pg.wait_for_timeout(400)
+    pg.click('[data-lctick="pos"]'); pg.click('[data-lcdo="submit"]'); pg.wait_for_timeout(500)
+    ck('Workflow', 'submit with a required deliverable open is refused', pg.evaluate(f"lcGet('{PID}',8).status") == 'In progress' and 'Required deliverables' in pg.inner_text('#toast'), pg.inner_text('#toast'))
+    pg.evaluate(f"openStage('{PID}',8)"); pg.wait_for_timeout(300)
+    pg.click('[data-lctick="longlead"]'); pg.click('[data-lcdo="submit"]'); pg.wait_for_timeout(500)
+    ck('Workflow', 'the owner submits once required deliverables are ticked', pg.evaluate(f"lcGet('{PID}',8).status") == 'Awaiting approval')
+    ck('Workflow', 'the owner is not offered Approve', pg.locator('[data-lcdo="approve"]').count() == 0)
+    ck('Workflow', 'forcing approval as the owner is refused', pg.evaluate(f"lcAct('{PID}',8,'approve')") is False and pg.evaluate(f"lcGet('{PID}',8).status") == 'Awaiting approval')
+    pg.evaluate("closeDrawer()")
+
+    # ---- actions register shows it to the project manager
+    as_(PM)
+    pg.evaluate("go('act')"); pg.wait_for_timeout(600)
+    v = pg.inner_text('#view')
+    ck('Actions', 'the project manager sees the stage waiting for approval under Mine', 'Stage 8, Procurement and materials: approve or return' in v, v[:600])
+    ck('Actions', 'daily reports waiting in the chain are listed with who they wait on', pg.evaluate("actionItems().some(x=>x.type==='Daily report'&&x.who)"))
+    pg.click('[data-actf="all"]'); pg.wait_for_timeout(300)
+    ck('Actions', 'Everyone in scope shows at least as many items', pg.locator('#view tbody tr').count() >= 1)
+    pg.click('[data-actf="mine"]'); pg.wait_for_timeout(300)
+    row = pg.locator('#view tbody tr', has_text='Stage 8')
+    row.locator('[data-actopen]').click(); pg.wait_for_timeout(400)
+    ck('Actions', 'Open goes straight to the stage', 'Stage 8' in pg.inner_text('#sheet'))
+    pg.click('[data-lcdo="return"]'); pg.wait_for_timeout(300)
+    ck('Workflow', 'return without a comment is refused', pg.evaluate(f"lcGet('{PID}',8).status") == 'Awaiting approval' and 'comment' in pg.inner_text('#toast').lower())
+    pg.fill('#lcNote', 'Add the transformer delivery date'); pg.click('[data-lcdo="return"]'); pg.wait_for_timeout(400)
+    ck('Workflow', 'return with a comment sends it back to In progress', pg.evaluate(f"lcGet('{PID}',8).status") == 'In progress')
+    pg.evaluate("closeDrawer()")
+    as_(PL); pg.evaluate(f"openStage('{PID}',8)"); pg.wait_for_timeout(300); pg.click('[data-lcdo="submit"]'); pg.wait_for_timeout(400); pg.evaluate("closeDrawer()")
+    as_(PM); pg.evaluate(f"openStage('{PID}',8)"); pg.wait_for_timeout(300); pg.click('[data-lcdo="approve"]'); pg.wait_for_timeout(400)
+    s = pg.evaluate(f"lcGet('{PID}',8)")
+    ck('Workflow', 'the project manager approves; the stage is complete and read-only', s['status'] == 'Complete' and s['approved_by'] == PM and pg.locator('[data-lcdo="update"]').count() == 0, s['status'])
+    h = pg.evaluate(f"lcAudit('{PID}',8).map(a=>a.action)")
+    ck('History', 'every step is recorded', h[-4:] == ['Submitted for approval', 'Returned', 'Submitted for approval', 'Approved'] and h.count('Updated') >= 2, h)
+    pg.evaluate("closeDrawer()")
+
+    # ---- self-approval and reopen
+    pg.evaluate(f"(()=>{{delete DB.lifecycle['{PID}'][11];save()}})()")
+    pg.evaluate(f"lcAct('{PID}',11,'update',{{fields:{{owner:'{PM}'}},ticks:[{{k:'report',done:true}},{{k:'review',done:true}}]}})")
+    pg.evaluate(f"lcAct('{PID}',11,'submit')")
+    ck('Workflow', 'a project manager cannot approve their own submission', pg.evaluate(f"lcAct('{PID}',11,'approve')") is False and pg.evaluate(f"lcGet('{PID}',11).status") == 'Awaiting approval')
+    as_(SA)
+    ck('Workflow', 'a super admin can approve it', pg.evaluate(f"lcAct('{PID}',11,'approve')") is True)
+    ck('Workflow', 'reopening needs a reason', pg.evaluate(f"lcAct('{PID}',11,'reopen',{{note:''}})") is False)
+    ck('Workflow', 'a super admin reopens with a reason', pg.evaluate(f"lcAct('{PID}',11,'reopen',{{note:'Report reissued'}})") is True and pg.evaluate(f"lcGet('{PID}',11).status") == 'In progress')
+    ck('Workflow', 'not applicable needs a reason', pg.evaluate(f"lcAct('{PID}',10,'na',{{note:''}})") is False)
+
+    # ---- dashboards
+    pg.evaluate("state.scope='ALL';go('pdash')"); pg.wait_for_timeout(700)
+    v = pg.inner_text('#view')
+    ck('Planning dashboard', 'one row per project with baseline, SPI, milestones and weekly update', pg.locator('#view tbody tr').count() == pg.evaluate("scopeProjects().length") and 'Next milestone' in v and 'Weekly update' in v, v[:300])
+    ck('Planning dashboard', 'states that the critical path comes from P6', 'calculated in Primavera P6' in v)
+    pg.evaluate("go('cdash')"); pg.wait_for_timeout(700)
+    v = pg.inner_text('#view')
+    tc = pg.evaluate("document.querySelector('#view').textContent")
+    ck('Cost dashboard', 'budget revisions, commitments and accruals shown as not tracked, never estimated', tc.count('Not tracked yet') >= 3 * pg.evaluate("scopeProjects().length"), tc.count('Not tracked yet'))
+    ck('Cost dashboard', 'says actual cost is labour from daily reports, not SAP', 'not SAP actual cost' in v)
+    ck('Cost dashboard', 'source reconciliation section present', 'Source reconciliation' in v)
+    pg.click('#view tbody tr.click >> nth=0'); pg.wait_for_timeout(700)
+    ck('Cost dashboard', 'clicking a project opens its overview', pg.evaluate("state.view") == 'proj')
+    eng = pg.evaluate("(DB.master.users.find(u=>u.role==='eng')||{}).id"); as_(eng)
+    ck('Permissions', 'site engineer has no dashboards in the menu', pg.locator('#nav [data-go="cdash"], #nav [data-go="pdash"]').count() == 0)
+    pg.evaluate("go('cdash')"); pg.wait_for_timeout(300)
+    ck('Permissions', 'forcing the cost dashboard as a site engineer shows nothing', 'Cost position' not in pg.inner_text('#view'))
+    ck('Navigation', 'Actions and approvals offered to a site engineer', pg.locator('#nav [data-go="act"]').count() >= 1)
+    pg.reload(); pg.wait_for_timeout(1500)
+    ck('General', 'lifecycle changes survive a reload', pg.evaluate(f"lcGet('{PID}',8).status") == 'Complete')
+    ck('General', 'no script errors', not errs, errs[:3])
+    b.close()
+print(json.dumps({'run_at': time.strftime('%Y-%m-%d %H:%M'), 'app': APP, 'summary': {'PASS': sum(r['result'] == 'PASS' for r in R), 'FAIL': sum(r['result'] == 'FAIL' for r in R)}, 'results': R}, indent=1))

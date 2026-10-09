@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 2.6, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 2.7, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -202,6 +202,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#features">5. Features at a glance</a>
   <a href="#domains" class="sub">Finding your way: the domains</a>
   <a href="#overview" class="sub">Project overview</a>
+  <a href="#lifecycle">Project lifecycle, actions and dashboards</a>
   <a href="#imports">Import centre and controlled uploads</a>
   <a href="#steps">6. Step by step, by role</a>
   <a href="#s-foreman" class="sub">Foreman</a>
@@ -246,6 +247,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 2.7</b>
+    <b>Governed project lifecycle</b>: twelve stages from tender notification to closeout, each with owner, due date, required deliverables, next action, blockers and history. A stage closes only when its owner submits it and the project manager or a super admin approves it; nobody approves their own work. ·
+    <b>Actions and approvals</b>: one list of everything waiting on you or your team. ·
+    <b>Planning dashboard</b> and <b>Cost Control dashboard</b>, with figures that ProTrackAI does not hold shown as not tracked rather than estimated, and a reconciliation against the source files.</div>
   <div class="note"><b>New in version 2.6</b>
     <b>Import centre</b> (Imports &amp; Integrations): every upload is a numbered batch with the file's fingerprint, counts, totals, reconciliation, who loaded it, and failures and retries. ·
     <b>Checks before saving</b>: file type and size, the right project and currency, real dates, numbers, duplicate rows, and the same file loaded twice. ·
@@ -378,10 +383,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h3 id="overview">Project overview</h3>
   <ol class="steps">
     <li><b>Projects &amp; Handover → Project overview.</b> If your scope holds several projects, pick one. This also sets the scope for every other screen and for RASA; <b>Projects</b> in the breadcrumb goes back to the list.</li>
-    <li><b>Lifecycle strip</b>: seven stages from tender to close-out. Click a stage to jump to its checklist below.</li>
+    <li><b>Lifecycle strip</b>: the twelve stages, coloured by status (grey not started, blue in progress, amber awaiting approval, green complete, dashed not applicable, red edge overdue). Click a stage to open it.</li>
     <li><b>Key figures</b>: SPI, CPI, physical progress against plan, and forecast cost for the measured scope, each with its change since last week. Site roles see productivity and workforce instead of cost.</li>
     <li><b>Contract and financial summary</b>: original contract, invoiceable, invoiced, collected, actual cost, open PO balance and forecast cost. Approved variations and revised contract show <b>Planned</b> until the variation register exists.</li>
-    <li><b>Project lifecycle</b>: a green tick means the data is present in ProTrackAI (a baseline is loaded, the matrix is assigned, reports are arriving); an amber mark needs attention. Ticks are not formal stage approvals, which are planned. Tender and award are not tracked yet.</li>
+    <li><b>Project lifecycle</b>: one card per stage with its status, department, owner, due date, pending approver, next action, blockers and required deliverables done. See <a href="#lifecycle">Project lifecycle</a> below.</li>
     <li><b>Schedule overview</b>: baseline span and progress achieved by phase, key milestones, and the data date. The critical path stays with Primavera P6.</li>
     <li><b>Critical items and actions</b>: early warnings, reports waiting for approval, milestones forecast late, and the extension-of-time claim.</li>
     <li><b>Cost overview</b>: actual cost by month and cumulatively, against planned value. The cumulative line starts from the estimated cost of progress made before daily reporting began, so it ends exactly at the actual-cost figure above it.</li>
@@ -402,6 +407,40 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>Approval email</b><span>The moment a report is approved, a summary with a link goes to everyone on the project in the chosen roles.</span></div>
     <div class="card"><b>Settings</b><span>Projects, users, role access, approval matrix, approval email, trades and dated rates, subcontractors and purchase orders, regions, cities, sectors, change log.</span></div>
   </div>
+</section>
+
+<section id="lifecycle">
+  <h2>Project lifecycle, actions and dashboards</h2>
+  <h3>The twelve stages</h3>
+  <table><thead><tr><th>#</th><th>Stage</th><th>Department</th><th>Required deliverables (examples)</th></tr></thead><tbody>
+    <tr><td>1</td><td>Tender notification</td><td>Tendering</td><td>Tender notice received; bid or no-bid decision recorded</td></tr>
+    <tr><td>2</td><td>Tender and project registration</td><td>Tendering</td><td>Project number under the numbering convention; project registered</td></tr>
+    <tr><td>3</td><td>Award and contract signing</td><td>Contracts</td><td>Letter of award; contract signed; value and payment terms recorded</td></tr>
+    <tr><td>4</td><td>Tender-to-project handover</td><td>Projects</td><td>Documents handed over; scope and BOQ clarified; team assigned</td></tr>
+    <tr><td>5</td><td>Planning and Cost Control assignments</td><td>Planning and Cost Control</td><td>Planning and costing engineers assigned; approval matrix set</td></tr>
+    <tr><td>6</td><td>Baseline preparation and approval</td><td>Planning</td><td>Baseline loaded; costing applied; submitted to and approved by the client</td></tr>
+    <tr><td>7</td><td>Execution and progress updates</td><td>Projects and site</td><td>Daily reports flowing; weekly updates current</td></tr>
+    <tr><td>8</td><td>Procurement and materials</td><td>Procurement</td><td>Purchase orders recorded; long-lead items tracked</td></tr>
+    <tr><td>9</td><td>Budget, cost and forecast</td><td>Cost Control</td><td>Budget loaded; invoice register current; forecast reviewed</td></tr>
+    <tr><td>10</td><td>Variations, claims and approvals</td><td>Contracts and commercial</td><td>Variation register maintained; approvals recorded</td></tr>
+    <tr><td>11</td><td>Monthly reporting and review</td><td>Planning and project management</td><td>Monthly report issued; management review held</td></tr>
+    <tr><td>12</td><td>Final account and closeout</td><td>Commercial and projects</td><td>TCC and PAC achieved; final account agreed; handover to operations</td></tr>
+  </tbody></table>
+  <h3>Working a stage</h3>
+  <ol class="steps">
+    <li><b>The project manager</b> (or a super admin) opens the stage on the Project overview and assigns the <b>owner</b> and <b>due date</b>; the owner must have access to the project.</li>
+    <li><b>The owner</b> records the next action, any blockers and risks, and ticks each deliverable as it is done. Beside each deliverable ProTrackAI shows the evidence it holds, for example "ProTrackAI holds: 120 activities in the baseline". Evidence never ticks a box; the owner does.</li>
+    <li>When every <b>required</b> deliverable is ticked, the owner presses <b>Submit for approval</b>. The stage turns amber and appears in the approver's Actions and approvals.</li>
+    <li><b>The approver</b> (a project manager on that project, or a super admin) presses <b>Approve</b>, or <b>Return with comment</b> to send it back. Nobody can approve a stage they submitted.</li>
+    <li>A stage that does not apply is marked <b>Not applicable</b> by the project manager with a reason. A closed stage is read-only; only a super admin can <b>reopen</b> it, with a reason.</li>
+    <li>Every change, with who, role, time and comment, is kept in the stage's <b>history</b>, which cannot be edited or deleted. Closing a project hides or deletes nothing.</li>
+  </ol>
+  <h3>Actions and approvals</h3>
+  <p>Projects &amp; Handover → <b>Actions and approvals</b> lists, from the records themselves: daily reports waiting for review or approval (with the person they wait on), returned reports to fix, lifecycle stages awaiting approval or past their due date, stages you own, and imports that failed and were not retried. <b>Mine</b> shows what waits on you; <b>Everyone in scope</b> shows the rest. <b>Open</b> takes you to the item; nothing is approved from the list itself.</p>
+  <h3>Planning dashboard</h3>
+  <p>Planning &amp; Scheduling → <b>Planning dashboard</b>, one row per project: current lifecycle stage, baseline (activities, when loaded, stage 6 status), DCMA score, SPI, planned and actual progress, the next milestone and its slip, overdue milestones, the last weekly engineering and procurement update (marked stale after 8 days) and late engineering or procurement items. The critical path stays with Primavera P6. A dash means the data is not in ProTrackAI yet.</p>
+  <h3>Cost Control dashboard</h3>
+  <p>Cost Control → <b>Cost Control dashboard</b> shows, side by side and never added together: contract value, budget from the costing file, earned value, actual labour cost from daily reports, forecast cost, CPI, invoiceable, invoiced and collected. Approved budget revisions, commitments and accruals are shown as <b>Not tracked yet</b>, never estimated. Actual cost here is not SAP actual cost. <b>Source reconciliation</b> compares the budget and invoice register in ProTrackAI with the total of the last accepted costing file and invoice register in the Import centre.</p>
 </section>
 
 <section id="imports">
@@ -461,6 +500,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 
   <h3 id="s-pm">Project manager — oversight, commercial, monthly invoice</h3>
   <ol class="steps">
+    <li><b>Every morning: Actions and approvals.</b> Approve or return lifecycle stages waiting on you (you cannot approve your own), and assign an owner and due date to each stage of your projects on the Project overview.</li>
     <li><b>Daily reports.</b> Site managers approve day to day; step in to review or approve when they are absent. Three checks: is the quantity credible for that crew, was that crew on site, is the index explainable.</li>
     <li><b>Baselines → Costing file, Invoice register, Purchase orders</b> are open to you for your projects.</li>
     <li><b>Monday:</b> Dashboard, Executive summary → Project view, Reports → Early warnings, Manpower histogram, EAC.</li>
@@ -784,6 +824,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>Every approval emails a summary to the project's stakeholders.</li>
     <li>Site roles never see cost or billing, and their executive view is set by the super admin.</li>
     <li>Rejecting or returning needs a comment; every change is logged with a name and time.</li>
+    <li>A lifecycle stage closes only when its owner submits it with every required deliverable ticked and a project manager or super admin approves it; nobody approves their own submission; only a super admin reopens a closed stage, with a reason.</li>
     <li>On the server: a report is saved, reviewed and approved only through ProTrack's server functions. Writing to the tables directly is refused.</li>
     <li>On the server: a foreman always reports under his own name, can edit only his own drafts, and cannot change a report once submitted.</li>
     <li>On the server: an approved report cannot be changed or deleted by anyone, and a project that has approved reports cannot be deleted.</li>
@@ -814,6 +855,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h4>Undo import or Remove baseline says it is not available</h4><p>On the server a baseline is never removed, so report history always keeps its activities. Import the correct file again; activities are matched by ID and updated.</p>
   <h4>An amber bar says the server data could not be loaded</h4><p>Your connection or the server was unavailable. Press <b>Try again</b>. Anything you change is still sent to the server, which checks it; nothing is saved only in the browser.</p>
   <h4>I cannot sign in with a demo account</h4><p>Demo accounts are switched off on a site connected to the server. Use your work email; the super admin creates accounts in Supabase. For a demonstration, open the demo page (<code>demo.html</code>, linked from the sign-in page), where the demo accounts work on sample data.</p>
+  <h4>I cannot approve a lifecycle stage</h4><p>Only a project manager on that project or a super admin can approve, and never the person who submitted it. If you submitted it, ask another project manager or a super admin.</p>
+  <h4>"Required deliverables are not done"</h4><p>Tick every deliverable marked Required, or ask the project manager to mark the stage Not applicable if it does not apply.</p>
+  <h4>A deliverable shows evidence but is not ticked</h4><p>That is deliberate: evidence shows what ProTrackAI holds; only the owner confirms a deliverable is done.</p>
   <h4>The Apply button stays grey</h4><p>Some rows were refused. Read the reasons (or download the exception report), then tick the box confirming you want to load only the accepted rows. Or fix the file and upload it again.</p>
   <h4>"The server refused some rows"</h4><p>The server checks every row again. If it refuses a row the app accepted, the preview shows its message; tick the box to load the rest, or fix the file.</p>
   <h4>An upload shows as Failed in the Import centre</h4><p>Nothing from it was saved and your previous data is unchanged. Open the batch for the reason, fix the cause, and upload the same file again: it shows as a retry of the failed attempt.</p>

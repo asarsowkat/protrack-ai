@@ -3,8 +3,10 @@
 | Suite | Checks | What it covers | Needs |
 |---|---|---|---|
 | `test_v4.py` | 125 | The server rules (v4): attacks that must fail, approval chain, imports, migration, people, rollback | PostgreSQL 16 on `/tmp:5499`, the SQL files next to it |
-| `e2e_server.py` + `fake_supabase.py` | 68 | The app in server mode, end to end, against that database | PostgreSQL, Playwright, Chromium |
+| `e2e_server.py` + `fake_supabase.py` | 78 | The app in server mode, end to end, against that database | PostgreSQL, Playwright, Chromium |
 | `test_v5.py` (in supabase/tests) | 64 | Controlled imports on the server: checks, reconciliation, failure, retry, concurrency, authorization, rollback | PostgreSQL 16 |
+| `test_v6.py` (in supabase/tests) | 53 | Lifecycle rules on the server: who may change, submit, approve, return, reopen; no self-approval; history | PostgreSQL 16 |
+| `lifecycle_demo.py` | 36 | Lifecycle, actions and approvals, dashboards in demo mode | Playwright, Chromium |
 | `imports_demo.py` | 34 | Controlled imports and the Import centre in demo mode | Playwright, Chromium |
 | `regression.py` | 77 | Every screen and report, P6 import with DCMA, approval chain and timers, domain menu, project overview, security behaviour, RASA (demo data) | Playwright, Chromium |
 | `suites.py` | 59 | Billing terms, costing upload, invoice register, role access, approval matrix, RASA insights, date switch, exports | Playwright, Chromium |

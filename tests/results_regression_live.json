@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-09 22:05",
- "app": "/home/claude/p3/app.html?date=live",
+ "run_at": "2026-10-09 23:49",
+ "app": "/home/claude/p4/app.html?date=live",
  "results": [
   {
    "area": "Auth",
@@ -106,7 +106,7 @@
   },
   {
    "area": "Reports",
-   "check": "report actprog builds (0.0 s)",
+   "check": "report actprog builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -124,7 +124,7 @@
   },
   {
    "area": "Reports",
-   "check": "report histo builds (0.32 s)",
+   "check": "report histo builds (0.49 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -160,7 +160,7 @@
   },
   {
    "area": "Reports",
-   "check": "report invoice builds (0.0 s)",
+   "check": "report invoice builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -184,7 +184,7 @@
   },
   {
    "area": "Reports",
-   "check": "report p6upd builds (0.03 s)",
+   "check": "report p6upd builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -244,7 +244,7 @@
   },
   {
    "area": "Roles",
-   "check": "foreman menu limited",
+   "check": "foreman menu limited (v2.7 adds Actions and approvals)",
    "result": "PASS",
    "detail": ""
   },
@@ -346,7 +346,7 @@
   },
   {
    "area": "Navigation v2.3",
-   "check": "planned items present and disabled",
+   "check": "planned items present and disabled (v2.7: cost reconciliation is now live)",
    "result": "PASS",
    "detail": ""
   },
@@ -388,13 +388,13 @@
   },
   {
    "area": "Overview",
-   "check": "seven lifecycle stages",
+   "check": "twelve governed lifecycle stages (v2.7)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Overview",
-   "check": "untracked stages marked Planned",
+   "check": "every stage shows a status from the governed workflow (v2.7)",
    "result": "PASS",
    "detail": ""
   },
@@ -442,7 +442,7 @@
   },
   {
    "area": "Navigation v2.3",
-   "check": "foreman domains: daily reports, reports, RASA",
+   "check": "foreman domains: actions, daily reports, reports, RASA (v2.7)",
    "result": "PASS",
    "detail": ""
   },
