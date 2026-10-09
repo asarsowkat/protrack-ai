@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-09 22:00",
- "app": "/home/claude/p3/app.html",
+ "run_at": "2026-10-09 23:50",
+ "app": "/home/claude/p4/app.html",
  "results": [
   {
    "area": "Billing",
@@ -208,7 +208,7 @@
   },
   {
    "area": "Role access",
-   "check": "foreman: daily reports, new report, own performance only",
+   "check": "foreman: actions, daily reports, new report, own performance only (v2.7)",
    "result": "PASS",
    "detail": ""
   },

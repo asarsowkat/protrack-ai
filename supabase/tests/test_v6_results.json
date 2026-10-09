@@ -1,0 +1,271 @@
+{
+ "passed": 53,
+ "total": 53,
+ "results": [
+  {
+   "check": "v6 loads (run 1)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v6.sql:34: NOTICE:  policy \"lc_read\" for relation \"lifecycle_stages\" does not exist, skipping\npsql:/home/claude/p2/db/schema-update-v6.sql:36: NOTICE:  policy \"lca_read\" for relation \"lifecycle_audit\" does not exist, skipping\npsql:/home/claude/p2/db/schema-updat"
+  },
+  {
+   "check": "v6 loads (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v6.sql:22: NOTICE:  relation \"lifecycle_stages\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v6.sql:30: NOTICE:  relation \"lifecycle_audit\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v6.sql:44: NOTICE:  relation \"lca_proj\" a"
+  },
+  {
+   "check": "nothing exists until someone acts: stages start as Not started",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "check": "a foreman cannot change a stage",
+   "pass": true,
+   "detail": "psql:/tmp/tmpd4obiwak.sql:4: ERROR:  Only the stage owner, the project manager or a super admin can change this stage\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 23 at RAISE"
+  },
+  {
+   "check": "someone without access to the project cannot touch it",
+   "pass": true,
+   "detail": "psql:/tmp/tmpb0dhrova.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 7 at RAISE"
+  },
+  {
+   "check": "a signed-out visitor cannot touch it",
+   "pass": true,
+   "detail": "psql:/tmp/tmpya72kn6d.sql:4: ERROR:  permission denied for function lifecycle_act"
+  },
+  {
+   "check": "an unknown stage is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpy152sfti.sql:4: ERROR:  Unknown lifecycle stage\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 8 at RAISE"
+  },
+  {
+   "check": "an unknown action is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpkr5eblr_.sql:4: ERROR:  Unknown action complete\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 9 at RAISE"
+  },
+  {
+   "check": "the planner cannot assign themselves as owner",
+   "pass": true,
+   "detail": "psql:/tmp/tmpdn9m6pwd.sql:4: ERROR:  Only the stage owner, the project manager or a super admin can change this stage\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 23 at RAISE"
+  },
+  {
+   "check": "the project manager assigns an owner, due date and next action",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'Not started', 'blockers': None, 'due_date': '2026-10-15', 'stage_no': 6, 'department': 'Planning', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:48.92584+03:00', 'approved_at': None, 'approved_by': None, 'next_action': "
+  },
+  {
+   "check": "the stage starts with its required deliverables from the server template",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the owner must be someone on the project",
+   "pass": true,
+   "detail": "psql:/tmp/tmpt7hk39uz.sql:4: ERROR:  The owner must be an active person with access to this project\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 29 at RAISE"
+  },
+  {
+   "check": "an invalid due date is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmprrno95gn.sql:4: ERROR:  The due date is not a valid date\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 34 at RAISE"
+  },
+  {
+   "check": "the owner ticks deliverables; the stage moves to In progress",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'In progress', 'blockers': None, 'due_date': '2026-10-15', 'stage_no': 6, 'department': 'Planning', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.071139+03:00', 'approved_at': None, 'approved_by': None, 'next_action':"
+  },
+  {
+   "check": "each tick records who and when",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "an unknown deliverable is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpworxrw0l.sql:4: ERROR:  Unknown deliverable hack\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 43 at RAISE"
+  },
+  {
+   "check": "submitting with required deliverables open is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmprmnd7hng.sql:4: ERROR:  Required deliverables are not done: Baseline submitted to the client; Client approval of the baseline received\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 63 at RAISE"
+  },
+  {
+   "check": "...status unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "owner completes the rest and submits",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'In progress', 'blockers': None, 'due_date': '2026-10-15', 'stage_no': 6, 'department': 'Planning', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.246708+03:00', 'approved_at': None, 'approved_by': None, 'next_action':"
+  },
+  {
+   "check": "...submit succeeds",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'Awaiting approval', 'blockers': None, 'due_date': '2026-10-15', 'stage_no': 6, 'department': 'Planning', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.294168+03:00', 'approved_at': None, 'approved_by': None, 'next_ac"
+  },
+  {
+   "check": "the owner cannot approve",
+   "pass": true,
+   "detail": "psql:/tmp/tmpav1_s5x0.sql:4: ERROR:  Only the project manager or a super admin can approve a stage\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 66 at RAISE"
+  },
+  {
+   "check": "an executive cannot approve",
+   "pass": true,
+   "detail": "psql:/tmp/tmpdq5w0cup.sql:4: ERROR:  Only the project manager or a super admin can approve a stage\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 66 at RAISE"
+  },
+  {
+   "check": "return needs a comment",
+   "pass": true,
+   "detail": "psql:/tmp/tmpe4tlkjr2.sql:4: ERROR:  Add a comment saying what to fix\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 73 at RAISE"
+  },
+  {
+   "check": "the project manager returns it with a comment",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'In progress', 'blockers': None, 'due_date': '2026-10-15', 'stage_no': 6, 'department': 'Planning', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.443694+03:00', 'approved_at': None, 'approved_by': None, 'next_action':"
+  },
+  {
+   "check": "the owner resubmits",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'Awaiting approval', 'blockers': None, 'due_date': '2026-10-15', 'stage_no': 6, 'department': 'Planning', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.480218+03:00', 'approved_at': None, 'approved_by': None, 'next_ac"
+  },
+  {
+   "check": "the project manager approves",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'Complete', 'blockers': None, 'due_date': '2026-10-15', 'stage_no': 6, 'department': 'Planning', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.514583+03:00', 'approved_at': '2026-10-09T23:43:49.514583+03:00', 'approve"
+  },
+  {
+   "check": "a complete stage cannot be edited",
+   "pass": true,
+   "detail": "psql:/tmp/tmpx47r3_s6.sql:4: ERROR:  This stage is complete; a super admin must reopen it first\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 24 at RAISE"
+  },
+  {
+   "check": "a complete stage cannot be approved again",
+   "pass": true,
+   "detail": "psql:/tmp/tmpfyqkv4hn.sql:4: ERROR:  Only a stage awaiting approval can be approved\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 67 at RAISE"
+  },
+  {
+   "check": "a project manager can own and submit a stage",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000002', 'status': 'In progress', 'blockers': None, 'due_date': None, 'stage_no': 4, 'department': 'Projects', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.640961+03:00', 'approved_at': None, 'approved_by': None, 'next_action': None, '"
+  },
+  {
+   "check": "...submits it",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000002', 'status': 'Awaiting approval', 'blockers': None, 'due_date': None, 'stage_no': 4, 'department': 'Projects', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.681064+03:00', 'approved_at': None, 'approved_by': None, 'next_action': N"
+  },
+  {
+   "check": "...but cannot approve their own submission",
+   "pass": true,
+   "detail": "psql:/tmp/tmp1b_tu7nb.sql:4: ERROR:  You submitted this stage, so someone else must approve it\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 68 at RAISE"
+  },
+  {
+   "check": "another project manager on the project approves it",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000002', 'status': 'Complete', 'blockers': None, 'due_date': None, 'stage_no': 4, 'department': 'Projects', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.76346+03:00', 'approved_at': '2026-10-09T23:43:49.76346+03:00', 'approved_by': '00"
+  },
+  {
+   "check": "a super admin can submit",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000001', 'status': 'In progress', 'blockers': None, 'due_date': None, 'stage_no': 1, 'department': 'Tendering', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.800155+03:00', 'approved_at': None, 'approved_by': None, 'next_action': None, "
+  },
+  {
+   "check": "...",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000001', 'status': 'Awaiting approval', 'blockers': None, 'due_date': None, 'stage_no': 1, 'department': 'Tendering', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.83515+03:00', 'approved_at': None, 'approved_by': None, 'next_action': N"
+  },
+  {
+   "check": "...and cannot approve their own submission either",
+   "pass": true,
+   "detail": "psql:/tmp/tmpk_rlysyp.sql:4: ERROR:  You submitted this stage, so someone else must approve it\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 68 at RAISE"
+  },
+  {
+   "check": "a second super admin can",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000001', 'status': 'Complete', 'blockers': None, 'due_date': None, 'stage_no': 1, 'department': 'Tendering', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:49.903632+03:00', 'approved_at': '2026-10-09T23:43:49.903632+03:00', 'approved_by': "
+  },
+  {
+   "check": "not applicable needs a comment",
+   "pass": true,
+   "detail": "psql:/tmp/tmpol9dmirh.sql:4: ERROR:  Add a comment saying why the stage does not apply\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 78 at RAISE"
+  },
+  {
+   "check": "the owner cannot mark a stage not applicable",
+   "pass": true,
+   "detail": "psql:/tmp/tmp8w2_quxx.sql:4: ERROR:  Only the project manager or a super admin can mark a stage not applicable\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 76 at RAISE"
+  },
+  {
+   "check": "the project manager marks a stage not applicable with a reason",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': None, 'status': 'Not applicable', 'blockers': None, 'due_date': None, 'stage_no': 10, 'department': 'Contracts and commercial', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:50.014346+03:00', 'approved_at': None, 'approved_by': None, 'next_action': None, 'deliverables':"
+  },
+  {
+   "check": "a project manager cannot reopen",
+   "pass": true,
+   "detail": "psql:/tmp/tmpp76gnulq.sql:4: ERROR:  Only a super admin can reopen a stage\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 81 at RAISE"
+  },
+  {
+   "check": "reopen needs a comment",
+   "pass": true,
+   "detail": "psql:/tmp/tmpc5dv0tqo.sql:4: ERROR:  Add a comment saying why the stage is reopened\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 83 at RAISE"
+  },
+  {
+   "check": "a super admin reopens with a reason; approval is cleared",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'In progress', 'blockers': None, 'due_date': '2026-10-15', 'stage_no': 6, 'department': 'Planning', 'project_id': 'P1', 'updated_at': '2026-10-09T23:43:50.126236+03:00', 'approved_at': None, 'approved_by': None, 'next_action':"
+  },
+  {
+   "check": "every step is in the history with who and role",
+   "pass": true,
+   "detail": "Updated:pm,Updated:plan,Updated:plan,Submitted for approval:plan,Returned:pm,Submitted for approval:plan,Approved:pm,Reopened:sa"
+  },
+  {
+   "check": "the return comment is kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "history cannot be edited, even by the database owner",
+   "pass": true,
+   "detail": "ERROR:  lifecycle_audit is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "history cannot be deleted, even by the database owner",
+   "pass": true,
+   "detail": "ERROR:  lifecycle_audit is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "stages cannot be written directly from the app",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "...nor created directly",
+   "pass": true,
+   "detail": "psql:/tmp/tmp7s1qt1v9.sql:4: ERROR:  new row violates row-level security policy for table \"lifecycle_stages\""
+  },
+  {
+   "check": "people on other projects cannot read these stages",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "check": "people on the project can read the history",
+   "pass": true,
+   "detail": "15"
+  },
+  {
+   "check": "rollback runs",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback keeps every stage and history entry",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "v6 can be applied again after a rollback",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v6.sql:22: NOTICE:  relation \"lifecycle_stages\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v6.sql:30: NOTICE:  relation \"lifecycle_audit\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v6.sql:44: NOTICE:  relation \"lca_proj\" a"
+  }
+ ]
+}

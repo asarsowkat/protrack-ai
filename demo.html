@@ -618,6 +618,17 @@ label.btn{display:inline-block}
 .rasa-card .rq{display:flex;flex-direction:column;gap:6px}
 .rasa-card .rasa-qa{white-space:normal;text-align:left;border-radius:9px}
 .lc-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.lc-strip.lc12{grid-template-columns:repeat(6,minmax(0,1fr))}
+.lc-grid.lc12g{grid-template-columns:repeat(4,minmax(0,1fr))}
+.lc12g .lc-card{all:unset;box-sizing:border-box;cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:3px;min-width:0;background:var(--surface)}
+.lc12g .lc-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lc12g .lc-st{font-size:12.5px;font-weight:600}
+.lc12g .t2{display:block;font-size:12px;line-height:1.35;color:var(--ink-2)}.lc12g .t2.r-c{color:#dc2626}.lc12g .lc-head{font-size:13px;font-weight:600}
+.lc-dl .req{font-size:11px;font-weight:600;color:var(--accent);margin-left:6px}.lc-dl .who{display:block;font-size:12px;color:var(--ink-2)}
+.lc-chip.none .lc-n,.lc-card.none .lc-n{background:var(--line);color:var(--ink-2)}
+.lc-chip.late,.lc-card.late{border-color:#dc2626;box-shadow:inset 3px 0 0 #dc2626}
+.lc-dl{list-style:none;margin:0 0 10px;padding:0}.lc-dl li{padding:6px 0;border-bottom:1px solid var(--line)}
+.lc-ev{display:block;margin:2px 0 0 26px;font-size:12px;color:var(--ink-2)}.lc-ev.ok::before{content:'✓ ';color:#16a34a}.lc-ev.warn::before{content:'! ';color:#d97706}.lc-ev.no::before{content:'○ ';color:var(--ink-2)}
 .lc-card{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;min-width:0}
 .lc-head{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;margin-bottom:8px}
 .lc-head .lc-n{width:24px;height:24px;font-size:12px}
@@ -662,7 +673,7 @@ label.btn{display:inline-block}
 .pcard{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
 .pcard:hover{border-color:var(--accent)}
 .pcard:focus-visible,.lc-chip:focus-visible,.ptab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media (max-width:1280px){.lc-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:1280px){.lc-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.lc-strip.lc12{grid-template-columns:repeat(4,minmax(0,1fr))}.lc-grid.lc12g{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:1100px){.pgrid2{grid-template-columns:1fr}.pkpis{grid-template-columns:repeat(2,minmax(0,1fr))}.lc-strip{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:760px){.g-row{grid-template-columns:96px 1fr 70px}.pgrid3{grid-template-columns:1fr}.fins{grid-template-columns:1fr 1fr}.lc-grid{grid-template-columns:1fr 1fr}.lc-strip{display:flex;overflow-x:auto}.lc-chip{flex:0 0 170px}.g-today{display:none}.ptitle{font-size:18px}}
 
@@ -682,7 +693,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v2.6</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v2.7</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1236,7 +1247,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix()]);
-    await cloudLoadInvoices();await cloudLoadUpdates();
+    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -1532,6 +1543,350 @@ document.addEventListener('click',e=>{
     state.impPid=state.impPid||[...SCOPE][0];state.navSec={inv:'inv',cost:'cost',p6:'p6'}[sec];go('base')}
 });
 
+/* ---------- Phase 4: governed project lifecycle ----------
+   Twelve stages per project. A stage is complete only when its owner submits it and an approver (the
+   project's project manager, or a super admin) approves it; nobody approves their own submission.
+   ProTrackAI shows the evidence it holds next to each deliverable, but evidence never ticks a box or
+   completes a stage by itself. On the server the same rules are enforced by lifecycle_act. */
+const LC_STAGES=[
+  {n:1,name:'Tender notification',dept:'Tendering',items:[['notice','Tender notice received',1],['bid','Bid or no-bid decision recorded',1],['team','Tender team named',0]]},
+  {n:2,name:'Tender and project registration',dept:'Tendering',items:[['number','Project number given under the numbering convention',1],['registered','Project registered in ProTrackAI',1],['notified','Stakeholders notified',0]]},
+  {n:3,name:'Award and contract signing',dept:'Contracts',items:[['loa','Letter of award received',1],['contract','Contract signed',1],['terms','Contract value and payment terms recorded',1],['bonds','Bonds and insurances in place',0]]},
+  {n:4,name:'Tender-to-project handover',dept:'Projects',items:[['docs','Tender documents handed over',1],['scope','Scope and BOQ clarified',1],['minutes','Handover meeting minutes',0],['team','Project team assigned',1]]},
+  {n:5,name:'Planning and Cost Control assignments',dept:'Planning and Cost Control',items:[['planner','Planning engineer assigned',1],['coster','Costing engineer assigned',1],['matrix','Approval matrix set for the site team',1]]},
+  {n:6,name:'Baseline preparation and approval',dept:'Planning',items:[['prepared','Baseline programme prepared and loaded',1],['dcma','Schedule quality check reviewed',0],['costing','Costing file applied',1],['submitted','Baseline submitted to the client',1],['approved','Client approval of the baseline received',1]]},
+  {n:7,name:'Execution and progress updates',dept:'Projects and site',items:[['dpr','Daily reports flowing',1],['weekly','Weekly progress updates current',1],['lookahead','Look-ahead programme issued',0]]},
+  {n:8,name:'Procurement and materials',dept:'Procurement',items:[['pos','Subcontract purchase orders recorded',1],['longlead','Long-lead items tracked',1],['materials','Material tracking in place',0]]},
+  {n:9,name:'Budget, cost and forecast',dept:'Cost Control',items:[['budget','Budget loaded from the costing file',1],['invoices','Invoice register current',1],['forecast','Forecast at completion reviewed',1]]},
+  {n:10,name:'Variations, claims and approvals',dept:'Contracts and commercial',items:[['register','Variation register maintained',1],['claims','Claims and extension of time submitted where due',0],['approvals','Variation approvals recorded',1]]},
+  {n:11,name:'Monthly reporting and review',dept:'Planning and project management',items:[['report','Monthly report issued',1],['review','Management review held',1],['actions','Actions from the review assigned',0]]},
+  {n:12,name:'Final account and closeout',dept:'Commercial and projects',items:[['tcc','Technical completion (TCC) achieved',1],['pac','Provisional acceptance (PAC) achieved',1],['final','Final account agreed',1],['handover','Handover to operations',1],['lessons','Lessons learned recorded',0]]}];
+const LC_DONE=new Set(['Complete','Not applicable']);
+const lcDef=n=>LC_STAGES[n-1];
+function lcBlank(pid,n){const S=lcDef(n);return {project_id:pid,stage_no:n,status:'Not started',owner:null,department:S.dept,due_date:null,next_action:'',blockers:'',risk:'',
+  deliverables:S.items.map(([k,label,req])=>({k,label,req:!!req,done:false})),submitted_by:null,submitted_at:null,approved_by:null,approved_at:null}}
+function lcGet(pid,n){const L=(DB.lifecycle||{})[pid]||{};return L[n]||lcBlank(pid,n)}
+const lcAudit=(pid,n)=>(DB.lcAudit||[]).filter(a=>a.project_id===pid&&a.stage_no===n).sort((a,b)=>(a.id>b.id?1:-1));
+const lcOverdue=s=>!LC_DONE.has(s.status)&&s.due_date&&s.due_date<TODAY;
+const lcPMs=pid=>teamOf(pid,'pm');
+const lcBoss=pid=>state.role==='sa'||(state.role==='pm'&&accessIds().includes(pid));
+const lcEditor=(pid,s)=>lcBoss(pid)||(!!s.owner&&s.owner===me().id);
+const lcApproverText=pid=>{const pm=lcPMs(pid).map(u=>u.name);return pm.length?pm.join(' or ')+' (project manager)':'a super admin'};
+const lcCurrent=pid=>LC_STAGES.map(S=>lcGet(pid,S.n)).find(s=>!LC_DONE.has(s.status))||lcGet(pid,12);
+
+/* What ProTrackAI already holds for a deliverable: shown beside it, never ticks it */
+function lcEvidence(p,k){
+  const acts=ACTS.filter(a=>a.p===p.id),reps=DB.dprs.filter(d=>d.p===p.id),site=isSiteRole();
+  const recent=reps.filter(d=>d.date>=addDays(TODAY,-7)&&d.status!=='Draft').length;
+  const lastUpd=(DB.updates||[]).filter(u=>u.p===p.id).map(u=>u.dataDate).sort().pop();
+  const dc=(DB.dcma||{})[p.id],dcS=dc&&dc.checks?Math.round(dcmaScore(dc.checks)*100):null;
+  const unassigned=teamOf(p.id,'foreman').filter(u=>!assigned(p.id,'fm',u.id)).length+teamOf(p.id,'eng').filter(u=>!assigned(p.id,'eng',u.id)).length;
+  const ms=t=>(p.milestones||[]).find(m=>m.t===t);
+  const E={
+    registered:['ok',`${p.id} · ${p.name}`],
+    terms:site?null:[p.value&&p.billing?'ok':'no',p.value?`contract SAR ${fmt(+p.value,1)} M${p.billing&&p.billing.v?', payment terms saved':''}`:'no contract value'],
+    team:[p.pm&&p.pm!=='Unassigned'&&p.eng&&p.eng!=='Unassigned'?'ok':'no',`PM ${p.pm||'—'}, site engineer ${p.eng||'—'}`],
+    planner:(()=>{const u=teamOf(p.id,'plan');return [u.length?'ok':'no',u.length?u.map(x=>x.name).join(', '):'no planning engineer has access']})(),
+    coster:site?null:(()=>{const u=teamOf(p.id,'costing');return [u.length?'ok':'no',u.length?u.map(x=>x.name).join(', '):'no costing engineer has access']})(),
+    matrix:[unassigned?'warn':'ok',unassigned?`${unassigned} foreman or engineer not assigned`:'every foreman and engineer assigned'],
+    prepared:[acts.length?'ok':'no',acts.length?`${fmt(acts.length)} activities in the baseline`:'no baseline loaded'],
+    dcma:[dc?(dcS>=80?'ok':'warn'):'no',dc?`DCMA ${dcS}%`:'runs on XER import'],
+    costing:site?null:[acts.some(a=>a.costed)?'ok':'no',acts.some(a=>a.costed)?`${acts.filter(a=>a.costed).length} activities costed`:'no costing file applied'],
+    dpr:[recent?'ok':'no',`${recent} reports in the last 7 days`],
+    weekly:[lastUpd&&lastUpd>=addDays(ASOF,-8)?'ok':lastUpd?'warn':'no',lastUpd?`last data date ${fmtDY(lastUpd)}`:'no weekly update loaded'],
+    pos:site?null:(()=>{const n=SUBS.reduce((t,s)=>t+posOf(s,p.id).length,0);return [n?'ok':'no',n?`${n} purchase orders`:'none recorded']})(),
+    longlead:[acts.some(a=>a.cls==='PRC')?'ok':'no',`${acts.filter(a=>a.cls==='PRC').length} procurement activities tracked`],
+    budget:site?null:[acts.some(a=>a.costed)?'ok':'no',acts.some(a=>a.costed)?`budget ${sar(acts.reduce((t,a)=>t+(+a.bcost||0),0))}`:'no costing file applied'],
+    invoices:site?null:(()=>{const t=invTotals(p.id);return [t.n?'ok':'no',t.n?`${t.n} invoices, last ${t.last?fmtDY(t.last):'undated'}`:'no register loaded']})(),
+    claims:[p.eot&&p.eot.status&&p.eot.status!=='Not applicable'?'ok':'no',p.eot&&p.eot.status?`extension of time: ${p.eot.status}`:'no claim recorded'],
+    tcc:(()=>{const m=ms('TCC');return [m&&m.act?'ok':'no',m?(m.act?`achieved ${fmtDY(m.act)}`:`forecast ${fmtDY(m.fc||m.plan)}`):'no TCC milestone']})(),
+    pac:(()=>{const m=ms('PAC');return [m&&m.act?'ok':'no',m?(m.act?`achieved ${fmtDY(m.act)}`:`forecast ${fmtDY(m.fc||m.plan)}`):'no PAC milestone']})()};
+  const e=E[k];return e?{st:e[0],note:e[1]}:null;
+}
+
+/* Demo data: a plausible, clearly sample, state for the six demo projects (never on the server) */
+function seedLifecycle(){
+  if(CLOUD||DB.lcSeeded)return;
+  DB.lifecycle=DB.lifecycle||{};DB.lcAudit=DB.lcAudit||[];let id=1;
+  const at=(d)=>d+' 10:00';
+  PROJECTS.forEach((p,pi)=>{
+    const pm=lcPMs(p.id)[0],pl=teamOf(p.id,'plan')[0]||pm,co=teamOf(p.id,'costing')[0]||pm,L=DB.lifecycle[p.id]={};
+    const upto=[6,6,5,7,6,5][pi%6];
+    LC_STAGES.forEach(S=>{const s=lcBlank(p.id,S.n),own=S.n===6||S.n===11?pl:S.n===9?co:pm;s.owner=own?own.id:null;
+      if(S.n<=upto){s.status='Complete';s.deliverables.forEach(x=>{x.done=true;x.by=own?own.name:'';x.at=at(addDays(p.start||TODAY,S.n*7))});
+        s.submitted_by=own?own.id:null;s.approved_by=pm?pm.id:null;s.approved_at=addDays(p.start||TODAY,S.n*7+2);
+        DB.lcAudit.push({id:id++,project_id:p.id,stage_no:S.n,action:'Approved',by_name:pm?pm.name:'Super admin',by_role:'pm',at_time:s.approved_at+'T10:00:00'})}
+      else if(S.n<=9){s.status=S.n===upto+1&&pi%3===1?'Awaiting approval':'In progress';s.due_date=addDays(TODAY,S.n===upto+1&&pi%2?-5:14+S.n);
+        s.deliverables.forEach((x,i)=>{if(i<s.deliverables.length-1||s.status==='Awaiting approval'){x.done=true;x.by=own?own.name:'';x.at=at(addDays(TODAY,-10))}});
+        if(s.status==='Awaiting approval'){s.submitted_by=own?own.id:null;s.submitted_at=addDays(TODAY,-2)+'T09:00:00'}
+        s.next_action=S.n===7?'Keep daily reports and weekly updates current':S.n===8?'Confirm delivery dates for long-lead equipment':S.n===9?'Review the forecast at completion with the project manager':'Complete the remaining deliverables';
+        DB.lcAudit.push({id:id++,project_id:p.id,stage_no:S.n,action:'Started',by_name:own?own.name:'',by_role:own?own.role:'',at_time:addDays(TODAY,-20)+'T09:00:00'})}
+      L[S.n]=s});
+  });
+  DB.lcSeeded=true;save();
+}
+
+/* One way to change a stage, with the same rules on both sides */
+async function lcAct(pid,n,action,payload){
+  payload=payload||{};
+  if(CLOUD_ME){
+    try{await rpc('lifecycle_act',{p:{project_id:pid,stage_no:n,action,...payload}})}
+    catch(e){toast('The server refused this: '+srvMsg(e));return false}
+    try{await cloudLoadLifecycle()}catch(e){}
+    save();return true;
+  }
+  const s=JSON.parse(JSON.stringify(lcGet(pid,n))),meId=me().id,boss=lcBoss(pid),editor=boss||(!!s.owner&&s.owner===meId),note=(payload.note||'').trim();
+  const no=t=>{toast(t);return false};const changes=[];
+  if(action==='update'){
+    if(!editor)return no('Only the stage owner, the project manager or a super admin can change this stage');
+    if(LC_DONE.has(s.status))return no(`This stage is ${s.status.toLowerCase()}; a super admin must reopen it first`);
+    const f=payload.fields||{};
+    if('owner' in f){if(!boss)return no('Only the project manager or a super admin can assign the owner');
+      if(f.owner&&!onProject(userById(f.owner),pid))return no('The owner must be an active person with access to this project');
+      if((f.owner||null)!==s.owner)changes.push('owner '+(f.owner?userById(f.owner).name:'none'));s.owner=f.owner||null}
+    if('due_date' in f){if(f.due_date&&!isoOk(f.due_date))return no('The due date is not a valid date');if((f.due_date||null)!==s.due_date)changes.push('due '+(f.due_date||'none'));s.due_date=f.due_date||null}
+    ['next_action','blockers','risk'].forEach(k=>{if(k in f&&(f[k]||'')!==(s[k]||'')){changes.push(k.replace('_',' '));s[k]=f[k]||''}});
+    (payload.ticks||[]).forEach(t=>{const d=s.deliverables.find(x=>x.k===t.k);if(d&&!!d.done!==!!t.done){d.done=!!t.done;d.by=me().name;d.at=stamp();changes.push((t.done?'ticked ':'unticked ')+t.k)}});
+    if(s.status==='Not started'&&changes.length&&s.deliverables.some(x=>x.done)){s.status='In progress';changes.push('started')}
+    if(!changes.length)return true;
+  }else if(action==='start'){if(!editor)return no('Only the stage owner, the project manager or a super admin can start this stage');if(s.status!=='Not started')return no('This stage has already started');s.status='In progress'}
+  else if(action==='submit'){if(!editor)return no('Only the stage owner, the project manager or a super admin can submit this stage');
+    if(!['Not started','In progress'].includes(s.status))return no('Only a stage in progress can be submitted');
+    if(!s.owner)return no('Assign an owner before submitting');
+    const miss=s.deliverables.filter(x=>x.req&&!x.done).map(x=>x.label);if(miss.length)return no('Required deliverables are not done: '+miss.join('; '));
+    s.status='Awaiting approval';s.submitted_by=meId;s.submitted_at=new Date().toISOString()}
+  else if(action==='approve'){if(!boss)return no('Only the project manager or a super admin can approve a stage');if(s.status!=='Awaiting approval')return no('Only a stage awaiting approval can be approved');
+    if(s.submitted_by===meId)return no('You submitted this stage, so someone else must approve it');s.status='Complete';s.approved_by=meId;s.approved_at=new Date().toISOString()}
+  else if(action==='return'){if(!boss)return no('Only the project manager or a super admin can return a stage');if(s.status!=='Awaiting approval')return no('Only a stage awaiting approval can be returned');
+    if(!note)return no('Add a comment saying what to fix');s.status='In progress';s.submitted_by=null;s.submitted_at=null}
+  else if(action==='na'){if(!boss)return no('Only the project manager or a super admin can mark a stage not applicable');if(LC_DONE.has(s.status))return no('This stage is already closed');
+    if(!note)return no('Add a comment saying why the stage does not apply');s.status='Not applicable'}
+  else if(action==='reopen'){if(state.role!=='sa')return no('Only a super admin can reopen a stage');if(!LC_DONE.has(s.status))return no('Only a complete or not-applicable stage can be reopened');
+    if(!note)return no('Add a comment saying why the stage is reopened');s.status='In progress';s.approved_by=s.approved_at=s.submitted_by=s.submitted_at=null}
+  DB.lifecycle=DB.lifecycle||{};(DB.lifecycle[pid]=DB.lifecycle[pid]||{})[n]=s;DB.lcAudit=DB.lcAudit||[];
+  DB.lcAudit.push({id:(DB.lcAudit.reduce((m,a)=>Math.max(m,+a.id||0),0)+1),project_id:pid,stage_no:n,
+    action:{update:'Updated',start:'Started',submit:'Submitted for approval',approve:'Approved',return:'Returned',na:'Marked not applicable',reopen:'Reopened'}[action],
+    note:note||null,detail:action==='update'?{changes}:null,by_name:me().name,by_role:state.role,at_time:new Date().toISOString()});
+  logChange(`${projById(pid).short}, lifecycle stage ${n} ${lcDef(n).name}: ${DB.lcAudit.at(-1).action.toLowerCase()}${note?' ('+note+')':''}`);
+  save();return true;
+}
+async function cloudLoadLifecycle(){
+  try{
+    const [st,au]=await Promise.all([selAll('lifecycle_stages','*',null,['project_id','stage_no']),selAll('lifecycle_audit','*',null,['id'])]);
+    DB.lifecycle={};st.forEach(s=>{(DB.lifecycle[s.project_id]=DB.lifecycle[s.project_id]||{})[s.stage_no]=s});
+    DB.lcAudit=au;DB.lcMissing=false;
+  }catch(e){DB.lifecycle={};DB.lcAudit=[];DB.lcMissing=srvMsg(e)}
+}
+
+/* ---------- lifecycle on the Project overview ---------- */
+const lcCls=s=>s.status==='Complete'?'ok':s.status==='Not applicable'?'plan':s.status==='Awaiting approval'?'warn':s.status==='In progress'?'prog':'none';
+function lcStripHTML(p){
+  return `<div class="lc-strip lc12" role="list" aria-label="Project lifecycle">${LC_STAGES.map(S=>{const s=lcGet(p.id,S.n),late=lcOverdue(s);
+    return `<button type="button" role="listitem" class="lc-chip ${lcCls(s)}${late?' late':''}" data-lcstage="${S.n}" title="${esc(S.name)}: ${esc(s.status)}${late?', overdue':''}"><span class="lc-n">${S.n}</span><span><b>${esc(S.name)}</b><span class="lc-s">${esc(s.status)}${late?' · overdue':''}</span></span></button>`}).join('')}</div>`;
+}
+function lcWorkflowHTML(p){
+  const done=LC_STAGES.filter(S=>LC_DONE.has(lcGet(p.id,S.n).status)).length,cur=lcCurrent(p.id);
+  const user=id=>{const u=id&&userById(id);return u?u.name:'—'};
+  return `<section class="panel"><div class="card-head"><h2>Project lifecycle</h2><span class="small muted">${done} of 12 stages closed · current: ${esc(lcDef(cur.stage_no).name)} · a stage closes only when approved</span></div>
+    ${DB.lcMissing?`<div class="warn-box">Lifecycle tracking needs the v6 database update (see STAGE-4-SETUP). Until then stages show as not started. <span class="small">${esc(DB.lcMissing)}</span></div>`:''}
+    <div class="lc-grid lc12g">${LC_STAGES.map(S=>{const s=lcGet(p.id,S.n),late=lcOverdue(s),req=s.deliverables.filter(x=>x.req),dn=req.filter(x=>x.done).length;
+      return `<button type="button" class="lc-card ${lcCls(s)}${late?' late':''}" id="lc${S.n}" data-lcstage="${S.n}">
+        <div class="lc-head"><span class="lc-n">${S.n}</span>${esc(S.name)}</div>
+        <span class="lc-st">${esc(s.status)}${late?' <b class="r-c">overdue</b>':''}</span>
+        <span class="t2">${esc(s.department||S.dept)} · owner ${esc(user(s.owner))}</span>
+        ${s.due_date&&!LC_DONE.has(s.status)?`<span class="t2">Due ${fmtDY(s.due_date)}</span>`:''}
+        ${s.status==='Awaiting approval'?`<span class="t2">Waiting for ${esc(lcApproverText(p.id))}</span>`:''}
+        ${s.next_action&&!LC_DONE.has(s.status)?`<span class="t2">Next: ${esc(s.next_action)}</span>`:''}
+        ${s.blockers&&!LC_DONE.has(s.status)?`<span class="t2 r-c">Blocked: ${esc(s.blockers)}</span>`:''}
+        <div class="lc-foot"><div class="lc-bar"><i style="width:${req.length?dn/req.length*100:0}%"></i></div><span>${dn}/${req.length}</span></div></button>`}).join('')}</div></section>`;
+}
+function openStage(pid,n){
+  const p=projById(pid),S=lcDef(n),s=lcGet(pid,n),boss=lcBoss(pid),editor=lcEditor(pid,s),locked=LC_DONE.has(s.status),meId=me().id;
+  const team=DB.master.users.filter(u=>u.active!==false&&onProject(u,pid));
+  const user=id=>{const u=id&&userById(id);return u?u.name:'—'};
+  const H=lcAudit(pid,n);
+  const canSubmit=editor&&['Not started','In progress'].includes(s.status),canDecide=boss&&s.status==='Awaiting approval';
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>Stage ${n} · ${esc(S.name)}</h2><span class="sev ${({ok:'Low',warn:'Medium',prog:'Low',none:'Low',plan:'Low'})[lcCls(s)]}">${esc(s.status)}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <p class="small muted" style="margin:0 0 10px">${esc(p.id)} · ${esc(p.name)}. ${locked?'Closed stages are read-only; a super admin can reopen one with a reason.':'Ticks and evidence never close a stage: the owner submits it and the project manager or a super admin approves it.'}</p>
+    <form id="lcForm" data-lcp="${esc(pid)}" data-lcn="${n}">
+    <div class="fields">
+      ${F('Department',`<input name="department" value="${esc(s.department||S.dept)}" disabled>`)}
+      ${F('Owner',boss&&!locked?`<select name="owner"><option value="">Not assigned</option>${team.map(u=>`<option value="${esc(u.id)}" ${u.id===s.owner?'selected':''}>${esc(u.name)}, ${esc(ROLES[u.role]||u.role)}</option>`).join('')}</select>`:`<input value="${esc(user(s.owner))}" disabled>`)}
+      ${F('Due date',`<input type="date" name="due_date" value="${esc(s.due_date||'')}" ${editor&&!locked?'':'disabled'}>${lcOverdue(s)?'<span class="err">Overdue</span>':''}`)}
+    </div>
+    ${F('Approver',`<input value="${esc(lcApproverText(pid))}" disabled>`,true)}
+    ${F('Next action',`<input name="next_action" value="${esc(s.next_action||'')}" ${editor&&!locked?'':'disabled'} placeholder="What happens next, and by whom">`,true)}
+    ${F('Blockers and dependencies',`<input name="blockers" value="${esc(s.blockers||'')}" ${editor&&!locked?'':'disabled'} placeholder="Anything stopping this stage">`,true)}
+    ${F('Risks',`<input name="risk" value="${esc(s.risk||'')}" ${editor&&!locked?'':'disabled'}>`,true)}
+    <h3>Deliverables</h3>
+    <ul class="lc-dl">${s.deliverables.map(d=>{const ev=lcEvidence(p,d.k);return `<li><label class="chk"><input type="checkbox" data-lctick="${esc(d.k)}" ${d.done?'checked':''} ${editor&&!locked?'':'disabled'}><span>${esc(d.label)}${d.req?'<span class="req">Required</span>':''}${d.done&&d.by?`<span class="who">Ticked by ${esc(d.by)}${d.at?', '+esc(d.at):''}</span>`:''}</span></label>
+      ${ev?`<span class="lc-ev ${ev.st}" title="Evidence held in ProTrackAI; it does not tick the box">ProTrackAI holds: ${esc(ev.note)}</span>`:''}</li>`}).join('')}</ul>
+    ${s.submitted_by?`<p class="small">Submitted by ${esc(user(s.submitted_by))}${s.submitted_at?', '+esc(tStamp(s.submitted_at)):''}.</p>`:''}
+    ${s.approved_by?`<p class="small">Approved by ${esc(user(s.approved_by))}${s.approved_at?', '+esc(tStamp(s.approved_at)):''}.</p>`:''}
+    ${canDecide||boss||state.role==='sa'?`<label class="field">Comment (needed to return, mark not applicable or reopen)<textarea id="lcNote" rows="2"></textarea></label>`:''}
+    <div class="actions">
+      ${editor&&!locked?'<button class="btn" type="button" data-lcdo="update">Save changes</button>':''}
+      ${editor&&s.status==='Not started'?'<button class="btn" type="button" data-lcdo="start">Start stage</button>':''}
+      ${canSubmit?'<button class="btn primary" type="button" data-lcdo="submit">Submit for approval</button>':''}
+      ${canDecide&&s.submitted_by!==meId?'<button class="btn primary" type="button" data-lcdo="approve">Approve</button>':''}
+      ${canDecide&&s.submitted_by===meId?'<span class="small muted">You submitted this stage, so someone else approves it.</span>':''}
+      ${canDecide?'<button class="btn" type="button" data-lcdo="return">Return with comment</button>':''}
+      ${boss&&!locked?'<button class="btn" type="button" data-lcdo="na">Not applicable</button>':''}
+      ${state.role==='sa'&&locked?'<button class="btn" type="button" data-lcdo="reopen">Reopen</button>':''}
+      ${!editor&&!boss?'<span class="small muted">View only: the stage owner, the project manager or a super admin can change it.</span>':''}
+    </div></form>
+    <h3>History</h3>
+    <ul class="audit">${H.slice().reverse().map(a=>`<li><b>${esc(a.action)}</b> by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}${a.detail&&a.detail.changes&&a.detail.changes.length?`<span class="t2">${esc(a.detail.changes.join(', '))}</span>`:''}</li>`).join('')||'<li class="muted">No changes yet.</li>'}</ul>`;
+  $('#drawer').hidden=false;
+}
+function lcFormPayload(){
+  const f=$('#lcForm');if(!f)return {};const pid=f.dataset.lcp,s=lcGet(pid,+f.dataset.lcn),fields={},ticks=[];
+  const v=k=>{const el=f.elements[k];return el&&!el.disabled?el.value.trim():undefined};
+  [['owner','owner'],['due_date','due_date'],['next_action','next_action'],['blockers','blockers'],['risk','risk']].forEach(([n,k])=>{const x=v(n);if(x!==undefined&&(x||null)!==(s[k]||null))fields[k]=x||null});
+  f.querySelectorAll('[data-lctick]').forEach(el=>{const d=s.deliverables.find(x=>x.k===el.dataset.lctick);if(d&&!el.disabled&&!!d.done!==el.checked)ticks.push({k:d.k,done:el.checked})});
+  const out={};if(Object.keys(fields).length)out.fields=fields;if(ticks.length)out.ticks=ticks;return out;
+}
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-lcstage],[data-lcdo]');if(!t)return;
+  if(t.dataset.lcstage){const ps=scopeProjects();const pid=t.closest('[data-lcp]')?.dataset.lcp||(ps.length===1?ps[0].id:null);if(pid)openStage(pid,+t.dataset.lcstage);return}
+  const f=$('#lcForm');if(!f)return;const pid=f.dataset.lcp,n=+f.dataset.lcn,a=t.dataset.lcdo,note=($('#lcNote')?.value||'').trim();
+  let payload=a==='update'||a==='submit'?lcFormPayload():{};
+  t.disabled=true;
+  if((a==='submit')&&(payload.fields||payload.ticks)){const ok=await lcAct(pid,n,'update',payload);if(!ok){t.disabled=false;return}}
+  const ok=await lcAct(pid,n,a,a==='update'?payload:{note});
+  if(!ok){t.disabled=false;return}
+  const s=lcGet(pid,n);
+  if(a==='submit')notify(`${projById(pid).short}: stage ${n}, ${lcDef(n).name}, submitted for approval by ${me().name}. Waiting for ${lcApproverText(pid)}.`);
+  if(a==='approve')notify(`${projById(pid).short}: stage ${n}, ${lcDef(n).name}, approved by ${me().name}.`);
+  if(a==='return')notify(`${projById(pid).short}: stage ${n}, ${lcDef(n).name}, returned by ${me().name}: ${note}`,true);
+  toast(a==='update'?'Saved':`Stage ${n}: ${s.status.toLowerCase()}`);openStage(pid,n);render();
+});
+
+/* ---------- Actions and approvals register ---------- */
+function actionItems(){
+  const out=[],my=me(),ids=SCOPE;
+  DB.dprs.filter(d=>ids.has(d.p)&&(d.status==='Submitted'||d.status==='Reviewed')).forEach(d=>{
+    const R=routeOf(d),who=d.status==='Submitted'?R.revName:R.aprName,mine=actionsFor(d).some(k=>k==='review'||k==='approve');
+    out.push({type:'Daily report',what:`${d.id}: ${d.status==='Submitted'?'review':'approve'} (${d.foreman}, ${fmtDY(d.date)})`,pid:d.p,who,mine,since:d.date,age:diffDays(d.date,TODAY),late:diffDays(d.date,TODAY)>1,open:{dpr:d.id}})});
+  DB.dprs.filter(d=>ids.has(d.p)&&d.status==='Draft'&&d.returned).forEach(d=>out.push({type:'Daily report',what:`${d.id}: returned, fix and resubmit`,pid:d.p,who:d.foreman,mine:d.foreman===my.name,since:d.date,age:diffDays(d.date,TODAY),late:true,open:{dpr:d.id}}));
+  [...ids].forEach(pid=>LC_STAGES.forEach(S=>{const s=lcGet(pid,S.n),own=s.owner&&userById(s.owner);
+    if(s.status==='Awaiting approval')out.push({type:'Lifecycle approval',what:`Stage ${S.n}, ${S.name}: approve or return`,pid,who:lcApproverText(pid),mine:lcBoss(pid)&&s.submitted_by!==my.id,since:(s.submitted_at||'').slice(0,10)||null,age:s.submitted_at?diffDays(String(s.submitted_at).slice(0,10),TODAY):null,late:s.submitted_at&&diffDays(String(s.submitted_at).slice(0,10),TODAY)>3,open:{stage:[pid,S.n]}});
+    else if(lcOverdue(s))out.push({type:'Lifecycle stage overdue',what:`Stage ${S.n}, ${S.name}${s.next_action?': '+s.next_action:''}`,pid,who:own?own.name:'No owner',mine:!!own&&own.id===my.id,since:s.due_date,age:diffDays(s.due_date,TODAY),late:true,open:{stage:[pid,S.n]}});
+    else if(!LC_DONE.has(s.status)&&s.status!=='Not started'&&own&&own.id===my.id)out.push({type:'Lifecycle stage',what:`Stage ${S.n}, ${S.name}${s.next_action?': '+s.next_action:''}`,pid,who:own.name,mine:true,since:s.due_date,age:null,late:false,open:{stage:[pid,S.n]}})}));
+  if(canImpView()){const all=impBatches();
+    all.filter(b=>b.status==='failed'&&!all.some(x=>x.retry_of===b.id&&x.status==='committed')).forEach(b=>out.push({type:'Import failed',what:`${batchNo(b)}: ${b.file_name} (${b.error_message||'failed'})`,pid:b.project_id,who:batchBy(b),mine:b.by_user===my.id||b.by_name===my.name,since:String(b.at_time).slice(0,10),age:diffDays(String(b.at_time).slice(0,10),localISO()),late:true,open:{batch:b.id}}))}
+  return out.sort((a,b)=>(b.late-a.late)||((b.age||0)-(a.age||0)));
+}
+function renderAct(){
+  const f=state.actF||(state.actF={who:'mine'}),all=actionItems(),list=all.filter(x=>f.who==='all'||x.mine);
+  const chip=(v,l,n)=>`<button type="button" class="chip" data-actf="${v}" aria-pressed="${f.who===v}">${l} (${n})</button>`;
+  $('#view').innerHTML=`${crumb()}
+  <div class="g g-kpi">${kpi('Waiting on you',fmt(all.filter(x=>x.mine).length),'Reports, stages and imports',all.some(x=>x.mine&&x.late)?'a':'')}
+    ${kpi('Overdue or late',fmt(all.filter(x=>x.late).length),'In your scope',all.some(x=>x.late)?'r':'')}
+    ${kpi('Report approvals waiting',fmt(all.filter(x=>x.type==='Daily report').length),'Submitted or reviewed')}
+    ${kpi('Stages awaiting approval',fmt(all.filter(x=>x.type==='Lifecycle approval').length),'Project lifecycle')}</div>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Actions and approvals</h2><div class="chips" role="group" aria-label="Whose actions">${chip('mine','Mine',all.filter(x=>x.mine).length)}${chip('all','Everyone in scope',all.length)}</div></div>
+    <p class="small muted" style="margin:0 0 10px">Built from the records themselves: daily reports waiting in the approval chain, lifecycle stages waiting for approval or past their due date, and imports that failed and were not retried. Nothing here is approved from this list; open the item to act.</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Type</th><th>Item</th><th>Project</th><th>Waiting on</th><th>Since or due</th><th class="n">Days</th><th></th></tr></thead><tbody>
+    ${list.slice(0,200).map((x,i)=>`<tr class="${x.late?'rowwarn':''}"><td>${esc(x.type)}</td><td>${esc(x.what)}</td><td>${x.pid?esc((projById(x.pid)||{}).short||x.pid):'—'}</td><td>${esc(x.who||'—')}</td>
+      <td>${x.since?fmtDY(x.since):'—'}</td><td class="n">${x.age==null?'—':fmt(x.age)}${x.late?' <span class="sev High">late</span>':''}</td>
+      <td><button class="btn sm" type="button" data-actopen="${i}">Open</button></td></tr>`).join('')||`<tr><td colspan="7" class="muted">${f.who==='mine'?'Nothing is waiting on you.':'Nothing is waiting in this scope.'}</td></tr>`}
+    </tbody></table></div></section>`;
+  state.actList=list;
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-actf],[data-actopen]');if(!t)return;
+  if(t.dataset.actf){state.actF.who=t.dataset.actf;render();return}
+  const x=(state.actList||[])[+t.dataset.actopen];if(!x)return;
+  if(x.open.dpr)openDpr(x.open.dpr);else if(x.open.stage)openStage(...x.open.stage);else if(x.open.batch){go('imp');setTimeout(()=>openBatch(x.open.batch),50)}
+});
+
+document.addEventListener('click',e=>{const t=e.target.closest('[data-projopen]');if(!t)return;state.scope=t.dataset.projopen;go('proj')});
+document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const t=e.target.closest&&e.target.closest('[data-projopen]');if(t){state.scope=t.dataset.projopen;go('proj')}});
+/* ---------- Planning dashboard ---------- */
+const canPlanDash=()=>['sa','exec','rm','pf','plan','pm'].includes(state.role);
+const canCostDash=()=>['sa','exec','rm','pf','costing','pm'].includes(state.role);
+const stale=(d,days)=>!d||d<addDays(ASOF,-days);
+function planRows(){
+  return scopeProjects().map(p=>{const k=projKPI(p),acts=k.acts,dc=(DB.dcma||{})[p.id],dcS=dc&&dc.checks?Math.round(dcmaScore(dc.checks)*100):null;
+    const lastUpd=(DB.updates||[]).filter(u=>u.p===p.id).map(u=>u.dataDate).sort().pop(),hasEP=acts.some(a=>!isCon(a));
+    const ms=(p.milestones||[]).filter(m=>!m.act),next=ms.slice().sort((a,b)=>(a.fc||a.plan||'').localeCompare(b.fc||b.plan||''))[0];
+    const overdue=ms.filter(m=>(m.fc||m.plan)&&(m.fc||m.plan)<TODAY).length,late=acts.filter(a=>!isCon(a)&&curOf(a).ff&&curOf(a).ff>a.bf&&(curOf(a).pct||0)<1).length;
+    const lastBase=(DB.batches||[]).filter(b=>b.kind==='baseline'&&b.project_id===p.id&&b.status==='committed').map(b=>String(b.at_time).slice(0,10)).sort().pop()
+      ||(((DB.baseHist||{})[p.id]||[])[0]||{}).at;
+    return {p,k,acts,dcS,lastUpd,hasEP,next,overdue,late,lastBase,cur:lcCurrent(p.id),s6:lcGet(p.id,6)}});
+}
+function renderPdash(){
+  if(!canPlanDash()){$('#view').innerHTML='<section class="panel"><p>The Planning dashboard is for planning, project managers and management.</p></section>';return}
+  const R=planRows(),withBase=R.filter(r=>r.acts.length),e=evm(scopeActs(),ASOF);
+  $('#view').innerHTML=`${crumb()}
+  <div class="g g-kpi">
+    ${kpi('Baselines loaded',`${withBase.length} of ${R.length}`,'Projects with activities',withBase.length<R.length?'a':'')}
+    ${kpi('Schedule performance',e.pv?fmt(e.spi,2):'—','SPI, portfolio in scope',e.pv?light(e.spi):'')}
+    ${kpi('Milestones overdue',fmt(R.reduce((t,r)=>t+r.overdue,0)),'Not achieved, date passed',R.some(r=>r.overdue)?'r':'')}
+    ${kpi('Weekly updates stale',fmt(R.filter(r=>r.hasEP&&stale(r.lastUpd,8)).length),'Engineering and procurement, older than 8 days',R.some(r=>r.hasEP&&stale(r.lastUpd,8))?'a':'')}
+    ${kpi('Baselines awaiting approval',fmt(R.filter(r=>r.s6.status==='Awaiting approval').length),'Lifecycle stage 6')}
+  </div>
+  <section class="panel"><div class="card-head"><h2>Planning by project</h2><span class="small muted">Data date ${fmtDY(ASOF)} · critical path is calculated in Primavera P6, not here</span></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Lifecycle</th><th>Baseline</th><th class="n">DCMA</th><th class="n">SPI</th><th class="n">Plan</th><th class="n">Actual</th><th>Next milestone</th><th class="n">Overdue</th><th>Weekly update</th><th class="n">Late E&amp;P items</th></tr></thead><tbody>
+    ${R.map(r=>{const nm=r.next,slip=nm&&nm.fc&&nm.plan?diffDays(nm.plan,nm.fc):0;return `<tr class="click" data-projopen="${esc(r.p.id)}" tabindex="0" title="Open the project overview">
+      <td><b>${esc(r.p.short)}</b><span class="t2">${esc(r.p.name)}</span></td>
+      <td>${esc(lcDef(r.cur.stage_no).name)}<span class="t2">${esc(r.cur.status)}${lcOverdue(r.cur)?', overdue':''}</span></td>
+      <td>${r.acts.length?`${fmt(r.acts.length)} activities${r.lastBase?`<span class="t2">loaded ${esc(String(r.lastBase).slice(0,10))}</span>`:''}`:'<span class="muted">not loaded</span>'}<span class="t2">Stage 6: ${esc(r.s6.status)}</span></td>
+      <td class="n">${r.dcS==null?'—':`<span class="${r.dcS>=80?'g-c':'a-c'}">${r.dcS}%</span>`}</td>
+      <td class="n">${r.k.e.pv?`<span class="${light(r.k.e.spi)}-c">${fmt(r.k.e.spi,2)}</span>`:'—'}</td><td class="n">${r.acts.length?pct(r.k.plan,0):'—'}</td><td class="n">${r.acts.length?pct(r.k.act,0):'—'}</td>
+      <td>${nm?`${esc(nm.n)}<span class="t2">${fmtDY(nm.fc||nm.plan)}${slip>0?`, <span class="r-c">${slip} d late</span>`:''}</span>`:'<span class="muted">none set</span>'}</td>
+      <td class="n">${r.overdue?`<span class="r-c">${r.overdue}</span>`:'0'}</td>
+      <td>${!r.hasEP?'<span class="muted">no E&amp;P activities</span>':r.lastUpd?`${fmtDY(r.lastUpd)}${stale(r.lastUpd,8)?' <span class="sev Medium">stale</span>':''}`:'<span class="sev High">none loaded</span>'}</td>
+      <td class="n">${r.late?`<span class="r-c">${r.late}</span>`:'0'}</td></tr>`}).join('')||'<tr><td colspan="11" class="muted">No projects in this scope.</td></tr>'}
+    </tbody></table></div>
+    <p class="small muted" style="margin:10px 0 0">Sources: the P6 baseline import, the weekly engineering and procurement update, project milestones, and submitted, reviewed and approved daily reports. "—" means the data is not in ProTrackAI yet; nothing is estimated in its place.</p></section>
+  <section class="panel"><div class="card-head"><h2>Look-ahead and alerts</h2>${PLANNED('Planned')}</div><p class="small muted" style="margin:0">A three-week look-ahead from the P6 schedule and automatic slippage alerts are planned.</p></section>`;
+}
+
+/* ---------- Cost Control dashboard ---------- */
+function costRows(){
+  return scopeProjects().map(p=>{const k=projKPI(p),acts=k.acts,t=invTotals(p.id),bp=billPosition(p);
+    const budget=acts.some(a=>a.costed)?acts.reduce((s,a)=>s+(+a.bcost||0),0):null;
+    const cb=(DB.batches||[]).filter(b=>b.kind==='costing'&&b.project_id===p.id&&b.status==='committed').sort((a,b)=>(b.seq||0)-(a.seq||0))[0];
+    const ib=(DB.batches||[]).filter(b=>b.kind==='invoices'&&b.project_id===p.id&&b.status==='committed').sort((a,b)=>(b.seq||0)-(a.seq||0))[0];
+    return {p,k,acts,t,bp,budget,cb,ib,contract:(+p.value||0)*1e6}});
+}
+function reconCell(a,b){if(a==null||b==null)return '<span class="muted">—</span>';const d=a-b;return Math.abs(d)<1?'<span class="sev Low">Match</span>':`<span class="sev Medium">Differs by ${sar(Math.abs(d))}</span>`}
+function renderCdash(){
+  if(!canCostDash()){$('#view').innerHTML='<section class="panel"><p>The Cost Control dashboard is for costing, project managers and management.</p></section>';return}
+  const R=costRows(),sum=f=>R.reduce((t,r)=>t+(f(r)||0),0),e=evm(scopeActs(),ASOF);
+  const NT='<span class="pend" title="Not held in ProTrackAI yet; shown as such rather than estimated">Not tracked yet</span>';
+  $('#view').innerHTML=`${crumb()}
+  <div class="g g-kpi">
+    ${kpi('Contract value',sar(sum(r=>r.contract)),'Original contracts in scope')}
+    ${kpi('Budget, costing file',R.some(r=>r.budget!=null)?sar(sum(r=>r.budget)):'—',`${R.filter(r=>r.budget!=null).length} of ${R.length} projects costed`)}
+    ${kpi('Cost performance',e.ac?fmt(e.cpi,2):'—','CPI on measured labour scope',e.ac?light(e.cpi):'')}
+    ${kpi('Invoiced, submitted',sar(sum(r=>r.t.submitted)),`collected ${sar(sum(r=>r.t.collected))}`)}
+  </div>
+  <section class="panel"><div class="card-head"><h2>Cost position by project</h2><span class="small muted">SAR · data date ${fmtDY(ASOF)} · each figure stands alone; none is added to another</span></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Contract</th><th class="n">Budget (costing file)</th><th>Budget revisions</th><th class="n">Earned value</th><th class="n">Actual cost, labour</th><th>Commitments</th><th>Accruals</th><th class="n">Forecast cost (EAC)</th><th class="n">CPI</th><th class="n">Invoiceable</th><th class="n">Invoiced</th><th class="n">Collected</th></tr></thead><tbody>
+    ${R.map(r=>`<tr class="click" data-projopen="${esc(r.p.id)}" tabindex="0" title="Open the project overview"><td style="min-width:170px"><b>${esc(r.p.short)}</b><span class="t2">${esc(lcDef(lcCurrent(r.p.id).stage_no).name)}</span></td>
+      <td class="n">${r.contract?sar(r.contract):'—'}</td><td class="n">${r.budget!=null?sar(r.budget):'<span class="muted">not loaded</span>'}</td><td>${NT}</td>
+      <td class="n">${r.acts.length?sar(r.k.e.ev):'—'}</td><td class="n">${r.acts.length?sar(r.k.e.ac):'—'}</td><td>${NT}</td><td>${NT}</td>
+      <td class="n">${r.k.e.ac?sar(r.k.x.eac1):'—'}</td><td class="n">${r.k.e.ac?`<span class="${light(r.k.e.cpi)}-c">${fmt(r.k.e.cpi,2)}</span>`:'—'}</td>
+      <td class="n">${sar(r.bp.invoiceable)}</td><td class="n">${r.t.n?sar(r.t.submitted):'<span class="muted">no register</span>'}</td><td class="n">${r.t.n?sar(r.t.collected):'—'}</td></tr>`).join('')||'<tr><td colspan="13" class="muted">No projects in this scope.</td></tr>'}
+    </tbody></table></div>
+    <p class="small muted" style="margin:10px 0 0">Earned value, actual cost, forecast and CPI cover labour and subcontract work measured through daily reports, at trade and purchase-order rates; they are not SAP actual cost. Approved budget revisions, commitments and accruals are not tracked in ProTrackAI yet and are shown as such rather than estimated. Formulas: guide section 9 and the Finance formula reference.</p></section>
+  <section class="panel"><div class="card-head"><h2>Source reconciliation</h2><span class="small muted">ProTrackAI totals against the last accepted source file</span></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Costing file</th><th class="n">File total accepted</th><th class="n">Budget in ProTrackAI</th><th>Result</th><th>Invoice register</th><th class="n">File total accepted</th><th class="n">Register in ProTrackAI</th><th>Result</th></tr></thead><tbody>
+    ${R.map(r=>`<tr><td><b>${esc(r.p.short)}</b></td>
+      <td>${r.cb?`${batchNo(r.cb)}<span class="t2">${esc(r.cb.file_name||'')}</span>`:'<span class="muted">no batch recorded</span>'}</td>
+      <td class="n">${r.cb&&r.cb.total_accepted!=null?sar(+r.cb.total_accepted):'—'}</td><td class="n">${r.budget!=null?sar(r.budget):'—'}</td>
+      <td>${r.cb&&r.cb.total_accepted!=null?reconCell(+r.cb.total_accepted,r.budget||0):'<span class="muted">—</span>'}</td>
+      <td>${r.ib?`${batchNo(r.ib)}<span class="t2">${esc(r.ib.file_name||'')}</span>`:'<span class="muted">no batch recorded</span>'}</td>
+      <td class="n">${r.ib&&r.ib.total_accepted!=null?sar(+r.ib.total_accepted):'—'}</td><td class="n">${r.t.n?sar(r.t.submitted):'—'}</td>
+      <td>${r.ib&&r.ib.total_accepted!=null?reconCell(+r.ib.total_accepted,r.t.submitted):'<span class="muted">—</span>'}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="small muted" style="margin:10px 0 0">A costing file may cover only part of a project's activities, and activities costed by an earlier file keep their budget, so "Differs" on the costing side is a prompt to check, not necessarily an error. Batches come from the Import centre.</p></section>
+  <section class="panel"><div class="card-head"><h2>Cash-flow forecast</h2>${PLANNED('Planned')}</div><p class="small muted" style="margin:0">Planned once commitments and the invoicing schedule are tracked.</p></section>`;
+}
+
 /* ---------- backup, restore and the move to the server ---------- */
 const backupName=k=>`protrack-${k}-${localISO()}.json`;
 async function downloadBrowserBackup(){
@@ -1748,10 +2103,11 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={
+  act:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',pdash:'<path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/>',cdash:'<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
   proj:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/>',
   mat:'<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>',
   claims:'<path d="M6 3h9l4 4v14H6z"/><path d="M10 13l2 2 4-4"/>',
@@ -1777,20 +2133,20 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='2.6';
+const APP_VERSION='2.7';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'exec',label:'Executive summary'}],single:true},
   {k:'projects',label:'Projects & Handover',ic:'proj',items:[
-    {v:'proj',label:'Project overview'},
+    {v:'proj',label:'Project overview'},{v:'act',label:'Actions and approvals'},
     {plan:'Tender register'},{plan:'Contract register'},{plan:'Handover checklist'}]},
   {k:'planning',label:'Planning & Scheduling',ic:'base',items:[
-    {v:'base',sec:'p6',label:'Baselines and P6 import'},{v:'upd',label:'Weekly E&P update'},
+    {v:'pdash',label:'Planning dashboard'},{v:'base',sec:'p6',label:'Baselines and P6 import'},{v:'upd',label:'Weekly E&P update'},
     {v:'rep',rep:'basecmp',label:'Baseline comparison'},{v:'rep',rep:'p6upd',label:'P6 progress update'},
     {plan:'Governed baseline register'},{plan:'Look-ahead and alerts'}]},
   {k:'cost',label:'Cost Control',ic:'eva',items:[
-    {v:'eva',label:'Earned value and EAC'},{v:'base',sec:'cost',label:'Costing file'},{v:'rep',rep:'unitrate',label:'Unit rate analysis'},
-    {plan:'Budget revisions'},{plan:'Commitments and accruals'},{plan:'Cost reconciliation'}]},
+    {v:'cdash',label:'Cost Control dashboard'},{v:'eva',label:'Earned value and EAC'},{v:'base',sec:'cost',label:'Costing file'},{v:'rep',rep:'unitrate',label:'Unit rate analysis'},
+    {v:'cdash',sec:'recon',label:'Cost reconciliation'},{plan:'Budget revisions'},{plan:'Commitments and accruals'}]},
   {k:'daily',label:'Daily Reports',ic:'dpr',items:[
     {v:'dpr',label:'Daily reports'},{v:'new',label:'New report'},{v:'rep',rep:'timing',label:'Report handling time'}]},
   {k:'materials',label:'Materials & Procurement',ic:'mat',items:[
@@ -1809,7 +2165,7 @@ const DOMAINS=[
   {k:'admin',label:'Administration',ic:'admin',items:[
     {v:'admin',tab:'users',label:'Users and access'},{v:'admin',tab:'roles',label:'Role access'},{v:'admin',tab:'matrix',label:'Approval matrix'},
     {v:'admin',tab:'mail',label:'Approval email'},{v:'admin',tab:'projects',label:'Projects and terms'},{v:'admin',tab:'system',label:'System and date basis'}]}];
-const NAV_SEC={p6:/Baseline management|baseline/i,cost:/Costing file/i,po:/purchase orders/i,inv:/Invoice register/i,actions:/Critical items/i};
+const NAV_SEC={recon:/Source reconciliation/i,p6:/Baseline management|baseline/i,cost:/Costing file/i,po:/purchase orders/i,inv:/Invoice register/i,actions:/Critical items/i};
 function navItemOk(it,views){
   if(it.plan)return PLAN_ROLES.includes(state.role);
   if(it.action==='rasa')return true;
@@ -1960,7 +2316,7 @@ function renderProj(){
     return;
   }
   const p=ps[0],k=projKPI(p),site=isSiteRole(),acts=k.acts;
-  const L=projLifecycle(p,k),A=projActions(p,k);
+  const A=projActions(p,k);
   const wk=[7,6,5,4,3,2,1,0].map(i=>evm(acts,addDays(ASOF,-7*i)));
   const ser=f=>wk.map(f),last=wk[wk.length-1],prev=wk[wk.length-2];
   const delta=(a,b,d=2,pc)=>{const x=a-b;if(!isFinite(x)||Math.abs(x)<1e-9)return '<span class="muted">no change vs last week</span>';return `<span class="${x>0?'up':'dn'}">${x>0?'▲':'▼'} ${pc?pct(Math.abs(x),1):fmt(Math.abs(x),d)}</span> <span class="muted">vs last week</span>`};
@@ -1982,11 +2338,8 @@ function renderProj(){
     ${fin('Actual cost to date',sar(k.e.ac),(()=>{const rc=valid().filter(l=>l.p===p.id&&l.date<=ASOF).reduce((t,l)=>t+costOf(l),0);return `${sar(rc)} from daily reports; ${sar(Math.max(0,k.e.ac-rc))} estimated for earlier progress`})())}${fin('Open PO balance',poRows.length?sar(Math.max(0,poVal-poCost)):'—',poRows.length?`${poRows.length} POs, value less cost to date`:'no POs entered')}${fin('Forecast cost, measured scope',sar(k.x.eac1),'EAC = budget ÷ CPI')}</div>
     <p class="small muted" style="margin:10px 0 0">Cost figures cover labour and subcontract work, from daily reports plus an estimate for earlier progress, not the whole project cost. Commitments, accruals, budget revisions and a full-scope forecast are planned.</p></section>`;
   const stIcon={ok:'<i class="ck ok">✓</i>',warn:'<i class="ck warn">!</i>',no:'<i class="ck no"></i>',plan:'<i class="ck plan"></i>'};
-  const strip=`<div class="lc-strip" role="list">${L.map(s=>`<button type="button" role="listitem" class="lc-chip ${s.cls}" data-lcgo="${s.n}"><span class="lc-n">${s.n}</span><span><b>${esc(s.name)}</b><span class="lc-s">${s.status}${s.tracked?` · ${s.done}/${s.tracked}`:''}</span></span></button>`).join('')}</div>`;
-  const workflow=`<section class="panel"><div class="card-head"><h2>Project lifecycle</h2><span class="small muted">Ticks show data present in ProTrackAI · formal stage approval is planned</span></div>
-    <div class="lc-grid">${L.map(s=>`<div class="lc-card ${s.cls}" id="lc${s.n}"><div class="lc-head"><span class="lc-n">${s.n}</span>${esc(s.name)}</div>
-      <ul>${s.items.map(x=>`<li class="${x.st}">${stIcon[x.st]}<span>${esc(x.label)}${x.st==='plan'?' <span class="pend sm">Planned</span>':x.note?`<span class="t2">${esc(x.note)}</span>`:''}</span></li>`).join('')}</ul>
-      <div class="lc-foot">${s.tracked?`<div class="lc-bar"><i style="width:${s.done/s.tracked*100}%"></i></div><span>${s.done}/${s.tracked}</span>`:'<span class="muted small">Not tracked yet</span>'}</div></div>`).join('')}</div></section>`;
+  const strip=lcStripHTML(p);
+  const workflow=lcWorkflowHTML(p);
   const sevC={High:'r',Medium:'a',Low:'b'};
   const actions=`<section class="panel"><div class="card-head"><h2>Critical items and actions</h2><span class="small muted">${A.length} open</span></div>
     <ul class="acts">${A.slice(0,8).map(a=>`<li><span class="sevdot ${sevC[a.sev]}">${a.sev[0]}</span><div><b>${esc(a.title)}</b><span class="t2">${esc(a.sub)}</span></div>${a.date?`<span class="small muted">${fmtD(a.date)}</span>`:''}</li>`).join('')||'<li class="muted">Nothing needs attention on this project.</li>'}</ul>
@@ -2068,9 +2421,9 @@ document.addEventListener('click',e=>{
 
 /* ---------- shell ---------- */
 function renderNav(){
-  const L=T[state.lang];const views=['exec','proj','dash','dpr','new','upd','base','imp','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView()));
+  const L=T[state.lang];const views=['exec','proj','act','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro'));
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>v!=='proj'&&v!=='imp').map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['proj','imp','pdash','cdash','act'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -2093,7 +2446,7 @@ let charts=[];const killCharts=()=>{charts.forEach(c=>c.destroy());charts=[]};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
-  ({imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -3449,7 +3802,7 @@ function checkDeepLink(){
 const SITE_ROLES=['eng','sm'];
 const COST_KPIS=['value','cpi','eac','invoiceable','invoiced','approved','collected','shortsub','shortappr','outstanding','advance'];
 const COST_COLS=['value','cpi','invoiceable','invoiced','approved','collected','shortsub','shortappr','outstanding'];
-const ROLE_VIEWS={foreman:['dpr','new','perf'],eng:['exec','proj','dash','dpr','new','rep','perf'],sm:['exec','proj','dash','dpr','rep','deck','perf']};
+const ROLE_VIEWS={foreman:['act','dpr','new','perf'],eng:['exec','proj','act','dash','dpr','new','rep','perf'],sm:['exec','proj','act','dash','dpr','rep','deck','perf']};
 const DEF_ROLECFG={
   reports:{eng:['actprog','projprog','prod','histo','warn'],sm:['actprog','projprog','regprog','prod','histo','recon','warn','timing']},
   exec:{eng:{kpis:['projects','complete','spi','prod','heads','crit'],group:'project',second:'',cols:['bar','spi','prod','crit']},
@@ -5577,7 +5930,7 @@ async function doReset(){
 function pwMeter(){const p=$('#rsPw').value,ok=pwRules(p).filter(([o])=>o).length;const m=$('#rsMeter');[...m.children].forEach((b,i)=>{b.className=i<ok?['','w','w','m','s'][ok]:''});
   const miss=pwRules(p).filter(([o])=>!o).map(([,t])=>t);$('#rsHint').textContent=p?(miss.length?'Still needs '+miss.join(', ')+'.':'Strong enough.'):'Needs at least 10 characters, an uppercase letter, a lowercase letter and a number.'}
 async function boot(){
-  seedTopUp();seedMatrix();await ensureHashes();
+  seedTopUp();seedMatrix();seedLifecycle();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

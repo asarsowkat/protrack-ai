@@ -27,7 +27,7 @@ def sql(q, db=DBN):
 # ------------------------------------------------------------------ database
 subprocess.run(PG + ['-d', 'postgres', '-c', f'drop database if exists {DBN}'], capture_output=True)
 subprocess.run(PG + ['-d', 'postgres', '-c', f'create database {DBN}'], check=True, capture_output=True)
-for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql', 'schema-update-v5.sql']:
+for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql', 'schema-update-v5.sql', 'schema-update-v6.sql']:
     p = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, f)], capture_output=True, text=True)
     if p.returncode: raise SystemExit(f + ': ' + p.stderr)
 people = [('sa', 'Sara Admin', 'sa'), ('pm', 'Paul Manager', 'pm'), ('e1', 'Eng. Omar Engineer', 'eng'), ('e2', 'Eng. Hadi Other', 'eng'),
@@ -242,6 +242,39 @@ with sync_playwright() as p:
     login(pg, 'f1')
     r = pg.evaluate("rpc('import_commit',{p:{kind:'update',project_id:null,file_name:'upd2.xlsx',hash:'a'.repeat(64),data_date:'2026-09-22',rows:[{project_id:'P1',id:'TT-E01',ms:'IFC'}]}}).then(()=>'ran',e=>'refused: '+e.message)"); pg.wait_for_timeout(800)
     ck('Weekly update', 'a foreman cannot change progress (server refuses)', sql("select cur->>'ms' from activities where id='TT-E01'") == 'IDC' and 'refused' in r, r)
+
+    # ---------------------------------------------------------------- lifecycle through the server
+    login(pg, 'pm')
+    pg.evaluate("state.scope='P1';go('proj')"); pg.wait_for_timeout(1000)
+    ck('Lifecycle', 'twelve stages shown, all Not started on a new server project', pg.locator('.lc12g .lc-card').count() == 12 and sql("select count(*) from lifecycle_stages") == '0')
+    pg.evaluate("openStage('P1',6)"); pg.wait_for_timeout(500)
+    pg.select_option('#lcForm [name="owner"]', U['pl']); pg.fill('#lcForm [name="due_date"]', '2026-10-30'); pg.click('[data-lcdo="update"]'); pg.wait_for_timeout(1500)
+    ck('Lifecycle', 'the project manager assigns the owner on the server', sql("select owner::text||'/'||due_date from lifecycle_stages where stage_no=6") == U['pl'] + '/2026-10-30')
+    pg.evaluate("closeDrawer()")
+    login(pg, 'f1')
+    r = pg.evaluate("rpc('lifecycle_act',{p:{project_id:'P1',stage_no:6,action:'update',ticks:[{k:'prepared',done:true}]}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Lifecycle', 'a foreman calling the server directly is refused', r.startswith('refused') and sql("select count(*) from lifecycle_audit") == '1', r)
+    login(pg, 'pl')
+    pg.evaluate("state.scope='P1';go('proj')"); pg.wait_for_timeout(900)
+    pg.evaluate("openStage('P1',6)"); pg.wait_for_timeout(500)
+    for k in ['prepared', 'costing', 'submitted', 'approved']: pg.click(f'[data-lctick="{k}"]')
+    pg.click('[data-lcdo="submit"]'); pg.wait_for_timeout(2500)
+    ck('Lifecycle', 'the owner ticks and submits through the server', sql("select status||'/'||(submitted_by::text='" + U['pl'] + "') from lifecycle_stages where stage_no=6") == 'Awaiting approval/true')
+    r = pg.evaluate("rpc('lifecycle_act',{p:{project_id:'P1',stage_no:6,action:'approve'}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Lifecycle', 'the owner cannot approve (server refuses)', r.startswith('refused') and sql("select status from lifecycle_stages where stage_no=6") == 'Awaiting approval', r)
+    pg.evaluate("closeDrawer()")
+    login(pg, 'pm')
+    pg.evaluate("go('act')"); pg.wait_for_timeout(800)
+    ck('Lifecycle', 'the project manager finds it in Actions and approvals', 'Stage 6, Baseline preparation and approval: approve or return' in pg.inner_text('#view'), pg.inner_text('#view')[:400])
+    pg.evaluate("openStage('P1',6)"); pg.wait_for_timeout(500); pg.click('[data-lcdo="approve"]'); pg.wait_for_timeout(2500)
+    ck('Lifecycle', 'the project manager approves through the server', sql("select status||'/'||(approved_by::text='" + U['pm'] + "') from lifecycle_stages where stage_no=6") == 'Complete/true')
+    ck('Lifecycle', 'history in the app comes from the server', pg.evaluate("lcAudit('P1',6).map(a=>a.action).slice(-2).join(',')") == 'Submitted for approval,Approved')
+    pg.evaluate("closeDrawer()")
+    pg.evaluate("go('pdash')"); pg.wait_for_timeout(800)
+    ck('Dashboards', 'planning dashboard shows the server project', 'TT' in pg.inner_text('#view') and 'Planning by project' in pg.inner_text('#view'))
+    pg.evaluate("go('cdash')"); pg.wait_for_timeout(800)
+    v = pg.inner_text('#view')
+    ck('Dashboards', 'cost dashboard reconciles the costing and invoice batches', 'Source reconciliation' in v and 'IMP-' in v, v[-600:])
 
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))

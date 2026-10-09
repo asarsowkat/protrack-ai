@@ -161,6 +161,12 @@ Production needs:
 
 ---
 
+## Version 2.7
+
+- Governed 12-stage project lifecycle: owner, due date, required deliverables with evidence, submit and approve (no self-approval), append-only history (`schema-update-v6.sql`)
+- Actions and approvals register; Planning dashboard; Cost Control dashboard with source reconciliation and untracked items labelled, never estimated
+- See RELEASE-NOTES-v2.7.md and STAGE-4-SETUP.md
+
 ## Version 2.6
 
 - Import centre: every upload is a numbered batch with file fingerprint, counts, totals, reconciliation, acknowledgement, failures and retries

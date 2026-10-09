@@ -1,0 +1,226 @@
+{
+ "run_at": "2026-10-09 23:47",
+ "app": "/home/claude/p4/app.html",
+ "summary": {
+  "PASS": 36,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Lifecycle",
+   "check": "twelve stages in the strip and the grid",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "stages follow the master prompt from tender notification to closeout",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Lifecycle",
+   "check": "demo projects carry clearly sample stage states",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stage detail",
+   "check": "drawer shows owner, due date, approver, deliverables, evidence and history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Evidence",
+   "check": "evidence never ticks a box: a fresh stage starts with nothing done",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a foreman sees the stage read-only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a foreman forcing a change through the code is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "the project manager assigns owner, due date and next action",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "submit with a required deliverable open is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "the owner submits once required deliverables are ticked",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "the owner is not offered Approve",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "forcing approval as the owner is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Actions",
+   "check": "the project manager sees the stage waiting for approval under Mine",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Actions",
+   "check": "daily reports waiting in the chain are listed with who they wait on",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Actions",
+   "check": "Everyone in scope shows at least as many items",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Actions",
+   "check": "Open goes straight to the stage",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "return without a comment is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "return with a comment sends it back to In progress",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "the project manager approves; the stage is complete and read-only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "History",
+   "check": "every step is recorded",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "a project manager cannot approve their own submission",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "a super admin can approve it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "reopening needs a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "a super admin reopens with a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "not applicable needs a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Planning dashboard",
+   "check": "one row per project with baseline, SPI, milestones and weekly update",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Planning dashboard",
+   "check": "states that the critical path comes from P6",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost dashboard",
+   "check": "budget revisions, commitments and accruals shown as not tracked, never estimated",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost dashboard",
+   "check": "says actual cost is labour from daily reports, not SAP",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost dashboard",
+   "check": "source reconciliation section present",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost dashboard",
+   "check": "clicking a project opens its overview",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "site engineer has no dashboards in the menu",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "forcing the cost dashboard as a site engineer shows nothing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Actions and approvals offered to a site engineer",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "lifecycle changes survive a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

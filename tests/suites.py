@@ -148,7 +148,7 @@ with sync_playwright() as p:
         ck('Role access','cost tiles never offered to site roles',pg.locator('[data-rolekpi="eng:cpi"]').count()==0)
         as_(pg,'U11');pg.evaluate("go('rep')");pg.wait_for_timeout(500)
         ck('Role access','a new grant appears immediately',pg.locator('.replist [data-rep="unitrate"]').count()==1)
-        as_(pg,'U18');ck('Role access','foreman: daily reports, new report, own performance only',pg.locator('#nav [data-go]').evaluate_all("e=>[...new Set(e.map(x=>x.dataset.go))]")==['dpr','new','perf'])
+        as_(pg,'U18');ck('Role access','foreman: actions, daily reports, new report, own performance only (v2.7)',pg.locator('#nav [data-go]').evaluate_all("e=>[...new Set(e.map(x=>x.dataset.go))]")==['act','dpr','new','perf'])
         as_(pg,'Tariq Al-Mutairi');pg.evaluate("go('base')");pg.wait_for_timeout(800);v=pg.inner_text('#view')
         ck('Role access','project manager reaches costing, invoices and purchase orders','Costing file' in v and 'Invoice register' in v and 'purchase orders' in v.lower())
         ck('Role access','no script errors',not errs,errs[:2])
