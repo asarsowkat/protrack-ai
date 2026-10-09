@@ -726,6 +726,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <tr><td>Date everything is measured at</td><td>22 Sept 2026, fixed, so demonstrations always match</td><td>Same by default; set <code>DATE_MODE: 'live'</code> in config.js, or switch in Settings → System, to use today's date</td></tr>
     </tbody>
   </table>
+  <p><b>Demo page.</b> Next to the live site there is <code>demo.html</code> (for example <code>https://asarsowkat.github.io/protrack-ai/demo.html</code>), linked from the sign-in page. It is the same application on sample data with the demo accounts, for demonstrations and training. It never connects to the server, keeps its data in the visitor's browser under its own name, and cannot see or change live data.</p>
   <p>The sign-in page shows <b>Connected to the ProTrack server</b> in green when <code>config.js</code> holds a valid key. If the server cannot be reached after sign-in, an amber bar says so with a <b>Try again</b> button; nothing is quietly kept in the browser instead.</p>
 
   <h3 id="backup">Backup and restore</h3>
@@ -789,7 +790,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h4>"This is the same file as the last one loaded, so nothing changed"</h4><p>The server recognised the file. If you meant to load corrected figures, check you chose the corrected file.</p>
   <h4>Undo import or Remove baseline says it is not available</h4><p>On the server a baseline is never removed, so report history always keeps its activities. Import the correct file again; activities are matched by ID and updated.</p>
   <h4>An amber bar says the server data could not be loaded</h4><p>Your connection or the server was unavailable. Press <b>Try again</b>. Anything you change is still sent to the server, which checks it; nothing is saved only in the browser.</p>
-  <h4>I cannot sign in with a demo account</h4><p>Demo accounts are switched off on a site connected to the server. Use your work email; the super admin creates accounts in Supabase.</p>
+  <h4>I cannot sign in with a demo account</h4><p>Demo accounts are switched off on a site connected to the server. Use your work email; the super admin creates accounts in Supabase. For a demonstration, open the demo page (<code>demo.html</code>, linked from the sign-in page), where the demo accounts work on sample data.</p>
   <h4>Delete or undo did nothing</h4><p>You are on an old version. Upload the latest <code>index.html</code> and press Ctrl+F5.</p>
 </section>
 

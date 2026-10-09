@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-09 20:20",
+ "run_at": "2026-10-09 21:29",
  "app": "/home/claude/p2/app/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 55,
+  "PASS": 62,
   "FAIL": 0
  },
  "results": [
@@ -334,6 +334,48 @@
   {
    "area": "General",
    "check": "no script errors in server mode",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "live sign-in links to the demo page",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "demo page never connects to the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "sign-in says it is sample data and lists demo accounts",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "demo account signs in to the sample projects",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "demo data kept under its own key, live cache untouched",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "no server requests from the demo page",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "no script errors on the demo page",
    "result": "PASS",
    "detail": ""
   }

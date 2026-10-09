@@ -273,6 +273,21 @@ with sync_playwright() as p:
     bk = json.load(open(dl4.value.path()))
     ck('Backup', 'browser backup includes the waiting list', bk.get('format') == 'protrack-browser-backup' and 'DPR-0900' in (bk.get('unsynced') or {}).get('dprs', {}))
     ck('General', 'no script errors in server mode', not errs, errs[:3])
+
+    # ---------------------------------------------------------------- demo page next to the live site
+    pg.evaluate("signOut()"); pg.wait_for_timeout(600)
+    ck('Demo page', 'live sign-in links to the demo page', pg.locator('#authCard a[href="demo.html"]').count() == 1)
+    live_cache = pg.evaluate("localStorage.getItem('protrack-demo-v1')")
+    sb_calls = []
+    pg.on('request', lambda r: sb_calls.append(r.url) if '/__sb/' in r.url else None)
+    pg.goto(URL + 'demo.html'); pg.wait_for_timeout(1200)
+    ck('Demo page', 'demo page never connects to the server', pg.evaluate("CLOUD") is False and pg.evaluate("typeof window.supabase") == 'undefined', pg.evaluate("CLOUD"))
+    ck('Demo page', 'sign-in says it is sample data and lists demo accounts', 'Demo page with sample data' in pg.inner_text('#authCard') and pg.locator('details.demo').count() == 1)
+    pg.fill('#lgId', 'asarudeen@company.com'); pg.fill('#lgPw', 'ProTrack@2026'); pg.click('#lgBtn'); pg.wait_for_timeout(1800)
+    ck('Demo page', 'demo account signs in to the sample projects', pg.locator('#app').is_visible() and pg.evaluate("PROJECTS.length") >= 6 and pg.evaluate("PROJECTS.some(p=>p.id==='RMX')"), pg.evaluate("PROJECTS.map(p=>p.id)"))
+    ck('Demo page', 'demo data kept under its own key, live cache untouched', pg.evaluate("KEY") == 'protrack-demopage-v1' and pg.evaluate("localStorage.getItem('protrack-demo-v1')") == live_cache and pg.evaluate("!!localStorage.getItem('protrack-demopage-v1')"))
+    ck('Demo page', 'no server requests from the demo page', not sb_calls, sb_calls[:3])
+    ck('Demo page', 'no script errors on the demo page', not errs, errs[:3])
     b.close()
 srv.terminate()
 summary = {'PASS': sum(r['result'] == 'PASS' for r in R), 'FAIL': sum(r['result'] == 'FAIL' for r in R)}
