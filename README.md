@@ -148,6 +148,24 @@ Production needs:
 
 ---
 
+## Version 2.4
+
+- Demo or live date: Settings → System; `DATE_MODE` in config.js locks it
+- A 0% payment cap now means 0% (blank = 100% / no cap); older saved terms unchanged
+- Formula reference for Finance; 158 automated checks in `tests/`
+- See RELEASE-NOTES-v2.4.md
+
+## Version 2.3
+
+- **Every business domain in the menu**, grouped as in the target design: Projects &
+  Handover, Planning & Scheduling, Cost Control, Daily Reports, Materials & Procurement,
+  Claims & Variations, Invoices & Cash Flow, Reports & Dashboards, RASA, Imports &
+  Integrations, Administration. Working screens open as before; items not built yet
+  are greyed out with a **Planned** tag and cannot be opened.
+- **Project overview** page: lifecycle stages, key figures, contract and financial
+  summary, schedule by phase, cost trend, critical items and RASA, from real data only.
+- Regression suite in `tests/` (75 checks).
+
 ## Version 2.2
 
 - **RASA**, Real-time Artificial Smart Assistant, replaces the old assistant face:
