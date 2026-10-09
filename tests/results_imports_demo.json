@@ -1,0 +1,214 @@
+{
+ "run_at": "2026-10-09 21:58",
+ "app": "/home/claude/p3/app.html",
+ "summary": {
+  "PASS": 34,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Navigation",
+   "check": "Import centre in the Imports menu",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import centre",
+   "check": "page opens with upload links and SAP marked planned",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import centre",
+   "check": "not offered to a foreman",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import centre",
+   "check": "forcing it open as a foreman shows no history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "File checks",
+   "check": "macro workbook refused before reading",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "File checks",
+   "check": "other file types refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "File checks",
+   "check": "files over 10 MB refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice checks",
+   "check": "duplicate invoice numbers refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice checks",
+   "check": "impossible date refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice checks",
+   "check": "foreign currency refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice checks",
+   "check": "row for another project refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice checks",
+   "check": "text in an amount refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoice checks",
+   "check": "rows keep their sheet row number",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Preview",
+   "check": "reconciliation shows file total, accepted total and difference",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Preview",
+   "check": "Apply stays disabled until the refused rows are acknowledged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Exception report",
+   "check": "downloads every refused row with sheet row and reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Preview",
+   "check": "nothing changed before Apply",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Preview",
+   "check": "Apply enabled once acknowledged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Commit",
+   "check": "only the valid row is stored",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Commit",
+   "check": "batch records difference, who accepted it, note and fingerprint",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Duplicates",
+   "check": "the same file again changes nothing and adds no batch",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Preview",
+   "check": "a clean file needs no acknowledgement",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Commit",
+   "check": "clean file reconciles as Matched",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing checks",
+   "check": "text in the quantity is refused, not read as zero",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing checks",
+   "check": "Apply disabled until acknowledged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing checks",
+   "check": "valid row applied and batch logged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Progress checks",
+   "check": "duplicate activity and invalid date refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Progress checks",
+   "check": "nothing to apply when every row is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import centre",
+   "check": "history lists the batches with results",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import centre",
+   "check": "filter shows only batches with a difference",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import centre",
+   "check": "batch detail shows fingerprint, reconciliation, acknowledgement and audit reference",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import centre",
+   "check": "exception report downloads from the batch",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "batch history survives a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

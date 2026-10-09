@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-09 21:29",
- "app": "/home/claude/p2/app/app.html",
+ "run_at": "2026-10-09 22:04",
+ "app": "/home/claude/p3/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 62,
+  "PASS": 68,
   "FAIL": 0
  },
  "results": [
@@ -183,6 +183,12 @@
   },
   {
    "area": "Costing",
+   "check": "refused row must be acknowledged before applying",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing",
    "check": "costing file applied on the server",
    "result": "PASS",
    "detail": ""
@@ -195,7 +201,7 @@
   },
   {
    "area": "Costing",
-   "check": "upload recorded as a batch with a file fingerprint",
+   "check": "upload recorded as a batch with fingerprints and the confirmed difference",
    "result": "PASS",
    "detail": ""
   },
@@ -219,6 +225,36 @@
   },
   {
    "area": "Invoices",
+   "check": "clean register reconciles as Matched",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Failures",
+   "check": "a failed commit leaves the previous register intact",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Failures",
+   "check": "the failure is logged with its reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Failures",
+   "check": "retry succeeds and is linked to the failure",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import centre",
+   "check": "server batches listed with results, failure shown as retried",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoices",
    "check": "a foreman calling the invoice import is refused",
    "result": "PASS",
    "detail": ""
@@ -237,7 +273,7 @@
   },
   {
    "area": "Weekly update",
-   "check": "planner progress update saved on the server",
+   "check": "planner progress update saved on the server in one batch",
    "result": "PASS",
    "detail": ""
   },

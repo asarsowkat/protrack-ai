@@ -1,0 +1,326 @@
+{
+ "passed": 64,
+ "total": 64,
+ "results": [
+  {
+   "check": "v5 loads on a database with v4 import batches",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v5.sql:25: NOTICE:  constraint \"import_batches_status_ok\" of relation \"import_batches\" does not exist, skipping"
+  },
+  {
+   "check": "v5 can be run a second time",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v5.sql:14: NOTICE:  column \"seq\" of relation \"import_batches\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v5.sql:15: NOTICE:  column \"file_sha256\" of relation \"import_batches\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v5.s"
+  },
+  {
+   "check": "earlier batches kept, numbered",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "valid register loads and reconciles",
+   "pass": true,
+   "detail": "{'accepted': 2, 'batch_id': 'be884b49-7f48-4b5a-a6bb-2f4e7596ff18', 'rejected': [], 'batch_seq': 2, 'duplicate': False, 'recon_status': 'Matched', 'total_source': 180000, 'total_accepted': 180000}"
+  },
+  {
+   "check": "batch records number, fingerprint, size, currency, period, reconciliation",
+   "pass": true,
+   "detail": "2|Matched|0|64|2048|SAR|2026-09|committed"
+  },
+  {
+   "check": "same file again is recognised and changes nothing",
+   "pass": true,
+   "detail": "{'batch_id': 'be884b49-7f48-4b5a-a6bb-2f4e7596ff18', 'batch_seq': 2, 'duplicate': True}"
+  },
+  {
+   "check": "...no second batch",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "refused rows without confirmation: nothing saved",
+   "pass": true,
+   "detail": "psql:/tmp/tmp5zgm1zhc.sql:4: ERROR:  Reconciliation difference: 7 of 8 rows were refused worth SAR 95,005.00. Nothing was saved. Review the exception report, then confirm to load the accepted rows.\nHINT:  confirm_difference\nCONTEXT:  PL/pgSQL function import_commit(jsonb) line 34 at RAISE"
+  },
+  {
+   "check": "...register unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "confirmed difference loads the valid rows",
+   "pass": true,
+   "detail": "{'accepted': 1, 'batch_id': '2ffdc816-905a-44ec-aa66-5704d30a52b1', 'rejected': [{'no': 'INV-2', 'error': 'Invoice number appears more than once'}, {'no': 'INV-2', 'error': 'Invoice number appears more than once'}, {'no': 'INV-3', 'error': 'Invoice date is not a valid date'}, {'no': 'INV-4', 'error'"
+  },
+  {
+   "check": "every refused row has its reason",
+   "pass": true,
+   "detail": "{'INV-2': 'Invoice number appears more than once', 'INV-3': 'Invoice date is not a valid date', 'INV-4': 'Currency USD is not SAR', 'INV-5': 'Belongs to project P9', 'INV-6': 'An amount is not a number', 'INV-7': 'Negative amount'}"
+  },
+  {
+   "check": "difference amount, who accepted it and the note are recorded",
+   "pass": true,
+   "detail": "95005|true|checked with finance"
+  },
+  {
+   "check": "a file with no valid row never empties the register",
+   "pass": true,
+   "detail": "psql:/tmp/tmpo58fx3hj.sql:4: ERROR:  No valid invoice in this file, so the current register is kept unchanged\nCONTEXT:  PL/pgSQL function import_invoices(text,text,text,jsonb,text) line 28 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "...register still holds the last good load",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a commit interrupted half way fails",
+   "pass": true,
+   "detail": "psql:/tmp/tmphbssdn18.sql:4: ERROR:  disk full (simulated)\nCONTEXT:  PL/pgSQL function test_boom() line 1 at RAISE\nSQL statement \"insert into invoices (project_id, invoice_no, invoice_date, inv_type, amount, submitted, approved, collected, remark, uploaded_by)\n  select p_project, btrim(x ->> 'no'), "
+  },
+  {
+   "check": "...nothing half-saved: the previous register is intact, no batch recorded",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the failure is logged in the import centre",
+   "pass": true,
+   "detail": "{\"batch_id\": \"87c2cd44-ccca-4e04-9305-8685540c0255\", \"batch_seq\": 5}"
+  },
+  {
+   "check": "retry after the failure succeeds",
+   "pass": true,
+   "detail": "{'accepted': 3, 'batch_id': 'f79523dd-b8c0-4c13-b710-f32be681ba2d', 'rejected': [], 'batch_seq': 6, 'duplicate': False, 'recon_status': 'Matched', 'total_source': 6000, 'total_accepted': 6000}"
+  },
+  {
+   "check": "...and is linked to the failed attempt",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a foreman cannot log a failure",
+   "pass": true,
+   "detail": "psql:/tmp/tmp916kospu.sql:4: ERROR:  You cannot load this kind of file for this project\nCONTEXT:  PL/pgSQL function log_import_failure(jsonb) line 8 at RAISE"
+  },
+  {
+   "check": "a row the app already refused stays refused, with the app's reason",
+   "pass": true,
+   "detail": "{'accepted': 1, 'batch_id': '8bfd103c-b639-4dbc-bd33-22dd89af924c', 'rejected': [{'no': 'K-2', 'error': 'Belongs to project X'}], 'batch_seq': 7, 'duplicate': False, 'recon_status': 'Accepted with difference', 'total_source': 30, 'total_accepted': 10}"
+  },
+  {
+   "check": "two uploads at once: the second waits for the first",
+   "pass": true,
+   "detail": "(('', ''), ('', ''), 1.45344877243042)"
+  },
+  {
+   "check": "...the register is exactly one file, never a mix",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the same file sent twice at once is saved once",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "macro workbooks are refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp9fexl_le.sql:4: ERROR:  Only Excel (.xlsx, .xls), CSV, Primavera XER or P6 XML files can be imported\nCONTEXT:  PL/pgSQL function import_commit(jsonb) line 12 at RAISE"
+  },
+  {
+   "check": "files over 10 MB are refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpxpmcsh_h.sql:4: ERROR:  The file is larger than 10 MB\nCONTEXT:  PL/pgSQL function import_commit(jsonb) line 10 at RAISE"
+  },
+  {
+   "check": "more than 20,000 rows are refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp3wdkpl12.sql:4: ERROR:  The file has 20001 rows; the limit is 20,000. Split it and load each part.\nCONTEXT:  PL/pgSQL function import_commit(jsonb) line 9 at RAISE"
+  },
+  {
+   "check": "an empty file is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp99b4a3_5.sql:4: ERROR:  The file has no data rows\nCONTEXT:  PL/pgSQL function import_commit(jsonb) line 8 at RAISE"
+  },
+  {
+   "check": "an unknown import type is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpi2o942lm.sql:4: ERROR:  Unknown import type payroll\nCONTEXT:  PL/pgSQL function import_commit(jsonb) line 6 at RAISE"
+  },
+  {
+   "check": "a foreman cannot load invoices",
+   "pass": true,
+   "detail": "psql:/tmp/tmposqqj4sn.sql:4: ERROR:  Only costing engineers, project managers and super admins of this project can load invoices\nCONTEXT:  PL/pgSQL function import_invoices(text,text,text,jsonb,text) line 4 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "a planner cannot apply costing",
+   "pass": true,
+   "detail": "psql:/tmp/tmp82o3ec76.sql:4: ERROR:  Only costing engineers, project managers and super admins of this project can apply a costing file\nCONTEXT:  PL/pgSQL function apply_costing(text,text,text,jsonb) line 4 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "a cost engineer cannot load progress",
+   "pass": true,
+   "detail": "psql:/tmp/tmp1lfu_m0_.sql:4: ERROR:  Only planning engineers and super admins of each project in the file can load progress\nCONTEXT:  PL/pgSQL function import_progress(jsonb) line 11 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "a cost engineer cannot load into a project outside access",
+   "pass": true,
+   "detail": "psql:/tmp/tmpc2pq8zvq.sql:4: ERROR:  Only costing engineers, project managers and super admins of this project can load invoices\nCONTEXT:  PL/pgSQL function import_invoices(text,text,text,jsonb,text) line 4 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "a signed-out visitor cannot import",
+   "pass": true,
+   "detail": "psql:/tmp/tmp2u0xf_6w.sql:4: ERROR:  permission denied for function import_commit"
+  },
+  {
+   "check": "import batches cannot be written directly",
+   "pass": true,
+   "detail": "psql:/tmp/tmpyg2u_h0b.sql:4: ERROR:  new row violates row-level security policy for table \"import_batches\""
+  },
+  {
+   "check": "costing with refused rows needs confirmation",
+   "pass": true,
+   "detail": "psql:/tmp/tmpksnq2jvq.sql:4: ERROR:  Reconciliation difference: 3 of 4 rows were refused worth SAR 15.00. Nothing was saved. Review the exception report, then confirm to load the accepted rows.\nHINT:  confirm_difference\nCONTEXT:  PL/pgSQL function import_commit(jsonb) line 34 at RAISE"
+  },
+  {
+   "check": "...activities unchanged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "confirmed costing applies the valid row",
+   "pass": true,
+   "detail": "{'applied': 1, 'batch_id': 'f7050f72-da82-4780-9340-883b2b9e18db', 'rejected': [{'id': 'A2', 'error': 'Activity ID appears more than once'}, {'id': 'A2', 'error': 'Activity ID appears more than once'}, {'id': 'ZZ', 'error': 'Not in the baseline'}], 'batch_seq': 13, 'duplicate': False, 'recon_status'"
+  },
+  {
+   "check": "...budget and reconciliation recorded",
+   "pass": true,
+   "detail": "300015/300000/15"
+  },
+  {
+   "check": "costing rows for another project are refused",
+   "pass": true,
+   "detail": "{'applied': 1, 'batch_id': 'd04a69b2-a488-478e-a63b-b78aafa177c2', 'rejected': [{'id': 'A2', 'error': 'Belongs to project P3'}], 'batch_seq': 14, 'duplicate': False, 'recon_status': 'Accepted with difference', 'total_source': 300001, 'total_accepted': 300000}"
+  },
+  {
+   "check": "costing with no valid row changes nothing",
+   "pass": true,
+   "detail": "psql:/tmp/tmpbl6gz4o8.sql:4: ERROR:  No row in this file matches the baseline with a valid quantity, so nothing was changed\nCONTEXT:  PL/pgSQL function apply_costing(text,text,text,jsonb) line 23 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "two costing loads in one connection both work",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "baseline with duplicate activity IDs is refused whole",
+   "pass": true,
+   "detail": "psql:/tmp/tmpxwt6w79k.sql:4: ERROR:  Activity IDs appear more than once (B1); nothing was imported\nCONTEXT:  PL/pgSQL function import_baseline(text,text,text,jsonb) line 11 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "baseline with finish before start is refused whole",
+   "pass": true,
+   "detail": "psql:/tmp/tmpghuzmc7u.sql:4: ERROR:  Invalid numbers or dates on activities B2 (finish before start, text in a number column, or a bad date); nothing was imported\nCONTEXT:  PL/pgSQL function import_baseline(text,text,text,jsonb) line 15 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assi"
+  },
+  {
+   "check": "baseline with text in a number column is refused whole",
+   "pass": true,
+   "detail": "psql:/tmp/tmpr24vg8j3.sql:4: ERROR:  Invalid numbers or dates on activities B3 (finish before start, text in a number column, or a bad date); nothing was imported\nCONTEXT:  PL/pgSQL function import_baseline(text,text,text,jsonb) line 15 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assi"
+  },
+  {
+   "check": "...no activity created",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "valid baseline imports",
+   "pass": true,
+   "detail": "{'batch_id': 'a54f7ea3-5318-45cb-88ad-35d157bd87a6', 'upserted': 1, 'batch_seq': 17, 'duplicate': False, 'recon_status': 'Matched', 'total_source': None, 'total_accepted': None}"
+  },
+  {
+   "check": "progress with refused rows needs confirmation",
+   "pass": true,
+   "detail": "psql:/tmp/tmp_qhidyjb.sql:4: ERROR:  Reconciliation difference: 4 of 6 rows were refused. Nothing was saved. Review the exception report, then confirm to load the accepted rows.\nHINT:  confirm_difference\nCONTEXT:  PL/pgSQL function import_commit(jsonb) line 34 at RAISE"
+  },
+  {
+   "check": "...no progress changed",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "confirmed progress applies valid rows in every project, in one go",
+   "pass": true,
+   "detail": "{'applied': 2, 'batch_id': '73acfb13-4f7d-47c2-ac1d-35fc6b7a0213', 'rejected': [{'id': 'A1', 'error': 'Construction activity: update it through the daily report', 'project': 'P1'}, {'id': 'NOPE', 'error': 'Activity ID not found in project P1', 'project': 'P1'}], 'batch_seq': 19, 'duplicate': False, "
+  },
+  {
+   "check": "...milestone and percent set by the server, not the file",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "...history written per project",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "...batch covers several projects",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "progress going backwards without a remark is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpbti_cq1s.sql:4: ERROR:  No valid progress row in this file, so nothing was changed\nCONTEXT:  PL/pgSQL function import_progress(jsonb) line 41 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "...accepted with a remark",
+   "pass": true,
+   "detail": "{'applied': 1, 'batch_id': '0f234505-510f-4ac7-b2bc-878c32fe00a8', 'rejected': [], 'batch_seq': 20, 'duplicate': False, 'recon_status': 'Matched', 'total_source': None, 'total_accepted': None}"
+  },
+  {
+   "check": "actual finish after the data date is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp99rs8_9p.sql:4: ERROR:  No valid progress row in this file, so nothing was changed\nCONTEXT:  PL/pgSQL function import_progress(jsonb) line 41 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "a planner without access to one project cannot load the file",
+   "pass": true,
+   "detail": "psql:/tmp/tmpv8ybxps3.sql:4: ERROR:  Only planning engineers and super admins of each project in the file can load progress\nCONTEXT:  PL/pgSQL function import_progress(jsonb) line 11 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "a future data date is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp278huk0g.sql:4: ERROR:  The data date cannot be in the future\nCONTEXT:  PL/pgSQL function import_progress(jsonb) line 7 at RAISE\nPL/pgSQL function import_commit(jsonb) line 15 at assignment"
+  },
+  {
+   "check": "a foreman does not see batches that span other projects",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "check": "the planner sees them",
+   "pass": true,
+   "detail": "t"
+  },
+  {
+   "check": "rollback script runs",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback keeps every batch, invoice and progress record",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "after rollback, the v2.5 import still works",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "v5 can be applied again after a rollback",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v5.sql:14: NOTICE:  column \"seq\" of relation \"import_batches\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v5.sql:15: NOTICE:  column \"file_sha256\" of relation \"import_batches\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v5.s"
+  }
+ ]
+}

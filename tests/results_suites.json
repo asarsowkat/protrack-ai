@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-09 20:17",
- "app": "/home/claude/p2/app/app.html",
+ "run_at": "2026-10-09 22:00",
+ "app": "/home/claude/p3/app.html",
  "results": [
   {
    "area": "Billing",
@@ -83,6 +83,12 @@
   {
    "area": "Costing upload",
    "check": "nothing changes before Apply",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing upload",
+   "check": "Apply waits for the refused rows to be acknowledged (v2.6)",
    "result": "PASS",
    "detail": ""
   },
@@ -352,7 +358,7 @@
   }
  ],
  "summary": {
-  "PASS": 58,
+  "PASS": 59,
   "FAIL": 0,
   "SKIPPED": 0
  }
