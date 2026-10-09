@@ -1,0 +1,485 @@
+{
+ "run_at": "2026-10-09 20:16",
+ "app": "/home/claude/p2/app/app.html?date=live",
+ "results": [
+  {
+   "area": "Auth",
+   "check": "wrong password refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Auth",
+   "check": "demo super admin signs in",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Auth",
+   "check": "server mode off without key (demo mode)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Data",
+   "check": "date basis: demo pins 22 Sept 2026, live uses today",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Data",
+   "check": "each date mode keeps its own storage",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Data",
+   "check": "sample data loaded",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view exec renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view proj renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view dash renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view dpr renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view upd renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view base renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view eva renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view rep renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view deck renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view perf renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "view admin renders",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report actprog builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report projprog builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report regprog builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report histo builds (0.38 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report prod builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report eac builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report basecmp builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report recon builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report unitrate builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report invoice builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report cash builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report timing builds (0.01 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report mhrec builds (0.0 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report p6upd builds (0.02 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "report warn builds (0.06 s)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Exports",
+   "check": "Excel / PDF / PowerPoint export",
+   "result": "SKIPPED",
+   "detail": "CDN libraries (SheetJS, jsPDF, PptxGenJS) unreachable from the test environment"
+  },
+  {
+   "area": "Formulas",
+   "check": "manhours = count x (regular + OT)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Formulas",
+   "check": "labour cost = count x rate x (reg + 1.5 x OT)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Formulas",
+   "check": "earned manhours = quantity / planned rate",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Formulas",
+   "check": "SPI = EV / PV",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Formulas",
+   "check": "submitted (unapproved) reports count as progress",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Formulas",
+   "check": "boundary: a 0% phase cap now bills nothing on progress (v2.4 fix)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Formulas",
+   "check": "terms saved before v2.4 keep their old meaning (0 read as no cap)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Roles",
+   "check": "foreman menu limited",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Timers",
+   "check": "preparation clock visible",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "foreman submits",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Timers",
+   "check": "preparation time recorded",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "assigned site engineer may review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "unassigned site engineer may not review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "assigned site manager may approve",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "approved with audit trail",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Timers",
+   "check": "review and approval time recorded",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Email",
+   "check": "approval email prepared (not sent in demo)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Security",
+   "check": "site engineer forcing Settings view via script",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Security",
+   "check": "contract value reachable from browser console as site engineer (expected: true = gap)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Security",
+   "check": "any user can switch identity via \"Acting as\" in demo mode",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "P6",
+   "check": "XER parsed with activity count",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "P6",
+   "check": "DCMA check computed on import",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "P6",
+   "check": "PMXML import",
+   "result": "SKIPPED",
+   "detail": "parser present (parsePMXML); no PMXML sample available"
+  },
+  {
+   "area": "Navigation v2.3",
+   "check": "super admin sees all 12 domains",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation v2.3",
+   "check": "planned items present and disabled",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation v2.3",
+   "check": "clicking a planned item changes nothing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation v2.3",
+   "check": "live item opens its screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation v2.3",
+   "check": "section link opens Baselines",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation v2.3",
+   "check": "report link opens the named report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "multi-project scope shows a picker",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "picking sets the app scope",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "seven lifecycle stages",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "untracked stages marked Planned",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "untracked figures show Planned, not numbers",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "no NaN or undefined on the page",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "SPI tile matches the executive figure",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "critical items listed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "cost chart ends at the actual-cost figure",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "site engineer: no cost figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation v2.3",
+   "check": "site engineer sees no planned items",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation v2.3",
+   "check": "foreman domains: daily reports, reports, RASA",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation v2.3",
+   "check": "foreman cannot open the overview",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "opens with welcome state",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "quick action answers from data",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "LLM fallback only inside claude.ai (window.claude)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no uncaught script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ],
+ "summary": {
+  "PASS": 77,
+  "FAIL": 0,
+  "SKIPPED": 2
+ }
+}

@@ -1,26 +1,21 @@
-# ProTrackAI automated tests
+# ProTrackAI automated tests (v2.5)
 
-Three suites, run in a headless Chromium browser against `index.html` on its built-in demo data.
-Nothing is saved and no network is used.
-
-| Suite | Checks | What it covers |
-|---|---|---|
-| `regression.py` | 77 | Every screen and report, P6 import with DCMA, approval chain and timers, domain menu, project overview, security behaviour, RASA |
-| `suites.py` | 58 | Billing terms and the 0% cap rule, costing file upload, invoice register upload, role access, approval matrix, RASA insights, demo/live date switch, exports |
-| `reference.py` | 23 | Every formula against a hand calculation on a reference project (see the Finance formula reference) |
-
-Run (needs Python with Playwright and Chromium):
+| Suite | Checks | What it covers | Needs |
+|---|---|---|---|
+| `test_v4.py` | 125 | The server rules: attacks that must fail, approval chain, imports, migration, people, rollback | PostgreSQL 16 on `/tmp:5499`, the SQL files next to it |
+| `e2e_server.py` + `fake_supabase.py` | 55 | The app in server mode, end to end, against that database | PostgreSQL, Playwright, Chromium |
+| `regression.py` | 77 | Every screen and report, P6 import with DCMA, approval chain and timers, domain menu, project overview, security behaviour, RASA (demo data) | Playwright, Chromium |
+| `suites.py` | 58 | Billing terms, costing upload, invoice register, role access, approval matrix, RASA insights, date switch, exports | Playwright, Chromium |
+| `reference.py` | 23 | Every formula against a hand calculation | Playwright, Chromium |
+| `backup_demo.py` | 10 | Backup and restore in demo mode | Playwright, Chromium |
 
 ```
-python3 tests/regression.py index.html sample.xer > results_regression.json
+python3 tests/regression.py index.html sample.xer > results_regression_demo.json
 python3 tests/regression.py "index.html?date=live" sample.xer > results_regression_live.json
 python3 tests/suites.py index.html > results_suites.json
 python3 tests/reference.py index.html > results_reference.json
+python3 tests/backup_demo.py index.html > results_backup.json
+python3 test_v4.py                                    # run from the folder with the SQL files
+python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 ```
-
-Limits: Excel files are read by a small stand-in for SheetJS (the app's own column matching,
-validation and apply logic runs for real; SheetJS's binary parsing does not). PDF and PowerPoint
-exports, Supabase sign-in and row-level security are not covered.
-
-Results for v2.4 (9 Oct 2026): regression 77/77 in demo mode and 77/77 in live mode, suites 58/58,
-reference 23/23. Two regression items are skipped by design: real Excel/PDF export and PMXML import.
+`fake_supabase.py` stands in for Supabase's sign-in and web layer only; every permission decision comes from the database's own rules. It is a test tool and must never be deployed.

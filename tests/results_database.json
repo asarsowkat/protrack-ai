@@ -1,0 +1,631 @@
+{
+ "passed": 125,
+ "total": 125,
+ "results": [
+  {
+   "check": "v4 loads on a database that already has reports",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v4.sql:17: NOTICE:  column \"remarks\" of relation \"dprs\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v4.sql:80: NOTICE:  trigger \"trg_guard_dprs\" for relation \"dprs\" does not exist, skipping\npsql:/home/claude/p2/db/schema-update-v4.sql:83: NOTI"
+  },
+  {
+   "check": "v4 can be run a second time",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v4.sql:14: NOTICE:  column \"foreman_id\" of relation \"dprs\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v4.sql:15: NOTICE:  column \"returned\" of relation \"dprs\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v4.sql:16: NOTICE:  "
+  },
+  {
+   "check": "old audit entries are sealed into the chain",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "old data untouched by v4",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "direct insert of a report is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Daily reports can only be changed through ProTrack\nCONTEXT:  PL/pgSQL function pt_guard() line 6 at RAISE"
+  },
+  {
+   "check": "direct status change is refused",
+   "pass": true,
+   "detail": "rc=0 before=Approved after=Approved "
+  },
+  {
+   "check": "direct delete of a report is refused",
+   "pass": true,
+   "detail": "rc=0 before=1 after=1 "
+  },
+  {
+   "check": "direct edit of report lines is refused",
+   "pass": true,
+   "detail": "rc=0 before=40 after=40 "
+  },
+  {
+   "check": "writing an audit entry directly is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Audit entries can only be written by ProTrack\nCONTEXT:  PL/pgSQL function pt_audit_chain() line 8 at RAISE"
+  },
+  {
+   "check": "changing an audit entry is refused",
+   "pass": true,
+   "detail": "rc=0 before=-,- after=-,- "
+  },
+  {
+   "check": "deleting an audit entry is refused",
+   "pass": true,
+   "detail": "rc=0 before=2 after=2 "
+  },
+  {
+   "check": "changing the change log is refused",
+   "pass": true,
+   "detail": "rc=0 before=seed entry after=seed entry "
+  },
+  {
+   "check": "change log entry in someone else's name is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  new row violates row-level security policy for table \"change_log\""
+  },
+  {
+   "check": "change log entry in own name is allowed",
+   "pass": true,
+   "detail": "00000000-0000-0000-0000-000000000007"
+  },
+  {
+   "check": "signed-out visitor cannot call report functions",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  permission denied for function dpr_save"
+  },
+  {
+   "check": "internal helper functions are not callable",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  permission denied for function pt_audit"
+  },
+  {
+   "check": "approval routing helper is not callable",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  permission denied for function role_of"
+  },
+  {
+   "check": "foreman saves a draft",
+   "pass": true,
+   "detail": "DPR-00001"
+  },
+  {
+   "check": "new report number continues the sequence",
+   "pass": true,
+   "detail": "DPR-00001"
+  },
+  {
+   "check": "foreman submits own draft",
+   "pass": true,
+   "detail": "Submitted"
+  },
+  {
+   "check": "foreman cannot edit after submitting",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Only the assigned site engineer or the project manager can edit a submitted report\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 57 at RAISE"
+  },
+  {
+   "check": "foreman cannot review",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You are not the reviewer or approver assigned to this report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 36 at RAISE"
+  },
+  {
+   "check": "unassigned site engineer cannot review",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You are not the reviewer or approver assigned to this report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 36 at RAISE"
+  },
+  {
+   "check": "site manager cannot approve before review",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You are not the reviewer or approver assigned to this report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 36 at RAISE"
+  },
+  {
+   "check": "return without a comment is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  A comment is required to return a report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 10 at RAISE"
+  },
+  {
+   "check": "engineer cannot reject (only return)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You are not the reviewer or approver assigned to this report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 36 at RAISE"
+  },
+  {
+   "check": "assigned site engineer reviews",
+   "pass": true,
+   "detail": "Reviewed"
+  },
+  {
+   "check": "unassigned site manager cannot approve",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You are not the reviewer or approver assigned to this report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 36 at RAISE"
+  },
+  {
+   "check": "engineer cannot approve",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You are not the reviewer or approver assigned to this report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 36 at RAISE"
+  },
+  {
+   "check": "assigned site manager approves",
+   "pass": true,
+   "detail": "Approved"
+  },
+  {
+   "check": "approved report cannot be edited",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  A approved report cannot be edited\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 59 at RAISE"
+  },
+  {
+   "check": "approved report cannot be acted on again",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  This report is approved and cannot be acted on\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 33 at RAISE"
+  },
+  {
+   "check": "audit trail has 4 entries with names and roles",
+   "pass": true,
+   "detail": "Draft created:foreman,Submitted:foreman,Reviewed:eng,Approved:sm"
+  },
+  {
+   "check": "timers recorded for create, review and approve",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "audit chain verifies",
+   "pass": true,
+   "detail": "t"
+  },
+  {
+   "check": "cannot verify a report on a project you cannot see",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Report not found\nCONTEXT:  PL/pgSQL function dpr_audit_verify(text) line 5 at RAISE"
+  },
+  {
+   "check": "even the database owner cannot edit an audit entry",
+   "pass": true,
+   "detail": "ERROR:  The audit trail cannot be changed or deleted\nCONTEXT:  PL/pgSQL function pt_audit_chain() line 5 at RAISE"
+  },
+  {
+   "check": "even the database owner cannot delete the change log",
+   "pass": true,
+   "detail": "ERROR:  change_log is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "even the database owner cannot reopen an approved report",
+   "pass": true,
+   "detail": "ERROR:  An approved report cannot be changed or deleted\nCONTEXT:  PL/pgSQL function pt_guard() line 10 at RAISE"
+  },
+  {
+   "check": "tampering with an audit entry is detected",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "engineer creates a report for a foreman",
+   "pass": true,
+   "detail": "DPR-00002"
+  },
+  {
+   "check": "assigned engineer returns with a comment",
+   "pass": true,
+   "detail": "Draft"
+  },
+  {
+   "check": "returned flag set",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "foreman edits the returned draft",
+   "pass": true,
+   "detail": "Submitted"
+  },
+  {
+   "check": "resubmission is recorded as such",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "returned flag cleared on resubmit",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "project manager rejects with a comment",
+   "pass": true,
+   "detail": "Rejected"
+  },
+  {
+   "check": "rejected report cannot be edited",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  A rejected report cannot be edited\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 59 at RAISE"
+  },
+  {
+   "check": "foreman with no engineer assigned saves and submits",
+   "pass": true,
+   "detail": "DPR-00003"
+  },
+  {
+   "check": "...an engineer cannot review it",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You are not the reviewer or approver assigned to this report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 36 at RAISE"
+  },
+  {
+   "check": "...the project manager reviews it",
+   "pass": true,
+   "detail": "Reviewed"
+  },
+  {
+   "check": "...a site manager cannot approve it",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You are not the reviewer or approver assigned to this report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer) line 36 at RAISE"
+  },
+  {
+   "check": "...the project manager approves it",
+   "pass": true,
+   "detail": "Approved"
+  },
+  {
+   "check": "foreman cannot write on a project outside their access",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 9 at RAISE"
+  },
+  {
+   "check": "activity from another project is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Lines refused (unknown activity or negative quantity): B1\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 22 at RAISE"
+  },
+  {
+   "check": "negative quantity is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Lines refused (unknown activity or negative quantity): A1\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 22 at RAISE"
+  },
+  {
+   "check": "more than 24 hours a day is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Labour refused (negative count or more than 24 hours a day): Carpenter\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 27 at RAISE"
+  },
+  {
+   "check": "empty report is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  A report needs at least one activity line\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 11 at RAISE"
+  },
+  {
+   "check": "cost engineer cannot write reports",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Your role cannot write daily reports\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 8 at RAISE"
+  },
+  {
+   "check": "engineer cannot name a foreman from another project",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  The chosen foreman is not on this project\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 33 at RAISE"
+  },
+  {
+   "check": "row level security still hides other projects",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "check": "report dated in the future is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  The report date cannot be in the future\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 13 at RAISE"
+  },
+  {
+   "check": "same activity twice is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  The same activity is on the report twice. Combine them into one.\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 15 at RAISE"
+  },
+  {
+   "check": "second report for the same foreman and day is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  This foreman already has a report for that date (DPR-00001). Open and edit that one instead.\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 40 at RAISE"
+  },
+  {
+   "check": "a foreman always reports under their own name",
+   "pass": true,
+   "detail": "DPR-00004"
+  },
+  {
+   "check": "...stored as the signed-in foreman",
+   "pass": true,
+   "detail": "DPR-00004"
+  },
+  {
+   "check": "foreman sees the team directory",
+   "pass": true,
+   "detail": "User C1:costing:c1@test.local,User E1:eng:e1@test.local,User E2:eng:e2@test.local,User EX:exec:ex@test.local,User F1:foreman:f1@test.local,User F3:foreman:f3@test.local,User PL:plan:pl@test.local,User PM:pm:pm@test.local,User S1:sm:s1@test.local,User S2:sm:s2@test.local,User SA:sa:sa@test.local"
+  },
+  {
+   "check": "directory holds colleagues on shared projects and leadership",
+   "pass": true,
+   "detail": "User C1:costing:c1@test.local,User E1:eng:e1@test.local,User E2:eng:e2@test.local,User EX:exec:ex@test.local,User F1:foreman:f1@test.local,User F3:foreman:f3@test.local,User PL:plan:pl@test.local,User PM:pm:pm@test.local,User S1:sm:s1@test.local,User S2:sm:s2@test.local,User SA:sa:sa@test.local"
+  },
+  {
+   "check": "directory leaves out people on other projects only",
+   "pass": true,
+   "detail": "User C1:costing:c1@test.local,User E1:eng:e1@test.local,User E2:eng:e2@test.local,User EX:exec:ex@test.local,User F1:foreman:f1@test.local,User F3:foreman:f3@test.local,User PL:plan:pl@test.local,User PM:pm:pm@test.local,User S1:sm:s1@test.local,User S2:sm:s2@test.local,User SA:sa:sa@test.local"
+  },
+  {
+   "check": "super admin sees everyone",
+   "pass": true,
+   "detail": "13"
+  },
+  {
+   "check": "...all 13 people",
+   "pass": true,
+   "detail": "13"
+  },
+  {
+   "check": "colleague project lists are limited to projects the caller sees",
+   "pass": true,
+   "detail": "User E1=P2,User EX=,User F2=P2,User PM2=P2,User SA="
+  },
+  {
+   "check": "...P2 foreman sees P2 team, and E1 only as a P2 member",
+   "pass": true,
+   "detail": "User E1=P2,User EX=,User F2=P2,User PM2=P2,User SA="
+  },
+  {
+   "check": "signed-out visitor gets no directory",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  permission denied for function team_directory"
+  },
+  {
+   "check": "only the super admin manages people",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Only a super admin can manage people\nCONTEXT:  PL/pgSQL function admin_save_person(jsonb) line 4 at RAISE"
+  },
+  {
+   "check": "a person needs a sign-in account first",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  No sign-in account exists for nobody@test.local yet. Create it first in Supabase: Authentication, Users, Add user.\nCONTEXT:  PL/pgSQL function admin_save_person(jsonb) line 6 at RAISE"
+  },
+  {
+   "check": "super admin adds a person with role and access",
+   "pass": true,
+   "detail": "{\"id\": \"00000000-0000-0000-0000-000000000099\"}"
+  },
+  {
+   "check": "...profile and access created, unknown project ignored",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "super admin changes role and moves the person",
+   "pass": true,
+   "detail": "{\"id\": \"00000000-0000-0000-0000-000000000099\"}"
+  },
+  {
+   "check": "...access replaced, not added to",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "super admin cannot remove their own access",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You cannot remove your own super admin access\nCONTEXT:  PL/pgSQL function admin_save_person(jsonb) line 10 at RAISE"
+  },
+  {
+   "check": "unknown role is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Unknown role boss\nCONTEXT:  PL/pgSQL function admin_save_person(jsonb) line 8 at RAISE"
+  },
+  {
+   "check": "cost engineer loads an invoice register",
+   "pass": true,
+   "detail": "{\"accepted\": 2, \"batch_id\": \"55f721c5-f154-41d7-8b4e-c768ad0c7166\", \"rejected\": [{\"no\": \"\", \"error\": \"No invoice number\"}, {\"no\": \"INV-3\", \"error\": \"Approved is more than submitted\"}], \"duplicate\": false, \"total_accepted\": 180000}"
+  },
+  {
+   "check": "valid rows accepted, invalid rows refused with reasons",
+   "pass": true,
+   "detail": "{\"accepted\": 2, \"batch_id\": \"55f721c5-f154-41d7-8b4e-c768ad0c7166\", \"rejected\": [{\"no\": \"\", \"error\": \"No invoice number\"}, {\"no\": \"INV-3\", \"error\": \"Approved is more than submitted\"}], \"duplicate\": false, \"total_accepted\": 180000}"
+  },
+  {
+   "check": "accepted total reconciles",
+   "pass": true,
+   "detail": "{\"accepted\": 2, \"batch_id\": \"55f721c5-f154-41d7-8b4e-c768ad0c7166\", \"rejected\": [{\"no\": \"\", \"error\": \"No invoice number\"}, {\"no\": \"INV-3\", \"error\": \"Approved is more than submitted\"}], \"duplicate\": false, \"total_accepted\": 180000}"
+  },
+  {
+   "check": "same file again changes nothing",
+   "pass": true,
+   "detail": "{\"batch_id\": \"55f721c5-f154-41d7-8b4e-c768ad0c7166\", \"duplicate\": true}"
+  },
+  {
+   "check": "...register still has 2 invoices",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a different register replaces the first",
+   "pass": true,
+   "detail": "{\"accepted\": 1, \"batch_id\": \"5376b0d0-1dd1-409e-bc76-5891e2f696f0\", \"rejected\": [], \"duplicate\": false, \"total_accepted\": 5000}"
+  },
+  {
+   "check": "loading the first register again applies it again",
+   "pass": true,
+   "detail": "{\"accepted\": 2, \"batch_id\": \"f5ea2b31-8ceb-4b36-9d9d-18aaab40fdf2\", \"rejected\": [{\"no\": \"\", \"error\": \"No invoice number\"}, {\"no\": \"INV-3\", \"error\": \"Approved is more than submitted\"}], \"duplicate\": false, \"total_accepted\": 180000}"
+  },
+  {
+   "check": "...register is back to the first file",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "foreman cannot load invoices",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Only costing engineers, project managers and super admins of this project can load invoices\nCONTEXT:  PL/pgSQL function import_invoices(text,text,text,jsonb,text) line 4 at RAISE"
+  },
+  {
+   "check": "cost engineer cannot load invoices into a project outside access",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Only costing engineers, project managers and super admins of this project can load invoices\nCONTEXT:  PL/pgSQL function import_invoices(text,text,text,jsonb,text) line 4 at RAISE"
+  },
+  {
+   "check": "a load without a file fingerprint is refused",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  A file hash is required\nCONTEXT:  PL/pgSQL function import_invoices(text,text,text,jsonb,text) line 5 at RAISE"
+  },
+  {
+   "check": "cost engineer cannot write invoices into another project directly",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  new row violates row-level security policy for table \"invoices\""
+  },
+  {
+   "check": "cost engineer applies a costing file",
+   "pass": true,
+   "detail": "{\"applied\": 2, \"batch_id\": \"32e122e5-fbbb-48b5-9f88-3160840709fa\", \"rejected\": [{\"id\": \"ZZ\", \"error\": \"Not in the baseline\"}, {\"id\": \"A1\", \"error\": \"No budget quantity\"}], \"duplicate\": false}"
+  },
+  {
+   "check": "matched activities updated, unknown and zero-quantity rows refused",
+   "pass": true,
+   "detail": "{\"applied\": 2, \"batch_id\": \"32e122e5-fbbb-48b5-9f88-3160840709fa\", \"rejected\": [{\"id\": \"ZZ\", \"error\": \"Not in the baseline\"}, {\"id\": \"A1\", \"error\": \"No budget quantity\"}], \"duplicate\": false}"
+  },
+  {
+   "check": "costing manhours used as budget",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "snapshot kept for undo",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "same costing file again changes nothing",
+   "pass": true,
+   "detail": "{\"batch_id\": \"32e122e5-fbbb-48b5-9f88-3160840709fa\", \"duplicate\": true}"
+  },
+  {
+   "check": "planner cannot apply costing",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Only costing engineers, project managers and super admins of this project can apply a costing file\nCONTEXT:  PL/pgSQL function apply_costing(text,text,text,jsonb) line 4 at RAISE"
+  },
+  {
+   "check": "planner loads a baseline",
+   "pass": true,
+   "detail": "{\"batch_id\": \"8444fd0e-c2c5-4c46-80ae-04219059f725\", \"upserted\": 2, \"duplicate\": false}"
+  },
+  {
+   "check": "project dates follow the imported activities",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "baseline upserts keep existing quantities",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "baseline with a missing name is refused as a whole",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Every activity needs an ID and a name; nothing was imported\nCONTEXT:  PL/pgSQL function import_baseline(text,text,text,jsonb) line 9 at RAISE"
+  },
+  {
+   "check": "...and nothing was imported",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "cost engineer cannot load a baseline",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Only planning engineers and super admins of this project can load a baseline\nCONTEXT:  PL/pgSQL function import_baseline(text,text,text,jsonb) line 4 at RAISE"
+  },
+  {
+   "check": "nobody can write import batches directly",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  new row violates row-level security policy for table \"import_batches\""
+  },
+  {
+   "check": "project manager exports a project backup",
+   "pass": true,
+   "detail": "{\"dprs\": [{\"id\": \"DPR-OLD1\", \"late\": false, \"mailed\": null, \"status\": \"Approved\", \"timing\": {}, \"foreman\": \"User F1\", \"remarks\": null, \"returned\": false, \"created_at\": \"2026-10-09T20:18:30.133203+03:00\", \"created_by\": null, \"foreman_id\": null, \"project_id\": \"P1\", \"updated_at\": \"2026-10-09T20:18:30.1"
+  },
+  {
+   "check": "backup holds reports, lines, audit, invoices, batches",
+   "pass": true,
+   "detail": "{\"dprs\": 5, \"invoices\": 2, \"dpr_audit\": 16, \"dpr_lines\": 5, \"activities\": 3, \"milestones\": 0, \"import_batches\": 5, \"approval_matrix\": 2}"
+  },
+  {
+   "check": "cannot export a project outside access",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function export_project(text) line 3 at RAISE"
+  },
+  {
+   "check": "only the super admin can migrate",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  Only a super admin can migrate data\nCONTEXT:  PL/pgSQL function migrate_dprs(jsonb) line 5 at RAISE"
+  },
+  {
+   "check": "super admin migrates browser reports",
+   "pass": true,
+   "detail": "{\"lines\": 1, \"created\": 1, \"refused\": [{\"id\": \"DPR-0008\", \"error\": \"An activity is not in the server baseline\"}, {\"id\": \"DPR-0009\", \"error\": \"The server already has a report for this foreman on this date\"}, {\"id\": \"DPR-0010\", \"error\": \"Unknown status or no date\"}], \"batch_id\": \"02483c47-5c7a-4bf4-9b"
+  },
+  {
+   "check": "new report created, existing one skipped, bad one refused",
+   "pass": true,
+   "detail": "{\"lines\": 1, \"created\": 1, \"refused\": [{\"id\": \"DPR-0008\", \"error\": \"An activity is not in the server baseline\"}, {\"id\": \"DPR-0009\", \"error\": \"The server already has a report for this foreman on this date\"}, {\"id\": \"DPR-0010\", \"error\": \"Unknown status or no date\"}], \"batch_id\": \"02483c47-5c7a-4bf4-9b"
+  },
+  {
+   "check": "existing server report not overwritten",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "migrated report keeps status, foreman link and history",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "migrated audit chain verifies",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "running the same migration again changes nothing",
+   "pass": true,
+   "detail": "{\"batch_id\": \"02483c47-5c7a-4bf4-9b15-83f1d0a32f98\", \"duplicate\": true}"
+  },
+  {
+   "check": "new reports continue after migrated numbers",
+   "pass": true,
+   "detail": "DPR-00008"
+  },
+  {
+   "check": "...no clash with migrated IDs",
+   "pass": true,
+   "detail": "DPR-00008"
+  },
+  {
+   "check": "a project with an approved report cannot be deleted",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/.t.sql:4: ERROR:  An approved report cannot be changed or deleted\nCONTEXT:  PL/pgSQL function pt_guard() line 10 at RAISE\nSQL statement \"DELETE FROM ONLY \"public\".\"dprs\" WHERE $1 OPERATOR(pg_catalog.=) \"project_id\"\""
+  },
+  {
+   "check": "...project still there",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback script runs",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-rollback-v4.sql:40: NOTICE:  policy \"d_insert\" for relation \"dprs\" does not exist, skipping\npsql:/home/claude/p2/db/schema-rollback-v4.sql:41: NOTICE:  policy \"d_update\" for relation \"dprs\" does not exist, skipping\npsql:/home/claude/p2/db/schema-rollback-v4.sql:42: NOT"
+  },
+  {
+   "check": "rollback keeps every report, line, audit entry and invoice",
+   "pass": true,
+   "detail": "7/7/20/2"
+  },
+  {
+   "check": "v4 can be applied again after a rollback",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v4.sql:14: NOTICE:  column \"foreman_id\" of relation \"dprs\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v4.sql:15: NOTICE:  column \"returned\" of relation \"dprs\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v4.sql:16: NOTICE:  "
+  },
+  {
+   "check": "untampered chains still verify after rollback and re-apply",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

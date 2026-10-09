@@ -682,9 +682,9 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v2.4</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v2.5</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
-      <button type="button" data-reset>Reset demo data</button>
+      <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
   </aside>
   <div class="main">
@@ -947,8 +947,8 @@ function applyCosting(){
     try{a.dailyPlan=a.qty/Math.max(1,workdays(a.bs,a.bf))}catch(e){}
     a.costed=true});
 }
-function applyMaster(){PROJECTS=DB.master.projects;if(!DB.master.trades||!DB.master.trades.length)DB.master.trades=seedTrades();if(!DB.master.subs||!DB.master.subs.length)DB.master.subs=seedSubs();SUBS=DB.master.subs;CATS=DB.master.trades.filter(t=>t.active).map(t=>t.name);ACTS=BASE_ACTS.concat(DB.master.acts).filter(a=>PROJECTS.some(p=>p.id===a.p));syncTeams();rebalance();
-  if(DB.progress)ACTS.forEach(a=>{if(DB.progress[a.id])a.cur=DB.progress[a.id]});
+function applyMaster(){PROJECTS=DB.master.projects;if(!DB.master.trades||!DB.master.trades.length)DB.master.trades=seedTrades();if(!DB.master.subs||!DB.master.subs.length)DB.master.subs=seedSubs();SUBS=DB.master.subs;CATS=DB.master.trades.filter(t=>t.active).map(t=>t.name);ACTS=(CLOUD_ME?[]:BASE_ACTS).concat(DB.master.acts).filter(a=>PROJECTS.some(p=>p.id===a.p));syncTeams();rebalance();
+  if(DB.progress&&!CLOUD_ME)ACTS.forEach(a=>{if(DB.progress[a.id])a.cur=DB.progress[a.id]});
   applyCosting();
   _lines=null}
 const actById=id=>ACTS.find(a=>a.id===id);
@@ -1106,6 +1106,389 @@ async function cloudSaveMilestones(pid){
   if((p.milestones||[]).length)await SB.from('milestones').insert(p.milestones.map(m=>({
     project_id:pid,name:m.n,ms_type:m.t||'Intermediate',planned:m.plan||null,forecast:m.fc||null,actual:m.act||null})));
 }
+/* ---------- stage 2b: reports, activities, invoices and the approval matrix live on the server ----------
+   When signed in to the server, the server is the record. Every change goes through a server function
+   that checks role, project access and the approval matrix; the app shows the result only after the
+   server has accepted it. Nothing falls back to this browser when the server refuses. */
+let CLOUD_LOAD={ok:false,at:null,err:null};
+const UKEY='protrack-unsynced-v1';           // browser data from before stage 2b, kept until moved to the server
+const srvMsg=e=>String((e&&(e.message||e.error_description||e.details||e.hint))||e||'Unknown error').replace(/^.*?ERROR:\s*/,'').trim();
+async function rpc(fn,args){const {data,error}=await SB.rpc(fn,args||{});if(error)throw new Error(srvMsg(error));return data}
+async function selAll(table,cols,mod,order){       // the server returns at most 1000 rows a request
+  const out=[];
+  for(let from=0;;from+=1000){
+    let q=SB.from(table).select(cols||'*');if(mod)q=mod(q);(order||['id']).forEach(c=>{q=q.order(c)});
+    const {data,error}=await q.range(from,from+999);if(error)throw new Error(srvMsg(error));
+    out.push(...(data||[]));if(!data||data.length<1000)break;
+  }
+  return out;
+}
+async function sha256Hex(data){
+  const buf=typeof data==='string'?new TextEncoder().encode(data):data;
+  if(window.crypto&&crypto.subtle){const h=await crypto.subtle.digest('SHA-256',buf);return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+  const s=typeof data==='string'?data:Array.from(new Uint8Array(buf)).join(',');return ('w'+weakHash(s)+weakHash(s.length+':'+s)).padEnd(24,'0');
+}
+const tStamp=v=>{if(!v)return '';const d=new Date(v);if(!isFinite(d))return String(v);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const nameById=id=>{const u=id&&userById(id);return u?u.name:'Someone'};
+
+function actFromDb(r){
+  const con=(r.cls||'CON')==='CON',bh=Math.max(0,+r.budget_mh||0);
+  const a={id:r.id,p:r.project_id,cls:r.cls||'CON',disc:r.disc||'Civil',area:r.area||'',wbs:r.wbs||'',name:r.name,
+    uom:r.uom||(con?'':'%'),qty:+r.qty||(con?0:100),bmh:bh,p6mh:r.p6_mh==null?bh:+r.p6_mh,costmh:r.costing_mh==null?null:+r.costing_mh,
+    brate:+r.budget_rate||0,bcost:+r.budget_cost||0,pw:+r.price_weight||0,mix:r.trade_mix||{},
+    crew:[[TRADE[r.disc]||'Mason',6],['Helper',4]],pace:1,bs:r.bs,bf:r.bf,priorQty:+r.prior_qty||0,gang:r.gang||'',costed:!!r.costed,imported:true,server:true};
+  a.pp=a.qty/Math.max(1,a.bmh);
+  try{a.dailyPlan=a.qty/Math.max(1,workdays(a.bs,a.bf))}catch(e){a.dailyPlan=0}
+  if(r.cur&&Object.keys(r.cur).length)a.cur=r.cur;
+  return a;
+}
+const actToDb=a=>({id:a.id,name:a.name,cls:a.cls||'CON',disc:a.disc||'',area:a.area||'',wbs:a.wbs||'',uom:a.uom||'',qty:+a.qty||0,
+  budget_mh:+(a.p6mh!=null?a.p6mh:a.bmh)||0,price_weight:+a.pw||0,trade_mix:a.mix||{},bs:a.bs||null,bf:a.bf||null,prior_qty:+a.priorQty||0,cur:a.cur||{}});
+function dprFromDb(r){
+  const p=projById(r.project_id)||{};
+  return {id:r.id,date:r.report_date,p:r.project_id,foreman:r.foreman||'',foremanId:r.foreman_id||null,engineer:r.site_engineer||p.eng||'',
+    lines:(r.dpr_lines||[]).slice().sort((a,b)=>(a.line_no||0)-(b.line_no||0)).map(l=>({act:l.activity_id,qty:+l.qty||0,labour:l.labour||[],subs:l.subs||[],equip:l.equip||[]})),
+    remarks:r.remarks||'',attachments:Array.isArray(r.photo_names)?r.photo_names:[],status:r.status,late:!!r.late,returned:!!r.returned,
+    timing:r.timing||{},mailed:r.mailed||null,server:true,
+    audit:(r.dpr_audit||[]).slice().sort((a,b)=>(a.seq||0)-(b.seq||0)).map(a=>({t:tStamp(a.at_time),who:a.by_name||nameById(a.by_user),action:a.action,note:a.note||undefined}))};
+}
+const linesToDb=ls=>ls.map(l=>({activity_id:l.act,qty:+l.qty||0,labour:l.labour||[],subs:l.subs||[],equip:l.equip||[]}));
+const invFromDb=r=>({no:r.invoice_no,date:r.invoice_date||'',type:r.inv_type||'Progress',amount:+r.amount||0,sub:+r.submitted||0,appr:+r.approved||0,coll:+r.collected||0,note:r.remark||''});
+
+/* Browser data that never reached the server is copied aside before server data replaces it, and kept
+   until the super admin moves it (Settings, System). Nothing in the copy is ever deleted automatically. */
+function unsynced(){try{return JSON.parse(localStorage.getItem(UKEY)||'null')||{dprs:{},acts:{},costed:{},invoices:{},users:{},moved:{}}}catch(e){return {dprs:{},acts:{},costed:{},invoices:{},users:{},moved:{}}}}
+function stashLocal(src){
+  const S=unsynced(),on=id=>!!projById(id);let n=0;
+  (src.dprs||[]).filter(d=>!d.server&&on(d.p)&&!S.dprs[d.id]).forEach(d=>{S.dprs[d.id]=d;n++});
+  (src.master&&src.master.acts||[]).filter(a=>!a.server&&on(a.p)).forEach(a=>{const L=S.acts[a.p]||(S.acts[a.p]=[]);if(!L.some(x=>x.id===a.id)){L.push(a);n++}});
+  Object.entries(src.costed||{}).forEach(([id,c])=>{if(!S.costed[id]&&(src.master&&src.master.acts||[]).some(a=>a.id===id&&!a.server&&on(a.p))){S.costed[id]=c;n++}});
+  Object.entries(src.invoices||{}).forEach(([pid,rows])=>{if(on(pid)&&!(src.invSrv||{})[pid]&&!S.invoices[pid]&&(rows||[]).length){S.invoices[pid]=rows;n++}});
+  (src.master&&src.master.users||[]).filter(u=>!u.cloud&&u.email).forEach(u=>{S.users[u.name]=u.email});
+  if(n){S.updated=new Date().toISOString();try{localStorage.setItem(UKEY,JSON.stringify(S))}catch(e){toast('This browser is out of storage space: download a backup from Settings, System.')}}
+  return n;
+}
+function unsyncedSummary(){
+  const S=unsynced(),by={};
+  const P=pid=>by[pid]||(by[pid]={pid,dprs:[],acts:[],invoices:[],costed:0,moved:S.moved[pid]||null});
+  Object.values(S.dprs).forEach(d=>P(d.p).dprs.push(d));
+  Object.entries(S.acts).forEach(([pid,L])=>{P(pid).acts=L;P(pid).costed=L.filter(a=>S.costed[a.id]).length});
+  Object.entries(S.invoices).forEach(([pid,rows])=>{P(pid).invoices=rows});
+  return Object.values(by).filter(x=>projById(x.pid)&&accessIds().includes(x.pid));
+}
+
+async function cloudLoadMasters(){             // regions, sectors and cities, as the server holds them
+  const [r,se,c]=await Promise.all([selAll('regions'),selAll('sectors'),selAll('cities')]);
+  if(r.length)DB.master.regions=r.map(x=>({id:x.id,name:x.name,manager:x.manager||''}));
+  if(se.length)DB.master.sectors=se.map(x=>({id:x.id,name:x.name}));
+  if(c.length)DB.master.cities=c.map(x=>({id:x.id,name:x.name,region:x.region}));
+}
+async function cloudSaveMaster(type,x){
+  const row=type==='regions'?{id:x.id,name:x.name,manager:/^[0-9a-f-]{36}$/i.test(x.manager||'')?x.manager:null}:type==='cities'?{id:x.id,name:x.name,region:x.region}:{id:x.id,name:x.name};
+  const {error}=await SB.from(type).upsert(row);if(error)throw new Error(srvMsg(error));
+}
+async function cloudLoadDirectory(){
+  const rows=await rpc('team_directory');
+  DB.master.users=(rows||[]).map(u=>({id:u.id,name:u.name||u.email||'Unnamed',email:u.email||'',title:u.title||ROLES[u.role]||'',
+    role:u.role||'ro',active:u.active!==false,projects:u.projects||[],regions:u.regions||[],cloud:true}));
+  if(CLOUD_ME&&!DB.master.users.some(u=>u.id===CLOUD_ME.id))DB.master.users.push(CLOUD_ME);
+}
+async function cloudLoadActs(){
+  const rows=await selAll('activities','*',null,['project_id','id']);
+  DB.master.acts=rows.map(actFromDb);
+  if(DB.costed)DB.master.acts.forEach(a=>{delete DB.costed[a.id]});   // the server has already applied costing
+}
+async function cloudLoadDprs(){
+  const rows=await selAll('dprs','*,dpr_lines(*),dpr_audit(*)');
+  DB.dprs=rows.map(dprFromDb);
+  const mxN=Math.max(0,...DB.dprs.map(d=>+String(d.id).replace(/\D/g,'')||0));DB.next=Math.max(DB.next||1,mxN+1);
+}
+async function cloudLoadDpr(id){
+  const {data,error}=await SB.from('dprs').select('*,dpr_lines(*),dpr_audit(*)').eq('id',id);
+  if(error)throw new Error(srvMsg(error));
+  const i=DB.dprs.findIndex(d=>d.id===id);
+  if(data&&data[0]){const d=dprFromDb(data[0]);if(i>=0)DB.dprs[i]=d;else DB.dprs.push(d)}else if(i>=0)DB.dprs.splice(i,1);
+  _lines=null;
+}
+async function cloudLoadInvoices(){
+  const [rows,batches]=await Promise.all([selAll('invoices','*',null,['project_id','invoice_no']),selAll('import_batches','*',null,['at_time','id'])]);
+  DB.invoices={};DB.invSrv={};DB.invMeta={};DB.invHist={};DB.costing={};DB.costHist={};
+  PROJECTS.forEach(p=>{DB.invSrv[p.id]=true});
+  rows.forEach(r=>{(DB.invoices[r.project_id]=DB.invoices[r.project_id]||[]).push(invFromDb(r))});
+  batches.slice().reverse().forEach(b=>{const pid=b.project_id,at=tStamp(b.at_time),by=nameById(b.by_user);
+    if(b.kind==='invoices'){if(!DB.invMeta[pid])DB.invMeta[pid]={file:b.file_name,at,by,n:b.rows_accepted};
+      (DB.invHist[pid]=DB.invHist[pid]||[]).push({at,by,file:b.file_name,n:b.rows_accepted,bad:b.rows_rejected})}
+    if(b.kind==='costing'){if(!DB.costing[pid])DB.costing[pid]={file:b.file_name,at,by,n:b.rows_accepted,cost:+b.total_source||0,qtyRows:b.rows_accepted,missing:0};
+      (DB.costHist[pid]=DB.costHist[pid]||[]).push({at,by,file:b.file_name,rows:b.rows_total,ok:b.rows_accepted,bad:b.rows_rejected,warn:0,acts:ACTS.filter(a=>a.p===pid).length,missing:0})}});
+  DB.batches=batches;
+}
+async function cloudLoadMatrix(){
+  const rows=await selAll('approval_matrix','*',null,['project_id','kind','from_user']);
+  PROJECTS.forEach(p=>{DB.matrix=DB.matrix||{};DB.matrix[p.id]={fm:{},eng:{}}});
+  rows.forEach(r=>{const m=mx(r.project_id);m[r.kind][r.from_user]=r.to_user});
+  DB.matrixSeeded=true;
+}
+async function cloudLoadAll(quiet){
+  const before=JSON.parse(JSON.stringify({dprs:DB.dprs,master:{acts:DB.master.acts,users:DB.master.users},costed:DB.costed||{},invoices:DB.invoices||{},invSrv:DB.invSrv||{}}));
+  try{
+    await cloudLoadMasters();
+    await cloudLoadDirectory();
+    const n=stashLocal(before);
+    await cloudLoadActs();applyMaster();
+    await Promise.all([cloudLoadDprs(),cloudLoadMatrix()]);
+    await cloudLoadInvoices();await cloudLoadUpdates();
+    applyMaster();save();
+    CLOUD_LOAD={ok:true,at:new Date(),err:null};
+    if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
+  }catch(e){
+    CLOUD_LOAD={ok:false,at:new Date(),err:srvMsg(e)};
+    toast('Could not load data from the server: '+srvMsg(e));
+  }
+}
+function cloudBanner(){
+  if(!CLOUD_ME||CLOUD_LOAD.ok)return '';
+  return `<div class="warn-box" style="margin-bottom:14px"><b>The server data could not be loaded${CLOUD_LOAD.err?': '+esc(CLOUD_LOAD.err):''}.</b> What you see may be out of date, and changes are still sent to the server, which checks them. <button class="btn" type="button" data-cloudreload>Try again</button></div>`;
+}
+document.addEventListener('click',async e=>{
+  if(!e.target.closest('[data-cloudreload]'))return;
+  await cloudLoadAll(true);render();if(CLOUD_LOAD.ok)toast('Server data loaded');
+});
+
+/* ---------- writes ---------- */
+function busyBtns(sel,on){document.querySelectorAll(sel).forEach(b=>{b.disabled=on;b.setAttribute('aria-busy',on?'true':'false')})}
+async function cloudSaveDpr(f,cleanLines,mode,err){
+  const fu=DB.master.users.find(u=>u.role==='foreman'&&u.name===f.foreman);
+  const secs=TIMER.kind==='create'?timerElapsed():0;
+  const payload={id:state.editing||null,project_id:f.p,report_date:f.date,foreman:f.foreman,foreman_id:fu?fu.id:null,
+    remarks:f.remarks||'',photos:f.attachments||[],lines:linesToDb(cleanLines),submit:mode==='submit',secs};
+  busyBtns('[data-save]',true);err.textContent='Saving to the server…';
+  let r;
+  try{r=await rpc('dpr_save',{p:payload})}
+  catch(e){busyBtns('[data-save]',false);err.textContent='The server did not save this report: '+srvMsg(e);return}
+  if(TIMER.kind==='create')timerStop(true);
+  try{await cloudLoadDpr(r.id)}catch(e){toast('Saved, but the list could not refresh: '+srvMsg(e))}
+  save();const p=projById(f.p),d=DB.dprs.find(x=>x.id===r.id);
+  if(d&&r.status==='Submitted'&&mode==='submit'){notify(`${d.id} submitted for ${p.short} with ${d.lines.length} activit${d.lines.length>1?'ies':'y'}, waiting for ${routeOf(d).revName} to review.`);notifyLow(d)}
+  toast(`${r.id} ${mode==='submit'?(state.editing?'saved':'submitted'):'saved as draft'} on the server`);state.dprFilter='All';go('dpr');
+}
+async function cloudAct(d,k,note){
+  const errEl=$('#actErr');busyBtns('[data-do]',true);if(errEl)errEl.textContent='Sending to the server…';
+  const timed=TIMER.id===d.id&&(TIMER.kind==='review'||TIMER.kind==='approve'),secs=timed?timerElapsed():0;
+  try{
+    if(k==='submit')await rpc('dpr_save',{p:{id:d.id,project_id:d.p,report_date:d.date,foreman:d.foreman,foreman_id:d.foremanId,remarks:d.remarks||'',photos:d.attachments||[],lines:linesToDb(d.lines),submit:true,secs:0}});
+    else await rpc('dpr_act',{p_id:d.id,p_action:k,p_note:note||null,p_secs:secs});
+  }catch(e){busyBtns('[data-do]',false);const m='The server refused this: '+srvMsg(e);if(errEl)errEl.textContent=m;else toast(m);return}
+  if(timed)timerStop(true);
+  try{await cloudLoadDpr(d.id)}catch(e){toast('Done, but the report could not refresh: '+srvMsg(e))}
+  save();const nd=DB.dprs.find(x=>x.id===d.id)||d,p=projById(nd.p),label=(nd.audit[nd.audit.length-1]||{}).action||nd.status;
+  if(k==='submit'){notify(`${nd.id} submitted for ${p.short}, waiting for ${routeOf(nd).revName} to review.`);notifyLow(nd)}
+  else notify(`${nd.id} ${String(label).toLowerCase()} by ${me().name}.${note?' Comment: '+note:''}`,k==='reject');
+  toast(`${nd.id} ${String(label).toLowerCase()}`);openDpr(nd.id);render();
+  if(k==='approve')sendApprovalMail(nd).then(n=>{if(n){toast(`${nd.id} approved. Summary emailed to ${n} ${n>1?'people':'person'}`);if(state.open===nd.id)openDpr(nd.id)}});
+}
+async function cloudSetMatrix(pid,kind,from,to){
+  const q=to?SB.from('approval_matrix').upsert({project_id:pid,kind,from_user:from,to_user:to,set_by:me().id})
+    :SB.from('approval_matrix').delete().eq('project_id',pid).eq('kind',kind).eq('from_user',from);
+  const {error}=await q;
+  try{await cloudLoadMatrix()}catch(e){}
+  save();render();
+  if(error){toast('The server refused the change: '+srvMsg(error));return false}
+  return true;
+}
+function importResultText(r,noun){
+  if(r&&r.duplicate)return `This is the same file as the last ${noun} loaded, so nothing changed.`;
+  const rej=(r&&r.rejected)||[];
+  return rej.length?` ${rej.length} row${rej.length>1?'s':''} refused by the server: ${rej.slice(0,3).map(x=>`${x.no||x.id||'?'} (${x.error})`).join('; ')}${rej.length>3?'…':''}`:'';
+}
+async function cloudRunInvoices(I){
+  busyBtns('[data-invgo]',true);
+  const rows=I.rows.map(({err,warn,...r})=>r);let r;
+  try{r=await rpc('import_invoices',{p_project:I.pid,p_file:I.file,p_hash:await sha256Hex(JSON.stringify(rows)),p_rows:rows,p_period:null})}
+  catch(e){busyBtns('[data-invgo]',false);toast('The server did not load the register: '+srvMsg(e));return}
+  try{await cloudLoadInvoices()}catch(e){}
+  save();state.inv=null;render();
+  toast(r.duplicate?importResultText(r,'register'):`${r.accepted} invoices loaded on the server.${importResultText(r)}`);
+}
+async function cloudRunCosting(C,pid,ok){
+  busyBtns('[data-costgo]',true);
+  const rows=ok.map(r=>({id:r.id,qty:r.qty,uom:String(r.uom||'').slice(0,12),rate:r.rate||0,cost:r.cost||0,mh:r.mh>0?r.mh:0,gang:r.gang||''}));let r;
+  try{r=await rpc('apply_costing',{p_project:pid,p_file:C.file,p_hash:await sha256Hex(pid+JSON.stringify(rows)),p_rows:rows})}
+  catch(e){busyBtns('[data-costgo]',false);toast('The server did not apply the costing file: '+srvMsg(e));return}
+  try{await cloudLoadActs();applyMaster();await cloudLoadInvoices()}catch(e){}
+  applyMaster();save();state.cost=null;render();
+  toast(r.duplicate?importResultText(r,'costing file'):`${r.applied} activities costed on the server.${importResultText(r)}`);
+}
+async function cloudRunBaseline(pid,add,file){
+  busyBtns('[data-impgo]',true);
+  const rows=add.map(actToDb);let r;
+  try{r=await rpc('import_baseline',{p_project:pid,p_file:file,p_hash:await sha256Hex(pid+JSON.stringify(rows)),p_rows:rows})}
+  catch(e){busyBtns('[data-impgo]',false);toast('The server did not import the baseline: '+srvMsg(e));return false}
+  try{await cloudLoadActs();applyMaster();await cloudLoadProjects()}catch(e){}
+  applyMaster();save();
+  toast(r.duplicate?'This baseline is the same as the last one loaded, so nothing changed.':`${r.upserted} activities imported on the server`);
+  return true;
+}
+
+async function cloudCommitUpdate(U,ch){
+  busyBtns('[data-updgo]',true);
+  const batch={id:'UPD-'+Date.now().toString(36).toUpperCase(),p:ch[0].a.p,dataDate:U.dataDate,by:me().name,at:stamp(),file:U.file,rows:[]},fails=[];
+  for(const r of ch){
+    const a=r.a,c=curOf(a),cur={ms:r.ms,pct:r.pct,as:r.as||c.as||'',af:r.af||c.af||'',ff:r.ff||c.ff||'',remarks:r.rem||'',dataDate:U.dataDate,by:me().name};
+    const {data,error}=await SB.from('activities').update({cur}).eq('project_id',a.p).eq('id',a.id).select('id');
+    if(error||!data||!data.length){fails.push(`${a.id} (${error?srvMsg(error):'not allowed'})`);continue}
+    batch.rows.push({act:a.id,name:a.name,project:projById(a.p).short,from:{ms:c.ms,pct:c.pct||0,ff:c.ff||'',as:c.as||'',af:c.af||''},to:{ms:cur.ms,pct:cur.pct,ff:cur.ff,as:cur.as,af:cur.af},rem:r.rem});
+  }
+  if(batch.rows.length){const {error}=await SB.from('weekly_updates').insert({project_id:batch.p,data_date:U.dataDate,file_name:U.file,rows:batch,applied_by:me().id});if(error)fails.push('update history ('+srvMsg(error)+')')}
+  try{await cloudLoadActs();await cloudLoadUpdates()}catch(e){}
+  applyMaster();save();busyBtns('[data-updgo]',false);
+  if(batch.rows.length){logChange(`Applied ${batch.rows.length} engineering and procurement updates on the server, data date ${fmtDY(U.dataDate)}, from ${U.file}`);state.upd=null}
+  render();toast(fails.length?`${batch.rows.length} updated on the server; refused: ${fails.slice(0,3).join(', ')}${fails.length>3?'…':''}`:`${batch.rows.length} activities updated on the server`);
+}
+async function cloudLoadUpdates(){
+  const rows=await selAll('weekly_updates','*',null,['applied_at','id']);
+  DB.updates=rows.map(r=>r.rows&&r.rows.rows?r.rows:{id:'UPD-'+String(r.id).slice(0,6),p:r.project_id,dataDate:r.data_date,by:nameById(r.applied_by),at:tStamp(r.applied_at),file:r.file_name,rows:[]});
+}
+
+/* People and their access, on the server (super admin). Only people whose details changed are sent. */
+const personKey=u=>JSON.stringify([u.name,(u.email||'').toLowerCase(),u.title||'',u.role,u.active!==false,[...(u.projects||[])].sort(),[...(u.regions||[])].sort()]);
+async function cloudSavePeople(before){
+  const changed=DB.master.users.filter(u=>!before||before.get(u.id)!==personKey(u));
+  let failure=null;
+  for(const u of changed){
+    try{await rpc('admin_save_person',{p:{email:u.email,name:u.name,title:u.title||'',role:u.role,active:u.active!==false,projects:u.projects||[],regions:u.regions||[]}})}
+    catch(e){failure=failure||e}
+  }
+  try{await cloudLoadDirectory();applyMaster();save()}catch(e){}
+  if(failure)throw failure;
+}
+
+/* ---------- backup, restore and the move to the server ---------- */
+const backupName=k=>`protrack-${k}-${localISO()}.json`;
+async function downloadBrowserBackup(){
+  const body={format:'protrack-browser-backup',version:1,app:APP_VERSION,key:KEY,exported_at:new Date().toISOString(),data:DB,unsynced:unsynced()};
+  await saveFile(backupName('browser-backup'),new Blob([JSON.stringify(body)],{type:'application/json'}));
+  toast('Backup of this browser downloaded');
+}
+async function downloadServerBackup(){
+  const ids=accessIds();if(!ids.length)return toast('No projects to back up');
+  const out={format:'protrack-server-backup',version:1,app:APP_VERSION,exported_at:new Date().toISOString(),projects:[]};
+  for(const id of ids){try{out.projects.push(await rpc('export_project',{p:id}))}catch(e){return toast(`Backup stopped at ${projById(id).short}: ${srvMsg(e)}`)}}
+  await saveFile(backupName('server-backup'),new Blob([JSON.stringify(out)],{type:'application/json'}));
+  toast(`Server backup of ${ids.length} project${ids.length>1?'s':''} downloaded`);
+}
+function backupCounts(d){
+  const m=d.master||{};
+  return {projects:(m.projects||[]).length,acts:(m.acts||[]).length,dprs:(d.dprs||[]).length,
+    approved:(d.dprs||[]).filter(x=>x.status==='Approved').length,users:(m.users||[]).length,
+    invoices:Object.values(d.invoices||{}).reduce((t,r)=>t+(r||[]).length,0)};
+}
+function readBackupFile(text){
+  let j;try{j=JSON.parse(text)}catch(e){throw new Error('This is not a ProTrack backup file (it is not valid JSON).')}
+  if(!j||j.format!=='protrack-browser-backup'||!j.data)throw new Error('This file is not a ProTrack browser backup.');
+  const d=j.data;if(!d.master||!Array.isArray(d.master.projects)||!Array.isArray(d.dprs))throw new Error('The backup is incomplete: projects or reports are missing.');
+  return j;
+}
+async function handleRestoreFile(file){
+  const box=$('#restoreBox');if(!box)return;
+  try{
+    const j=readBackupFile(await file.text()),now=backupCounts(DB),then=backupCounts(j.data);
+    state.restore={file:file.name,j};
+    const row=(l,k)=>`<tr><td>${l}</td><td class="n">${fmt(now[k])}</td><td class="n"><b>${fmt(then[k])}</b></td></tr>`;
+    box.innerHTML=`<div class="impbox"><p class="small"><b>${esc(file.name)}</b>, saved ${esc(tStamp(j.exported_at))} from ProTrackAI v${esc(j.app||'?')}.</p>
+      <table class="tbl"><thead><tr><th></th><th class="n">In this browser now</th><th class="n">In the backup</th></tr></thead><tbody>
+      ${row('Projects','projects')}${row('Activities','acts')}${row('Daily reports','dprs')}${row('of which approved','approved')}${row('Invoices','invoices')}${row('People','users')}</tbody></table>
+      ${CLOUD_ME?`<p class="small" style="margin-top:10px">Signed in to the server: the backup is <b>not</b> written over server data. Its reports, activities and invoices are added to the list waiting to move to the server, where you can review and move them.</p>
+        <div class="actions"><button class="btn primary" type="button" data-restorego>Add to the waiting list</button><button class="btn" type="button" data-restorecancel>Cancel</button></div>`
+      :`<p class="small" style="margin-top:10px">Restoring replaces everything in this browser with the backup. A backup of what is here now downloads first, so this can be undone.</p>
+        <div class="actions"><button class="btn primary" type="button" data-restorego>Restore this backup</button><button class="btn" type="button" data-restorecancel>Cancel</button></div>`}</div>`;
+  }catch(e){state.restore=null;box.innerHTML=`<div class="warn-box"><b>${esc(e.message)}</b></div>`}
+}
+async function runRestore(){
+  const R=state.restore;if(!R)return;
+  if(CLOUD_ME){
+    if(state.role!=='sa')return toast('Only the super admin can add a backup to the server waiting list');
+    const n=stashLocal(R.j.data);state.restore=null;render();
+    return toast(n?`${n} item${n>1?'s':''} from the backup added to the waiting list`:'Nothing new in this backup for projects on the server');
+  }
+  const ok=await confirmBox(`Restore ${R.file}?\nEverything in this browser is replaced by the backup. A backup of the current data downloads first.`,'Restore');if(!ok)return;
+  await downloadBrowserBackup();
+  setDB(R.j.data);save();logChange(`Restored the browser backup ${R.file}`);save();state.restore=null;render();toast('Backup restored');
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-bkbrowser],[data-bkserver],[data-restorego],[data-restorecancel],[data-migrate],[data-migrateall]');if(!t)return;
+  const ds=t.dataset;
+  if('bkbrowser' in ds)downloadBrowserBackup();
+  else if('bkserver' in ds)downloadServerBackup();
+  else if('restorego' in ds)runRestore();
+  else if('restorecancel' in ds){state.restore=null;render()}
+  else if('migrate' in ds)migrateProject(ds.migrate);
+});
+document.addEventListener('change',e=>{if(e.target.id==='restorefile'&&e.target.files[0]){handleRestoreFile(e.target.files[0]);e.target.value=''}});
+
+/* Reconciliation figures for one project, from a set of activities, reports and invoices */
+function reconFigures(acts,dprs,inv){
+  const mh=l=>(l.labour||[]).reduce((t,x)=>t+(+x.count||0)*((+x.reg||0)+(+x.ot||0)),0);
+  return {acts:acts.length,bmh:Math.round(acts.reduce((t,a)=>t+(+(a.p6mh!=null?a.p6mh:a.bmh)||0),0)),
+    dprs:dprs.length,approved:dprs.filter(d=>d.status==='Approved').length,
+    qty:Math.round(dprs.reduce((t,d)=>t+d.lines.reduce((x,l)=>x+(+l.qty||0),0),0)*100)/100,
+    mh:Math.round(dprs.reduce((t,d)=>t+d.lines.reduce((x,l)=>x+mh(l),0),0)*100)/100,
+    inv:inv.length,invSub:Math.round(inv.reduce((t,r)=>t+(+r.sub||+r.amount||0),0))};
+}
+async function migrateProject(pid){
+  if(state.role!=='sa')return toast('Only the super admin can move data to the server');
+  const S=unsynced(),p=projById(pid),acts=S.acts[pid]||[],dprs=Object.values(S.dprs).filter(d=>d.p===pid),inv=S.invoices[pid]||[];
+  const ok=await confirmBox(`Move ${p.short} to the server?\n${acts.length} activities, ${dprs.length} daily reports and ${inv.length} invoices from this browser. Reports already on the server are skipped, never overwritten. A backup of this browser downloads first.`,'Move to server');
+  if(!ok)return;
+  await downloadBrowserBackup();
+  const log=[],step=async(label,fn)=>{try{const r=await fn();log.push([label,true,r]);return r}catch(e){log.push([label,false,srvMsg(e)]);throw e}};
+  const box=$('#migBox');if(box)box.innerHTML='<p class="muted">Moving to the server…</p>';
+  try{
+    const have=new Set(ACTS.filter(a=>a.p===pid).map(a=>a.id)),missing=acts.filter(a=>!have.has(a.id));
+    if(missing.length){const rows=missing.map(actToDb);
+      await step(`Baseline: ${missing.length} activities`,async()=>{const r=await rpc('import_baseline',{p_project:pid,p_file:'Browser data',p_hash:await sha256Hex('mig'+pid+JSON.stringify(rows)),p_rows:rows});return `${r.upserted||0} imported`})}
+    const costRows=acts.filter(a=>S.costed[a.id]).map(a=>{const c=S.costed[a.id];return {id:a.id,qty:c.qty,uom:c.uom,rate:c.brate||0,cost:c.bcost||0,mh:c.mh||0,gang:c.gang||''}});
+    if(costRows.length)await step(`Costing: ${costRows.length} activities`,async()=>{const r=await rpc('apply_costing',{p_project:pid,p_file:'Browser data',p_hash:await sha256Hex('mig'+pid+JSON.stringify(costRows)),p_rows:costRows});return r.duplicate?'already applied':`${r.applied} applied`});
+    if(inv.length&&(DB.invoices[pid]||[]).length)log.push([`Invoices: ${inv.length}`,true,'not loaded: the server already has a register for this project, which is kept']);
+    if(inv.length&&!(DB.invoices[pid]||[]).length)await step(`Invoices: ${inv.length}`,async()=>{const r=await rpc('import_invoices',{p_project:pid,p_file:'Browser data',p_hash:await sha256Hex('mig'+JSON.stringify(inv)),p_rows:inv,p_period:null});return r.duplicate?'already loaded':`${r.accepted} loaded${(r.rejected||[]).length?`, ${r.rejected.length} refused`:''}`});
+    if(dprs.length){const body={project_id:pid,file:'Browser data',dprs:dprs.map(d=>({id:d.id,report_date:d.date,foreman:d.foreman,foreman_email:S.users[d.foreman]||null,status:d.status,
+        remarks:d.remarks||'',returned:!!d.returned,late:!!d.late,timing:d.timing||{},photos:d.attachments||[],lines:linesToDb(d.lines),audit:(d.audit||[]).map(a=>({action:a.action,note:a.note||'',who:a.who,at:a.t?a.t.replace(' ','T')+':00':null}))}))};
+      body.hash=await sha256Hex('mig'+JSON.stringify(body.dprs));
+      await step(`Daily reports: ${dprs.length}`,async()=>{const r=await rpc('migrate_dprs',{p:body});return r.duplicate?'already moved':`${r.created} created, ${r.skipped_existing} already on the server${(r.refused||[]).length?`, ${r.refused.length} refused: `+r.refused.slice(0,3).map(x=>`${x.id} (${x.error})`).join('; '):''}`})}
+  }catch(e){}
+  await cloudLoadAll(true);
+  const invMoved=log.some(x=>/^Invoices/.test(x[0])&&x[1]&&!/not loaded/.test(String(x[2])));
+  const before=reconFigures(acts,dprs,invMoved?inv:[]),after=reconFigures(ACTS.filter(a=>a.p===pid&&acts.some(x=>x.id===a.id)),
+    DB.dprs.filter(d=>d.p===pid&&dprs.some(x=>x.id===d.id)),invMoved?(DB.invoices[pid]||[]):[]);
+  const cats={acts:acts.length>0,dprs:dprs.length>0,inv:invMoved};
+  const allOk=log.every(x=>x[1]);
+  if(allOk){S.moved[pid]=new Date().toISOString();try{localStorage.setItem(UKEY,JSON.stringify(S))}catch(e){}}
+  logChange(`Moved ${p.short} browser data to the server: ${log.map(x=>x[0]+' '+(x[1]?x[2]:'failed')).join('; ')}`);save();
+  state.migResult={pid,log,before,after,allOk,cats};render();
+}
+function migrationHTML(){
+  if(!CLOUD_ME)return '';
+  const list=unsyncedSummary(),R=state.migResult;
+  const recon=R?(()=>{const L=[['Activities','acts'],['Budget manhours','bmh'],['Daily reports','dprs'],['of which approved','approved'],['Quantity reported','qty'],['Manhours reported','mh'],['Invoices','inv'],['Invoices submitted, SAR','invSub']];
+    return `<div class="impbox" style="margin-top:12px"><p class="small"><b>${esc(projById(R.pid).short)}: ${R.allOk?'moved':'stopped with an error'}</b></p>
+      <ul class="small">${R.log.map(([l,ok,t])=>`<li>${ok?'✓':'✗'} ${esc(l)}: ${esc(String(t))}</li>`).join('')}</ul>
+      <table class="tbl"><thead><tr><th>Reconciliation</th><th class="n">Browser</th><th class="n">Server</th><th></th></tr></thead><tbody>
+      ${L.filter(([l,k])=>R.cats[{acts:'acts',bmh:'acts',dprs:'dprs',approved:'dprs',qty:'dprs',mh:'dprs',inv:'inv',invSub:'inv'}[k]]).map(([l,k])=>{const a=R.before[k],b=R.after[k],m=Math.abs(a-b)<0.01;return `<tr><td>${l}</td><td class="n">${fmt(a,k==='qty'||k==='mh'?2:0)}</td><td class="n">${fmt(b,k==='qty'||k==='mh'?2:0)}</td><td>${m?'<span class="sev ok">Match</span>':'<span class="sev Medium">Check</span>'}</td></tr>`}).join('')}
+      </tbody></table><p class="small muted">Server figures count only the items that came from this browser. A difference usually means an item was refused (listed above) or the server already had it under the same number.</p></div>`})():'';
+  return `<h3>Browser data waiting for the server</h3>
+    ${list.length?`<p class="small" style="margin:0 0 8px">Entered in this browser before reports moved to the server. It stays here, untouched, until moved.</p>
+    <table class="tbl"><thead><tr><th>Project</th><th class="n">Activities</th><th class="n">Reports</th><th class="n">Invoices</th><th></th></tr></thead><tbody>
+    ${list.map(x=>`<tr><td><b>${esc(projById(x.pid).short)}</b>${x.moved?`<span class="t2">Moved ${esc(tStamp(x.moved))}</span>`:''}</td><td class="n">${x.acts.length}${x.costed?`<span class="t2">${x.costed} costed</span>`:''}</td><td class="n">${x.dprs.length}</td><td class="n">${x.invoices.length}</td>
+      <td>${state.role==='sa'?`<button class="btn ${x.moved?'':'primary'}" type="button" data-migrate="${esc(x.pid)}">${x.moved?'Move again':'Move to server'}</button>`:'<span class="small muted">Super admin moves it</span>'}</td></tr>`).join('')}
+    </tbody></table>`:'<p class="small muted" style="margin:0">Nothing waiting: everything in this browser is on the server.</p>'}
+    <div id="migBox">${recon}</div>`;
+}
+function backupHTML(){
+  return `<h3>Backup and restore</h3>
+    <p class="small" style="margin:0 0 8px">${CLOUD_ME?'The server keeps the record. A server backup is a file of every project you can see: activities, daily reports with their full history, invoices and the approval matrix.':'Everything in this copy of ProTrackAI is kept in this browser only. Download a backup regularly; clearing the browser deletes the data.'}</p>
+    <div class="actions" style="margin:0 0 10px">${CLOUD_ME?'<button class="btn primary" type="button" data-bkserver>Download server backup</button>':''}<button class="btn ${CLOUD_ME?'':'primary'}" type="button" data-bkbrowser>Download browser backup</button>
+      ${!CLOUD_ME||state.role==='sa'?`<label class="btn" for="restorefile">${CLOUD_ME?'Load a browser backup':'Restore a backup'}</label><input id="restorefile" type="file" accept=".json,application/json" hidden>`:''}</div>
+    <div id="restoreBox"></div>`;
+}
 async function checkCloud(){
   const show=(t,cls)=>{const el=document.getElementById('cloudBadge');if(el){el.textContent=t;el.className='cloudbadge '+cls}};
   try{
@@ -1130,6 +1513,7 @@ async function cloudProfile(){
 async function startCloudSession(profile,quiet){
   CLOUD_ME=profile;state.uid=profile.id;state.role=profile.role;
   try{await cloudSeedMasters();await cloudLoadProjects()}catch(e){toast('Could not load projects: '+e.message)}
+  await cloudLoadAll();
   state.scope='ALL';state.sector='ALL';state.chat=[];aiTurns=[];
   state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');
   SESSION={uid:profile.id,exp:Date.now()+12*36e5,seen:Date.now(),cloud:true};
@@ -1222,7 +1606,7 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='2.4';
+const APP_VERSION='2.5';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'exec',label:'Executive summary'}],single:true},
@@ -1495,8 +1879,10 @@ function systemHTML(){
     <table class="tbl"><tbody>
       <tr><td>ProTrackAI</td><td><b>v${APP_VERSION}</b></td></tr>
       <tr><td>Server</td><td>${CLOUD?'Connected (Supabase)':'Not connected: demo data in this browser'}</td></tr>
+      ${CLOUD_ME?`<tr><td>Last loaded from the server</td><td>${CLOUD_LOAD.at?esc(tStamp(CLOUD_LOAD.at))+(CLOUD_LOAD.ok?'':' (failed)'):'—'}</td></tr>`:''}
     </tbody></table>
-  </div></div>`;
+  </div></div>
+  <div class="grid2" style="margin-top:18px"><div>${backupHTML()}</div><div>${migrationHTML()}</div></div>`;
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-datemode]');if(!b)return;
@@ -1530,13 +1916,14 @@ function renderNav(){
 }
 function renderBell(){
   const unread=Math.max(0,DB.notes.length-DB.read);const dot=$('#bellDot');dot.hidden=!unread;dot.textContent=unread;
-  $('#notes').innerHTML=`<div class="nh"><span>Notifications</span><span><button type="button" data-signout>Sign out</button> · <button type="button" data-reset>Reset demo data</button></span></div><ul>${DB.notes.slice(0,25).map(n=>`<li class="${n.w?'w':''}"><time>${esc(n.t)}</time>${esc(n.text)}</li>`).join('')}</ul>`;
+  $('#notes').innerHTML=`<div class="nh"><span>Notifications</span><span><button type="button" data-signout>Sign out</button>${CLOUD?'':' · <button type="button" data-reset>Reset demo data</button>'}</span></div><ul>${DB.notes.slice(0,25).map(n=>`<li class="${n.w?'w':''}"><time>${esc(n.t)}</time>${esc(n.text)}</li>`).join('')}</ul>`;
 }
 let charts=[];const killCharts=()=>{charts.forEach(c=>c.destroy());charts=[]};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
   ({exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
   if(state.navSec){const sec=state.navSec;state.navSec=null;setTimeout(()=>navScroll(sec),60)}
@@ -1772,6 +2159,7 @@ function doAction(k){
   if(k==='edit'){closeDrawer();state.editing=d.id;state.form=JSON.parse(JSON.stringify(d));go2form();return}
   const note=($('#cmt')?.value||'').trim();
   if((k==='reject'||k==='return')&&!note){$('#actErr').textContent='Add a comment so the site team knows what to fix.';return}
+  if(CLOUD_ME){cloudAct(d,k,note);return}
   const who=me().name;
   const map={review:['Reviewed','Reviewed'],approve:['Approved','Approved'],reject:['Rejected','Rejected'],return:['Draft','Returned'],submit:['Submitted',d.returned?'Resubmitted':'Submitted']};
   if(TIMER.id===d.id&&(TIMER.kind==='review'||TIMER.kind==='approve')){const kind=TIMER.kind,secs=timerStop();logTime(d,kind,secs)}
@@ -1933,6 +2321,7 @@ function saveForm(mode){
   const p=projById(f.p),who=me().name,t=stamp();
   if(!f.foreman){err.textContent='Choose the foreman for this report.';return}
   const cleanLines=f.lines.map(l=>({act:l.act,qty:+l.qty,labour:l.labour.map(x=>({cat:x.cat,count:+x.count||0,reg:+x.reg||0,ot:+x.ot||0})),subs:(l.subs||[]).map(g=>g.crew?({sub:g.sub,qty:+g.qty||0,crew:g.crew.map(c=>({cat:c.cat,count:+c.count||0,hours:+c.hours||0}))}):({sub:g.sub,qty:+g.qty||0,crew:[{cat:g.cat,count:+g.count||0,hours:+g.hours||0}]})),equip:l.equip.map(e=>({type:e.type,qty:+e.qty||0,hours:+e.hours||0}))}));
+  if(CLOUD_ME){cloudSaveDpr(f,cleanLines,mode,err);return}
   let d;
   if(state.editing){d=DB.dprs.find(x=>x.id===state.editing);Object.assign(d,{date:f.date,foreman:f.foreman,engineer:p.eng,lines:cleanLines,remarks:f.remarks,attachments:f.attachments});d.audit.push({t,who,action:'Edited'});
     if(mode==='submit'&&d.status==='Draft'){d.status='Submitted';d.audit.push({t,who,action:d.returned?'Resubmitted':'Submitted'})}}
@@ -3369,6 +3758,7 @@ function renderInvPreview(){
 }
 function runInvoices(){
   const I=state.inv;if(!I)return;
+  if(CLOUD_ME){cloudRunInvoices(I);return}
   const ok=I.rows.filter(r=>!r.err);
   DB.invoices=DB.invoices||{};
   DB.invoices[I.pid]=ok.map(({err,warn,...r})=>r);
@@ -3643,6 +4033,7 @@ function renderCostPreview(){
 function runCosting(){
   const C=state.cost,pid=impPid();if(!C||!pid)return;
   const ok=C.rows.filter(r=>!r.err);if(!ok.length)return;
+  if(CLOUD_ME){cloudRunCosting(C,pid,ok);return}
   const prev=DB.master.acts.filter(a=>a.p===pid),p=projById(pid);
   DB.baseHist=DB.baseHist||{};
   DB.baseHist[pid]=[{at:stamp(),by:me().name,file:'Costing: '+C.file,n:ok.length,before:prev.length,acts:JSON.parse(JSON.stringify(prev)),start:p.start,finish:p.finish}].concat(DB.baseHist[pid]||[]).slice(0,6);
@@ -3815,6 +4206,7 @@ function baseHistHTML(pid){
     ${seeded>0?`<p class="small muted" style="margin:10px 0 0">${seeded} activities on this project came with the sample data and are not removable here; use Reset demo data for those.</p>`:''}</section>`;
 }
 async function restoreBaseline(pid,ix){
+  if(CLOUD_ME)return toast('On the server, an import is undone by importing the earlier file again. Removing activities is not available, so report history is never left without its baseline.');
   const hist=((DB.baseHist||{})[pid])||[],snap=hist[ix];if(!snap)return;
   const now=DB.master.acts.filter(a=>a.p===pid).length;
   if(!await confirmBox(`Undo the import of ${snap.file||'that file'}?\n\nThis project's baseline goes back to ${snap.before} activities, from ${now} now. Daily reports are not deleted.`))return;
@@ -3825,6 +4217,7 @@ async function restoreBaseline(pid,ix){
   applyMaster();save();render();toast('Import undone');
 }
 async function clearBaseline(pid){
+  if(CLOUD_ME)return toast('Removing a baseline is not available on the server, so report history is never left without its baseline. Import the correct file to replace the activities.');
   const p=projById(pid),mine=DB.master.acts.filter(a=>a.p===pid),used=lines().filter(l=>l.p===pid).length;
   if(!await confirmBox(`Remove all ${mine.length} imported activities from ${p.short}?\n\n${used} daily report line${used===1?'':'s'} reference this project. The reports stay, but they will have no baseline to measure against until you import the correct file.`))return;
   DB.baseHist=DB.baseHist||{};
@@ -3993,6 +4386,7 @@ function renderUpdPreview(){
 function commitUpdate(){
   const U=state.upd;if(!U)return;
   const ch=U.rows.filter(r=>!r.err&&r.changed);if(!ch.length)return;
+  if(CLOUD_ME){cloudCommitUpdate(U,ch);return}
   const batch={id:'UPD-'+String((DB.updates||[]).length+1).padStart(4,'0'),p:ch[0].a.p,dataDate:U.dataDate,by:me().name,at:stamp(),file:U.file,rows:[]};
   ch.forEach(r=>{
     const a=DB.master.acts.find(x=>x.id===r.a.id)||r.a,c=curOf(a);DB.progress=DB.progress||{};
@@ -4519,6 +4913,7 @@ function admDrawer(type,id){
     <div id="accR" class="field" style="margin-top:12px">Region access<div class="checks">${m.regions.map(r=>chk('regions',r.id,u.regions.includes(r.id),r.name+' Region',PROJECTS.filter(p=>p.region===r.id).length+' projects')).join('')}</div></div>
     <div id="accP" class="field" style="margin-top:12px">Project access<div class="checks">${projectChecks(u.projects)}</div></div>
     <p class="small muted" style="margin-top:10px">Who reviews and approves this person's reports is set per project in Settings → Approval matrix.</p>
+    ${CLOUD_ME&&!id?'<p class="small" style="margin-top:6px"><b>On the server:</b> first create the sign-in account in Supabase (Authentication → Users → Add user, tick Auto Confirm), then save the person here with the same email. Their role and access are saved on the server.</p>':''}
     <p class="small muted" id="accHint"></p>`;
   }
   if(type==='trades'){
@@ -4590,6 +4985,7 @@ function baselineHTML(pid){
 }
 function saveAdm(fd){
   const {type,id}=state.adm,m=DB.master,v=k=>String(fd.get(k)??'').trim(),err=t=>{$('#admErr').textContent=t};let msg='';
+  const peopleBefore=CLOUD_ME?new Map(m.users.map(u=>[u.id,personKey(u)])):null;
   if(type==='projects'){
     const code=id||v('code');
     if(!id){
@@ -4665,8 +5061,19 @@ function saveAdm(fd){
   logChange(msg);applyMaster();ensureHashes();save();
   if(CLOUD_ME&&type==='projects'){
     const pr=projById(id||v('code'));
-    if(pr)cloudSaveProject(pr,!id).then(()=>{closeDrawer();render();toast(msg.split(',')[0])})
-      .catch(e=>toast('Server refused: '+e.message));
+    if(pr)cloudSaveProject(pr,!id).then(()=>cloudSavePeople(peopleBefore)).then(()=>{closeDrawer();render();toast(msg.split(',')[0])})
+      .catch(e=>{err('Server refused: '+e.message);toast('Server refused: '+e.message)});
+    return;
+  }
+  if(CLOUD_ME&&['regions','cities','sectors'].includes(type)){
+    const x=(type==='regions'?regById:type==='cities'?cityById:secById)(id||(type==='cities'?m.cities.at(-1).id:v('code').toUpperCase()));
+    cloudSaveMaster(type,x).then(()=>cloudSavePeople(peopleBefore)).then(()=>{closeDrawer();render();toast(msg.split(',')[0]+' on the server')})
+      .catch(e=>{err('The server did not save this: '+e.message);cloudLoadMasters().then(()=>{applyMaster();save();render()})});
+    return;
+  }
+  if(CLOUD_ME&&type==='users'){
+    cloudSavePeople(peopleBefore).then(()=>{closeDrawer();render();toast(msg.split(',')[0]+' on the server')})
+      .catch(e=>{err('The server did not save this: '+e.message);render()});
     return;
   }
   closeDrawer();render();toast(msg.split(',')[0]);
@@ -4758,6 +5165,7 @@ function saveAct(fd){
   if(v('bf')<=v('bs'))return e('Planned finish must be after planned start.');
   const a={id:aid,p:pid,disc:v('disc')||'Civil',area:v('area')||'General',wbs:v('wbs')||'General',name:v('name'),uom:v('uom'),pp:qty/bmh,crew:[[v('trade'),6],['Helper',4]],pace:1,bs:v('bs'),bf:v('bf'),qty,bmh,priorQty:0};
   a.dailyPlan=qty/Math.max(1,workdays(a.bs,a.bf));
+  if(CLOUD_ME){cloudRunBaseline(pid,[a],'Added by hand: '+aid).then(ok=>{if(!ok)return;logChange(`Added baseline activity ${aid} ${a.name} to ${projById(pid).short}`);save();admDrawer('projects',pid);render()});return}
   DB.master.acts.push(a);logChange(`Added baseline activity ${aid} ${a.name} to ${projById(pid).short}`);applyMaster();save();admDrawer('projects',pid);render();toast(`Activity ${aid} added`);
 }
 async function delProject(id){
@@ -4784,7 +5192,9 @@ async function delProject(id){
 async function delAdm(type,id){
   if(type==='projects')return delProject(id);
   if(usedBy(type,id))return;const m=DB.master,name=(type==='regions'?regById(id):type==='cities'?cityById(id):secById(id))?.name;
-  if(!await confirmBox(`Delete ${name}?`))return;m[type]=m[type].filter(x=>x.id!==id);logChange(`Deleted ${NOUN[type]} ${name}`);applyMaster();save();render();toast(`${name} deleted`);
+  if(!await confirmBox(`Delete ${name}?`))return;
+  if(CLOUD_ME){const {error}=await SB.from(type).delete().eq('id',id);if(error)return toast('The server refused: '+srvMsg(error))}
+  m[type]=m[type].filter(x=>x.id!==id);logChange(`Deleted ${NOUN[type]} ${name}`);applyMaster();save();render();toast(`${name} deleted`);
 }
 
 /* ---------- authentication (prototype) ---------- */
@@ -4831,14 +5241,14 @@ function renderAuth(view='login',data={}){
       <p class="err" id="lgErr">${left?`Too many attempts. Try again in ${left} seconds.`:''}</p>
       <button class="btn primary wide" type="submit" id="lgBtn">Sign in</button>
     </form>
-    <details class="demo"><summary>Demo accounts</summary><p>Password for every demo account: <code>${DEMO_PW}</code></p><div class="demolist">${[['U28','Super Admin, planning manager'],['U35','Executive Manager, all projects'],['U33','Portfolio Manager, Central'],['U03','Regional Manager, Eastern'],['U06','Project Manager, Riyadh Metro'],['U11','Site Engineer, Riyadh Metro'],['U18','Foreman, Riyadh Metro'],['U27','Read-only, finance']].map(([id,d])=>{const u=userById(id);return u?`<button type="button" data-fill="${u.email}"><b>${esc(u.email)}</b><span>${d}</span></button>`:''}).join('')}</div></details>`;
+    ${CLOUD?`<p class="small muted" style="margin-top:14px">Sign in with your work email. Demo accounts are switched off on this site because it is connected to the ProTrack server.</p>`:`<details class="demo"><summary>Demo accounts</summary><p>Password for every demo account: <code>${DEMO_PW}</code></p><div class="demolist">${[['U28','Super Admin, planning manager'],['U35','Executive Manager, all projects'],['U33','Portfolio Manager, Central'],['U03','Regional Manager, Eastern'],['U06','Project Manager, Riyadh Metro'],['U11','Site Engineer, Riyadh Metro'],['U18','Foreman, Riyadh Metro'],['U27','Read-only, finance']].map(([id,d])=>{const u=userById(id);return u?`<button type="button" data-fill="${u.email}"><b>${esc(u.email)}</b><span>${d}</span></button>`:''}).join('')}</div></details>`}`;
   }
   if(view==='forgot')card=`<h2>Reset your password</h2><p class="sub">Enter the email on your ProTrack account and we will send a reset link.</p>
     <form id="forgotForm" novalidate>${authField('fgId','Email','email','autocomplete="email" value="'+esc(data.id||'')+'"')}
       <button class="btn primary wide" type="submit">Send reset link</button></form>
     <button type="button" class="link back" data-auth="login">Back to sign in</button>`;
   if(view==='sent')card=`<h2>Check your email</h2><p class="sub">If an account exists for <b>${esc(data.id)}</b>, a reset link valid for 30 minutes is on its way. The link can be used once.</p>
-    <div class="demo"><p class="small muted">Prototype: no email is sent. Use the button below to open the link you would have received.</p><button class="btn wide" type="button" data-auth="reset">Open the reset link</button></div>
+    ${CLOUD?'':`<div class="demo"><p class="small muted">Prototype: no email is sent. Use the button below to open the link you would have received.</p><button class="btn wide" type="button" data-auth="reset">Open the reset link</button></div>`}
     <button type="button" class="link back" data-auth="login">Back to sign in</button>`;
   if(view==='reset'){const r=resetToken();card=r?`<h2>Choose a new password</h2><p class="sub">For ${esc(userById(r.uid)?.email||'')}. The link expires ${new Date(r.exp).toLocaleTimeString()}.</p>
     <form id="resetForm" novalidate>
@@ -4856,8 +5266,9 @@ const resetToken=()=>{try{const r=JSON.parse(localStorage.getItem(RKEY)||'null')
 function showAuth(view='login'){SESSION=null;$('#app').hidden=true;$('#aiFab').hidden=true;$('#aiPanel').hidden=true;$('#auth').hidden=false;document.body.classList.add('signedout');renderAuth(view)}
 function showApp(){
   const rw=document.getElementById('roleWrap');if(rw)rw.hidden=!!CLOUD_ME;
+  const rb=document.getElementById('resetBtn');if(rb)rb.hidden=!!CLOUD;
   const sn=document.getElementById('sideNote');if(sn)sn.innerHTML=CLOUD_ME
-    ?'Signed in to the ProTrack server. Projects are shared; daily reports are still local to this browser.'
+    ?'Signed in to the ProTrack server. Projects, activities, daily reports, invoices and the approval matrix are shared and checked by the server.'
     :'Prototype with sample data. Your changes stay in this browser.';$('#auth').hidden=true;$('#app').hidden=false;$('#aiFab').hidden=false;RASA.insShown=false;RASA.insights=[];setTimeout(()=>{rasaRefreshInsights(true)},2600);document.body.classList.remove('signedout');render();resetIdle()}
 function signIn(uid,remember){SESSION=writeSession(uid,remember);state.uid=uid;state.role=me().role;state.scope='ALL';state.sector='ALL';state.chat=[];aiTurns=[];state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');
   DB.master.log.unshift({t:stamp(),who:me().name,text:`Signed in${remember?' (remembered device)':''}`});save();showApp();toast(`Welcome, ${me().name.replace(/^Eng\.\s*/,'')}`)}
@@ -4901,6 +5312,11 @@ async function doLogin(){
       }
     }catch(e){btn.disabled=false;btn.textContent='Sign in';E('lgErr',e.message);return}
   }
+  if(CLOUD){                                   // server sites have no browser or demo accounts
+    btn.disabled=false;btn.textContent='Sign in';
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(id)){E('lgIdErr','Sign in with your work email address. Demo accounts are switched off on this site.');return}
+    const f=noteFail(key);E('lgErr',f.until>Date.now()?`Too many failed attempts. Sign-in is locked for ${Math.round((f.until-Date.now())/1000)} seconds.`:`Email or password is incorrect. ${Math.max(0,5-f.n)} attempt${5-f.n===1?'':'s'} left before a temporary lock.`);$('#lgPw').value='';$('#lgPw').focus();return;
+  }
   const u=findUser(id),ok=u&&u.active&&await verifyPw(u,pw);
   btn.disabled=false;btn.textContent='Sign in';
   if(!ok){const f=noteFail(key);E('lgErr',f.until>Date.now()?`Too many failed attempts. Sign-in is locked for ${Math.round((f.until-Date.now())/1000)} seconds.`:`Username or password is incorrect. ${5-f.n} attempt${5-f.n===1?'':'s'} left before a temporary lock.`);$('#lgPw').value='';$('#lgPw').focus();return}
@@ -4913,6 +5329,7 @@ function doForgot(){const id=$('#fgId').value.trim();$('#fgIdErr').textContent='
     renderAuth('sent',{id});return;
   }
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(id)){$('#fgIdErr').textContent='Enter a valid email address.';return}
+  if(CLOUD)return;
   const u=findUser(id);if(u)try{localStorage.setItem(RKEY,JSON.stringify({uid:u.id,token:randTok(),exp:Date.now()+30*6e4}))}catch(e){}
   renderAuth('sent',{id});
 }
@@ -4932,7 +5349,7 @@ function pwMeter(){const p=$('#rsPw').value,ok=pwRules(p).filter(([o])=>o).lengt
 async function boot(){
   seedTopUp();seedMatrix();await ensureHashes();
   const s=readSession();
-  if(s&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
+  if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');
   if(CLOUD)checkCloud();
   if(CLOUD)SB.auth.getSession().then(async ({data})=>{
@@ -5211,6 +5628,8 @@ function runImport(){
     a.dailyPlan=a.qty/Math.max(1,workdays(r.bs,r.bf));
     if(!con){const L=MS[r.cls];const pctIn=state.imp.ignorePct?0:r.pct;const m=L.slice().reverse().find(x=>x[2]/100<=pctIn+1e-6)||L[0];a.cur={ms:m[0],pct:m[2]/100,ff:r.bf,dataDate:ASOF,by:'Import'}}
     return a});
+  if(CLOUD_ME){const file=state.imp.file;cloudRunBaseline(pid,add,file).then(ok=>{if(!ok)return;
+    logChange(`Imported ${add.length} baseline activities into ${projById(pid).short} from ${file}`);save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render()});return}
   DB.master.acts=keep.concat(add);
   const p=projById(pid),st=add.map(a=>a.bs).sort()[0],fi=add.map(a=>a.bf).sort().pop();
   if(st)p.start=st;if(fi)p.finish=fi;
@@ -5240,6 +5659,7 @@ document.addEventListener('click',e=>{
   if('signout' in ds){confirmBox('Sign out of ProTrack?','Sign out').then(v=>{if(v)signOut()});return}
   if(ds.auth){if(ds.auth==='reset'&&!resetToken())return renderAuth('reset');renderAuth(ds.auth,{id:$('#fgId')?$('#fgId').value:''});return}
   if(ds.fill){$('#lgId').value=ds.fill;$('#lgPw').value=DEMO_PW;$('#lgErr').textContent='';return}
+  if(ds.pwreset&&CLOUD_ME){const u=userById(ds.pwreset);if(!u||!u.email)return;SB.auth.resetPasswordForEmail(u.email,{redirectTo:location.href.split('#')[0]}).then(({error})=>toast(error?'The server did not send the link: '+srvMsg(error):`Password reset link emailed to ${u.email}`));logChange(`Password reset link sent to ${u.name}`);save();return}
   if(ds.pwreset){const u=userById(ds.pwreset);u.pw=null;ensureHashes();logChange(`Password reset issued for ${u.name}; temporary password set`);save();toast('Password reset to the demo password');return}
   if(ds.rep&&ds.go){state.report=ds.rep;aiOpen(false);go('rep');return}
   if(ds.rep){state.report=ds.rep;render();return}
@@ -5312,6 +5732,7 @@ document.addEventListener('click',e=>{
   else if(ds.tab){state.perfTab=ds.tab;render()}
   else if(ds.q)ask(ds.q);
   else if('more' in ds){state.showN+=40;render()}
+  else if('reset' in ds&&CLOUD){toast('Demo data reset is switched off on this site')}
   else if('reset' in ds){confirmBox('Reset all demo data to the original sample?\nEverything you have added in this browser is removed.','Reset').then(okd=>{if(!okd)return;try{localStorage.removeItem(KEY)}catch(x){}setDB(gen());seedNotes();state.chat=[];closeDrawer();$('#notes').hidden=true;go('dash');toast('Demo data reset')})}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();$('#notes').hidden=true}if(e.key==='Enter'&&e.target.dataset?.open)openDpr(e.target.dataset.open)});
@@ -5362,6 +5783,8 @@ document.addEventListener('change',e=>{const el=e.target;
   if(el.name==='ebill'){execPrefs().hideBilling=el.value==='1';savePrefs();return}
   if(el.matches('[data-mailcfg]')){mailCfg()[el.dataset.mailcfg]=el.checked;logChange(`Approval email: ${el.dataset.mailcfg==='on'?(el.checked?'switched on':'switched off'):'site roles by discipline '+(el.checked?'on':'off')}`);save();return}
   if(el.matches('[data-mailrole]')){const c=mailCfg(),k=el.dataset.mailrole;c.roles=el.checked?[...new Set(c.roles.concat(k))]:c.roles.filter(x=>x!==k);save();return}
+  if(el.matches('[data-mx]')&&CLOUD_ME){const [pid,kind,uid]=el.dataset.mx.split(':'),u=userById(uid),t=userById(el.value),to=el.value;el.disabled=true;
+    cloudSetMatrix(pid,kind,uid,to).then(ok=>{if(!ok)return;logChange(`${projById(pid).short}: ${u.name}'s reports ${kind==='fm'?'reviewed':'approved'} by ${t?t.name:projById(pid).pm+' (project manager)'}`);save();toast('Approval matrix saved on the server')});return}
   if(el.matches('[data-mx]')){const [pid,kind,uid]=el.dataset.mx.split(':'),M=mx(pid),u=userById(uid),t=userById(el.value);if(el.value)M[kind][uid]=el.value;else delete M[kind][uid];
     logChange(`${projById(pid).short}: ${u.name}'s reports ${kind==='fm'?'reviewed':'approved'} by ${t?t.name:projById(pid).pm+' (project manager)'}`);save();render();toast('Approval matrix updated');return}
   if(el.matches('[data-rolerep]')){const [r,id]=el.dataset.rolerep.split(':'),C=roleCfg();C.reports[r]=el.checked?[...new Set(C.reports[r].concat(id))]:C.reports[r].filter(x=>x!==id);logChange(`${ROLES[r]} ${el.checked?'may now open':'can no longer open'} ${REPORTS[id].title.toLowerCase()}`);save();return}

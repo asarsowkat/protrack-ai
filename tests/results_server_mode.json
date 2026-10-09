@@ -1,0 +1,341 @@
+{
+ "run_at": "2026-10-09 20:20",
+ "app": "/home/claude/p2/app/app.html",
+ "mode": "server (local PostgreSQL + Supabase stand-in)",
+ "summary": {
+  "PASS": 55,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Sign-in",
+   "check": "demo accounts are not offered on a server site",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sign-in",
+   "check": "a demo account and password do not open the app",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sign-in",
+   "check": "a username (not an email) is refused with a clear message",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Load",
+   "check": "people come from the server directory, no demo accounts",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Load",
+   "check": "activities come from the server only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Load",
+   "check": "no reports yet",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Load",
+   "check": "side note says data is on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "foreman submits through the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "preparation time stored on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "app shows the server copy",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "audit chain on the server verifies",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "server refusal shown on the form, nothing saved locally",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "forced approval by a foreman is refused by the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "unassigned engineer is not offered Review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "forced review by an unassigned engineer is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "assigned engineer reviews through the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "assigned site manager is offered Approve",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "assigned site manager approves through the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "review and approval time stored",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "history in the app comes from the server with names",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Email",
+   "check": "approval email handed to the server function with recipients",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "approved report cannot be edited, even by the project manager",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Matrix",
+   "check": "matrix shows the server assignment",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Matrix",
+   "check": "super admin change is saved on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Matrix",
+   "check": "project manager cannot change the matrix (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "People",
+   "check": "create-person form explains the Supabase step",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "People",
+   "check": "super admin adds a person with role and project access on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "People",
+   "check": "the new person appears with the server identity",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "People",
+   "check": "a person without a sign-in account is refused with the next step",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing",
+   "check": "costing file applied on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing",
+   "check": "app shows the server values",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing",
+   "check": "upload recorded as a batch with a file fingerprint",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Costing",
+   "check": "same file again changes nothing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoices",
+   "check": "register loaded on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoices",
+   "check": "app totals come from the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoices",
+   "check": "a foreman calling the invoice import is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Baseline",
+   "check": "a foreman calling the baseline import is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Baseline",
+   "check": "planner adds an activity through the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weekly update",
+   "check": "planner progress update saved on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weekly update",
+   "check": "app shows the server progress",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weekly update",
+   "check": "a foreman cannot change progress (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Errors",
+   "check": "a failed server load shows a warning with Try again",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Errors",
+   "check": "Try again recovers",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Move to server",
+   "check": "browser-only reports are kept aside when server data loads",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Move to server",
+   "check": "they are not shown as server reports",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Move to server",
+   "check": "System tab lists data waiting for the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Move to server",
+   "check": "a browser backup downloads before moving",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Move to server",
+   "check": "reports created on the server with history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Move to server",
+   "check": "a browser-only activity is imported first, so its report can follow",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Move to server",
+   "check": "moved history verifies",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Move to server",
+   "check": "reconciliation shown and matching",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Move to server",
+   "check": "moving again creates nothing twice",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Backup",
+   "check": "server backup holds every report with lines and history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Backup",
+   "check": "browser backup includes the waiting list",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors in server mode",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

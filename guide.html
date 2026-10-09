@@ -126,15 +126,13 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 .cover .inner.portrait .cta{margin-top:24px}
 @media (max-width:920px){.cover .inner.portrait{padding:22px 18px 26px;border-radius:18px}.cover img.cover-art{width:100%}}
 @media print{.cover .inner.portrait{background:rgba(6,20,38,.55) !important;box-shadow:none;border-color:rgba(126,171,235,.3)}.cover img.cover-art{width:360px}}
-a.tool{background:rgba(255,255,255,.1);color:#E8EEF8;border-radius:7px;padding:7px 12px;font:600 13px var(--font);text-decoration:none;display:inline-flex;align-items:center}
-a.tool:hover{background:rgba(255,255,255,.2)}
 </style>
 </head>
 <body>
 <header class="top">
   <img id="logo" alt="ProTrack">
   <b>User Guide</b>
-  <span class="sp"><a class="tool" href="index.html">Open ProTrack</a><a class="tool" href="roles.html">Role guide</a>
+  <span class="sp">
     <button id="menu" type="button">Contents</button>
     <button id="theme" type="button">Dark</button>
     <button onclick="window.print()" type="button">Print</button>
@@ -188,7 +186,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 2.4, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 2.5, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -229,6 +227,8 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <a href="#reports">11. Reports and presentations</a>
   <a href="#rasa" class="sub">RASA, your project assistant</a>
   <a href="#server">12. Server and demo mode</a>
+  <a href="#backup" class="sub">Backup and restore</a>
+  <a href="#move" class="sub">Moving browser data to the server</a>
   <a href="#rules">13. Rules the system enforces</a>
   <a href="#faq">14. FAQ and troubleshooting</a>
   <a href="#glossary">15. Glossary</a>
@@ -244,7 +244,13 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <div class="card"><b>For planning and costing</b><span>P6 in, P6 out; a costing file for budget quantity and rate; a weekly design and procurement update; an invoice register.</span></div>
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
-  <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, identity and projects are shared; daily reports, baselines and costing are moving to the server in stages. Section 12 explains which is which.</div>
+  <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 2.5</b>
+    <b>Daily reports on the server</b>: saving, submitting, reviewing and approving now go through the server, which checks your role, your project and the approval matrix. A hidden button can no longer be forced from the browser. ·
+    <b>Tamper-evident history</b>: a report's history cannot be edited or deleted, even from the database console, and each entry is sealed with the one before it. ·
+    <b>Safe imports</b>: costing files, invoice registers and baselines load all-or-nothing on the server; loading the same file twice changes nothing. ·
+    <b>Backup and restore</b> in Settings → System, and a guided <b>move to the server</b> for anything entered in a browser before this release, with a reconciliation of counts and totals. ·
+    <b>No demo accounts</b> on a site connected to the server.</div>
   <div class="note"><b>New in version 2.4</b>
     <b>Demo or live date</b>: Settings → System switches between the fixed demo date (22 Sept 2026) and today's date; each keeps its own data. ·
     <b>A 0% payment cap now means 0%</b>; a blank cap means 100%, a blank retention cap means no cap. Terms saved earlier keep their old meaning. ·
@@ -485,6 +491,7 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li><b>Payment terms:</b> per phase the progress cap and up to two milestone releases; separate retention only if the contract has one; advance and its recovery rate.</li>
     <li><b>Settings → Approval matrix:</b> for each project, choose the site engineer who reviews each foreman, and the site manager who approves each site engineer. Repeat whenever the site team changes.</li>
     <li><b>Settings → Email:</b> choose who receives the approval summary.</li>
+    <li><b>Settings → System, once after installing version 2.5:</b> move anything people entered in their browsers to the server (see <a href="#move">Moving browser data to the server</a>), and download a server backup every week.</li>
     <li><b>Settings → System:</b> check the version, and choose the date basis: demo (fixed 22 Sept 2026) for demonstrations, live (today) for real work. Each keeps its own data in the browser. Once real data is on the server, set <code>DATE_MODE: 'live'</code> in config.js so nobody can switch it by mistake.</li>
     <li><b>Settings → Role access:</b> for site engineers and site managers, tick the reports they may open and set the tiles, breakdown and columns of their executive summary. Cost and billing are never offered.</li>
     <li><b>Hand purchase orders to costing.</b> Each project's costing engineer keeps its subcontractor POs on the Baselines page. Settings → Subcontractors still shows every company and PO across all projects, for review or correction.</li>
@@ -709,15 +716,36 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <table>
     <thead><tr><th></th><th>Demo mode</th><th>Signed in to the server</th></tr></thead>
     <tbody>
-      <tr><td>Who you are</td><td>Demo accounts, "Acting as" switch</td><td>Your Supabase account and role</td></tr>
-      <tr><td>Projects</td><td>Six sample projects in this browser</td><td>Shared by everyone with an account</td></tr>
-      <tr><td>Daily reports, baselines, costing, invoices</td><td>This browser</td><td>This browser for now; moving to the server in the next stages</td></tr>
+      <tr><td>Who you are</td><td>Demo accounts, "Acting as" switch</td><td>Your work email and the role the super admin gave you. Demo accounts are switched off.</td></tr>
+      <tr><td>Projects, people, approval matrix</td><td>This browser</td><td>On the server, shared</td></tr>
+      <tr><td>Daily reports and their history</td><td>This browser</td><td>On the server. Every save, review and approval is checked by the server</td></tr>
+      <tr><td>Baseline activities, costing, invoices, weekly progress</td><td>This browser</td><td>On the server. Imports are all-or-nothing and recorded with a file fingerprint</td></tr>
+      <tr><td>Still in each browser</td><td>Everything</td><td>Trade rates, subcontractors and purchase orders, revised and recovery baselines, DCMA results, role access, email settings, notifications. These move in the next stage</td></tr>
       <tr><td>Approval email</td><td>Prepared and listed in Settings → Email, not sent</td><td>Sent once the mail function is set up on the server</td></tr>
       <tr><td>Password reset</td><td>Simulated</td><td>Real email</td></tr>
       <tr><td>Date everything is measured at</td><td>22 Sept 2026, fixed, so demonstrations always match</td><td>Same by default; set <code>DATE_MODE: 'live'</code> in config.js, or switch in Settings → System, to use today's date</td></tr>
     </tbody>
   </table>
-  <p>The sign-in page shows <b>Connected to the ProTrack server</b> in green when <code>config.js</code> holds a valid key.</p>
+  <p>The sign-in page shows <b>Connected to the ProTrack server</b> in green when <code>config.js</code> holds a valid key. If the server cannot be reached after sign-in, an amber bar says so with a <b>Try again</b> button; nothing is quietly kept in the browser instead.</p>
+
+  <h3 id="backup">Backup and restore</h3>
+  <ol class="steps">
+    <li><b>Settings → System → Download server backup</b> (signed in to the server): one file with every project you can see, its activities, daily reports with their complete history, invoices, approval matrix and import records. The super admin should do this every week and keep the files somewhere safe.</li>
+    <li><b>Download browser backup</b>: everything this browser holds, including anything still waiting to move to the server.</li>
+    <li><b>Restore a backup</b> (demo mode): choose the file. ProTrackAI first shows what is in this browser and what is in the backup, side by side. Only when you press <b>Restore this backup</b> and confirm does it replace the data, and a backup of what was there downloads first, so a restore can itself be undone.</li>
+    <li>Signed in to the server, a browser backup is <b>never</b> written over server data. The super admin can load one to add its reports to the list waiting to move.</li>
+  </ol>
+
+  <h3 id="move">Moving browser data to the server</h3>
+  <p>Before version 2.5, daily reports, baselines, costing and invoices were saved in each person's browser. When someone signs in to version 2.5, anything their browser holds for a server project is set aside, untouched, and listed in <b>Settings → System → Browser data waiting for the server</b>.</p>
+  <ol class="steps">
+    <li><b>Sign in as super admin on the computer where the data was entered.</b> If it was entered on someone else's computer, ask them for a browser backup (Settings → System → Download browser backup) and load it with <b>Load a browser backup</b>.</li>
+    <li>Check the list: for each project, the number of activities, reports and invoices waiting.</li>
+    <li>Press <b>Move to server</b> and confirm. A browser backup downloads first. Then, in this order: activities the server does not have yet, costing, invoices (only if the server has no register for that project), and daily reports with their full history.</li>
+    <li>Read the result. Each step shows ✓ or ✗, and a <b>reconciliation</b> table compares the browser and the server: activities, budget manhours, reports, approved reports, quantity and manhours reported, invoices and their total. Every row should say <b>Match</b>.</li>
+    <li>A report the server already has (same number) is skipped, never overwritten. A report whose activity is missing, or that clashes with a report for the same foreman and date, is refused and listed with the reason. Pressing <b>Move again</b> is safe: nothing is created twice.</li>
+    <li>Re-assign the approval matrix in Settings → Approval matrix: assignments made in a browser before 2.5 referred to browser accounts and do not carry over.</li>
+  </ol>
 </section>
 
 <section id="rules">
@@ -734,6 +762,12 @@ a.tool:hover{background:rgba(255,255,255,.2)}
     <li>Every approval emails a summary to the project's stakeholders.</li>
     <li>Site roles never see cost or billing, and their executive view is set by the super admin.</li>
     <li>Rejecting or returning needs a comment; every change is logged with a name and time.</li>
+    <li>On the server: a report is saved, reviewed and approved only through ProTrack's server functions. Writing to the tables directly is refused.</li>
+    <li>On the server: a foreman always reports under his own name, can edit only his own drafts, and cannot change a report once submitted.</li>
+    <li>On the server: an approved report cannot be changed or deleted by anyone, and a project that has approved reports cannot be deleted.</li>
+    <li>On the server: report history and the change log can only be added to. Each history entry is sealed with the one before it, so any alteration is detectable.</li>
+    <li>On the server: one report per foreman per day; no future dates; the same activity once per report; no more than 24 hours a day per worker.</li>
+    <li>On the server: loading the same costing file, invoice register or baseline again changes nothing; a failed row is refused and listed, never half-applied.</li>
   </ul>
 </section>
 
@@ -750,6 +784,12 @@ a.tool:hover{background:rgba(255,255,255,.2)}
   <h4>Invoiced is higher than invoiceable</h4><p>Either invoicing is ahead of certified progress, or the payment terms or price weighting are not set. Check the terms on the project.</p>
   <h4>A subcontractor line says "estimated"</h4><p>That company has no purchase order on the project, or no rate for that activity or trade. The project's costing engineer adds it on the Baselines page.</p>
   <h4>"Invalid API key" at sign-in</h4><p>The key in <code>config.js</code> is incomplete or from another project. Copy the anon key again with the copy icon.</p>
+  <h4>"The server refused this" when reviewing or approving</h4><p>The server checks the approval matrix itself. Only the site engineer assigned to that foreman on that project can review, and only the site manager assigned to that engineer can approve; the project manager can do both. Ask the super admin to check Settings → Approval matrix.</p>
+  <h4>"This foreman already has a report for that date"</h4><p>Open the existing report and edit it instead of creating a second one.</p>
+  <h4>"This is the same file as the last one loaded, so nothing changed"</h4><p>The server recognised the file. If you meant to load corrected figures, check you chose the corrected file.</p>
+  <h4>Undo import or Remove baseline says it is not available</h4><p>On the server a baseline is never removed, so report history always keeps its activities. Import the correct file again; activities are matched by ID and updated.</p>
+  <h4>An amber bar says the server data could not be loaded</h4><p>Your connection or the server was unavailable. Press <b>Try again</b>. Anything you change is still sent to the server, which checks it; nothing is saved only in the browser.</p>
+  <h4>I cannot sign in with a demo account</h4><p>Demo accounts are switched off on a site connected to the server. Use your work email; the super admin creates accounts in Supabase.</p>
   <h4>Delete or undo did nothing</h4><p>You are on an old version. Upload the latest <code>index.html</code> and press Ctrl+F5.</p>
 </section>
 
