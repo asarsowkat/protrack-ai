@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-09 21:30",
- "app": "/home/claude/p2/app/demo.html",
+ "run_at": "2026-10-09 22:06",
+ "app": "/home/claude/p3/demo.html",
  "results": [
   {
    "area": "Auth",
@@ -190,7 +190,7 @@
   },
   {
    "area": "Reports",
-   "check": "report warn builds (0.07 s)",
+   "check": "report warn builds (0.05 s)",
    "result": "PASS",
    "detail": ""
   },

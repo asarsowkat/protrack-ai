@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 2.5, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 2.6, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -202,6 +202,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#features">5. Features at a glance</a>
   <a href="#domains" class="sub">Finding your way: the domains</a>
   <a href="#overview" class="sub">Project overview</a>
+  <a href="#imports">Import centre and controlled uploads</a>
   <a href="#steps">6. Step by step, by role</a>
   <a href="#s-foreman" class="sub">Foreman</a>
   <a href="#s-eng" class="sub">Site engineer</a>
@@ -245,6 +246,11 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 2.6</b>
+    <b>Import centre</b> (Imports &amp; Integrations): every upload is a numbered batch with the file's fingerprint, counts, totals, reconciliation, who loaded it, and failures and retries. ·
+    <b>Checks before saving</b>: file type and size, the right project and currency, real dates, numbers, duplicate rows, and the same file loaded twice. ·
+    <b>Reconciliation and exception report</b> on every preview; refused rows must be acknowledged by name before the rest is saved. ·
+    <b>All-or-nothing</b> for weekly progress too; a file with no valid rows never empties the last good data.</div>
   <div class="note"><b>New in version 2.5</b>
     <b>Daily reports on the server</b>: saving, submitting, reviewing and approving now go through the server, which checks your role, your project and the approval matrix. A hidden button can no longer be forced from the browser. ·
     <b>Tamper-evident history</b>: a report's history cannot be edited or deleted, even from the database console, and each entry is sealed with the one before it. ·
@@ -396,6 +402,21 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>Approval email</b><span>The moment a report is approved, a summary with a link goes to everyone on the project in the chosen roles.</span></div>
     <div class="card"><b>Settings</b><span>Projects, users, role access, approval matrix, approval email, trades and dated rates, subcontractors and purchase orders, regions, cities, sectors, change log.</span></div>
   </div>
+</section>
+
+<section id="imports">
+  <h2>Import centre and controlled uploads</h2>
+  <p>Four files feed ProTrackAI: the <b>invoice register</b> and <b>costing file</b> (costing engineer or project manager), the <b>P6 baseline</b> and the <b>weekly engineering and procurement progress</b> (planning engineer). Every one goes through the same five steps.</p>
+  <ol class="steps">
+    <li><b>File check.</b> Only Excel (.xlsx, .xls), CSV, Primavera XER or P6 XML, up to 10 MB. Workbooks with macros (.xlsm) are refused before they are read; formulas and macros are never run.</li>
+    <li><b>Row checks.</b> Each row is checked: the activity or invoice exists and belongs to this project (a Project column, if present, must match), the currency is SAR (if a Currency column is present), dates are real dates, numbers are numbers, and nothing appears twice. A refused row shows its reason and its row number in the sheet.</li>
+    <li><b>Preview and reconciliation.</b> Before anything is saved you see the rows in the file, accepted, refused and warnings, and for money the total in the file, the total accepted and the difference. <b>Download exception report</b> gives every refused row and warning as a spreadsheet to send back for correction.</li>
+    <li><b>Acknowledge.</b> If any row is refused, the Apply button stays grey until you tick that you have reviewed the refused rows and want to load only the accepted ones. Your name and an optional note are recorded with the batch. The server enforces this too.</li>
+    <li><b>Save in one piece.</b> Everything is saved in one transaction. If anything fails half way, nothing is saved and the previous data stays exactly as it was. A file with no valid row never empties the register. The same content loaded twice changes nothing the second time.</li>
+  </ol>
+  <h3>The Import centre</h3>
+  <p>Imports &amp; Integrations → <b>Import centre</b> lists every batch for your projects: batch number (IMP-000123), type, project, file, rows accepted, total in the file and accepted, result, who and when. Filter by type or by result (committed, with a difference, failed). Click a batch for the full record: source system, period, currency, file fingerprint (SHA-256), size, reconciliation, who accepted a difference and their note, commit status, error, retry and audit reference, with its exception report. A failed attempt stays listed; when the same file later loads successfully, both show the link (<b>Failed, retried</b> and <b>Retry of</b>).</p>
+  <p>Planning, costing, project managers, executives and regional and portfolio managers see the Import centre; site roles do not. <b>SAP</b>: SAP ECC Excel exports will be added here once a sample export and the Finance rules are agreed; any direct SAP or S/4HANA connection stays switched off until IT, SAP, Cybersecurity and Finance approve it.</p>
 </section>
 
 <section id="steps">
@@ -769,6 +790,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>On the server: report history and the change log can only be added to. Each history entry is sealed with the one before it, so any alteration is detectable.</li>
     <li>On the server: one report per foreman per day; no future dates; the same activity once per report; no more than 24 hours a day per worker.</li>
     <li>On the server: loading the same costing file, invoice register or baseline again changes nothing; a failed row is refused and listed, never half-applied.</li>
+    <li>Every upload is a numbered batch with the file's fingerprint; refused rows must be acknowledged by name before the rest is saved, and a failed upload never changes the last good data.</li>
+    <li>Only Excel, CSV, XER and P6 XML files up to 10 MB are accepted; workbooks with macros are refused.</li>
   </ul>
 </section>
 
@@ -791,6 +814,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h4>Undo import or Remove baseline says it is not available</h4><p>On the server a baseline is never removed, so report history always keeps its activities. Import the correct file again; activities are matched by ID and updated.</p>
   <h4>An amber bar says the server data could not be loaded</h4><p>Your connection or the server was unavailable. Press <b>Try again</b>. Anything you change is still sent to the server, which checks it; nothing is saved only in the browser.</p>
   <h4>I cannot sign in with a demo account</h4><p>Demo accounts are switched off on a site connected to the server. Use your work email; the super admin creates accounts in Supabase. For a demonstration, open the demo page (<code>demo.html</code>, linked from the sign-in page), where the demo accounts work on sample data.</p>
+  <h4>The Apply button stays grey</h4><p>Some rows were refused. Read the reasons (or download the exception report), then tick the box confirming you want to load only the accepted rows. Or fix the file and upload it again.</p>
+  <h4>"The server refused some rows"</h4><p>The server checks every row again. If it refuses a row the app accepted, the preview shows its message; tick the box to load the rest, or fix the file.</p>
+  <h4>An upload shows as Failed in the Import centre</h4><p>Nothing from it was saved and your previous data is unchanged. Open the batch for the reason, fix the cause, and upload the same file again: it shows as a retry of the failed attempt.</p>
   <h4>Delete or undo did nothing</h4><p>You are on an old version. Upload the latest <code>index.html</code> and press Ctrl+F5.</p>
 </section>
 

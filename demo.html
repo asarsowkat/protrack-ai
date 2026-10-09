@@ -682,7 +682,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v2.5</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v2.6</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1300,24 +1300,6 @@ function importResultText(r,noun){
   const rej=(r&&r.rejected)||[];
   return rej.length?` ${rej.length} row${rej.length>1?'s':''} refused by the server: ${rej.slice(0,3).map(x=>`${x.no||x.id||'?'} (${x.error})`).join('; ')}${rej.length>3?'…':''}`:'';
 }
-async function cloudRunInvoices(I){
-  busyBtns('[data-invgo]',true);
-  const rows=I.rows.map(({err,warn,...r})=>r);let r;
-  try{r=await rpc('import_invoices',{p_project:I.pid,p_file:I.file,p_hash:await sha256Hex(JSON.stringify(rows)),p_rows:rows,p_period:null})}
-  catch(e){busyBtns('[data-invgo]',false);toast('The server did not load the register: '+srvMsg(e));return}
-  try{await cloudLoadInvoices()}catch(e){}
-  save();state.inv=null;render();
-  toast(r.duplicate?importResultText(r,'register'):`${r.accepted} invoices loaded on the server.${importResultText(r)}`);
-}
-async function cloudRunCosting(C,pid,ok){
-  busyBtns('[data-costgo]',true);
-  const rows=ok.map(r=>({id:r.id,qty:r.qty,uom:String(r.uom||'').slice(0,12),rate:r.rate||0,cost:r.cost||0,mh:r.mh>0?r.mh:0,gang:r.gang||''}));let r;
-  try{r=await rpc('apply_costing',{p_project:pid,p_file:C.file,p_hash:await sha256Hex(pid+JSON.stringify(rows)),p_rows:rows})}
-  catch(e){busyBtns('[data-costgo]',false);toast('The server did not apply the costing file: '+srvMsg(e));return}
-  try{await cloudLoadActs();applyMaster();await cloudLoadInvoices()}catch(e){}
-  applyMaster();save();state.cost=null;render();
-  toast(r.duplicate?importResultText(r,'costing file'):`${r.applied} activities costed on the server.${importResultText(r)}`);
-}
 async function cloudRunBaseline(pid,add,file){
   busyBtns('[data-impgo]',true);
   const rows=add.map(actToDb);let r;
@@ -1329,21 +1311,6 @@ async function cloudRunBaseline(pid,add,file){
   return true;
 }
 
-async function cloudCommitUpdate(U,ch){
-  busyBtns('[data-updgo]',true);
-  const batch={id:'UPD-'+Date.now().toString(36).toUpperCase(),p:ch[0].a.p,dataDate:U.dataDate,by:me().name,at:stamp(),file:U.file,rows:[]},fails=[];
-  for(const r of ch){
-    const a=r.a,c=curOf(a),cur={ms:r.ms,pct:r.pct,as:r.as||c.as||'',af:r.af||c.af||'',ff:r.ff||c.ff||'',remarks:r.rem||'',dataDate:U.dataDate,by:me().name};
-    const {data,error}=await SB.from('activities').update({cur}).eq('project_id',a.p).eq('id',a.id).select('id');
-    if(error||!data||!data.length){fails.push(`${a.id} (${error?srvMsg(error):'not allowed'})`);continue}
-    batch.rows.push({act:a.id,name:a.name,project:projById(a.p).short,from:{ms:c.ms,pct:c.pct||0,ff:c.ff||'',as:c.as||'',af:c.af||''},to:{ms:cur.ms,pct:cur.pct,ff:cur.ff,as:cur.as,af:cur.af},rem:r.rem});
-  }
-  if(batch.rows.length){const {error}=await SB.from('weekly_updates').insert({project_id:batch.p,data_date:U.dataDate,file_name:U.file,rows:batch,applied_by:me().id});if(error)fails.push('update history ('+srvMsg(error)+')')}
-  try{await cloudLoadActs();await cloudLoadUpdates()}catch(e){}
-  applyMaster();save();busyBtns('[data-updgo]',false);
-  if(batch.rows.length){logChange(`Applied ${batch.rows.length} engineering and procurement updates on the server, data date ${fmtDY(U.dataDate)}, from ${U.file}`);state.upd=null}
-  render();toast(fails.length?`${batch.rows.length} updated on the server; refused: ${fails.slice(0,3).join(', ')}${fails.length>3?'…':''}`:`${batch.rows.length} activities updated on the server`);
-}
 async function cloudLoadUpdates(){
   const rows=await selAll('weekly_updates','*',null,['applied_at','id']);
   DB.updates=rows.map(r=>r.rows&&r.rows.rows?r.rows:{id:'UPD-'+String(r.id).slice(0,6),p:r.project_id,dataDate:r.data_date,by:nameById(r.applied_by),at:tStamp(r.applied_at),file:r.file_name,rows:[]});
@@ -1361,6 +1328,209 @@ async function cloudSavePeople(before){
   try{await cloudLoadDirectory();applyMaster();save()}catch(e){}
   if(failure)throw failure;
 }
+
+/* ---------- Phase 3: controlled imports ----------
+   Every upload is checked before anything is saved (file type and size, project, currency, dates, numbers,
+   duplicates), previewed with a reconciliation of source against accepted figures, saved all-or-nothing,
+   and recorded as a numbered batch with the file's fingerprint. Refused rows must be acknowledged before
+   the rest is saved. The Import centre lists every batch, failed attempts and retries included. */
+const IMPORT_MAX=10*1024*1024,IMPORT_EXT=/\.(xlsx|xls|csv|xer|xml)$/i;
+const IMPORT_KINDS={invoices:'Invoice register',costing:'Costing file',baseline:'P6 baseline',update:'Weekly progress',migration:'Move to server',restore:'Restore'};
+const isoOk=d=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(d||''))return false;const x=new Date(d+'T00:00:00Z');return isFinite(x)&&x.toISOString().slice(0,10)===d};
+const dBad=v=>!(v instanceof Date)&&String(v??'').trim()!==''&&!isoOk(dOnly(v));
+const nBad=v=>{if(v instanceof Date||v==null)return false;const t=String(v).trim();if(!t)return false;const c=t.replace(/^(SAR|SR)\s*/i,'').replace(/[,\s]/g,'');return !/^-?\d*\.?\d+$/.test(c)};
+function importFileProblem(file){
+  if(!file)return 'No file chosen.';
+  if(!file.size)return `${file.name} is empty.`;
+  if(/\.xlsm$|\.xlsb$|\.xltm$/i.test(file.name))return `${file.name} is a workbook with macros. Save it as a plain Excel workbook (.xlsx) and upload that.`;
+  if(!IMPORT_EXT.test(file.name))return `${file.name} is not a file ProTrackAI can import. Use an Excel workbook (.xlsx or .xls), a CSV file, or a Primavera XER or P6 XML file.`;
+  if(file.size>IMPORT_MAX)return `${file.name} is ${(file.size/1048576).toFixed(1)} MB; the limit is 10 MB. Remove unused sheets or split the file.`;
+  return null;
+}
+const IMPORT_SLOTS={invfile:['inv','invBox',f=>handleInvFile(f)],costfile:['cost','costBox',f=>handleCostFile(f)],
+  p6file:['imp','impBox',f=>handleImportFile(f)],updfile:['upd','updBox',f=>handleUpdateFile(f)]};
+async function guardedImport(input){
+  const [key,box,fn]=IMPORT_SLOTS[input.id],file=input.files[0],bad=importFileProblem(file),el=document.getElementById(box);
+  input.value='';
+  if(bad){state[key]=null;if(el)el.innerHTML=`<div class="warn-box"><b>${esc(bad)}</b></div>`;return}
+  let src={name:file.name,size:file.size,sha:''};
+  try{src.sha=await sha256Hex(await file.arrayBuffer())}catch(e){}
+  await fn(file);
+  if(state[key]){state[key].src=src;state[key].ack=false;state[key].serverDiff=null;rerenderPreview(key)}
+}
+function rerenderPreview(key){({inv:renderInvPreview,cost:renderCostPreview,imp:renderImport,upd:renderUpdPreview})[key]()}
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(el.matches&&el.matches('input[type=file]')&&IMPORT_SLOTS[el.id]&&el.files[0]){e.stopImmediatePropagation();guardedImport(el);return}
+  if(el.id==='reconAck'){const box=el.closest('.impbox');if(box)box.querySelectorAll('[data-needack]').forEach(b=>b.disabled=!el.checked);
+    const k=el.dataset.key;if(state[k])state[k].ack=el.checked}
+  if(el.id==='reconNote'){const k=el.dataset.key;if(state[k])state[k].note=el.value}
+},true);
+
+/* What a preview shows above its Apply button: fingerprint, reconciliation, exception report, acknowledgement */
+function reconHTML(key,o){
+  const S=state[key]||{},src=S.src,needAck=o.bad>0||!!S.serverDiff;
+  const money=v=>v==null?'—':sar(v);
+  const rows=[['Rows in the file',fmt(o.total)],['Accepted',fmt(o.total-o.bad)],['Refused',fmt(o.bad)],['Warnings',fmt(o.warn)]];
+  if(o.srcTotal!=null)rows.push(['Total in the file',money(o.srcTotal)],['Total accepted',money(o.accTotal)],['Difference',money(o.srcTotal-o.accTotal)]);
+  return `<div class="recon"><div class="g g-kpi" style="margin:10px 0 6px">${rows.map(([l,v])=>`<div class="panel kpi"><div class="l">${l}</div><div class="v" style="font-size:18px">${v}</div></div>`).join('')}</div>
+    <p class="small muted" style="margin:0 0 6px">${src?`File fingerprint (SHA-256) <code title="${esc(src.sha)}">${esc((src.sha||'').slice(0,16))}…</code>, ${(src.size/1024).toFixed(0)} KB. `:''}Nothing is saved until you press the button below; if anything fails, nothing is saved at all.</p>
+    ${o.bad||o.warn?`<button class="btn sm" type="button" data-excdl="${key}">Download exception report (${fmt(o.bad)} refused, ${fmt(o.warn)} warnings)</button>`:''}
+    ${S.serverDiff?`<div class="warn-box" style="margin-top:8px"><b>The server refused some rows</b>${esc(S.serverDiff)}</div>`:''}
+    ${needAck?`<label class="chk" style="margin:10px 0 4px"><input type="checkbox" id="reconAck" data-key="${key}" ${S.ack?'checked':''}><span>I have reviewed the refused rows${o.srcTotal!=null&&o.srcTotal-o.accTotal?` (difference ${money(o.srcTotal-o.accTotal)})`:''} and want to load only the accepted ones. My name is recorded with this batch.</span></label>
+      <label class="field" style="margin:0 0 6px">Note for the record (optional)<input id="reconNote" data-key="${key}" value="${esc(S.note||'')}" placeholder="For example: INV-104 corrected in next week's register"></label>`:''}</div>`;
+}
+const ackAttr=(key,bad)=>bad>0||(state[key]&&state[key].serverDiff)?(state[key]&&state[key].ack?'data-needack':'data-needack disabled'):'';
+
+/* Exception report: every refused row and warning, with the sheet row number, as CSV (opens in Excel) */
+const csvCell=v=>{const t=String(v??'');return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t};
+function exceptionRows(key){
+  const S=state[key];if(!S)return [];
+  if(key==='inv')return S.rows.filter(r=>r.err||r.warn).map(r=>({row:r.ln,key:r.no,severity:r.err?'Refused':'Warning',message:r.err||r.warn}));
+  if(key==='cost')return S.rows.filter(r=>r.err||r.warn).map(r=>({row:(r.lns||[]).join(' '),key:r.id,severity:r.err?'Refused':'Warning',message:r.err||r.warn}));
+  if(key==='upd')return S.rows.filter(r=>r.err||r.warn).map(r=>({row:r.ln,key:r.id,severity:r.err?'Refused':'Warning',message:r.err||r.warn}));
+  if(key==='imp')return baselineProblems().map(m=>({row:'',key:m.id,severity:'Refused',message:m.error}));
+  return [];
+}
+function exceptionCSV(meta,list){
+  return [['ProTrackAI exception report'],['File',meta.file],['Type',meta.type],['Project',meta.project],['Produced',new Date().toLocaleString()],[],
+    ['Sheet row','Key','Result','Message'],...list.map(x=>[x.row,x.key,x.severity,x.message])].map(r=>r.map(csvCell).join(',')).join('\r\n');
+}
+async function downloadExceptions(key){
+  const S=state[key];if(!S)return;const list=exceptionRows(key);
+  const kind={inv:'invoices',cost:'costing',imp:'baseline',upd:'update'}[key];
+  const pid=key==='upd'?'':(key==='inv'?S.pid:impPid());
+  await saveFile(`exceptions-${(S.file||'import').replace(/\.[^.]+$/,'')}.csv`,new Blob(['﻿'+exceptionCSV({file:S.file,type:IMPORT_KINDS[kind],project:pid?projById(pid).short:'Several'},list)],{type:'text/csv'}));
+}
+async function downloadBatchExceptions(b){
+  const list=[...((b.detail||{}).rejected||[]).map(x=>({row:'',key:x.no||x.id||'',severity:'Refused',message:(x.project?x.project+': ':'')+x.error})),
+    ...((b.detail||{}).warnings||[]).map(x=>({row:x.row||'',key:x.key||'',severity:'Warning',message:x.message||''}))];
+  if(b.error_message)list.unshift({row:'',key:'',severity:'Failed',message:b.error_message});
+  await saveFile(`exceptions-${batchNo(b)}.csv`,new Blob(['﻿'+exceptionCSV({file:b.file_name,type:IMPORT_KINDS[b.kind]||b.kind,project:b.project_id?(projById(b.project_id)||{}).short||b.project_id:'Several'},list)],{type:'text/csv'}));
+}
+const warnList=key=>exceptionRows(key).filter(x=>x.severity==='Warning').slice(0,2000).map(x=>({row:x.row,key:x.key,message:x.message}));
+document.addEventListener('click',e=>{const t=e.target.closest('[data-excdl]');if(t)downloadExceptions(t.dataset.excdl)});
+
+/* Baseline: problems that refuse the whole file (the server refuses them too) */
+function baselineProblems(){
+  const I=state.imp;if(!I)return [];const rows=mapRows(),seen={},out=[];
+  rows.forEach(r=>{seen[r.id]=(seen[r.id]||0)+1});
+  Object.entries(seen).filter(([,n])=>n>1).forEach(([id])=>out.push({id,error:'Activity ID appears more than once'}));
+  rows.forEach(r=>{if(r.bs&&r.bf&&r.bf<r.bs)out.push({id:r.id,error:'Planned finish is before planned start'});
+    if((r.bs&&!isoOk(r.bs))||(r.bf&&!isoOk(r.bf)))out.push({id:r.id,error:'A planned date is not valid'})});
+  return out;
+}
+
+/* ---------- the batch log ---------- */
+const batchNo=b=>'IMP-'+String(b.seq||0).padStart(6,'0');
+const batchBy=b=>b.by_name||nameById(b.by_user);
+function contentHash(kind,pid,rows){return sha256Hex(kind+'|'+(pid||'*')+'|'+JSON.stringify(rows))}
+function lastBatch(kind,pid){return (DB.batches||[]).filter(b=>b.kind===kind&&(b.project_id||null)===(pid||null)&&b.status==='committed').sort((a,b)=>(b.seq||0)-(a.seq||0))[0]}
+function logBatch(b){
+  DB.batches=DB.batches||[];DB.batchSeq=Math.max(DB.batchSeq||0,...DB.batches.map(x=>x.seq||0))+1;
+  const prevFail=b.status!=='failed'?(DB.batches.filter(x=>x.status==='failed'&&x.kind===b.kind&&x.file_hash===b.file_hash).sort((a,c)=>c.seq-a.seq)[0]):null;
+  const r={id:'L'+DB.batchSeq,seq:DB.batchSeq,status:'committed',at_time:new Date().toISOString(),by_name:me().name,source_system:'Excel',currency:'SAR',
+    warnings:0,rows_rejected:0,retry_of:prevFail?prevFail.id:null,detail:{},...b};
+  DB.batches.push(r);return r;
+}
+/* Local (browser) commit wrapper: same rules as the server */
+async function localImport(kind,pid,S,rows,o,apply){
+  const hash=await contentHash(kind,pid,rows),last=lastBatch(kind,pid);
+  if(last&&last.file_hash===hash){toast('This is the same content as the last load, so nothing changed.');return null}
+  if(o.bad>0&&!S.ack){toast('Tick the box to confirm the refused rows first.');return null}
+  try{apply()}catch(e){logBatch({kind,project_id:pid,file_name:S.file,file_hash:hash,file_sha256:(S.src||{}).sha,file_size:(S.src||{}).size,rows_total:o.total,
+      rows_accepted:0,status:'failed',error_message:String(e.message||e)});save();toast('Nothing was saved: '+(e.message||e));return null}
+  return logBatch({kind,project_id:pid,file_name:S.file,file_hash:hash,file_sha256:(S.src||{}).sha,file_size:(S.src||{}).size,source_period:o.period||null,
+    rows_total:o.total,rows_accepted:o.total-o.bad,rows_rejected:o.bad,total_source:o.srcTotal??null,total_accepted:o.accTotal??null,
+    recon_status:o.bad?'Accepted with difference':'Matched',recon_diff:o.srcTotal!=null?o.srcTotal-o.accTotal:null,recon_accepted_by:o.bad?me().name:null,
+    recon_note:o.bad?(S.note||''):'',warnings:o.warn,source_system:o.system||'Excel',
+    detail:{rejected:(o.rejected||[]),warnings:warnList(o.key)}});
+}
+/* Server commit: one call, all-or-nothing; a failure is logged so the Import centre shows it */
+async function cloudImport(kind,pid,S,rows,o){
+  const p={kind,project_id:pid,file_name:S.file,file_sha256:(S.src||{}).sha||'',file_size:(S.src||{}).size||0,hash:await contentHash(kind,pid,rows),
+    rows,warnings:warnList(o.key),accept_difference:!!S.ack,note:S.note||'',period:o.period||null,data_date:o.dataDate||null,source_system:o.system||'Excel',currency:'SAR'};
+  try{return await rpc('import_commit',{p})}
+  catch(e){
+    const m=srvMsg(e);
+    if(/Reconciliation difference/i.test(m)){S.serverDiff=m;S.ack=false;rerenderPreview(o.key);throw new Error(m)}
+    try{await rpc('log_import_failure',{p:{kind,project_id:pid,file_name:S.file,file_sha256:p.file_sha256,file_size:p.file_size,hash:p.hash,rows_total:rows.length,error:m,period:p.period}})}catch(x){}
+    try{await cloudLoadInvoices()}catch(x){}
+    throw new Error(m);
+  }
+}
+const importDone=(r,what)=>r&&r.duplicate?'This is the same content as the last load, so nothing changed.'
+  :`${what} Batch IMP-${String(r.batch_seq||'').padStart(6,'0')}${r.recon_status==='Accepted with difference'?', accepted with a difference you confirmed':', reconciled'}.`;
+
+/* ---------- Import centre ---------- */
+const canImpView=()=>['sa','plan','costing','pm','exec','rm','pf'].includes(state.role);
+function impBatches(){
+  const ids=SCOPE;return (DB.batches||[]).filter(b=>!b.project_id?['sa','exec','plan'].includes(state.role):ids.has(b.project_id))
+    .sort((a,b)=>(b.seq||0)-(a.seq||0));
+}
+function batchStatus(b,all){
+  if(b.status==='failed'){const ok=all.find(x=>x.retry_of===b.id&&x.status==='committed');return ok?['Failed, retried','Medium',`Retried in ${batchNo(ok)}`]:['Failed','High',b.error_message||'']}
+  return b.recon_status==='Accepted with difference'?['Committed with difference','Medium','']:['Committed','Low',b.retry_of?'Retry of '+batchNo(all.find(x=>x.id===b.retry_of)||{}):''];
+}
+function renderImp(){
+  if(!canImpView()){$('#view').innerHTML=`<section class="panel"><p>The Import centre is for planning, costing, project managers and management.</p></section>`;return}
+  const all=impBatches(),f=state.impF||(state.impF={kind:'all',st:'all'});
+  const list=all.filter(b=>(f.kind==='all'||b.kind===f.kind)&&(f.st==='all'||(f.st==='failed'?b.status==='failed':f.st==='diff'?b.recon_status==='Accepted with difference':b.status==='committed')));
+  const d30=Date.now()-30*864e5,last30=all.filter(b=>new Date(b.at_time).getTime()>=d30);
+  const chip=(grp,v,l)=>`<button type="button" class="chip" data-impf="${grp}:${v}" aria-pressed="${f[grp]===v}">${l}</button>`;
+  const go=(sec,label,ok)=>ok?`<button class="btn sm" type="button" data-impgoto="${sec}">${label}</button>`:'';
+  $('#view').innerHTML=`${crumb()}
+  <div class="g g-kpi">
+    ${kpi('Batches, last 30 days',fmt(last30.length),`${fmt(all.length)} in all`)}
+    ${kpi('Committed',fmt(all.filter(b=>b.status==='committed').length),'Saved in one piece')}
+    ${kpi('With a confirmed difference',fmt(all.filter(b=>b.recon_status==='Accepted with difference').length),'Refused rows acknowledged by name',all.some(b=>b.recon_status==='Accepted with difference')?'a':'')}
+    ${kpi('Failed',fmt(all.filter(b=>b.status==='failed').length),'Nothing saved; previous data kept',all.some(b=>b.status==='failed'&&!all.some(x=>x.retry_of===b.id))?'r':'')}
+  </div>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Upload a file</h2></div>
+    <p class="small muted" style="margin:0 0 10px">Each upload page checks the file, shows a preview with a reconciliation and an exception report, and saves only when you confirm. Files up to 10 MB: Excel (.xlsx, .xls), CSV, Primavera XER or P6 XML. Workbooks with macros are refused.</p>
+    <div class="actions" style="margin:0">${go('inv','Invoice register',canCost())}${go('cost','Costing file',canCost())}${go('p6','P6 baseline',canBaseline())}${go('upd','Weekly progress',canUpdate())}
+      ${!(canCost()||canBaseline()||canUpdate())?'<span class="small muted">Your role views the history only.</span>':''}</div>
+    <div class="note-box" style="margin-top:12px"><b>SAP</b> ${PLANNED('Planned')} SAP ECC Excel exports will be added here once a sample export and the Finance rules are agreed. Direct SAP and S/4HANA connections stay switched off until IT, SAP, Cybersecurity and Finance approve them.</div></section>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Import history</h2></div>
+    <div class="chips" role="group" aria-label="Type">${chip('kind','all','All types')}${Object.entries(IMPORT_KINDS).filter(([k])=>all.some(b=>b.kind===k)).map(([k,l])=>chip('kind',k,l)).join('')}</div>
+    <div class="chips" role="group" aria-label="Result" style="margin-top:6px">${chip('st','all','All results')}${chip('st','ok','Committed')}${chip('st','diff','With difference')}${chip('st','failed','Failed')}</div>
+    <div class="scroll" style="margin-top:10px"><table class="tbl"><thead><tr><th>Batch</th><th>Type</th><th>Project</th><th>File</th><th class="n">Rows accepted</th><th class="n">Total in file</th><th class="n">Accepted</th><th>Result</th><th>By</th><th>When</th></tr></thead><tbody>
+    ${list.slice(0,state.showN||40).map(b=>{const [st,sev,sub]=batchStatus(b,all);return `<tr class="click" data-batch="${esc(b.id)}" tabindex="0">
+      <td><b>${batchNo(b)}</b></td><td>${esc(IMPORT_KINDS[b.kind]||b.kind)}</td><td>${b.project_id?esc((projById(b.project_id)||{}).short||b.project_id):'Several'}</td>
+      <td>${esc(b.file_name||'—')}${b.source_period?`<span class="t2">Period ${esc(b.source_period)}</span>`:''}</td>
+      <td class="n">${b.rows_total!=null?`${fmt(b.rows_accepted||0)} of ${fmt(b.rows_total)}`:'—'}</td>
+      <td class="n">${b.total_source!=null?sar(+b.total_source):'—'}</td><td class="n">${b.total_accepted!=null?sar(+b.total_accepted):'—'}</td>
+      <td><span class="sev ${sev}">${esc(st)}</span>${sub?`<span class="t2">${esc(sub)}</span>`:''}</td><td>${esc(batchBy(b))}</td><td>${esc(tStamp(b.at_time))}</td></tr>`}).join('')||'<tr><td colspan="10" class="muted">No imports yet in this scope.</td></tr>'}
+    </tbody></table></div></section>`;
+}
+function openBatch(id){
+  const all=impBatches(),b=all.find(x=>String(x.id)===String(id));if(!b)return;const [st,sev,sub]=batchStatus(b,all),D=b.detail||{};
+  const row=(l,v)=>v==null||v===''?'':`<tr><td>${l}</td><td>${v}</td></tr>`;
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${batchNo(b)}</h2><span class="sev ${sev}">${esc(st)}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <table class="tbl"><tbody>
+      ${row('Type',esc(IMPORT_KINDS[b.kind]||b.kind))}${row('Project',b.project_id?esc((projById(b.project_id)||{}).name||b.project_id):'Several: '+esc((D.projects||[]).join(', ')))}
+      ${row('Source system',esc(b.source_system||'Excel'))}${row('File',esc(b.file_name||''))}${row('Source period',esc(b.source_period||''))}${row('Currency',esc(b.currency||''))}
+      ${row('File fingerprint (SHA-256)',b.file_sha256?`<code style="word-break:break-all">${esc(b.file_sha256)}</code>`:'')}${row('Content fingerprint',b.file_hash?`<code style="word-break:break-all">${esc(b.file_hash)}</code>`:'')}
+      ${row('File size',b.file_size?`${(b.file_size/1024).toFixed(0)} KB`:'')}
+      ${row('Uploaded by',esc(batchBy(b)))}${row('Uploaded at',esc(tStamp(b.at_time)))}
+      ${row('Rows in the file',b.rows_total!=null?fmt(b.rows_total):'')}${row('Accepted',fmt(b.rows_accepted||0))}${row('Refused',fmt(b.rows_rejected||0))}${row('Warnings',fmt(b.warnings||0))}
+      ${row('Total in the file',b.total_source!=null?sar(+b.total_source):'')}${row('Total accepted',b.total_accepted!=null?sar(+b.total_accepted):'')}
+      ${row('Reconciliation',esc(b.recon_status||(b.status==='failed'?'Not reached':'')))}${row('Difference',b.recon_diff!=null?sar(+b.recon_diff):'')}
+      ${row('Difference accepted by',b.recon_accepted_by?esc(b.recon_accepted_by.length>30?nameById(b.recon_accepted_by):b.recon_accepted_by):'')}${row('Note',esc(b.recon_note||''))}
+      ${row('Commit status',b.status==='failed'?'Failed: nothing was saved, the previous data was kept':'Committed in one transaction')}
+      ${row('Error',esc(b.error_message||''))}${row('Retry',esc(sub||''))}${row('Audit reference',`<code>${esc(String(b.id))}</code>`)}
+    </tbody></table>
+    <div class="actions" style="margin-top:12px">${(D.rejected||[]).length||(D.warnings||[]).length||b.error_message?`<button class="btn primary" type="button" data-batchexc="${esc(b.id)}">Download exception report</button>`:'<span class="small muted">No refused rows or warnings.</span>'}</div>`;
+  $('#drawer').hidden=false;
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-impf],[data-batch],[data-batchexc],[data-impgoto]');if(!t)return;const ds=t.dataset;
+  if(ds.impf){const [g,v]=ds.impf.split(':');state.impF[g]=v;render();return}
+  if(ds.batch){openBatch(ds.batch);return}
+  if(ds.batchexc){const b=(DB.batches||[]).find(x=>String(x.id)===ds.batchexc);if(b)downloadBatchExceptions(b);return}
+  if(ds.impgoto){const sec=ds.impgoto;if(sec==='upd'){go('upd');return}
+    state.impPid=state.impPid||[...SCOPE][0];state.navSec={inv:'inv',cost:'cost',p6:'p6'}[sec];go('base')}
+});
 
 /* ---------- backup, restore and the move to the server ---------- */
 const backupName=k=>`protrack-${k}-${localISO()}.json`;
@@ -1578,8 +1748,8 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={
   proj:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/>',
@@ -1607,7 +1777,7 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='2.5';
+const APP_VERSION='2.6';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'exec',label:'Executive summary'}],single:true},
@@ -1634,8 +1804,8 @@ const DOMAINS=[
     {v:'dash',label:'Dashboard'},{v:'rep',label:'All reports'},{v:'perf',label:'Performance'},{v:'deck',label:'Presentation'}]},
   {k:'rasa',label:'RASA AI Assistant',ic:'ai',badge:'NEW',items:[{action:'rasa',label:'RASA AI Assistant'}],single:true},
   {k:'imports',label:'Imports & Integrations',ic:'imp',items:[
-    {v:'base',sec:'p6',label:'Primavera P6 (XER, XML)'},{v:'base',sec:'cost',label:'Excel templates'},
-    {plan:'SAP ECC import centre'},{plan:'S/4HANA connector',note:'Disabled until IT, SAP, Cybersecurity and Finance approve'}]},
+    {v:'imp',label:'Import centre'},{v:'base',sec:'p6',label:'Primavera P6 (XER, XML)'},{v:'base',sec:'cost',label:'Excel templates'},
+    {plan:'SAP ECC Excel exports',note:'Planned: needs a sample export and Finance approval'},{plan:'S/4HANA connector',note:'Disabled until IT, SAP, Cybersecurity and Finance approve'}]},
   {k:'admin',label:'Administration',ic:'admin',items:[
     {v:'admin',tab:'users',label:'Users and access'},{v:'admin',tab:'roles',label:'Role access'},{v:'admin',tab:'matrix',label:'Approval matrix'},
     {v:'admin',tab:'mail',label:'Approval email'},{v:'admin',tab:'projects',label:'Projects and terms'},{v:'admin',tab:'system',label:'System and date basis'}]}];
@@ -1898,9 +2068,9 @@ document.addEventListener('click',e=>{
 
 /* ---------- shell ---------- */
 function renderNav(){
-  const L=T[state.lang];const views=['exec','proj','dash','dpr','new','upd','base','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec()));
+  const L=T[state.lang];const views=['exec','proj','dash','dpr','new','upd','base','imp','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView()));
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>v!=='proj').map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>v!=='proj'&&v!=='imp').map(b).join('');
   $('#pageTitle').textContent=L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -1923,7 +2093,7 @@ let charts=[];const killCharts=()=>{charts.forEach(c=>c.destroy());charts=[]};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
-  ({exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -3682,7 +3852,8 @@ function autoCreateTrades(pid){
 }
 /* ---------- invoice register: submitted, approved, collected ---------- */
 const IHEAD={no:/invoice ?(no|number|#)|^inv/i,date:/invoice ?date|^date$/i,type:/type|category/i,
-  amount:/invoice ?amount|amount|value/i,sub:/submit/i,appr:/approv|certif/i,coll:/collect|receiv|paid/i,note:/remark|note/i};
+  amount:/invoice ?amount|amount|value/i,sub:/submit/i,appr:/approv|certif/i,coll:/collect|receiv|paid/i,note:/remark|note/i,
+  proj:/^project\b|project ?(no|code|number|id)|^job/i,cur:/^curr|currency/i};
 const INVTYPES=['Progress','Advance','Retention release','Variation','Other'];
 const invOf=pid=>((DB.invoices||{})[pid])||[];
 function invTotals(pid){
@@ -3728,13 +3899,24 @@ async function handleInvFile(file){
     Object.entries(IHEAD).forEach(([k,re])=>{const i=head.findIndex(h=>re.test(h));if(i>=0&&!Object.values(col).includes(i))col[k]=i});
     const g=(r,k)=>col[k]==null?'':r[col[k]];
     const num=v=>{if(v instanceof Date)return 0;const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0};
-    const rows=aoa.slice(hi+1).filter(r=>String(g(r,'no')||'').trim()).map(r=>{
+    const P=projById(pid);
+    const rows=aoa.slice(hi+1).map((r,i)=>[r,hi+2+i]).filter(([r])=>String(g(r,'no')||'').trim()).map(([r,ln])=>{
       const amount=num(g(r,'amount')),sub=col.sub!=null?num(g(r,'sub')):amount;
-      const o={no:String(g(r,'no')).trim(),date:dOnly(g(r,'date'))||'',type:String(g(r,'type')||'Progress').trim(),
+      const o={ln,no:String(g(r,'no')).trim(),date:dOnly(g(r,'date'))||'',type:String(g(r,'type')||'Progress').trim(),
         amount:amount||sub,sub,appr:num(g(r,'appr')),coll:num(g(r,'coll')),note:String(g(r,'note')||'').trim()};
-      o.err=!(o.amount>0||o.sub>0)?'No invoice amount':(o.appr>o.sub*1.001&&o.sub?'Approved is more than submitted':(o.coll>o.appr*1.001&&o.appr?'Collected is more than approved':null));
+      const pj=String(g(r,'proj')||'').trim(),cu=String(g(r,'cur')||'').trim().toUpperCase();
+      if(pj)o.project=[P.id,P.short].some(x=>String(x).toLowerCase()===pj.toLowerCase())?P.id:pj;
+      if(cu)o.currency=cu;
+      o.err=['amount','sub','appr','coll'].some(k=>nBad(g(r,k)))?'An amount is not a number'
+        :pj&&o.project!==P.id?`Belongs to project ${pj}, not ${P.short}`
+        :cu&&cu!=='SAR'?`Currency ${cu} is not SAR`
+        :dBad(g(r,'date'))?'Invoice date is not a valid date'
+        :[o.amount,o.sub,o.appr,o.coll].some(v=>v<0)?'Negative amount'
+        :!(o.amount>0||o.sub>0)?'No invoice amount':(o.appr>o.sub*1.001&&o.sub?'Approved is more than submitted':(o.coll>o.appr*1.001&&o.appr?'Collected is more than approved':null));
       o.warn=!o.err&&o.date&&o.date>ASOF?'Invoice date is after the data date':null;
       return o;});
+    const seenNo={};rows.forEach(o=>{const k=o.no.toLowerCase();seenNo[k]=(seenNo[k]||0)+1});
+    rows.forEach(o=>{if(seenNo[o.no.toLowerCase()]>1){o.err='Invoice number appears more than once';o.warn=null}});
     if(!rows.length)return fail('No invoice rows under the header.');
     state.inv={file:file.name,pid,rows};
     renderInvPreview();
@@ -3754,20 +3936,32 @@ function renderInvPreview(){
         <td class="small">${esc(r.err||r.warn||'')}</td></tr>`).join('')}
     </tbody></table></div>
     ${I.rows.length>14?`<p class="small muted">Showing the first 14 of ${I.rows.length}.</p>`:''}
-    <div class="actions"><button class="btn primary" type="button" data-invgo ${ok.length?'':'disabled'}>Apply ${ok.length} invoices</button><button class="btn" type="button" data-invcancel>Cancel</button></div>
+    ${(()=>{const o=invRecon();return reconHTML('inv',o)+`<div class="actions"><button class="btn primary" type="button" data-invgo ${ok.length?ackAttr('inv',o.bad):'disabled'}>Apply ${ok.length} invoices</button><button class="btn" type="button" data-invcancel>Cancel</button></div>`})()}
     <p class="small muted">Applying replaces the whole register for this project, so upload the full list each week.</p></div>`;
 }
-function runInvoices(){
-  const I=state.inv;if(!I)return;
-  if(CLOUD_ME){cloudRunInvoices(I);return}
+function invRecon(){
+  const I=state.inv,v=r=>+r.sub||+r.amount||0,ok=I.rows.filter(r=>!r.err);
+  return {key:'inv',total:I.rows.length,bad:I.rows.length-ok.length,warn:ok.filter(r=>r.warn).length,
+    srcTotal:I.rows.reduce((t,r)=>t+v(r),0),accTotal:ok.reduce((t,r)=>t+v(r),0),rejected:I.rows.filter(r=>r.err).map(r=>({no:r.no,error:r.err}))};
+}
+async function runInvoices(){
+  const I=state.inv;if(!I)return;const o=invRecon();
+  const rows=I.rows.map(({err,warn,ln,...r})=>err?{...r,client_error:err}:r);
+  if(CLOUD_ME){busyBtns('[data-invgo]',true);let r;
+    try{r=await cloudImport('invoices',I.pid,I,rows,o)}catch(e){busyBtns('[data-invgo]',false);toast('Nothing was saved: '+e.message);return}
+    try{await cloudLoadInvoices()}catch(e){}
+    save();state.inv=null;render();toast(importDone(r,`${r.accepted??0} invoices loaded on the server.`));return}
   const ok=I.rows.filter(r=>!r.err);
-  DB.invoices=DB.invoices||{};
-  DB.invoices[I.pid]=ok.map(({err,warn,...r})=>r);
-  DB.invMeta=DB.invMeta||{};DB.invMeta[I.pid]={file:I.file,at:stamp(),by:me().name,n:ok.length};
-  DB.invHist=DB.invHist||{};(DB.invHist[I.pid]=DB.invHist[I.pid]||[]).unshift({at:stamp(),by:me().name,file:I.file,n:ok.length,bad:I.rows.length-ok.length});
-  const t=invTotals(I.pid);
-  logChange(`Loaded invoice register for ${projById(I.pid).short}: ${ok.length} invoices, submitted ${sar(t.submitted)}, approved ${sar(t.approved)}, collected ${sar(t.collected)}`);
-  save();state.inv=null;render();toast(`${ok.length} invoices loaded`);
+  const b=await localImport('invoices',I.pid,I,rows,o,()=>{
+    DB.invoices=DB.invoices||{};
+    DB.invoices[I.pid]=ok.map(({err,warn,ln,...r})=>r);
+    DB.invMeta=DB.invMeta||{};DB.invMeta[I.pid]={file:I.file,at:stamp(),by:me().name,n:ok.length};
+    DB.invHist=DB.invHist||{};(DB.invHist[I.pid]=DB.invHist[I.pid]||[]).unshift({at:stamp(),by:me().name,file:I.file,n:ok.length,bad:I.rows.length-ok.length});
+    const t=invTotals(I.pid);
+    logChange(`Loaded invoice register for ${projById(I.pid).short}: ${ok.length} invoices, submitted ${sar(t.submitted)}, approved ${sar(t.approved)}, collected ${sar(t.collected)}`);
+  });
+  if(!b)return;
+  save();state.inv=null;render();toast(`${ok.length} invoices loaded, batch ${batchNo(b)}`);
 }
 function invoiceHTML(pid){
   const t=invTotals(pid),m=((DB.invMeta||{})[pid]),B=billPosition(projById(pid));
@@ -3935,7 +4129,8 @@ async function buildDeck(){
 
 /* ---------- costing file: budgeted quantity, rate and cost per activity ---------- */
 const CHEAD={id:/activity ?id|task ?code|^id$/i,name:/description|activity ?name|^name$/i,qty:/budget.*(qty|quantity)|^quantity$/i,uom:/uom|unit(?! rate)/i,
-  rate:/unit ?rate|rate ?per|budget.*rate/i,cost:/budget.*cost|^cost$|amount/i,mh:/manhour|budget.*(mh|hours)|labou?r ?hours/i,gang:/gang|crew ?code/i,rev:/revision|remark|note/i};
+  rate:/unit ?rate|rate ?per|budget.*rate/i,cost:/budget.*cost|^cost$|amount/i,mh:/manhour|budget.*(mh|hours)|labou?r ?hours/i,gang:/gang|crew ?code/i,rev:/revision|remark|note/i,
+  cur:/^curr|currency/i,proj:/^project\b|project ?(no|code|number|id)|^job/i};
 async function costingTemplate(){
   const pid=impPid();if(!pid)return;
   const acts=ACTS.filter(a=>a.p===pid);
@@ -3985,22 +4180,29 @@ async function handleCostFile(file){
       `<p class="small">Columns found in row ${hi+1}: ${head.filter(Boolean).map(h=>`<b>${esc(h)}</b>`).join(', ')||'none'}. Rename your columns to match the template, or download the template and paste your figures into it.</p>`);
     const g=(r,k)=>col[k]==null?'':r[col[k]];
     const num=v=>{if(v instanceof Date)return 0;const n=parseFloat(String(v).replace(/[^0-9.\-]/g,''));return isFinite(n)?n:0};
-    const raw=aoa.slice(hi+1).filter(r=>String(g(r,'id')||'').trim()).map(r=>({
+    const raw=aoa.slice(hi+1).map((r,i)=>[r,hi+2+i]).filter(([r])=>String(g(r,'id')||'').trim()).map(([r,ln])=>({ln,
       id:String(g(r,'id')).replace(/^\uFEFF/,'').trim(),name:String(g(r,'name')||'').trim(),qty:num(g(r,'qty')),uom:String(g(r,'uom')||'').trim(),
-      rate:num(g(r,'rate')),cost:num(g(r,'cost')),mh:num(g(r,'mh')),gang:String(g(r,'gang')||'').trim(),rev:String(g(r,'rev')||'').trim()}));
+      rate:num(g(r,'rate')),cost:num(g(r,'cost')),mh:num(g(r,'mh')),gang:String(g(r,'gang')||'').trim(),rev:String(g(r,'rev')||'').trim(),
+      badNum:['qty','rate','cost','mh'].some(k=>nBad(g(r,k))),cur:String(g(r,'cur')||'').trim().toUpperCase(),proj:String(g(r,'proj')||'').trim()}));
     if(!raw.length)return fail('No data rows under the header.',`<p class="small">The header was found in row ${hi+1} of sheet <b>${esc(sheet)}</b>, but every row below it has an empty Activity ID.</p>`);
     const merged={};
-    raw.forEach(r=>{const k=r.id.toLowerCase();const o=merged[k]||(merged[k]={id:r.id,name:r.name,qty:0,uom:r.uom,rate:r.rate,cost:0,mh:0,gang:r.gang,rev:r.rev,n:0});
-      o.qty+=r.qty;o.cost+=r.cost||r.qty*r.rate;o.mh+=r.mh;o.n++;if(!o.uom)o.uom=r.uom;if(!o.rate&&r.rate)o.rate=r.rate;if(!o.gang&&r.gang)o.gang=r.gang});
+    raw.forEach(r=>{const k=r.id.toLowerCase();const o=merged[k]||(merged[k]={id:r.id,name:r.name,qty:0,uom:r.uom,rate:r.rate,cost:0,mh:0,gang:r.gang,rev:r.rev,n:0,lns:[],badNum:false,cur:'',proj:''});
+      o.qty+=r.qty;o.cost+=r.cost||r.qty*r.rate;o.mh+=r.mh;o.n++;o.lns.push(r.ln);if(r.badNum)o.badNum=true;if(r.cur)o.cur=r.cur;if(r.proj)o.proj=r.proj;if(!o.uom)o.uom=r.uom;if(!o.rate&&r.rate)o.rate=r.rate;if(!o.gang&&r.gang)o.gang=r.gang});
     const rows=Object.values(merged).map(r=>{
       const a=acts.find(x=>x.id.toLowerCase()===r.id.toLowerCase());
       const rate=r.rate||(r.qty?r.cost/r.qty:0);
       let err=null,warn=null;
-      if(!a)err='Activity ID not in this project\u2019s baseline';
+      const Pc=projById(pid);
+      if(r.proj&&![Pc.id,Pc.short].some(x=>String(x).toLowerCase()===r.proj.toLowerCase()))err=`Belongs to project ${r.proj}, not ${Pc.short}`;
+      else if(r.badNum)err='A number column holds text';
+      else if(r.cur&&r.cur!=='SAR')err=`Currency ${r.cur} is not SAR`;
+      else if(!a)err='Activity ID not in this project\u2019s baseline';
       else if(!(r.qty>0))err='Budget quantity missing or zero';
+      else if(r.cost<0||r.mh<0)err='Negative cost or manhours';
       else if(!r.uom)err='Unit of measure missing';
       else if(!(r.cost>0))warn='No budget cost or unit rate';
       else if(r.mh&&a.bmh&&Math.abs(r.mh-a.bmh)/a.bmh>0.25)warn=`Manhours differ from P6 by ${pct(Math.abs(r.mh-a.bmh)/a.bmh,0)}`;
+      else if(r.n>1)warn=`${r.n} rows for this activity were added together`;
       return {...r,rate,a,err,warn,oldQty:a?a.qty:null,oldUom:a?a.uom:null,oldMh:a?Math.round(a.bmh):null};
     });
     const matched=rows.filter(r=>!r.err).length;
@@ -4028,13 +4230,26 @@ function renderCostPreview(){
       <td class="small">${esc(r.err||r.warn||'')}</td></tr>`).join('')}
     </tbody></table></div>
     ${C.rows.length>14?`<p class="small muted">Showing the first 14 of ${C.rows.length}.</p>`:''}
-    <div class="actions"><button class="btn primary" type="button" data-costgo ${ok.length?'':'disabled'}>Apply ${ok.length} costed activities</button><button class="btn" type="button" data-costcancel>Cancel</button></div>
+    ${(()=>{const o=costRecon();return reconHTML('cost',o)+`<div class="actions"><button class="btn primary" type="button" data-costgo ${ok.length?ackAttr('cost',o.bad):'disabled'}>Apply ${ok.length} costed activities</button><button class="btn" type="button" data-costcancel>Cancel</button></div>`})()}
     ${bad.length?'<p class="small muted">Rejected rows are not applied. Fix them in the file and upload again; the rest can be applied now.</p>':''}</div>`;
 }
-function runCosting(){
+function costRecon(){
+  const C=state.cost,ok=C.rows.filter(r=>!r.err);
+  return {key:'cost',total:C.rows.length,bad:C.rows.length-ok.length,warn:ok.filter(r=>r.warn).length,
+    srcTotal:C.rows.reduce((t,r)=>t+(+r.cost||0),0),accTotal:ok.reduce((t,r)=>t+(+r.cost||0),0),rejected:C.rows.filter(r=>r.err).map(r=>({id:r.id,error:r.err}))};
+}
+async function runCosting(){
   const C=state.cost,pid=impPid();if(!C||!pid)return;
-  const ok=C.rows.filter(r=>!r.err);if(!ok.length)return;
-  if(CLOUD_ME){cloudRunCosting(C,pid,ok);return}
+  const ok=C.rows.filter(r=>!r.err);if(!ok.length)return;const o=costRecon();
+  const rows=C.rows.map(r=>{const x={id:r.id,qty:r.qty,uom:String(r.uom||'').slice(0,12),rate:r.rate||0,cost:r.cost||0,mh:r.mh>0?r.mh:0,gang:r.gang||''};if(r.err)x.client_error=r.err;return x});
+  if(CLOUD_ME){busyBtns('[data-costgo]',true);let r;
+    try{r=await cloudImport('costing',pid,C,rows,o)}catch(e){busyBtns('[data-costgo]',false);toast('Nothing was saved: '+e.message);return}
+    try{await cloudLoadActs();applyMaster();await cloudLoadInvoices()}catch(e){}
+    applyMaster();save();state.cost=null;render();toast(importDone(r,`${r.applied??0} activities costed on the server.`));return}
+  const b=await localImport('costing',pid,C,rows,o,()=>runCostingLocal(C,pid,ok));
+  if(!b)return;applyMaster();save();state.cost=null;render();toast(`${ok.length} activities costed, batch ${batchNo(b)}`);
+}
+function runCostingLocal(C,pid,ok){
   const prev=DB.master.acts.filter(a=>a.p===pid),p=projById(pid);
   DB.baseHist=DB.baseHist||{};
   DB.baseHist[pid]=[{at:stamp(),by:me().name,file:'Costing: '+C.file,n:ok.length,before:prev.length,acts:JSON.parse(JSON.stringify(prev)),start:p.start,finish:p.finish}].concat(DB.baseHist[pid]||[]).slice(0,6);
@@ -4056,7 +4271,6 @@ function runCosting(){
   DB.costHist=DB.costHist||{};(DB.costHist[pid]=DB.costHist[pid]||[]).unshift({at:stamp(),by:me().name,file:C.file,rows:C.rows.length,
     ok:ok.length,bad:C.rows.filter(r=>r.err).length,warn:C.rows.filter(r=>r.warn).length,acts:C.acts,missing:C.missing});
   logChange(`Applied costing file ${C.file} to ${p.short}: ${applied} activities, budget ${sar(ok.reduce((t,r)=>t+r.cost,0))}`);
-  applyMaster();save();state.cost=null;render();toast(`${applied} activities costed`);
 }
 function costingHTML(pid){
   const c=(DB.costing||{})[pid],acts=ACTS.filter(a=>a.p===pid),costed=acts.filter(a=>a.costed).length;
@@ -4333,12 +4547,14 @@ async function handleUpdateFile(file){
     if(col.ms==null){const i=head.findIndex(h=>/milestone/i.test(h)&&!/current|previous|last/i.test(h));if(i>=0)col.ms=i}
     if(col.ms==null)throw new Error('Could not find a "Milestone reached" column.');
     const g=(r,k)=>col[k]==null?'':r[col[k]];
-    const parsed=aoa.slice(hi+1).filter(r=>String(g(r,'id')||'').trim()).map(r=>({
+    const parsed=aoa.slice(hi+1).map((r,i)=>[r,hi+2+i]).filter(([r])=>String(g(r,'id')||'').trim()).map(([r,ln])=>({ln,badDate:['as','af','ff','dd'].some(k=>dBad(g(r,k))),
       id:String(g(r,'id')).trim().toUpperCase(),ms:String(g(r,'ms')||'').trim(),as:dOnly(g(r,'as')),af:dOnly(g(r,'af')),
       ff:dOnly(g(r,'ff')),dd:dOnly(g(r,'dd')),rem:String(g(r,'rem')||'').trim(),pctIn:parseFloat(g(r,'pctIn'))}));
     if(!parsed.length)throw new Error('No rows with an activity ID were found.');
     const dd=parsed.map(r=>r.dd).filter(Boolean).sort().pop()||ASOF;
-    state.upd={file:file.name,dataDate:dd,rows:parsed.map(r=>validateRow(r,dd))};
+    const cnt={};parsed.forEach(r=>{cnt[r.id]=(cnt[r.id]||0)+1});
+    state.upd={file:file.name,dataDate:dd,rows:parsed.map(r=>{const o=validateRow(r,dd);
+      if(r.badDate){o.err='A date is not valid';o.changed=false}else if(cnt[r.id]>1){o.err='Activity appears more than once';o.changed=false}return o})};
     renderUpdPreview();
   }catch(e){box.innerHTML=`<p class="err">${esc(e.message||'This file could not be read.')}</p><p class="small muted">Use the ProTrack template, or any sheet with an Activity ID column.</p>`}
 }
@@ -4381,13 +4597,27 @@ function renderUpdPreview(){
       <td>${r.slip?`<span class="r-c">${r.slip} d late</span>`:r.a&&r.ff?'<span class="g-c">On plan</span>':'—'}</td>
       <td class="small">${esc(r.err||r.warn||'')}${r.rem?`<span class="t2">${esc(r.rem)}</span>`:''}</td></tr>`).join('')}
     </tbody></table></div>
-    <div class="actions"><button class="btn primary" type="button" data-updgo ${ch.length?'':'disabled'}>Apply ${ch.length} update${ch.length===1?'':'s'}</button><button class="btn" type="button" data-updcancel>Cancel</button></div>
-    ${bad.length?'<p class="small muted">Rejected rows are not applied. Fix them in the file and upload again; the rest can be applied now.</p>':''}</div>`;
+    ${(()=>{const o=updRecon();return reconHTML('upd',o)+`<div class="actions"><button class="btn primary" type="button" data-updgo ${ch.length?ackAttr('upd',o.bad):'disabled'}>Apply ${ch.length} update${ch.length===1?'':'s'}</button><button class="btn" type="button" data-updcancel>Cancel</button></div>`})()}
+    ${bad.length?'<p class="small muted">Refused rows are not applied. Fix them in the file and upload again, or confirm above to apply the rest now.</p>':''}</div>`;
 }
-function commitUpdate(){
+function updRecon(){
+  const U=state.upd,ok=U.rows.filter(r=>!r.err);
+  return {key:'upd',total:U.rows.length,bad:U.rows.length-ok.length,warn:ok.filter(r=>r.warn).length,dataDate:U.dataDate,period:U.dataDate,
+    rejected:U.rows.filter(r=>r.err).map(r=>({id:r.id,error:r.err}))};
+}
+async function commitUpdate(){
   const U=state.upd;if(!U)return;
-  const ch=U.rows.filter(r=>!r.err&&r.changed);if(!ch.length)return;
-  if(CLOUD_ME){cloudCommitUpdate(U,ch);return}
+  const ch=U.rows.filter(r=>!r.err&&r.changed);if(!ch.length)return;const o=updRecon();
+  const rows=U.rows.map(r=>{const x={project_id:r.a?r.a.p:([...SCOPE][0]||''),id:r.a?r.a.id:r.id,ms:r.ms||'',as:r.as||'',af:r.af||'',ff:r.ff||'',rem:r.rem||''};if(r.err)x.client_error=r.err;return x});
+  if(CLOUD_ME){busyBtns('[data-updgo]',true);let r;
+    try{r=await cloudImport('update',null,U,rows,o)}catch(e){busyBtns('[data-updgo]',false);toast('Nothing was saved: '+e.message);return}
+    try{await cloudLoadActs();await cloudLoadUpdates();await cloudLoadInvoices()}catch(e){}
+    applyMaster();save();logChange(`Applied engineering and procurement progress on the server, data date ${fmtDY(U.dataDate)}, from ${U.file}`);
+    state.upd=null;render();toast(importDone(r,`${r.applied??0} activities updated on the server.`));return}
+  const b=await localImport('update',null,U,rows,o,()=>commitUpdateLocal(U,ch));
+  if(!b)return;applyMaster();save();state.upd=null;render();toast(`${ch.length} activities updated, batch ${batchNo(b)}`);
+}
+function commitUpdateLocal(U,ch){
   const batch={id:'UPD-'+String((DB.updates||[]).length+1).padStart(4,'0'),p:ch[0].a.p,dataDate:U.dataDate,by:me().name,at:stamp(),file:U.file,rows:[]};
   ch.forEach(r=>{
     const a=DB.master.acts.find(x=>x.id===r.a.id)||r.a,c=curOf(a);DB.progress=DB.progress||{};
@@ -4399,7 +4629,6 @@ function commitUpdate(){
   logChange(`Applied ${batch.rows.length} engineering and procurement updates, data date ${fmtDY(U.dataDate)}, from ${U.file}`);
   const late=ch.filter(r=>r.slip>7);
   if(late.length)notify(`${late.length} design or procurement item${late.length===1?'':'s'} forecast late after the ${fmtDY(U.dataDate)} update, worst ${Math.max(...late.map(r=>r.slip))} days.`,true);
-  applyMaster();save();state.upd=null;render();toast(`${batch.rows.length} activities updated`);
 }
 function engProcStats(){
   const rows=scopeActs().filter(a=>!isCon(a)).map(a=>{const c=curOf(a),e=evm([a],ASOF),pl=plannedPct(a,ASOF),ff=c.ff||a.bf;
@@ -5613,29 +5842,40 @@ function renderImport(){
     </tbody></table></div>
     ${rows.length>10?`<p class="small muted">Showing the first 10 of ${fmt(rows.length)}.</p>`:''}
     <p class="small muted">${rows.some(r=>r.uom==='mh')?'Activities without a quantity column are tracked in earned manhours: budget quantity equals budgeted hours and the site team reports earned hours. Add a quantity and unit column to track physical quantities instead.':'Quantities and units were read from the file.'}</p>
-    <div class="actions"><button class="btn primary" type="button" data-impgo ${rows.length?'':'disabled'}>Import ${fmt(rows.length)} activities</button><button class="btn" type="button" data-impcancel>Cancel</button></div></div>`;
+    ${(()=>{const probs=baselineProblems(),set=state.view==='base'?(state.bset||'ORG'):'ORG';
+      if(probs.length)return `<div class="warn-box"><b>This file cannot be imported as it is</b>${probs.slice(0,5).map(p=>esc(p.id+': '+p.error)).join('<br>')}${probs.length>5?`<br>and ${probs.length-5} more`:''}. Nothing is imported until every activity is fixed.</div>
+        <div class="actions"><button class="btn sm" type="button" data-excdl="imp">Download exception report</button><button class="btn" type="button" data-impcancel>Cancel</button></div>`;
+      return (set==='ORG'?reconHTML('imp',{total:rows.length,bad:0,warn:0}):'')+`<div class="actions"><button class="btn primary" type="button" data-impgo ${rows.length?'':'disabled'}>Import ${fmt(rows.length)} activities</button><button class="btn" type="button" data-impcancel>Cancel</button></div>`})()}</div>`;
 }
-function runImport(){
+async function runImport(){
   const pid=impPid(),rows=mapRows();if(!rows.length)return;
   const set=state.view==='base'?(state.bset||'ORG'):'ORG';
   if(set!=='ORG')return storeBaselineSet(pid,set,rows);
-  const prev=DB.master.acts.filter(a=>a.p===pid),pr=projById(pid);
-  if(state.imp.dcma){DB.dcma=DB.dcma||{};DB.dcma[pid]={file:state.imp.file,at:stamp(),by:me().name,dataDate:state.imp.dcma.dataDate,tasks:state.imp.dcma.tasks,rels:state.imp.dcma.rels,checks:dcmaChecks(state.imp.dcma)}}
-  DB.baseHist=DB.baseHist||{};
-  DB.baseHist[pid]=[{at:stamp(),by:me().name,file:state.imp.file,n:rows.length,before:prev.length,acts:JSON.parse(JSON.stringify(prev)),start:pr.start,finish:pr.finish}].concat(DB.baseHist[pid]||[]).slice(0,6);
+  if(baselineProblems().length)return toast('Fix the activities listed in the exception report first.');
+  const I=state.imp,prev=DB.master.acts.filter(a=>a.p===pid),pr=projById(pid);
   const keep=DB.master.acts.filter(a=>a.p!==pid||!rows.some(r=>r.id===a.id));
   const add=rows.map(r=>{const con=r.cls==='CON';const bh=Math.max(0,r.bh||0);const a={id:r.id,p:pid,cls:r.cls,disc:r.disc,area:r.area,wbs:r.wbs,name:r.name,uom:con?r.uom:'%',pp:(con?r.qty:100)/Math.max(1,bh),pw:r.pw||0,mix:r.trades||{},
-    crew:[[TRADE[r.disc]||'Mason',6],['Helper',4]],pace:1,bs:r.bs,bf:r.bf,qty:con?r.qty:100,bmh:bh,p6mh:bh,priorQty:(con&&!state.imp.ignorePct)?r.qty*r.pct:0,imported:true};
+    crew:[[TRADE[r.disc]||'Mason',6],['Helper',4]],pace:1,bs:r.bs,bf:r.bf,qty:con?r.qty:100,bmh:bh,p6mh:bh,priorQty:(con&&!I.ignorePct)?r.qty*r.pct:0,imported:true};
     a.dailyPlan=a.qty/Math.max(1,workdays(r.bs,r.bf));
-    if(!con){const L=MS[r.cls];const pctIn=state.imp.ignorePct?0:r.pct;const m=L.slice().reverse().find(x=>x[2]/100<=pctIn+1e-6)||L[0];a.cur={ms:m[0],pct:m[2]/100,ff:r.bf,dataDate:ASOF,by:'Import'}}
+    if(!con){const L=MS[r.cls];const pctIn=I.ignorePct?0:r.pct;const m=L.slice().reverse().find(x=>x[2]/100<=pctIn+1e-6)||L[0];a.cur={ms:m[0],pct:m[2]/100,ff:r.bf,dataDate:ASOF,by:'Import'}}
     return a});
-  if(CLOUD_ME){const file=state.imp.file;cloudRunBaseline(pid,add,file).then(ok=>{if(!ok)return;
-    logChange(`Imported ${add.length} baseline activities into ${projById(pid).short} from ${file}`);save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render()});return}
-  DB.master.acts=keep.concat(add);
-  const p=projById(pid),st=add.map(a=>a.bs).sort()[0],fi=add.map(a=>a.bf).sort().pop();
-  if(st)p.start=st;if(fi)p.finish=fi;
-  logChange(`Imported ${add.length} baseline activities into ${p.short} from ${state.imp.file}`);
-  applyMaster();save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render();toast(`${add.length} activities imported`);
+  const o={key:'imp',total:add.length,bad:0,warn:0,system:/\.xer$|\.xml$/i.test(I.file)?'Primavera P6':'Excel'},dbRows=add.map(actToDb);
+  const dcma=()=>{if(I.dcma){DB.dcma=DB.dcma||{};DB.dcma[pid]={file:I.file,at:stamp(),by:me().name,dataDate:I.dcma.dataDate,tasks:I.dcma.tasks,rels:I.dcma.rels,checks:dcmaChecks(I.dcma)}}};
+  if(CLOUD_ME){busyBtns('[data-impgo]',true);let r;
+    try{r=await cloudImport('baseline',pid,I,dbRows,o)}catch(e){busyBtns('[data-impgo]',false);toast('Nothing was imported: '+e.message);return}
+    dcma();try{await cloudLoadActs();applyMaster();await cloudLoadProjects();await cloudLoadInvoices()}catch(e){}
+    if(!r.duplicate)logChange(`Imported ${add.length} baseline activities into ${projById(pid).short} from ${I.file}`);
+    applyMaster();save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render();toast(importDone(r,`${r.upserted??0} activities imported on the server.`));return}
+  const b=await localImport('baseline',pid,I,dbRows,o,()=>{
+    dcma();
+    DB.baseHist=DB.baseHist||{};
+    DB.baseHist[pid]=[{at:stamp(),by:me().name,file:I.file,n:rows.length,before:prev.length,acts:JSON.parse(JSON.stringify(prev)),start:pr.start,finish:pr.finish}].concat(DB.baseHist[pid]||[]).slice(0,6);
+    DB.master.acts=keep.concat(add);
+    const st=add.map(a=>a.bs).sort()[0],fi=add.map(a=>a.bf).sort().pop();
+    if(st)pr.start=st;if(fi)pr.finish=fi;
+    logChange(`Imported ${add.length} baseline activities into ${pr.short} from ${I.file}`);
+  });
+  if(!b)return;applyMaster();save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render();toast(`${add.length} activities imported, batch ${batchNo(b)}`);
 }
 async function templateXlsx(){
   try{

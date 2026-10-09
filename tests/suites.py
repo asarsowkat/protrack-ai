@@ -32,6 +32,9 @@ def page(b,url=None):
 def as_(pg,who):
     uid=pg.evaluate(f"(DB.master.users.find(u=>u.name==='{who}')||DB.master.users.find(u=>u.id==='{who}')||{{}}).id")
     pg.select_option('#role',uid);pg.wait_for_timeout(600)
+def ack(pg):
+    # v2.6: refused rows must be acknowledged before Apply is enabled
+    if pg.locator('#reconAck').count(): pg.check('#reconAck'); pg.wait_for_timeout(150)
 def cfm(pg):
     pg.wait_for_timeout(250)
     if pg.locator('[data-cfm="1"]').count():pg.click('[data-cfm="1"]');pg.wait_for_timeout(400)
@@ -88,12 +91,13 @@ with sync_playwright() as p:
         ck('Costing upload','unknown activity ID is rejected',bool(st) and any(r['id']=='NOPE-999' and r['err'] for r in st),st)
         ck('Costing upload','row without a budget quantity is rejected',bool(st) and any(r['id']==ids[2] and r['err'] for r in st),st)
         ck('Costing upload','nothing changes before Apply',pg.evaluate(f"ACTS.find(a=>a.id==='{ids[0]}').bcost")!=5000)
-        pg.click('[data-costgo]');pg.wait_for_timeout(900)
+        ck('Costing upload','Apply waits for the refused rows to be acknowledged (v2.6)',pg.is_disabled('[data-costgo]'))
+        ack(pg);pg.click('[data-costgo]');pg.wait_for_timeout(900)
         a=pg.evaluate(f"(()=>{{const a=ACTS.find(x=>x.id==='{ids[0]}');return {{qty:a.qty,uom:a.uom,bcost:a.bcost,bmh:a.bmh,pp:a.pp}}}})()")
         ck('Costing upload','valid rows applied: quantity, unit, cost, manhours',a['qty']==100 and a['uom']=='m3' and a['bcost']==5000 and a['bmh']==400,a)
         ck('Costing upload','planned rate recalculated = quantity / manhours',abs(a['pp']-0.25)<1e-9,a)
         ck('Costing upload','upload logged with the number of rows applied',pg.evaluate("DB.costing.QOT&&DB.costing.QOT.n")==2,pg.evaluate("DB.costing.QOT"))
-        pg.set_input_files('#costfile',book(aoa,'Costing','costing_QOT.xlsx'));pg.wait_for_timeout(1000);pg.click('[data-costgo]');pg.wait_for_timeout(800)
+        pg.set_input_files('#costfile',book(aoa,'Costing','costing_QOT.xlsx'));pg.wait_for_timeout(1000);ack(pg);pg.click('[data-costgo]');pg.wait_for_timeout(800)
         ck('Costing upload','uploading the same file again is safe: no duplicated activities, same values',pg.evaluate("ACTS.filter(a=>a.p==='QOT').length")==n0 and pg.evaluate(f"ACTS.find(a=>a.id==='{ids[0]}').bcost")==5000)
         pg.set_input_files('#costfile',book([['Code?','Qty'],['x',1]],'Costing','bad.xlsx'));pg.wait_for_timeout(900)
         ck('Costing upload','missing Activity ID column gives a clear message','Activity ID' in pg.inner_text('#costBox'),pg.inner_text('#costBox')[:160])
@@ -116,11 +120,12 @@ with sync_playwright() as p:
         st=pg.evaluate("state.inv&&state.inv.rows.map(r=>({no:r.no,err:r.err||null}))")
         ck('Invoice register','approved above submitted is rejected',bool(st) and any(r['no']=='INV-2' and r['err'] for r in st),st)
         ck('Invoice register','collected above approved is rejected',bool(st) and any(r['no']=='INV-3' and r['err'] for r in st),st)
-        pg.click('[data-invgo]');pg.wait_for_timeout(800)
+        ack(pg);pg.click('[data-invgo]');pg.wait_for_timeout(800)
         t=pg.evaluate("(()=>{const t=invTotals('QOT');return {n:invOf('QOT').length,sub:t.submitted,appr:t.approved,coll:t.collected}})()")
         ck('Invoice register','only valid rows stored',t['n']==2,t)
         ck('Invoice register','totals: submitted, approved, collected',t['sub']==3000000 and t['appr']==2900000 and t['coll']==2800000,t)
-        pg.set_input_files('#invfile',book(aoa,'Invoices','invoices_QOT.xlsx'));pg.wait_for_timeout(900);pg.click('[data-invgo]');pg.wait_for_timeout(600)
+        aoa[1][7]='IPC 1 (revised remark)'
+        pg.set_input_files('#invfile',book(aoa,'Invoices','invoices_QOT.xlsx'));pg.wait_for_timeout(900);ack(pg);pg.click('[data-invgo]');pg.wait_for_timeout(600)
         ck('Invoice register','re-upload replaces the register, never doubles it',pg.evaluate("invOf('QOT').length")==2)
         ck('Invoice register','upload history kept',pg.evaluate("(DB.invHist.QOT||[]).length")>=2)
         ck('Invoice register','no script errors',not errs,errs[:2])

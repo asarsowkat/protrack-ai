@@ -27,7 +27,7 @@ def sql(q, db=DBN):
 # ------------------------------------------------------------------ database
 subprocess.run(PG + ['-d', 'postgres', '-c', f'drop database if exists {DBN}'], capture_output=True)
 subprocess.run(PG + ['-d', 'postgres', '-c', f'create database {DBN}'], check=True, capture_output=True)
-for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql']:
+for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql', 'schema-update-v5.sql']:
     p = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, f)], capture_output=True, text=True)
     if p.returncode: raise SystemExit(f + ': ' + p.stderr)
 people = [('sa', 'Sara Admin', 'sa'), ('pm', 'Paul Manager', 'pm'), ('e1', 'Eng. Omar Engineer', 'eng'), ('e2', 'Eng. Hadi Other', 'eng'),
@@ -193,11 +193,13 @@ with sync_playwright() as p:
     head = ['Activity ID', 'Description', 'Budget quantity', 'UOM', 'Unit rate', 'Budget cost', 'Budget manhours']
     aoa = [head, ['TT-100', 'Raft', 1000, 'm3', 300, 300000, 2100], ['TT-110', 'Rebar', 200, 't', 2500, 500000, 0], ['NOPE', 'x', 1, 'm', 1, 1, 1]]
     pg.set_input_files('#costfile', book(aoa, 'Costing', 'costing_TT.xlsx')); pg.wait_for_timeout(1200)
-    pg.click('[data-costgo]'); pg.wait_for_timeout(2500)
+    ck('Costing', 'refused row must be acknowledged before applying', pg.is_disabled('[data-costgo]'))
+    pg.check('#reconAck'); pg.click('[data-costgo]'); pg.wait_for_timeout(2500)
     ck('Costing', 'costing file applied on the server', sql("select budget_cost||'/'||budget_mh||'/'||costed from activities where id='TT-100'") == '300000/2100/true', sql("select budget_cost||'/'||budget_mh from activities where id='TT-100'"))
     ck('Costing', 'app shows the server values', pg.evaluate("(()=>{const a=ACTS.find(x=>x.id==='TT-100');return a.bcost===300000&&a.bmh===2100})()"))
-    ck('Costing', 'upload recorded as a batch with a file fingerprint', sql("select count(*)||'/'||min(length(file_hash)) from import_batches where kind='costing'") == '1/64')
-    pg.set_input_files('#costfile', book(aoa, 'Costing', 'costing_TT.xlsx')); pg.wait_for_timeout(1200); pg.click('[data-costgo]'); pg.wait_for_timeout(2000)
+    q = sql("select count(*)||'/'||min(length(file_hash))||'/'||min(length(file_sha256))||'/'||min(recon_status)||'/'||(min(recon_diff)=1)||'/'||bool_and(recon_accepted_by is not null) from import_batches where kind='costing'")
+    ck('Costing', 'upload recorded as a batch with fingerprints and the confirmed difference', q == '1/64/64/Accepted with difference/true/true', q)
+    pg.set_input_files('#costfile', book(aoa, 'Costing', 'costing_TT.xlsx')); pg.wait_for_timeout(1200); pg.check('#reconAck'); pg.click('[data-costgo]'); pg.wait_for_timeout(2000)
     ck('Costing', 'same file again changes nothing', sql("select count(*) from import_batches where kind='costing'") == '1' and sql("select count(*) from baseline_history") == '1')
     ihead = ['Invoice number', 'Invoice date', 'Type', 'Invoice amount (SAR)', 'Submitted amount (SAR)', 'Approved amount (SAR)', 'Collected amount (SAR)', 'Remark']
     inv = [ihead, ['INV-1', '2026-08-31', 'Progress', 1000000, 1000000, 900000, 800000, 'IPC 1'], ['INV-ADV', '2026-08-01', 'Advance', 2000000, 2000000, 2000000, 2000000, 'Advance']]
@@ -205,6 +207,20 @@ with sync_playwright() as p:
     pg.click('[data-invgo]'); pg.wait_for_timeout(2500)
     ck('Invoices', 'register loaded on the server', sql("select count(*)||'/'||sum(submitted) from invoices where project_id='P1'") == '2/3000000')
     ck('Invoices', 'app totals come from the server', pg.evaluate("invTotals('P1').submitted") == 3000000 and 'Carla Costing' in pg.evaluate("(DB.invMeta.P1||{}).by||''"), pg.evaluate("DB.invMeta.P1"))
+    ck('Invoices', 'clean register reconciles as Matched', sql("select recon_status from import_batches where kind='invoices' order by seq desc limit 1") == 'Matched')
+    # a commit that fails half way on the server: nothing saved, failure logged, retry linked
+    sql("create function test_boom() returns trigger language plpgsql as $$ begin if new.invoice_no = 'BOOM' then raise exception 'disk full (simulated)'; end if; return new; end $$; create trigger test_boom before insert on invoices for each row execute function test_boom();")
+    inv2 = [ihead, ['INV-1', '2026-08-31', 'Progress', 1000000, 1000000, 900000, 800000, 'IPC 1'], ['BOOM', '2026-09-30', 'Progress', 5, 5, 0, 0, '']]
+    pg.set_input_files('#invfile', book(inv2, 'Invoices', 'invoices_TT_v2.xlsx')); pg.wait_for_timeout(1200)
+    pg.click('[data-invgo]'); pg.wait_for_timeout(2500)
+    ck('Failures', 'a failed commit leaves the previous register intact', sql("select count(*)||'/'||sum(submitted) from invoices where project_id='P1'") == '2/3000000' and 'Nothing was saved' in pg.inner_text('#toast'), pg.inner_text('#toast'))
+    ck('Failures', 'the failure is logged with its reason', sql("select status||'|'||error_message from import_batches order by seq desc limit 1") == 'failed|disk full (simulated)')
+    sql("drop trigger test_boom on invoices")
+    pg.click('[data-invgo]'); pg.wait_for_timeout(2500)
+    ck('Failures', 'retry succeeds and is linked to the failure', sql("select (retry_of is not null)||'/'||status from import_batches order by seq desc limit 1") == 'true/committed' and sql("select count(*) from invoices where project_id='P1'") == '2')
+    pg.evaluate("go('imp')"); pg.wait_for_timeout(1000)
+    v = pg.inner_text('#view')
+    ck('Import centre', 'server batches listed with results, failure shown as retried', 'Failed, retried' in v and 'Committed with difference' in v and v.count('IMP-') >= 4, v[:600])
     login(pg, 'f1')
     r = pg.evaluate("rpc('import_invoices',{p_project:'P1',p_file:'x',p_hash:'f'.repeat(64),p_rows:[],p_period:null}).then(()=>'ran',e=>e.message)")
     ck('Invoices', 'a foreman calling the invoice import is refused', 'Only costing' in r, r)
@@ -216,11 +232,15 @@ with sync_playwright() as p:
     ok = pg.evaluate("cloudRunBaseline('P1',[{id:'TT-120',name:'Blockwork',cls:'CON',disc:'Civil',area:'Zone B',wbs:'Masonry',uom:'m2',qty:500,bmh:900,pw:20000,bs:'2026-10-01',bf:'2026-11-15',priorQty:0}],'Added by hand: TT-120')"); pg.wait_for_timeout(1500)
     ck('Baseline', 'planner adds an activity through the server', ok is True and sql("select name from activities where id='TT-120'") == 'Blockwork' and pg.evaluate("!!ACTS.find(a=>a.id==='TT-120')"), ok)
 
-    r = pg.evaluate("cloudCommitUpdate({dataDate:'2026-09-21',file:'upd.xlsx'},[{a:ACTS.find(a=>a.id==='TT-E01'),ms:'IDC',pct:0.4,rem:'IDC sent'}]).then(()=>document.querySelector('#toast').textContent)"); pg.wait_for_timeout(800)
-    ck('Weekly update', 'planner progress update saved on the server', sql("select cur->>'ms' from activities where id='TT-E01'") == 'IDC' and sql("select count(*) from weekly_updates") == '1', r)
+    pg.evaluate("go('upd')"); pg.wait_for_timeout(900)
+    uh = ['Activity ID', 'Milestone reached', 'Actual start', 'Actual finish', 'Forecast finish', 'Data date', 'Remarks']
+    pg.set_input_files('#updfile', book([uh, ['TT-E01', 'IDC', '2026-08-05', '', '2026-10-10', '2026-09-21', 'IDC sent']], 'Update', 'update_wk38.xlsx')); pg.wait_for_timeout(1200)
+    pg.click('[data-updgo]'); pg.wait_for_timeout(2500)
+    r = pg.inner_text('#toast')
+    ck('Weekly update', 'planner progress update saved on the server in one batch', sql("select cur->>'ms' from activities where id='TT-E01'") == 'IDC' and sql("select count(*) from weekly_updates") == '1' and sql("select count(*) from import_batches where kind='update' and status='committed'") == '1', r)
     ck('Weekly update', 'app shows the server progress', pg.evaluate("curOf(ACTS.find(a=>a.id==='TT-E01')).ms") == 'IDC')
     login(pg, 'f1')
-    r = pg.evaluate("cloudCommitUpdate({dataDate:'2026-09-22',file:'upd2.xlsx'},[{a:ACTS.find(a=>a.id==='TT-E01'),ms:'IFC',pct:1,rem:'x'}]).then(()=>document.querySelector('#toast').textContent)"); pg.wait_for_timeout(800)
+    r = pg.evaluate("rpc('import_commit',{p:{kind:'update',project_id:null,file_name:'upd2.xlsx',hash:'a'.repeat(64),data_date:'2026-09-22',rows:[{project_id:'P1',id:'TT-E01',ms:'IFC'}]}}).then(()=>'ran',e=>'refused: '+e.message)"); pg.wait_for_timeout(800)
     ck('Weekly update', 'a foreman cannot change progress (server refuses)', sql("select cur->>'ms' from activities where id='TT-E01'") == 'IDC' and 'refused' in r, r)
 
     # ---------------------------------------------------------------- load failure is visible, never silent
@@ -280,7 +300,10 @@ with sync_playwright() as p:
     live_cache = pg.evaluate("localStorage.getItem('protrack-demo-v1')")
     sb_calls = []
     pg.on('request', lambda r: sb_calls.append(r.url) if '/__sb/' in r.url else None)
-    pg.goto(URL + 'demo.html'); pg.wait_for_timeout(1200)
+    pg.goto(URL + 'demo.html'); pg.wait_for_load_state('load')
+    try: pg.wait_for_function("typeof CLOUD !== 'undefined'", timeout=15000)
+    except Exception as ex: print('demo page did not start:', errs[-3:], pg.url, file=sys.stderr)
+    pg.wait_for_timeout(800)
     ck('Demo page', 'demo page never connects to the server', pg.evaluate("CLOUD") is False and pg.evaluate("typeof window.supabase") == 'undefined', pg.evaluate("CLOUD"))
     ck('Demo page', 'sign-in says it is sample data and lists demo accounts', 'Demo page with sample data' in pg.inner_text('#authCard') and pg.locator('details.demo').count() == 1)
     pg.fill('#lgId', 'asarudeen@company.com'); pg.fill('#lgPw', 'ProTrack@2026'); pg.click('#lgBtn'); pg.wait_for_timeout(1800)

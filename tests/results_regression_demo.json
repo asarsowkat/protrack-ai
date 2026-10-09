@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-09 20:15",
- "app": "/home/claude/p2/app/app.html",
+ "run_at": "2026-10-09 21:55",
+ "app": "/home/claude/p3/app.html",
  "results": [
   {
    "area": "Auth",
@@ -124,7 +124,7 @@
   },
   {
    "area": "Reports",
-   "check": "report histo builds (0.45 s)",
+   "check": "report histo builds (0.43 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -154,7 +154,7 @@
   },
   {
    "area": "Reports",
-   "check": "report unitrate builds (0.0 s)",
+   "check": "report unitrate builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },

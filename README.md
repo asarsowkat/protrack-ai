@@ -161,6 +161,13 @@ Production needs:
 
 ---
 
+## Version 2.6
+
+- Import centre: every upload is a numbered batch with file fingerprint, counts, totals, reconciliation, acknowledgement, failures and retries
+- Checks before saving (file type and size, project, currency, dates, numbers, duplicates); exception report as CSV
+- Refused rows must be acknowledged by name; all-or-nothing saving, weekly progress included (`schema-update-v5.sql`)
+- See RELEASE-NOTES-v2.6.md and STAGE-3-SETUP.md
+
 ## Version 2.5
 
 - Daily reports, activities, costing, invoices, weekly progress, approval matrix and
