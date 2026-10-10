@@ -387,6 +387,10 @@ label.btn{display:inline-block}
 .repctl{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 14px;padding:10px 12px;background:var(--surface-2);border-radius:9px}
 .repctl .ctl{gap:8px;font-size:13px;color:var(--ink-2)}
 .repctl select{font-size:14px}
+.qfacts{margin:10px 0 0}.qfacts>div>div{padding:0;background:none}.qfacts .t2{display:block}.warn-box.qwarn{background:var(--amber-soft);border-inline-start-color:var(--amber)}
+.qfacts.q5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:1280px){.qfacts.q5{grid-template-columns:repeat(3,minmax(0,1fr))}.qfacts.q5>div:last-child{grid-column:span 2}}
+@media (max-width:640px){.qfacts,.qfacts.q5{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .warn-box{background:var(--red-soft);border-inline-start:4px solid var(--red);border-radius:9px;padding:11px 14px;margin:10px 0;font-size:14px}
 .warn-box b{display:block;margin-bottom:3px}
 
@@ -697,7 +701,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.1</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.2</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1254,7 +1258,7 @@ async function cloudLoadAll(quiet){
     await cloudLoadDirectory();
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
-    await Promise.all([cloudLoadDprs(),cloudLoadMatrix()]);
+    await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
     await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadIssues();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
@@ -1287,18 +1291,18 @@ async function cloudSaveDpr(f,cleanLines,mode,err){
   if(TIMER.kind==='create')timerStop(true);
   try{await cloudLoadDpr(r.id)}catch(e){toast('Saved, but the list could not refresh: '+srvMsg(e))}
   save();const p=projById(f.p),d=DB.dprs.find(x=>x.id===r.id);
-  if(d&&r.status==='Submitted'&&mode==='submit'){notify(`${d.id} submitted for ${p.short} with ${d.lines.length} activit${d.lines.length>1?'ies':'y'}, waiting for ${routeOf(d).revName} to review.`);notifyLow(d)}
+  if(d&&r.status==='Submitted'&&mode==='submit'){notify(`${d.id} submitted for ${p.short} with ${d.lines.length} activit${d.lines.length>1?'ies':'y'}, waiting for ${routeOf(d).revName} to review.`);notifyLow(d);notifyOver(d)}
   toast(`${r.id} ${mode==='submit'?(state.editing?'saved':'submitted'):'saved as draft'} on the server`);state.dprFilter='All';go('dpr');
 }
-async function cloudAct(d,k,note){
+async function cloudAct(d,k,note,just){
   const errEl=$('#actErr');busyBtns('[data-do]',true);if(errEl)errEl.textContent='Sending to the server…';
   const timed=TIMER.id===d.id&&(TIMER.kind==='review'||TIMER.kind==='approve'),secs=timed?timerElapsed():0;
   try{
     if(k==='submit')await rpc('dpr_save',{p:{id:d.id,project_id:d.p,report_date:d.date,foreman:d.foreman,foreman_id:d.foremanId,remarks:d.remarks||'',photos:d.attachments||[],lines:linesToDb(d.lines),submit:true,secs:0}});
-    else await rpc('dpr_act',{p_id:d.id,p_action:k,p_note:note||null,p_secs:secs});
-  }catch(e){busyBtns('[data-do]',false);const m='The server refused this: '+srvMsg(e);if(errEl)errEl.textContent=m;else toast(m);return}
+    else await rpc('dpr_act',Object.assign({p_id:d.id,p_action:k,p_note:note||null,p_secs:secs},just&&Object.keys(just).length?{p_just:just}:{}));
+  }catch(e){busyBtns('[data-do]',false);const sm=srvMsg(e),m='The server refused this: '+sm+(/p_just|function/i.test(sm)?' (the server needs the v11 database update, see STAGE-8-SETUP)':'');if(errEl)errEl.textContent=m;else toast(m);return}
   if(timed)timerStop(true);
-  try{await cloudLoadDpr(d.id)}catch(e){toast('Done, but the report could not refresh: '+srvMsg(e))}
+  try{await cloudLoadDpr(d.id);await cloudLoadQtyJust()}catch(e){toast('Done, but the report could not refresh: '+srvMsg(e))}
   save();const nd=DB.dprs.find(x=>x.id===d.id)||d,p=projById(nd.p),label=(nd.audit[nd.audit.length-1]||{}).action||nd.status;
   if(k==='submit'){notify(`${nd.id} submitted for ${p.short}, waiting for ${routeOf(nd).revName} to review.`);notifyLow(nd)}
   else notify(`${nd.id} ${String(label).toLowerCase()} by ${me().name}.${note?' Comment: '+note:''}`,k==='reject');
@@ -3098,6 +3102,86 @@ function rasaIssTopic(s){
     <p><button class="btn sm" type="button" data-go="iss">Open the issue register</button></p>`+rasaEv([],`the issue register, kept by the planning and costing engineers of each project (${open.length} open issues)`);
 }
 
+/* ---------- v3.2: the activity's quantities in the daily report ----------
+   When an activity is chosen, the report shows its scope (total quantity), what was executed up to yesterday, the
+   balance, the balance duration to its planned finish and today's plan (balance ÷ balance duration). The foreman or
+   site engineer enters the actual quantity. A quantity that takes the activity beyond its scope is accepted, but the
+   reviewer must justify the variation for each such activity while reviewing; the approver cannot approve a quantity
+   that was not justified. On the server: dpr_act (p_just) and dpr_qty_just (schema-update-v11.sql). */
+const QJ_MIN=10;
+function qtyPos(a,date,rid){
+  const others=lines().filter(l=>l.act===a.id&&VALID.has(l.status)&&l.rid!==rid);
+  const before=(+a.priorQty||0)+others.filter(l=>l.date<date).reduce((t,l)=>t+(+l.qty||0),0);
+  const sameDay=others.filter(l=>l.date===date).reduce((t,l)=>t+(+l.qty||0),0);
+  const scope=+a.qty||0,bal=Math.max(0,scope-before),start=bsOf(a),finish=bfOf(a);
+  const rem=date<start?workdays(start,addDays(finish,1)):workdays(date,addDays(finish,1));
+  let plan,why='';
+  if(bal<=0){plan=0;why='The scope is complete.'}
+  else if(date<start){plan=0;why=`Planned start ${fmtDY(start)}.`}
+  else if(rem<=0){plan=bal;why=`Past the planned finish (${fmtDY(finish)}): the whole balance is due.`}
+  else plan=bal/rem;
+  const cum=q=>before+sameDay+(+q||0),over=q=>scope>0&&cum(q)>scope+1e-6;
+  return {scope,before,sameDay,bal,rem:Math.max(0,rem),plan,why,start,finish,cum,over};
+}
+/* activities of a report whose quantity takes them beyond the scope, as the server works it out */
+function qtyOverOf(d){
+  return (d.lines||[]).map(l=>{const a=actById(l.act);if(!a||!isCon(a))return null;const P=qtyPos(a,d.date,d.id),q=+l.qty||0;
+    return P.over(q)?{act:a.id,a,qty:q,cum:P.cum(q),scope:P.scope}:null}).filter(Boolean);
+}
+const justOf=d=>(d.qtyJust||[]).concat((DB.qtyJust||[]).filter(j=>j.dpr_id===d.id)).sort((x,y)=>String(x.at_time).localeCompare(String(y.at_time)));
+const justFor=(d,o)=>justOf(d).filter(j=>j.activity_id===o.act&&Math.abs((+j.qty||0)-o.qty)<1e-9);
+function qtyFactsHTML(a,P,q,u){
+  const n=v=>fmt(v,a.uom==='t'?2:1);
+  return `<div class="facts qfacts${q==null?' q5':''}">
+    <div><div class="l">Total quantity (scope)</div><div class="v">${n(P.scope)} ${esc(u)}</div></div>
+    <div><div class="l">Executed up to yesterday</div><div class="v">${n(P.before)} ${esc(u)}</div>${P.scope?`<span class="t2">${pct(Math.min(9.99,P.before/P.scope),0)} of scope</span>`:''}</div>
+    <div><div class="l">Balance</div><div class="v">${n(P.bal)} ${esc(u)}</div></div>
+    <div><div class="l">Balance duration</div><div class="v">${P.rem} day${P.rem===1?'':'s'}</div><span class="t2">working days to ${fmtDY(P.finish)}</span></div>
+    <div><div class="l">Plan for today</div><div class="v">${n(P.plan)} ${esc(u)}</div><span class="t2">${P.why?esc(P.why):'balance ÷ balance duration'}</span></div>
+    ${q!=null?`<div><div class="l">To date with today</div><div class="v ${P.over(q)?'a-c':''}">${n(P.cum(q))} ${esc(u)}</div>${P.scope?`<span class="t2">${pct(Math.min(9.99,P.cum(q)/P.scope),0)} of scope</span>`:''}</div>`:''}
+  </div>
+  ${P.sameDay?`<p class="small muted" style="margin:4px 0 0">${n(P.sameDay)} ${esc(u)} already reported for this date on other reports; counted in the total to date.</p>`:''}`;
+}
+/* the form: refreshed on every keystroke (quantity, date) without redrawing the card */
+function qposHTML(l,f){const a=actById(l.act);if(!a)return '';return qtyFactsHTML(a,qtyPos(a,f.date,state.editing||null),null,a.uom)}
+function qafterHTML(l,f){
+  const a=actById(l.act);if(!a)return '';const P=qtyPos(a,f.date,state.editing||null),q=l.qty===''||l.qty==null||l.qty===0&&!String(l.qty)?null:+l.qty;
+  if(q==null||!(q>0))return '';const n=v=>fmt(v,a.uom==='t'?2:1);
+  return `<p class="small" style="margin:6px 0 0">To date with today: <b class="${P.over(q)?'a-c':''}">${n(P.cum(q))} ${esc(a.uom)}</b>${P.scope?`, ${pct(Math.min(9.99,P.cum(q)/P.scope),0)} of scope`:''}${P.plan>0?`; plan for today ${n(P.plan)} ${esc(a.uom)}`:''}.</p>`
+    +(P.over(q)?`<div class="warn-box qwarn" style="margin-top:8px"><b>Beyond the scope by ${n(P.cum(q)-P.scope)} ${esc(a.uom)}.</b>The quantity is accepted. The site engineer must justify the quantity variation when reviewing this report.</div>`:'');
+}
+function qposPaint(){const f=state.form;if(!f)return;f.lines.forEach((l,i)=>{const el=document.getElementById('qpos'+i);if(el)el.innerHTML=qposHTML(l,f);const e2=document.getElementById('qafter'+i);if(e2)e2.innerHTML=qafterHTML(l,f)})}
+/* the report: position as at the report date, any variation and its justification, and the box the reviewer fills */
+function lineQtyHTML(l,rep){
+  const a=actById(l.act);if(!a||!rep)return '';const P=qtyPos(a,rep.date,rep.id),q=+l.qty||0,over=P.over(q);
+  const J=over?justFor(rep,{act:a.id,qty:q}):[],old=over?justOf(rep).filter(j=>j.activity_id===a.id&&!J.includes(j)):[],canRev=actionsFor(rep).includes('review');
+  return qtyFactsHTML(a,P,q,a.uom)+(over?`<div class="warn-box qwarn" style="margin-top:8px"><b>Beyond the scope: ${fmt(P.cum(q),1)} of ${fmt(P.scope,1)} ${esc(a.uom)} to date, ${fmt(P.cum(q)-P.scope,1)} over.</b>
+    ${J.length?J.map(j=>`Justified by ${esc(j.by_name||'')} ${esc(tStamp(j.at_time))}: <i>${esc(j.note)}</i>`).join('<br>'):canRev?'Justify the quantity variation before marking the report reviewed.':'Not yet justified. The reviewer justifies it when reviewing.'}
+    ${old.length?`<span class="t2">Earlier justification for ${fmt(+old[old.length-1].qty,1)} ${esc(a.uom)}: ${esc(old[old.length-1].note)}</span>`:''}
+    ${canRev&&!J.length?`<label class="field" style="margin-top:6px">Justification for the quantity variation<textarea rows="2" data-just="${esc(a.id)}" placeholder="For example: re-measured on site, drawing revision, instruction received"></textarea></label>`:''}
+    ${CLOUD_ME&&DB.qjMissing?'<span class="t2">Justifications need the v11 database update (see STAGE-8-SETUP).</span>':''}</div>`:'');
+}
+/* review: every activity beyond its scope needs a justification; approve: the quantity must have been justified */
+function qtyGate(d,k){
+  const O=qtyOverOf(d);if(!O.length)return {ok:true};
+  if(k==='review'){const just={},miss=[];
+    O.forEach(o=>{if(justFor(d,o).length)return;const el=document.querySelector(`#sheet [data-just="${CSS.escape(o.act)}"]`),v=(el&&el.value||'').trim();
+      if(v.length<QJ_MIN)miss.push(o.a.name);else just[o.act]=v});
+    if(miss.length)return {ok:false,msg:`Justify the quantity variation (a few words at least) for: ${miss.join(', ')}.`};
+    return {ok:true,just,O}}
+  if(k==='approve'){const miss=O.filter(o=>!justFor(d,o).length);
+    if(miss.length)return {ok:false,msg:`The quantity beyond the scope of ${miss.map(o=>o.a.name).join(', ')} has not been justified by the reviewer. Return the report so the site engineer can justify it.`}}
+  return {ok:true};
+}
+function qtyJustLocal(d,g){
+  if(!g||!g.just)return;const who=me().name,at=new Date().toISOString();d.qtyJust=d.qtyJust||[];
+  g.O.forEach(o=>{const v=g.just[o.act];if(!v)return;d.qtyJust.push({dpr_id:d.id,activity_id:o.act,qty:o.qty,cum_qty:o.cum,scope_qty:o.scope,note:v.slice(0,1000),by_name:who,at_time:at});
+    d.audit.push({t:stamp(),who,action:'Quantity variation justified',note:`${o.act}: ${v.slice(0,1000)}`})});
+}
+async function cloudLoadQtyJust(){
+  try{DB.qtyJust=await selAll('dpr_qty_just','*',null,['id']);DB.qjMissing=false}catch(e){DB.qtyJust=[];DB.qjMissing=srvMsg(e)}
+}
+
 /* ---------- backup, restore and the move to the server ---------- */
 const backupName=k=>`protrack-${k}-${localISO()}.json`;
 async function downloadBrowserBackup(){
@@ -3110,6 +3194,8 @@ async function downloadServerBackup(){
   const out={format:'protrack-server-backup',version:1,app:APP_VERSION,exported_at:new Date().toISOString(),projects:[]};
   for(const id of ids){try{const x=await rpc('export_project',{p:id});
       for(const t of ['lifecycle_stages','lifecycle_audit','register_audit']){try{x[t]=await selAll(t,'*',q=>q.eq('project_id',id),t==='lifecycle_stages'?['stage_no']:['id'])}catch(e){}}   // lifecycle (v2.7) and register (v2.8) records, when installed
+      for(const [t,o] of [['report_releases',['period','id']],['release_audit',['id']],['co_log',['id']],['budget_supplements',['id']],['issues',['issue_no']],['issue_audit',['id']]]){try{x[t]=await selAll(t,'*',q=>q.eq('project_id',id),o)}catch(e){}}   // releases and logs (v3.0), issues (v3.1), when installed and readable
+      try{const ds=new Set((x.dprs||[]).map(d=>d.id));x.dpr_qty_just=(await selAll('dpr_qty_just','*',null,['id'])).filter(j=>ds.has(j.dpr_id))}catch(e){}   // quantity justifications (v3.2)
       out.projects.push(x)}catch(e){return toast(`Backup stopped at ${projById(id).short}: ${srvMsg(e)}`)}}
   await saveFile(backupName('server-backup'),new Blob([JSON.stringify(out)],{type:'application/json'}));
   toast(`Server backup of ${ids.length} project${ids.length>1?'s':''} downloaded`);
@@ -3348,7 +3434,7 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.1';
+const APP_VERSION='3.2';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'xr',label:'Executive report (released)'},{v:'exec',label:'Live summary (working data)'}]},
@@ -3824,7 +3910,7 @@ function renderDpr(){
     ${canCreate()?'<button class="btn primary" type="button" data-go="new">Start new report</button>':''}</div>
     <p class="small muted" style="margin:10px 0 0">${hint}</p></div>
   <div class="panel"><div class="scroll"><table class="tbl"><thead><tr><th>Report</th><th>Activities</th><th>Foreman</th><th class="n">Crew</th><th class="n">Manhours</th><th class="n">Earned mh</th><th class="n">Index</th><th>Status</th></tr></thead><tbody>
-    ${list.slice(0,state.showN).map(d=>{const g=repAgg(d),a=actById(d.lines[0].act),more=d.lines.length-1;return `<tr class="click" data-open="${d.id}" tabindex="0"><td><b>${d.id}</b><span class="t2">${fmtD(d.date)}, ${projById(d.p).short}</span></td><td>${esc(a.name)}<span class="t2">${esc(a.area)}, ${esc(discOf(a))}</span>${more?` <span class="tag" style="background:var(--accent-soft);color:var(--accent)">+${more}</span>`:''}<span class="t2">${d.lines.length} activit${d.lines.length>1?'ies':'y'}</span></td><td>${esc(d.foreman)}</td><td class="n">${g.heads}</td><td class="n">${fmt(g.mh)}</td><td class="n">${fmt(g.earned)}</td><td class="n">${g.mh?tl(g.pi):'—'}</td><td><span class="st ${d.status}">${d.status}</span>${d.returned&&d.status==='Draft'?'<span class="t2">Returned</span>':''}</td></tr>`}).join('')||'<tr><td colspan="8" class="muted">No reports with this status. Choose another filter.</td></tr>'}
+    ${list.slice(0,state.showN).map(d=>{const g=repAgg(d),a=actById(d.lines[0].act),more=d.lines.length-1;return `<tr class="click" data-open="${d.id}" tabindex="0"><td><b>${d.id}</b><span class="t2">${fmtD(d.date)}, ${projById(d.p).short}</span></td><td>${esc(a.name)}<span class="t2">${esc(a.area)}, ${esc(discOf(a))}</span>${more?` <span class="tag" style="background:var(--accent-soft);color:var(--accent)">+${more}</span>`:''}<span class="t2">${d.lines.length} activit${d.lines.length>1?'ies':'y'}</span></td><td>${esc(d.foreman)}</td><td class="n">${g.heads}</td><td class="n">${fmt(g.mh)}</td><td class="n">${fmt(g.earned)}</td><td class="n">${g.mh?tl(g.pi):'—'}</td><td><span class="st ${d.status}">${d.status}</span>${d.returned&&d.status==='Draft'?'<span class="t2">Returned</span>':''}${(d.status==='Submitted'||d.status==='Reviewed')&&qtyOverOf(d).length?'<span class="t2 a-c">Beyond scope</span>':''}</td></tr>`}).join('')||'<tr><td colspan="8" class="muted">No reports with this status. Choose another filter.</td></tr>'}
   </tbody></table></div>${list.length>state.showN?`<div style="text-align:center;margin-top:12px"><button class="btn" type="button" data-more>Show ${Math.min(40,list.length-state.showN)} more</button></div>`:''}</div>`;
 }
 function actionsFor(d){
@@ -3839,9 +3925,10 @@ const ALABEL={review:'Mark as reviewed',approve:'Approve',reject:'Reject',return
 function lineHTML(l,i,n,rep){
   const a=actById(l.act),mh=mhOf(l),ap=mh?l.qty/mh:0,pi=lpi(l);
   return `<section class="actblock"><div class="card-head"><h3>${n>1?`<span class="num">${i+1}</span>`:''}${esc(a.name)} <span class="muted small">${a.id}</span></h3><span class="tl ${light(pi)}">${pct(pi)}</span></div>
-  <div class="small muted">${a.area} › ${discOf(a)} › ${a.wbs}. Planned for the day ${fmt(dpOf(a),1)} ${a.uom}.</div>
+  <div class="small muted">${a.area} › ${discOf(a)} › ${a.wbs}.</div>
+  ${lineQtyHTML(l,rep)}
   <div class="facts">
-    <div><div class="l">Quantity executed</div><div class="v">${fmt(l.qty,a.uom==='t'?2:1)} ${a.uom}</div></div>
+    <div><div class="l">Actual quantity</div><div class="v">${fmt(l.qty,a.uom==='t'?2:1)} ${a.uom}</div></div>
     <div><div class="l">Manhours</div><div class="v">${fmt(mh,1)}</div></div>
     <div><div class="l">Crew</div><div class="v">${headsOf(l)}</div></div>
     <div><div class="l">Actual rate</div><div class="v">${fmt(ap,3)}</div></div>
@@ -3893,13 +3980,16 @@ function confirmBox(msg,okText){
   });
 }
 function closeDrawer(){if(TIMER.kind==='review'||TIMER.kind==='approve')timerStop(true);$('#drawer').hidden=true;state.open=null}
+function notifyOver(d){const O=qtyOverOf(d);if(O.length)notify(`${d.id}: ${O.map(o=>o.a.name).join(', ')} beyond the scope quantity. The site engineer justifies the variation when reviewing.`,true)}
 function notifyLow(d){d.lines.filter(l=>lpi(l)<0.9).forEach(l=>notify(`Productivity below target: ${actById(l.act).name} reported at ${pct(lpi(l))} in ${d.id}.`,true))}
 function doAction(k){
   const d=DB.dprs.find(x=>x.id===state.open);if(!d)return;const p=projById(d.p);
   if(k==='edit'){closeDrawer();state.editing=d.id;state.form=JSON.parse(JSON.stringify(d));go2form();return}
   const note=($('#cmt')?.value||'').trim();
   if((k==='reject'||k==='return')&&!note){$('#actErr').textContent='Add a comment so the site team knows what to fix.';return}
-  if(CLOUD_ME){cloudAct(d,k,note);return}
+  const qg=k==='review'||k==='approve'?qtyGate(d,k):{ok:true};if(!qg.ok){$('#actErr').textContent=qg.msg;return}
+  if(CLOUD_ME){cloudAct(d,k,note,qg.just);return}
+  if(k==='review')qtyJustLocal(d,qg);
   const who=me().name;
   const map={review:['Reviewed','Reviewed'],approve:['Approved','Approved'],reject:['Rejected','Rejected'],return:['Draft','Returned'],submit:['Submitted',d.returned?'Resubmitted':'Submitted']};
   if(TIMER.id===d.id&&(TIMER.kind==='review'||TIMER.kind==='approve')){const kind=TIMER.kind,secs=timerStop();logTime(d,kind,secs)}
@@ -3967,8 +4057,9 @@ function lineForm(l,i,f){
       <label class="field">Work type<select data-lk="disc" ${L}>${opt(types,disc)}</select></label>
       <label class="field">WBS<select data-lk="wbs" ${L}>${opt(wbss,wbs)}</select></label>
       <label class="field" style="grid-column:1/-1">Activity<select data-lk="act" ${L}>${opt(acts.map(x=>[x.id,x.id+'  '+x.name]),l.act,used)}</select><span class="small muted">${acts.length} activit${acts.length===1?'y':'ies'} under ${esc(area)} › ${esc(disc)} › ${esc(wbs||'')}</span></label>
-      <div class="field">Planned for the day<div class="ro">${fmt(dpOf(a),1)} ${a.uom}</div></div>
-      <label class="field">Quantity executed (${a.uom})<input type="number" inputmode="decimal" min="0" step="0.1" data-lk="qty" ${L} value="${l.qty}" placeholder="0"></label>
+      <div id="qpos${i}" style="grid-column:1/-1">${qposHTML(l,f)}</div>
+      <label class="field">Actual quantity today (${a.uom})<input type="number" inputmode="decimal" min="0" step="0.1" data-lk="qty" ${L} value="${l.qty}" placeholder="0"></label>
+      <div id="qafter${i}" style="grid-column:1/-1">${qafterHTML(l,f)}</div>
     </div>
     <h3>Own labour</h3><div class="lines">${l.labour.map((x,j)=>`<div class="line lab">
       <label>Trade<select data-row="labour" ${L} data-i="${j}" data-f="cat">${opt(CATS,x.cat)}</select></label>
@@ -4028,7 +4119,7 @@ function renderForm(){
   updateSummary();
 }
 function updateSummary(){
-  const f=state.form;if(!f||!$('#sum'))return;
+  const f=state.form;if(!f||!$('#sum'))return;qposPaint();
   const g=agg(f.lines.map(l=>({...l,qty:+l.qty||0,date:f.date}))),ready=f.lines.every(l=>+l.qty>0&&mhOf(l)>0);
   const trades={},subs={},eq={};
   f.lines.forEach(l=>{l.labour.forEach(x=>{trades[x.cat]=(trades[x.cat]||0)+(+x.count||0)});subFlat(l).forEach(u=>{const k=subById(u.sub).name;subs[k]=(subs[k]||0)+(+u.count||0)});l.equip.forEach(e=>{eq[e.type]=(eq[e.type]||0)+(+e.qty||0)})});
@@ -4069,7 +4160,7 @@ function saveForm(mode){
     if(mode==='submit')d.audit.push({t,who,action:'Submitted'});DB.dprs.push(d)}
   if(TIMER.kind==='create'){const secs=timerStop();logTime(d,'create',secs)}
   save();
-  if(d.status==='Submitted'&&mode==='submit'){notify(`${d.id} submitted for ${p.short} with ${d.lines.length} activit${d.lines.length>1?'ies':'y'}, waiting for ${p.eng} to review and the site manager to approve.`);notifyLow(d)}
+  if(d.status==='Submitted'&&mode==='submit'){notify(`${d.id} submitted for ${p.short} with ${d.lines.length} activit${d.lines.length>1?'ies':'y'}, waiting for ${p.eng} to review and the site manager to approve.`);notifyLow(d);notifyOver(d)}
   toast(`${d.id} ${mode==='submit'?(state.editing?'saved':'submitted'):'saved as draft'}`);state.dprFilter='All';go('dpr');
 }
 
