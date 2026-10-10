@@ -438,6 +438,13 @@ with sync_playwright() as p:
     ck('Demo page', 'demo data kept under its own key, live cache untouched', pg.evaluate("KEY") == 'protrack-demopage-v1' and pg.evaluate("localStorage.getItem('protrack-demo-v1')") == live_cache and pg.evaluate("!!localStorage.getItem('protrack-demopage-v1')"))
     ck('Demo page', 'no server requests from the demo page', not sb_calls, sb_calls[:3])
     ck('Demo page', 'no script errors on the demo page', not errs, errs[:3])
+    pg.goto(URL + 'demo.html?r=1'); pg.wait_for_timeout(1500)
+    if pg.locator('#app').is_visible(): pg.evaluate("signOut()"); pg.wait_for_timeout(800)
+    ck('Demo page', 'the sample-data sign-in links team members to the server sign-in (live.html)', pg.locator('#authCard a[href="live.html"]').count() == 1)
+    pg.goto(URL + 'demo.html?r=2#dpr=DPR-0900'); pg.wait_for_timeout(1500)
+    ck('Demo page', 'an approval-email link that lands on the sample-data page is sent on to the live app', pg.url.endswith('live.html?r=2#dpr=DPR-0900'), pg.url)
+    pg.goto(URL + 'demo.html?r=3#access_token=abc&type=recovery'); pg.wait_for_timeout(1500)
+    ck('Demo page', 'so is a password-reset link', 'live.html?r=3#access_token=abc' in pg.url, pg.url)
     b.close()
 srv.terminate()
 summary = {'PASS': sum(r['result'] == 'PASS' for r in R), 'FAIL': sum(r['result'] == 'FAIL' for r in R)}
