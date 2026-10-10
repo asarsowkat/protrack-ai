@@ -1,0 +1,402 @@
+{
+ "suite": "schema-update-v9",
+ "passed": 79,
+ "total": 79,
+ "results": [
+  {
+   "check": "v9 loads (run 1)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v9.sql:52: NOTICE:  policy \"col_read\" for relation \"co_log\" does not exist, skipping\npsql:/home/claude/p2/db/schema-update-v9.sql:54: NOTICE:  policy \"bsu_read\" for relation \"budget_supplements\" does not exist, skipping\npsql:/home/claude/p2/db/schema-update-v9.s"
+  },
+  {
+   "check": "v9 loads (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v9.sql:37: NOTICE:  relation \"co_log\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v9.sql:47: NOTICE:  relation \"budget_supplements\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v9.sql:48: NOTICE:  relation \"co_log_proj\" alrea"
+  },
+  {
+   "check": "foreman cannot prepare a progress release",
+   "pass": true,
+   "detail": "psql:/tmp/tmpjogqj921.sql:4: ERROR:  Only a planning engineer or a super admin prepares progress releases\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 25 at RAISE"
+  },
+  {
+   "check": "pm cannot prepare a progress release",
+   "pass": true,
+   "detail": "psql:/tmp/tmpkdvtu_m7.sql:4: ERROR:  Only a planning engineer or a super admin prepares progress releases\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 25 at RAISE"
+  },
+  {
+   "check": "costing cannot prepare a progress release",
+   "pass": true,
+   "detail": "psql:/tmp/tmprp4fvcwi.sql:4: ERROR:  Only a planning engineer or a super admin prepares progress releases\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 25 at RAISE"
+  },
+  {
+   "check": "exec cannot prepare a progress release",
+   "pass": true,
+   "detail": "psql:/tmp/tmpvh7805g2.sql:4: ERROR:  Only a planning engineer or a super admin prepares progress releases\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 25 at RAISE"
+  },
+  {
+   "check": "a period in the wrong form is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp8omxpbs9.sql:4: ERROR:  The period must look like 2026-09 \nCONTEXT:  PL/pgSQL function release_act(jsonb) line 20 at RAISE"
+  },
+  {
+   "check": "a week in the wrong form is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmppcrp2anv.sql:4: ERROR:  The period must look like 2026-W38 \nCONTEXT:  PL/pgSQL function release_act(jsonb) line 20 at RAISE"
+  },
+  {
+   "check": "progress above 100% is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpg50iaz15.sql:4: ERROR:  actual_pct must be between 0 and 100\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 59 at RAISE"
+  },
+  {
+   "check": "actual progress is required",
+   "pass": true,
+   "detail": "psql:/tmp/tmp90tkrvdy.sql:4: ERROR:  Enter the actual progress\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 61 at RAISE"
+  },
+  {
+   "check": "a figure that is not a number is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpl5xjlj09.sql:4: ERROR:  Figure spi must be a number\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 54 at RAISE"
+  },
+  {
+   "check": "an override needs a reason",
+   "pass": true,
+   "detail": "psql:/tmp/tmpgmowwp50.sql:4: ERROR:  Give a reason for changing actual_pct\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 77 at RAISE"
+  },
+  {
+   "check": "the planning engineer saves a monthly draft with figures, an override and comments",
+   "pass": true,
+   "detail": "{'id': '5669acfe-7e69-48fc-9a85-8c83666bc68f', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Draft', 'figures': {'spi': 0.95, 'eng_pct': 84, 'prc_pct': 72, 'actual_pct': 52, 'planned_pct': 55, 'next_ms_text': 'Energisation', 'forecast_finish': '2027-03-31'}, 'data_date': '2026-09-30'"
+  },
+  {
+   "check": "management does not see a draft",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the planning engineer and the Head do",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the draft can be changed",
+   "pass": true,
+   "detail": "{'id': '5669acfe-7e69-48fc-9a85-8c83666bc68f', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Draft', 'figures': {'spi': 0.95, 'eng_pct': 84, 'prc_pct': 72, 'actual_pct': 53, 'planned_pct': 55, 'next_ms_text': 'Energisation', 'forecast_finish': '2027-03-31'}, 'data_date': '2026-09-30'"
+  },
+  {
+   "check": "the planning engineer submits it",
+   "pass": true,
+   "detail": "{'id': '5669acfe-7e69-48fc-9a85-8c83666bc68f', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Submitted', 'figures': {'spi': 0.95, 'eng_pct': 84, 'prc_pct': 72, 'actual_pct': 53, 'planned_pct': 55, 'next_ms_text': 'Energisation', 'forecast_finish': '2027-03-31'}, 'data_date': '2026-09"
+  },
+  {
+   "check": "a submitted version cannot be edited",
+   "pass": true,
+   "detail": "psql:/tmp/tmpp7n48cws.sql:4: ERROR:  This version is submitted and cannot be edited\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 44 at RAISE"
+  },
+  {
+   "check": "the planning engineer cannot approve",
+   "pass": true,
+   "detail": "psql:/tmp/tmphfljdz76.sql:4: ERROR:  Only the Head of Planning and Cost Control or a super admin can approve a release\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 104 at RAISE"
+  },
+  {
+   "check": "a project manager cannot approve",
+   "pass": true,
+   "detail": "psql:/tmp/tmp4y_kojyf.sql:4: ERROR:  Only the Head of Planning and Cost Control or a super admin can approve a release\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 104 at RAISE"
+  },
+  {
+   "check": "returning needs a comment",
+   "pass": true,
+   "detail": "psql:/tmp/tmpxrrdxasi.sql:4: ERROR:  Add a comment saying what to fix\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 114 at RAISE"
+  },
+  {
+   "check": "the Head returns it with a comment",
+   "pass": true,
+   "detail": "{'id': '5669acfe-7e69-48fc-9a85-8c83666bc68f', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Draft', 'figures': {'spi': 0.95, 'eng_pct': 84, 'prc_pct': 72, 'actual_pct': 53, 'planned_pct': 55, 'next_ms_text': 'Energisation', 'forecast_finish': '2027-03-31'}, 'data_date': '2026-09-30'"
+  },
+  {
+   "check": "the Head approves; it is released",
+   "pass": true,
+   "detail": "{'id': '5669acfe-7e69-48fc-9a85-8c83666bc68f', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Released', 'figures': {'spi': 0.95, 'eng_pct': 84, 'prc_pct': 72, 'actual_pct': 53, 'planned_pct': 55, 'next_ms_text': 'Energisation', 'forecast_finish': '2027-03-31'}, 'data_date': '2026-09-"
+  },
+  {
+   "check": "management now sees it",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "so do site staff (progress, not cost)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a released period cannot be saved over",
+   "pass": true,
+   "detail": "psql:/tmp/tmpvfs4ioh1.sql:4: ERROR:  This period is already released; use Revise to issue a new revision\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 46 at RAISE"
+  },
+  {
+   "check": "a released version cannot be changed, even from the database console",
+   "pass": true,
+   "detail": "ERROR:  A released version cannot be changed; issue a new revision\nCONTEXT:  PL/pgSQL function pt_release_frozen() line 7 at RAISE"
+  },
+  {
+   "check": "nor deleted",
+   "pass": true,
+   "detail": "ERROR:  Submitted and released versions cannot be deleted\nCONTEXT:  PL/pgSQL function pt_release_nodelete() line 3 at RAISE"
+  },
+  {
+   "check": "a revision needs a reason",
+   "pass": true,
+   "detail": "psql:/tmp/tmpyc7ph1mt.sql:4: ERROR:  Add a comment saying why the released version is being revised\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 33 at RAISE"
+  },
+  {
+   "check": "the planning engineer starts revision 1 with a reason",
+   "pass": true,
+   "detail": "{'id': 'b41e7e9e-81a6-42be-89c4-bb3c1c5188cb', 'rev': 1, 'kind': 'planning', 'period': '2026-09', 'status': 'Draft', 'figures': {'spi': 0.95, 'eng_pct': 84, 'prc_pct': 72, 'actual_pct': 53, 'planned_pct': 55, 'next_ms_text': 'Energisation', 'forecast_finish': '2027-03-31'}, 'data_date': '2026-09-30'"
+  },
+  {
+   "check": "only one revision at a time",
+   "pass": true,
+   "detail": "psql:/tmp/tmpik7526il.sql:4: ERROR:  A new revision of this period is already being prepared\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 32 at RAISE"
+  },
+  {
+   "check": "while it is prepared, management still sees revision 0",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "approving revision 1 supersedes revision 0; both are kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the history records every step",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a project manager cannot submit a progress release",
+   "pass": true,
+   "detail": "psql:/tmp/tmp05zk3wlh.sql:4: ERROR:  Nothing is being prepared for this period\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 95 at RAISE"
+  },
+  {
+   "check": "a project manager cannot submit someone else's draft either",
+   "pass": true,
+   "detail": "psql:/tmp/tmpc18yopbd.sql:4: ERROR:  Only the people who prepare this report can submit it\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 99 at RAISE"
+  },
+  {
+   "check": "a weekly release works the same way",
+   "pass": true,
+   "detail": "{'id': 'dae9858c-1682-4803-ac9b-f14be6599ff3', 'rev': 0, 'kind': 'planning', 'period': '2026-W39', 'status': 'Released', 'figures': {'spi': 0.95, 'eng_pct': 84, 'prc_pct': 72, 'actual_pct': 52, 'planned_pct': 55, 'next_ms_text': 'Energisation', 'forecast_finish': '2027-03-31'}, 'data_date': '2026-09"
+  },
+  {
+   "check": "a super admin who submitted cannot approve their own",
+   "pass": true,
+   "detail": "psql:/tmp/tmphn8qwh58.sql:4: ERROR:  You submitted this version, so someone else must approve it\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 106 at RAISE"
+  },
+  {
+   "check": "a second super admin can",
+   "pass": true,
+   "detail": "{'id': '3464aaf7-fcc8-4416-a39f-06966795cc69', 'rev': 0, 'kind': 'planning', 'period': '2026-W40', 'status': 'Released', 'figures': {'spi': 0.95, 'eng_pct': 84, 'prc_pct': 72, 'actual_pct': 52, 'planned_pct': 55, 'next_ms_text': 'Energisation', 'forecast_finish': '2027-03-31'}, 'data_date': '2026-10"
+  },
+  {
+   "check": "someone without access to the project cannot prepare",
+   "pass": true,
+   "detail": "psql:/tmp/tmpkbqvy4rl.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 16 at RAISE"
+  },
+  {
+   "check": "a planning engineer cannot prepare a cost report",
+   "pass": true,
+   "detail": "psql:/tmp/tmpk_bj1njm.sql:4: ERROR:  Only a costing engineer, the costing coordinator or a super admin prepares cost reports\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 25 at RAISE"
+  },
+  {
+   "check": "cost reports are monthly only",
+   "pass": true,
+   "detail": "psql:/tmp/tmp55d7aipr.sql:4: ERROR:  Cost reports are monthly\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 19 at RAISE"
+  },
+  {
+   "check": "every input is required",
+   "pass": true,
+   "detail": "psql:/tmp/tmpmjlkms0u.sql:4: ERROR:  Enter the commitments\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 65 at RAISE"
+  },
+  {
+   "check": "negative amounts are refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpwzmrn1fn.sql:4: ERROR:  actual cannot be negative\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 66 at RAISE"
+  },
+  {
+   "check": "the costing engineer saves the September cost report; the server works out budget, EAC and VAC (ignoring an EAC sent by the browser)",
+   "pass": true,
+   "detail": "{'id': '1334dd0c-a00c-425a-9fff-7a00e96185e5', 'rev': 0, 'kind': 'cost', 'period': '2026-09', 'status': 'Draft', 'figures': {'eac': 10300000, 'ftc': 6100000, 'vac': -300000, 'actual': 4200000, 'commitment': 1500000, 'budget_rev0': 10000000, 'budget_current': 10000000, 'supplements_approved': 0}, 'da"
+  },
+  {
+   "check": "the costing coordinator (a project manager with the designation) can prepare it too",
+   "pass": true,
+   "detail": "{'id': '1334dd0c-a00c-425a-9fff-7a00e96185e5', 'rev': 0, 'kind': 'cost', 'period': '2026-09', 'status': 'Draft', 'figures': {'eac': 10300000, 'ftc': 6100000, 'vac': -300000, 'actual': 4200000, 'commitment': 1500000, 'budget_rev0': 10000000, 'budget_current': 10000000, 'supplements_approved': 0}, 'da"
+  },
+  {
+   "check": "a project manager without the designation does not see the cost draft",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the Head approves the cost report",
+   "pass": true,
+   "detail": "{'id': '1334dd0c-a00c-425a-9fff-7a00e96185e5', 'rev': 0, 'kind': 'cost', 'period': '2026-09', 'status': 'Released', 'figures': {'eac': 10300000, 'ftc': 6100000, 'vac': -300000, 'actual': 4200000, 'commitment': 1500000, 'budget_rev0': 10000000, 'budget_current': 10000000, 'supplements_approved': 0}, "
+  },
+  {
+   "check": "management and project managers see the released cost report",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "foreman never sees cost reports, released or not",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "eng never sees cost reports, released or not",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "sm never sees cost reports, released or not",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "foreman cannot upload the change order and claim log",
+   "pass": true,
+   "detail": "psql:/tmp/tmpxo_eem15.sql:4: ERROR:  Only a costing engineer, the costing coordinator or a super admin uploads this log\nCONTEXT:  PL/pgSQL function log_import(jsonb) line 10 at RAISE"
+  },
+  {
+   "check": "plan cannot upload the change order and claim log",
+   "pass": true,
+   "detail": "psql:/tmp/tmpldv5dza5.sql:4: ERROR:  Only a costing engineer, the costing coordinator or a super admin uploads this log\nCONTEXT:  PL/pgSQL function log_import(jsonb) line 10 at RAISE"
+  },
+  {
+   "check": "pm cannot upload the change order and claim log",
+   "pass": true,
+   "detail": "psql:/tmp/tmpgm4j2a9e.sql:4: ERROR:  Only a costing engineer, the costing coordinator or a super admin uploads this log\nCONTEXT:  PL/pgSQL function log_import(jsonb) line 10 at RAISE"
+  },
+  {
+   "check": "refused rows must be acknowledged; nothing is saved until then",
+   "pass": true,
+   "detail": "psql:/tmp/tmpfyos2495.sql:4: ERROR:  1 row(s) refused; acknowledge them to save the rest. First: row 3 type must be VO or Claim\nCONTEXT:  PL/pgSQL function log_import(jsonb) line 39 at RAISE"
+  },
+  {
+   "check": "...and nothing was saved",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "with the refused row acknowledged, the other two are saved as one batch",
+   "pass": true,
+   "detail": "{'total': 920000, 'accepted': 2, 'batch_id': 'fb7e90db-4874-4e88-ab13-4c2f9a833705', 'rejected': [{'ref': 'X-1', 'row': 3, 'error': 'type must be VO or Claim'}], 'duplicate': False}"
+  },
+  {
+   "check": "the batch records the acknowledged difference and who accepted it",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "loading the same file for the same month again changes nothing",
+   "pass": true,
+   "detail": "{'batch_id': 'fb7e90db-4874-4e88-ab13-4c2f9a833705', 'duplicate': True}"
+  },
+  {
+   "check": "a file with no valid rows saves nothing",
+   "pass": true,
+   "detail": "psql:/tmp/tmp82xyzgrc.sql:4: ERROR:  No valid rows, so nothing was saved and the previous log stays. First problem: row 1 type must be VO or Claim\nCONTEXT:  PL/pgSQL function log_import(jsonb) line 37 at RAISE"
+  },
+  {
+   "check": "a reference that appears twice is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpcw784eti.sql:4: ERROR:  1 row(s) refused; acknowledge them to save the rest. First: row 2 reference VO-001 appears twice in the file\nCONTEXT:  PL/pgSQL function log_import(jsonb) line 39 at RAISE"
+  },
+  {
+   "check": "the cost team and management read the log; site staff do not",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "site staff do not even see the log batches",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a supplement with a category outside the seven is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpibgo8tr6.sql:4: ERROR:  No valid rows, so nothing was saved and the previous log stays. First problem: row 1 category must be one of: Project execution, Under estimate, External factor, Saudization, Finance, Claims, Change order\nCONTEXT:  PL/pgSQL function log_import(jsonb) line 37 at R"
+  },
+  {
+   "check": "the costing coordinator uploads the October supplement log (BS-04 acknowledged)",
+   "pass": true,
+   "detail": "{'total': 180000, 'accepted': 3, 'batch_id': 'fad73bbe-e069-46a5-85ff-66c0e89e2631', 'rejected': [{'ref': 'BS-04', 'row': 4, 'error': 'category must be one of: Project execution, Under estimate, External factor, Saudization, Finance, Claims, Change order'}], 'duplicate': False}"
+  },
+  {
+   "check": "the October cost report adds the approved supplements (150,000) to the Rev-0 budget; the pending one is left out",
+   "pass": true,
+   "detail": "{'id': '53185f54-d755-4c06-bcb3-0c86a36886f8', 'rev': 0, 'kind': 'cost', 'period': '2026-10', 'status': 'Draft', 'figures': {'eac': 10300000, 'ftc': 6100000, 'vac': -150000, 'actual': 4200000, 'commitment': 1500000, 'budget_rev0': 10000000, 'budget_current': 10150000, 'supplements_approved': 150000}"
+  },
+  {
+   "check": "an August cost report is not affected by the log uploaded in October",
+   "pass": true,
+   "detail": "{'id': '9bf86227-8cdc-4a91-85ec-f40eae6c2bce', 'rev': 0, 'kind': 'cost', 'period': '2026-08', 'status': 'Draft', 'figures': {'eac': 10300000, 'ftc': 6100000, 'vac': -300000, 'actual': 4200000, 'commitment': 1500000, 'budget_rev0': 10000000, 'budget_current': 10000000, 'supplements_approved': 0}, 'da"
+  },
+  {
+   "check": "the November log replaces the current log but October's stays",
+   "pass": true,
+   "detail": "{'total': 100000, 'accepted': 1, 'batch_id': '4725e3df-47e5-476b-9448-2beeaf42b058', 'rejected': [], 'duplicate': False}"
+  },
+  {
+   "check": "both months are kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the logs cannot be edited",
+   "pass": true,
+   "detail": "ERROR:  co_log is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "or deleted",
+   "pass": true,
+   "detail": "ERROR:  budget_supplements is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "a log for a month in the wrong form is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmplfqmkzj_.sql:4: ERROR:  The month must look like 2026-09\nCONTEXT:  PL/pgSQL function log_import(jsonb) line 11 at RAISE"
+  },
+  {
+   "check": "rollback runs (run 1)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback runs (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-rollback-v9.sql:4: NOTICE:  function release_act(jsonb) does not exist, skipping\npsql:/home/claude/p2/db/schema-rollback-v9.sql:5: NOTICE:  function log_import(jsonb) does not exist, skipping\npsql:/home/claude/p2/db/schema-rollback-v9.sql:6: NOTICE:  function pt_rel_lo"
+  },
+  {
+   "check": "rollback removes the functions that write",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback keeps every release, history entry and log row",
+   "pass": true,
+   "detail": "7/22/2/4"
+  },
+  {
+   "check": "released versions can still be read by management after rollback",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "v9 can be applied again after a rollback",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v9.sql:37: NOTICE:  relation \"co_log\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v9.sql:47: NOTICE:  relation \"budget_supplements\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v9.sql:48: NOTICE:  relation \"co_log_proj\" alrea"
+  }
+ ]
+}

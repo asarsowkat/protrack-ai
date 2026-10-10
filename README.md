@@ -168,6 +168,13 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.0
+
+- Released reporting: weekly and monthly progress releases by planning, monthly cost reports by costing (actual, commitments, approved budget, EAC, VAC), approved by the Head of Planning and Cost Control; revisions instead of edits (`schema-update-v9.sql`)
+- Executive report built only from released versions, by month or week
+- Change order and claim log and budget supplement log, uploaded monthly per project, all months kept
+- See RELEASE-NOTES-v3.0.md and STAGE-6-SETUP.md
+
 ## Version 2.9
 
 - Governed RASA answers: sources and data date under every answer and insight, "No evidence" instead of guesses, untracked figures named

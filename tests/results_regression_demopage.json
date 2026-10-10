@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-10 11:24",
- "app": "/home/claude/protrack-ai/index.html",
+ "run_at": "2026-10-10 12:01",
+ "app": "/home/claude/p8/demo.html",
  "results": [
   {
    "area": "Auth",
@@ -124,7 +124,7 @@
   },
   {
    "area": "Reports",
-   "check": "report histo builds (0.59 s)",
+   "check": "report histo builds (0.57 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -178,7 +178,7 @@
   },
   {
    "area": "Reports",
-   "check": "report mhrec builds (0.01 s)",
+   "check": "report mhrec builds (0.0 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -190,7 +190,7 @@
   },
   {
    "area": "Reports",
-   "check": "report warn builds (0.08 s)",
+   "check": "report warn builds (0.09 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -346,7 +346,7 @@
   },
   {
    "area": "Navigation v2.3",
-   "check": "planned items present and disabled (v2.7: cost reconciliation is live; v2.8: Tender register is live)",
+   "check": "planned items present and disabled (v2.7 cost reconciliation, v2.8 Tender register, v3.0 cost report, supplements and change order log are live)",
    "result": "PASS",
    "detail": ""
   },

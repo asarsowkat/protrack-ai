@@ -1,0 +1,328 @@
+{
+ "run_at": "2026-10-10 11:50",
+ "app": "/home/claude/p8/app.html",
+ "summary": {
+  "PASS": 53,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Demo data",
+   "check": "sample releases, cost reports and logs are seeded for the demo projects",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Home has the released executive report and the live summary",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Progress releases, Monthly cost report, Budget supplements and the change order and claim log are live menu items",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Variation register, Claims register and Budget revisions are no longer marked planned",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "opens on the latest released month and says live daily reports are not used",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "progress shown is the released figure, not today's live figure",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "an earlier month shows that month's saved version",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "weekly reports show progress only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "a foreman has no executive report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "site staff never see cost figures in it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the planning engineer sees Progress releases with Prepare buttons",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the form starts from what ProTrackAI computes now",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "changing a figure without a reason is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "with a reason the draft is saved, and the change is recorded with the computed value",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "management does not see a draft",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the planning engineer submits it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the planning engineer has no Approve button",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "a project manager cannot approve",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Actions",
+   "check": "the Head sees the release waiting under Mine",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "returning needs a comment",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the Head returns it with a comment; it is back to draft and shows as returned",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Actions",
+   "check": "the planning engineer sees it returned under Mine",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the Head approves; it is released",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "a released period cannot be saved over",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "a revision needs a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the planning engineer starts revision 1 with a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "while revision 1 waits, management still sees revision 0",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "approving revision 1 supersedes revision 0; both are kept",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "a super admin who submitted cannot approve their own",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the drawer says so instead of offering Approve",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost report",
+   "check": "a planning engineer cannot prepare a cost report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost report",
+   "check": "cost reports are monthly only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost report",
+   "check": "the form works out approved budget, EAC and VAC as you type",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost report",
+   "check": "saved and submitted with the formulas applied (approved supplements from the log)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost report",
+   "check": "management sees the released cost report in the executive report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost dashboard",
+   "check": "commitments and approved supplements now come from the last released cost report; accruals stay not tracked",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost upload",
+   "check": "the preview refuses an unknown project and a missing amount, and keeps the rest",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost upload",
+   "check": "each valid row becomes that project's draft with the formulas applied, none submitted",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "the preview reads your columns and refuses a row with an unknown type",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "refused rows must be acknowledged before anything is saved",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "acknowledged, the two good rows are saved as a new batch for the month, the difference recorded",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "the earlier month's log is kept and can still be shown",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "the same file for the same month again changes nothing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "a supplement outside the seven categories is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "the new supplement log feeds the next cost report (approved only)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "a foreman cannot open the logs",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "a planning engineer can read the logs but has no upload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "commitments are answered from the released cost reports, naming them",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "change orders and claims are answered from the latest logs",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "the released progress is answered from releases, not live data",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "a foreman asking about commitments gets \"not available for your role\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "releases, revisions and logs survive a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}
