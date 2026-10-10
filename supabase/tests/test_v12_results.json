@@ -1,0 +1,227 @@
+{
+ "suite": "schema-update-v12",
+ "passed": 44,
+ "total": 44,
+ "results": [
+  {
+   "check": "v12 loads (run 1)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "v12 loads (run 2)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the setup check counts 2",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a cost report released before v12 is untouched",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a cost report by totals only still works, with the same formulas",
+   "pass": true,
+   "detail": "{'id': 'b643f7cf-57d7-46d5-8f52-8a2101eb3af7', 'rev': 0, 'kind': 'cost', 'period': '2026-07', 'status': 'Draft', 'figures': {'eac': 980, 'ftc': 580, 'vac': 20, 'actual': 400, 'commitment': 100, 'budget_rev0': 1000, 'budget_current': 1000, 'supplements_approved': 0}, 'data_date': None, 'narrative': {"
+  },
+  {
+   "check": "the costing engineer saves a cost report by WBS head",
+   "pass": true,
+   "detail": "{'id': '14c69bee-4f9f-443a-b6a6-d297c13f4954', 'rev': 0, 'kind': 'cost', 'period': '2026-08', 'status': 'Draft', 'figures': {'eac': 17440, 'etc': 820, 'ftc': 2340, 'vac': 460, 'wbs': [{'eac': 2540, 'etc': 420, 'var': -40, 'code': 'SM', 'name': 'Site Management', 'prev': 2100, 'rev0': 2000, 'actual':"
+  },
+  {
+   "check": "codes are kept in capitals",
+   "pass": true,
+   "detail": "['SM', 'MTRL.ELC', 'CONT']"
+  },
+  {
+   "check": "per line: balance G = D \u2212 E \u2212 F",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "per line: EAC I = E + F + H (what the browser sent is ignored)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "per line: supplement (\u2212) / saving (+) J = D \u2212 I",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the previous version of a project's first WBS report is what was entered (the earlier reports had no WBS lines)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "totals: current budget = \u03a3 D, actual, commitment, ETC, EAC, VAC",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "totals keep their meaning for the rest of the app: forecast to complete = F + H, EAC = actual + forecast to complete",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "totals of tender, Rev-0, revised Rev-0 and previous version",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "header figures are kept: POC, TCC dates, contract value, overall note",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "justifications are kept per line (an empty one is stored as none)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "refused: a WBS code twice",
+   "pass": true,
+   "detail": "psql:/tmp/tmphtaumw2u.sql:4: ERROR:  WBS SM appears twice\nCONTEXT:  PL/pgSQL function pt_cost_wbs(text,text,jsonb) line 14 at RAISE\nPL/pgSQL function release_act(jsonb) line 69 at assignment"
+  },
+  {
+   "check": "refused: a negative amount",
+   "pass": true,
+   "detail": "psql:/tmp/tmpw9wrxmm7.sql:4: ERROR:  WBS SM: actual cannot be negative\nCONTEXT:  PL/pgSQL function pt_cost_wbs(text,text,jsonb) line 20 at RAISE\nPL/pgSQL function release_act(jsonb) line 69 at assignment"
+  },
+  {
+   "check": "refused: an amount that is not a number",
+   "pass": true,
+   "detail": "psql:/tmp/tmp1xf3dk6b.sql:4: ERROR:  WBS SM: budget must be a number\nCONTEXT:  PL/pgSQL function pt_cost_wbs(text,text,jsonb) line 19 at RAISE\nPL/pgSQL function release_act(jsonb) line 69 at assignment"
+  },
+  {
+   "check": "refused: a line without a code",
+   "pass": true,
+   "detail": "psql:/tmp/tmpxb61x07i.sql:4: ERROR:  Each WBS line needs a code of up to 20 characters\nCONTEXT:  PL/pgSQL function pt_cost_wbs(text,text,jsonb) line 13 at RAISE\nPL/pgSQL function release_act(jsonb) line 69 at assignment"
+  },
+  {
+   "check": "refused: no lines at all",
+   "pass": true,
+   "detail": "psql:/tmp/tmp8e9jt2mp.sql:4: ERROR:  The cost report needs at least one WBS line\nCONTEXT:  PL/pgSQL function pt_cost_wbs(text,text,jsonb) line 6 at RAISE\nPL/pgSQL function release_act(jsonb) line 69 at assignment"
+  },
+  {
+   "check": "refused: a justification over 600 characters",
+   "pass": true,
+   "detail": "psql:/tmp/tmp43e280dg.sql:4: ERROR:  The justification for SM is too long (600 characters at most)\nCONTEXT:  PL/pgSQL function pt_cost_wbs(text,text,jsonb) line 17 at RAISE\nPL/pgSQL function release_act(jsonb) line 69 at assignment"
+  },
+  {
+   "check": "refused: POC over 100%",
+   "pass": true,
+   "detail": "psql:/tmp/tmp8bcnmhmn.sql:4: ERROR:  actual_poc must be between 0 and 100\nCONTEXT:  PL/pgSQL function pt_cost_wbs(text,text,jsonb) line 39 at RAISE\nPL/pgSQL function release_act(jsonb) line 69 at assignment"
+  },
+  {
+   "check": "refused: a negative contract value",
+   "pass": true,
+   "detail": "psql:/tmp/tmp__apf6fc.sql:4: ERROR:  The contract value cannot be negative\nCONTEXT:  PL/pgSQL function pt_cost_wbs(text,text,jsonb) line 41 at RAISE\nPL/pgSQL function release_act(jsonb) line 69 at assignment"
+  },
+  {
+   "check": "refused: wbs that is not a list",
+   "pass": true,
+   "detail": "psql:/tmp/tmprim62990.sql:4: ERROR:  The cost report needs at least one WBS line\nCONTEXT:  PL/pgSQL function pt_cost_wbs(text,text,jsonb) line 6 at RAISE\nPL/pgSQL function release_act(jsonb) line 69 at assignment"
+  },
+  {
+   "check": "a planning engineer cannot prepare it",
+   "pass": true,
+   "detail": "psql:/tmp/tmpe4coql6v.sql:4: ERROR:  Only a costing engineer, the costing coordinator or a super admin prepares cost reports\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 25 at RAISE"
+  },
+  {
+   "check": "submitting is refused while a line with a supplement or saving has no justification",
+   "pass": true,
+   "detail": "psql:/tmp/tmpywapu90t.sql:4: ERROR:  Give a justification for each WBS line with a supplement or saving before submitting: CONT\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 118 at RAISE"
+  },
+  {
+   "check": "with the justification it saves",
+   "pass": true,
+   "detail": "{'id': '14c69bee-4f9f-443a-b6a6-d297c13f4954', 'rev': 0, 'kind': 'cost', 'period': '2026-08', 'status': 'Draft', 'figures': {'eac': 17440, 'etc': 820, 'ftc': 2340, 'vac': 460, 'wbs': [{'eac': 2540, 'etc': 420, 'var': -40, 'code': 'SM', 'name': 'Site Management', 'prev': 2100, 'rev0': 2000, 'actual':"
+  },
+  {
+   "check": "...and submits",
+   "pass": true,
+   "detail": "{'id': '14c69bee-4f9f-443a-b6a6-d297c13f4954', 'rev': 0, 'kind': 'cost', 'period': '2026-08', 'status': 'Submitted', 'figures': {'eac': 17440, 'etc': 820, 'ftc': 2340, 'vac': 460, 'wbs': [{'eac': 2540, 'etc': 420, 'var': -40, 'code': 'SM', 'name': 'Site Management', 'prev': 2100, 'rev0': 2000, 'actu"
+  },
+  {
+   "check": "the Head approves it",
+   "pass": true,
+   "detail": "{'id': '14c69bee-4f9f-443a-b6a6-d297c13f4954', 'rev': 0, 'kind': 'cost', 'period': '2026-08', 'status': 'Released', 'figures': {'eac': 17440, 'etc': 820, 'ftc': 2340, 'vac': 460, 'wbs': [{'eac': 2540, 'etc': 420, 'var': -40, 'code': 'SM', 'name': 'Site Management', 'prev': 2100, 'rev0': 2000, 'actua"
+  },
+  {
+   "check": "released, it cannot be changed, even from the database console",
+   "pass": true,
+   "detail": "ERROR:  A released version cannot be changed; issue a new revision\nCONTEXT:  PL/pgSQL function pt_release_frozen() line 7 at RAISE"
+  },
+  {
+   "check": "a foreman receives none of it",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the next month by WBS head",
+   "pass": true,
+   "detail": "{'id': '9d6c9d14-e618-4a8b-84ce-da538e04cead', 'rev': 0, 'kind': 'cost', 'period': '2026-09', 'status': 'Draft', 'figures': {'eac': 17520, 'etc': 700, 'ftc': 1720, 'vac': -20, 'wbs': [{'eac': 2620, 'etc': 300, 'var': -20, 'code': 'SM', 'name': 'Site Management', 'prev': 2500, 'rev0': 2000, 'actual':"
+  },
+  {
+   "check": "previous version C = the current budget of the last released cost report, line by line (what was entered is ignored)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a head that was not in the previous report has no previous version",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the previous version's month is recorded",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a revision starts from the released lines",
+   "pass": true,
+   "detail": "{'id': '64e3ba38-adc7-4edf-81a4-fbd1affb1fd2', 'rev': 1, 'kind': 'cost', 'period': '2026-09', 'status': 'Draft', 'figures': {'eac': 17520, 'etc': 700, 'ftc': 1720, 'vac': -20, 'wbs': [{'eac': 2620, 'etc': 300, 'var': -20, 'code': 'SM', 'name': 'Site Management', 'prev': 2500, 'rev0': 2000, 'actual':"
+  },
+  {
+   "check": "saving the revision recomputes everything (EAC 17,520) and keeps the previous version from August",
+   "pass": true,
+   "detail": "{'id': '64e3ba38-adc7-4edf-81a4-fbd1affb1fd2', 'rev': 1, 'kind': 'cost', 'period': '2026-09', 'status': 'Draft', 'figures': {'eac': 17520, 'etc': 700, 'ftc': 1720, 'vac': -20, 'wbs': [{'eac': 2620, 'etc': 300, 'var': -20, 'code': 'SM', 'name': 'Site Management', 'prev': 2500, 'rev0': 2000, 'actual':"
+  },
+  {
+   "check": "rollback runs (run 1)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback runs (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p11/sb/schema-rollback-v12.sql:130: NOTICE:  function pt_cost_wbs(text,text,jsonb) does not exist, skipping"
+  },
+  {
+   "check": "rollback removes the helper",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback keeps every cost report with WBS lines, still readable",
+   "pass": true,
+   "detail": "3"
+  },
+  {
+   "check": "after rollback cost reports by totals work as in v3.2",
+   "pass": true,
+   "detail": "{'id': '1333fbd7-146b-4e6a-ba1c-1cad829aba9c', 'rev': 0, 'kind': 'cost', 'period': '2026-10', 'status': 'Draft', 'figures': {'eac': 9, 'ftc': 5, 'vac': 1, 'actual': 4, 'commitment': 1, 'budget_rev0': 10, 'budget_current': 10, 'supplements_approved': 0}, 'data_date': None, 'narrative': {}, 'overrides"
+  },
+  {
+   "check": "v12 can be applied again after a rollback",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

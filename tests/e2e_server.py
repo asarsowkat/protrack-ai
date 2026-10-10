@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""ProTrackAI v2.5+ (extended to v3.2) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
-from the real ProTrack schema (schema.sql + v2 ... v9, then v10 and v11 applied mid-run as on a live database) through fake_supabase.py.
+"""ProTrackAI v2.5+ (extended to v3.3) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
+from the real ProTrack schema (schema.sql + v2 ... v9, then v10, v11 and v12 applied mid-run as on a live database) through fake_supabase.py.
 Every allow/refuse decision in these tests is made by the database (row level security and the v4
 functions), exactly as on Supabase. What is NOT covered: Supabase's own sign-in service, its REST layer
 and the email function; those are replaced by the stand-in.
@@ -519,6 +519,35 @@ with sync_playwright() as p:
     login(pg, 'f1')
     r = pg.evaluate("SB.from('dpr_qty_just').select('note').then(x=>x.error?'err':x.data.length)")
     ck('Quantities', 'people on the project read the justification', r == 1, r)
+
+    # ---------------------------------------------------------------- v3.3 cost report by WBS head through the server
+    login(pg, 'c1')
+    cm = pg.evaluate("recentMonths(3)[2]")
+    pg.evaluate(f"state.scope='ALL';state.relTab='cost';state.relPer='{cm}';go('rel');openRelease('P1','cost','month','{cm}')"); pg.wait_for_timeout(900)
+    ck('Cost by WBS', 'the cost report form is in the company format', pg.locator('#crTable').count() == 1)
+    pg.evaluate("document.querySelectorAll('#crTable input[type=number]').forEach(i=>{i.value='0'})")
+    for k_, v_ in [('budget', 3000000), ('actual', 1800000), ('commitment', 400000), ('etc', 900000)]: pg.fill(f'#relForm [name=w0_{k_}]', str(v_))
+    pg.click('[data-reldo="save"]'); pg.wait_for_timeout(1500)
+    ck('Cost by WBS', 'before the v12 update the server refuses and the app says the update is needed', 'v12 database update' in pg.inner_text('#relErr') and sql(f"select count(*) from report_releases where kind='cost' and period='{cm}'") == '0', pg.inner_text('#relErr'))
+    pv = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, 'schema-update-v12.sql')], capture_output=True, text=True)
+    ck('Cost by WBS', 'the v12 update loads on top of a database in use', pv.returncode == 0, pv.stderr[:300])
+    ck('Cost by WBS', 'the setup check counts 2', sql("select count(*) from pg_proc where proname in ('release_act','pt_cost_wbs')") == '2')
+    pg.click('[data-reldo="save"]'); pg.wait_for_timeout(1800)
+    ck('Cost by WBS', 'after the update the costing engineer saves it; the server works out EAC = E + F + H and J = D − I',
+       sql(f"select (figures->>'eac')::numeric::bigint||'/'||(figures->>'vac')::numeric::bigint||'/'||(figures->'wbs'->0->>'var')::numeric::bigint||'/'||jsonb_array_length(figures->'wbs') from report_releases where kind='cost' and period='{cm}'") == '3100000/-100000/-100000/18')
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'submit',project_id:'P1',kind:'cost',period_type:'month',period:'{cm}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Cost by WBS', 'the server refuses to submit while the line with a supplement has no justification', r.startswith('refused') and 'SM' in r, r)
+    pg.evaluate(f"openRelease('P1','cost','month','{cm}')"); pg.wait_for_timeout(700)
+    pg.fill('#relForm [name=w0_justification]', 'Extended site management for demobilisation'); pg.click('[data-reldo="submit"]'); pg.wait_for_timeout(1800)
+    ck('Cost by WBS', 'with the justification it is submitted', sql(f"select status from report_releases where kind='cost' and period='{cm}'") == 'Submitted')
+    login(pg, 'hd')
+    pg.evaluate(f"rpc('release_act',{{p:{{action:'approve',project_id:'P1',kind:'cost',period_type:'month',period:'{cm}'}}}})"); pg.wait_for_timeout(800)
+    login(pg, 'pm')
+    pg.evaluate(f"state.scope='ALL';state.xrPt='month';state.xrPer='{cm}';state.xrTab='proj';state.xrPid='P1';go('xr')"); pg.wait_for_timeout(900); v = pg.inner_text('#view')
+    ck('Cost by WBS', 'the project manager sees it by WBS head in the executive report', 'Cost report by WBS head' in v and 'Extended site management for demobilisation' in v and '3,100,000' in v, v[:200])
+    login(pg, 'f1')
+    r = pg.evaluate("SB.from('report_releases').select('kind').eq('kind','cost').then(x=>x.error?'err':x.data.length)")
+    ck('Cost by WBS', 'a foreman still receives no cost report', r == 0, r)
 
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))

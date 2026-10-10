@@ -387,6 +387,10 @@ label.btn{display:inline-block}
 .repctl{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 14px;padding:10px 12px;background:var(--surface-2);border-radius:9px}
 .repctl .ctl{gap:8px;font-size:13px;color:var(--ink-2)}
 .repctl select{font-size:14px}
+.sheet.wide{width:min(1560px,100%)}
+.crtbl{font-size:12.5px}.crtbl th,.crtbl td{padding:5px 6px;white-space:nowrap}.crtbl th .t2{font-weight:400}.crtbl input{width:112px;padding:4px 6px;font-size:12.5px;text-align:end}
+.crtbl input.crj{width:240px;text-align:start}.crtbl .crtot td{background:var(--accent-soft)}.crtbl .crfoot td{background:var(--surface-2);font-size:12px}.crtbl .crg{text-align:center;border-bottom:1px solid var(--line)}
+.crtbl .crjt{min-width:220px;white-space:normal}.crhead{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;margin:4px 0 8px}.crfields{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
 .qfacts{margin:10px 0 0}.qfacts>div>div{padding:0;background:none}.qfacts .t2{display:block}.warn-box.qwarn{background:var(--amber-soft);border-inline-start-color:var(--amber)}
 .qfacts.q5{grid-template-columns:repeat(5,minmax(0,1fr))}
 @media (max-width:1280px){.qfacts.q5{grid-template-columns:repeat(3,minmax(0,1fr))}.qfacts.q5>div:last-child{grid-column:span 2}}
@@ -701,7 +705,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.2</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.3</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -2316,10 +2320,11 @@ function relActLocal(p){
     if(rel&&rel.status!=='Draft')fail(`This version is ${rel.status.toLowerCase()} and cannot be edited`);
     if(!rel&&DB.releases.some(r=>same(r)&&r.status==='Released'))fail('This period is already released; use Revise to issue a new revision');
     let f=Object.assign({},p.figures||{});
-    for(const [key,v] of Object.entries(f)){if(/(_date|finish)$/.test(key)){if(v&&!isoOk(v))fail(`Figure ${key} is not a valid date`)}else if(/_text$/.test(key)){if(String(v||'').length>300)fail(`Figure ${key} is too long`)}
+    for(const [key,v] of Object.entries(f)){if(key==='wbs')continue;if(/(_date|finish)$/.test(key)){if(v&&!isoOk(v))fail(`Figure ${key} is not a valid date`)}else if(/_text$/.test(key)){if(String(v||'').length>300)fail(`Figure ${key} is too long`)}
       else if(v!=null&&v!==''&&!isFinite(+v))fail(`Figure ${key} must be a number`)}
     if(k==='planning'){['planned_pct','actual_pct','eng_pct','prc_pct','eng_plan_pct','prc_plan_pct'].forEach(key=>{const v=f[key];if(v!=null&&v!==''&&(+v<0||+v>100))fail(`${key} must be between 0 and 100`)});
       if(f.actual_pct==null||f.actual_pct==='')fail('Enter the actual progress')}
+    else if(isWbs(f)){INV_IN.forEach(([key])=>{const v=f[key];if(v==null||v==='')return;if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});f=crCompute(pid,per,f)}
     else{COST_IN.forEach(([key,l])=>{const v=f[key];if(v==null||v===''||!isFinite(+v))fail('Enter the '+l.toLowerCase());if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});
       INV_IN.forEach(([key])=>{const v=f[key];if(v==null||v==='')return;if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});f=costCompute(pid,per,f)}
     const o=p.overrides||[];o.forEach(x=>{if(!String(x.reason||'').trim())fail(`Give a reason for changing ${x.label||x.field||'a figure'}`)});
@@ -2331,6 +2336,7 @@ function relActLocal(p){
   if(!rel)rel=DB.releases.find(r=>same(r)&&['Draft','Submitted'].includes(r.status));
   if(!rel)fail('Nothing is being prepared for this period');
   if(a==='submit'){if(!canPrepRel(k))fail('Only the people who prepare this report can submit it');if(rel.status!=='Draft')fail(`Only a draft can be submitted; this version is ${rel.status.toLowerCase()}`);
+    if(rel.kind==='cost'&&isWbs(rel.figures)){const m=rel.figures.wbs.filter(l=>Math.abs(+l.var||0)>=1&&!String(l.justification||'').trim()).map(l=>l.code);if(m.length)fail('Give a justification for each WBS line with a supplement or saving before submitting: '+m.join(', '))}
     rel.status='Submitted';rel.submitted_by=meU.id;rel.submitted_at=new Date().toISOString();log(rel,'Submitted for approval',note)}
   else if(a==='approve'){if(!canApproveRel())fail('Only the Head of Planning and Cost Control or a super admin can approve a release');if(rel.status!=='Submitted')fail('Only a submitted version can be approved');
     if(rel.submitted_by===meU.id)fail('You submitted this version, so someone else must approve it');
@@ -2347,9 +2353,10 @@ async function cloudLoadReleases(){
   catch(e){DB.releases=[];DB.relAudit=[];DB.coLog=[];DB.suppLog=[];DB.relMissing=srvMsg(e)}
 }
 async function relAct(p){
-  if(CLOUD_ME){let r;try{r=await rpc('release_act',{p})}catch(e){toast('The server refused this: '+srvMsg(e));return null}
+  relAct.err='';
+  if(CLOUD_ME){let r;try{r=await rpc('release_act',{p})}catch(e){const m=srvMsg(e);relAct.err='the server refused this: '+m+(/figure wbs/i.test(m)?' (the server needs the v12 database update, see STAGE-9-SETUP)':'');toast(relAct.err);return null}
     try{await cloudLoadReleases()}catch(e){}save();return r}
-  try{return relActLocal(p)}catch(e){toast(e.message);return null}
+  try{return relActLocal(p)}catch(e){relAct.err=e.message;toast(e.message);return null}
 }
 
 /* ---------- Releases screen (planning and cost staff) ---------- */
@@ -2392,7 +2399,7 @@ function openRelease(pid,k,t,per){
   const p=projById(pid),open=relOpen(pid,k,t,per),released=relReleased(pid,k,t,per),r=open||released,editable=(!r||r.status==='Draft')&&canPrepRel(k)&&!(!open&&released);
   const u=id=>{const x=id&&userById(id);return x?x.name:'—'},H=r?relRows().filter(x=>x.project_id===pid&&x.kind===k&&x.period_type===t&&x.period===per).flatMap(x=>relAuditOf(x.id).map(a=>({...a,rev:x.rev}))).sort((a,b)=>String(b.at_time).localeCompare(String(a.at_time))):[];
   const comp=k==='planning'?relPlanSnapshot(pid):null,f=r?r.figures:(k==='planning'?comp:relCostDefaults(pid,per)),nar=(r&&r.narrative)||{},ov=(r&&r.overrides)||[];
-  let body='';
+  let body='',crUse=false,crFillNow=null;
   if(k==='planning'){
     body=`<table class="tbl"><thead><tr><th>Figure</th><th class="n">ProTrackAI now</th><th class="n">In this version</th><th>Reason if different</th></tr></thead><tbody>
       ${PLAN_FIELDS.map(([key,l,unit])=>{const cv=comp[key],v=f[key],o=ov.find(x=>x.field===key);
@@ -2404,6 +2411,17 @@ function openRelease(pid,k,t,per){
       ${F('Progress summary',`<textarea name="n_summary" rows="2" ${editable?'':'disabled'}>${esc(nar.summary||'')}</textarea>`,true)}
       ${F('Key issues (site, design, procurement)',`<textarea name="n_issues" rows="2" ${editable?'':'disabled'}>${esc(nar.issues||'')}</textarea>`,true)}
       ${F('Actions for the next period',`<textarea name="n_next" rows="2" ${editable?'':'disabled'}>${esc(nar.next||'')}</textarea>`,true)}`;
+  }else if(crUse=(()=>{const fl=state.crFill&&state.crFill.pid===pid&&state.crFill.per===per?state.crFill:null;if(fl)state.crFill=null;crFillNow=fl;return !!fl||isWbs(f)||!r})()){
+    /* v3.3: the company format, by WBS head */
+    const fw=crFillNow?crFillNow.figures:(isWbs(f)?f:crDefaults(pid,per));
+    if(!isWbs(f)&&!crFillNow){const ib=f;['inv_invoiceable','inv_submitted','inv_approved','inv_collected'].forEach(x=>{if(ib&&ib[x]!=null)fw[x]=ib[x]})}
+    const sl=suppLatest(pid,per),bud=crN(fw.budget_current!=null?fw.budget_current:(fw.wbs||[]).reduce((t,l)=>t+crN(l.budget),0)),r0=(fw.wbs||[]).reduce((t,l)=>t+crN(l.rev0_rev),0);
+    body=`${crFillNow&&crFillNow.file?`<div class="note"><b>Filled from ${esc(crFillNow.file)}.</b> Check the figures, then save or submit.${(crFillNow.warn||[]).length?`<span class="t2 a-c">${esc(crFillNow.warn.join('; '))}</span>`:''}</div>`:''}
+      ${r&&isWbs(r.figures)&&r.status!=='Draft'?`<div class="actions" style="margin:0 0 8px"><button class="btn sm" type="button" data-crexp="${esc(pid)}|${esc(per)}|${esc(r.id)}">Export to Excel (company format)</button></div>`:''}
+      ${crFormHTML(pid,per,fw,editable)}
+      <p class="small muted">Approved budget supplements in the log up to ${esc(perLabel('month',per))}: ${sar(suppApproved(pid,per))}${sl.b?` (${batchNo(sl.b)})`:''}; current budget − revised Rev-0 = ${sar(bud-r0)}. The current budget (D) is entered as approved; the log is shown for reconciliation.</p>
+      ${relInvFields(pid,fw,editable)}
+      ${F('Comments',`<textarea name="n_summary" rows="2" ${editable?'':'disabled'}>${esc(nar.summary||'')}</textarea>`,true)}`;
   }else{
     const c=costCompute(pid,per,{budget_rev0:+f.budget_rev0||0,actual:+f.actual||0,ftc:+f.ftc||0}),sl=suppLatest(pid,per),vl=voLatest(pid,per);
     const vo=vl.rows,appr=vo.filter(x=>/approved/i.test(x.client_status||'')&&!/partial/i.test(x.client_status||''));
@@ -2416,7 +2434,8 @@ function openRelease(pid,k,t,per){
         <tr><td>Change orders and claims</td><td class="n">${vo.length}</td><td class="small muted">${vl.b?`${vo.filter(x=>x.kind==='VO').length} VO${vo.filter(x=>x.kind==='VO').length===1?'':'s'}, ${vo.filter(x=>x.kind==='Claim').length} claim${vo.filter(x=>x.kind==='Claim').length===1?'':'s'} in the ${perLabel('month',vl.b.source_period)} log; expected price ${sar(vo.reduce((t,x)=>t+(+x.expected_price||0),0))}, approved by the client ${sar(appr.reduce((t,x)=>t+(+x.expected_price||+x.est_price||0),0))}`:'No change order and claim log uploaded up to this month'}</td></tr>
       </tbody></table>
       ${relInvFields(pid,f,editable)}
-      ${F('Comments',`<textarea name="n_summary" rows="2" ${editable?'':'disabled'}>${esc(nar.summary||'')}</textarea>`,true)}`;
+      ${F('Comments',`<textarea name="n_summary" rows="2" ${editable?'':'disabled'}>${esc(nar.summary||'')}</textarea>`,true)}
+      <p class="small muted">This report has totals only (an older report or the quick upload).${editable?` <button class="btn sm" type="button" data-crconvert="${esc(pid)}|${esc(per)}">Use the company format by WBS head</button>`:''}</p>`;
   }
   const canSubmit=open&&open.status==='Draft'&&canPrepRel(k),canDecide=open&&open.status==='Submitted'&&canApproveRel();
   $('#sheet').innerHTML=`<div class="sheet-head"><h2>${esc(REL_KIND[k])} · ${esc(perLabel(t,per))}</h2>${r?`<span class="st ${r.status==='Released'?'Approved':r.status==='Submitted'?'Reviewed':'Draft'}">${esc(r.status==='Submitted'?'Awaiting approval':r.status)} · rev ${r.rev}</span>`:''}<button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
@@ -2437,6 +2456,7 @@ function openRelease(pid,k,t,per){
     ${r&&r.submitted_by?`<p class="small">Submitted by ${esc(u(r.submitted_by))}${r.submitted_at?', '+esc(tStamp(r.submitted_at)):''}.</p>`:''}
     ${released?`<p class="small">Released rev ${released.rev}: approved by ${esc(u(released.approved_by))}, ${esc(tStamp(released.approved_at))}.</p>`:''}
     <h3>History</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.action)}</b> (rev ${a.rev}) by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}</li>`).join('')||'<li class="muted">Not prepared yet.</li>'}</ul>`;
+  $('#sheet').classList.toggle('wide',!!crUse);if(crUse)crPaint();
   $('#drawer').hidden=false;
 }
 function relFormPayload(){
@@ -2447,7 +2467,7 @@ function relFormPayload(){
       if(differs)overrides.push({field:key,label:l,computed:cv==null?null:cv,value:val,reason:(f.elements['r_'+key]?.value||'').trim()})});
     ['next_ms_text','next_ms_date','baseline_finish'].forEach(x=>{figures[x]=comp[x]});
     ['summary','issues','next'].forEach(x=>{const el=f.elements['n_'+x];if(el)nar[x]=el.value.trim()})}
-  else{[...COST_IN,...INV_IN].forEach(([key])=>{const el=f.elements['c_'+key];if(el)figures[key]=el.value.trim()===''?null:+el.value});const el=f.elements.n_summary;if(el)nar.summary=el.value.trim()}
+  else{if(f.querySelector('#crTable'))Object.assign(figures,crFormRead(f));[...(f.querySelector('#crTable')?[]:COST_IN),...INV_IN].forEach(([key])=>{const el=f.elements['c_'+key];if(el)figures[key]=el.value.trim()===''?null:+el.value});const el=f.elements.n_summary;if(el)nar.summary=el.value.trim()}
   return {figures,overrides,narrative:nar,data_date:ASOF};
 }
 document.addEventListener('input',e=>{
@@ -2471,7 +2491,7 @@ document.addEventListener('click',async e=>{
   if(d.relopen){const k=state.relTab,tp=k==='cost'?'month':(state.relPt||'month');openRelease(d.relopen,k,tp,state.relPer&&periodOk(state.relPer,tp)?state.relPer:(tp==='month'?curMonth():curWeek()));return}
   if(d.reldo){const f=$('#relForm'),a=d.reldo,note=($('#relNote')?.value||'').trim(),base={project_id:f.dataset.pid,kind:f.dataset.k,period_type:f.dataset.t,period:f.dataset.per};
     const err=m=>{$('#relErr').textContent=m};t.disabled=true;let r;
-    if(a==='save'||a==='submit'){if(f.querySelector('[name^="f_"],[name^="c_"]')){r=await relAct({action:'save',...base,...relFormPayload()});if(!r){t.disabled=false;err('Not saved: see the message at the bottom of the screen.');return}}
+    if(a==='save'||a==='submit'){if(f.querySelector('[name^="f_"],[name^="c_"],#crTable')){r=await relAct({action:'save',...base,...relFormPayload()});if(!r){t.disabled=false;err(relAct.err?'Not saved: '+relAct.err:'Not saved: see the message at the bottom of the screen.');return}}
       if(a==='submit')r=await relAct({action:'submit',...base,note})}
     else r=await relAct({action:a,...base,note});
     t.disabled=false;if(!r){err('Not done: see the message at the bottom of the screen.');return}
@@ -2558,7 +2578,7 @@ function renderXr(){
     </tbody></table></div>
     ${rows.some(x=>x.pr&&(x.pr.narrative||{}).issues)?`<h3>Key issues</h3><ul>${rows.filter(x=>x.pr&&(x.pr.narrative||{}).issues).map(x=>`<li><b>${esc(x.p.short)}</b>: ${esc(x.pr.narrative.issues)}${x.pr.narrative.next?` <span class="muted">Next: ${esc(x.pr.narrative.next)}</span>`:''}</li>`).join('')}</ul>`:''}</section>
   ${t==='month'&&money?`<section class="panel"><div class="card-head"><h2>Cost by project</h2><span class="small muted">Released by costing · SAR${T.n?` · approved budget ${sar(T.budget_current)}, actual ${sar(T.actual)}, commitments ${sar(T.commitment)}`:''}</span></div>
-    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Rev-0 budget</th><th class="n">Approved supplements</th><th class="n">Approved budget</th><th class="n">Actual to date</th><th class="n">Commitments</th><th class="n">EAC</th><th class="n">VAC</th><th>Release</th></tr></thead><tbody>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Rev-0 budget</th><th class="n">Approved supplements (log)</th><th class="n">Current budget</th><th class="n">Actual to date</th><th class="n">Commitments</th><th class="n">EAC</th><th class="n">VAC</th><th>Release</th></tr></thead><tbody>
     ${rows.map(({p,cr})=>{if(!cr)return `<tr><td><b>${esc(p.short)}</b></td><td colspan="8" class="muted small">Not released for ${esc(perLabel('month',per))}</td></tr>`;const f=cr.figures;
       return `<tr><td><b>${esc(p.short)}</b></td><td class="n">${sar(+f.budget_rev0)}</td><td class="n">${sar(+f.supplements_approved)}</td><td class="n">${sar(+f.budget_current)}</td><td class="n">${sar(+f.actual)}</td><td class="n">${sar(+f.commitment)}</td><td class="n"><b>${sar(+f.eac)}</b></td><td class="n ${+f.vac<0?'r-c':'g-c'}">${sar(+f.vac)}</td><td class="small">rev ${cr.rev}<span class="t2">${esc(who(cr.approved_by))}</span></td></tr>`}).join('')}
     </tbody></table></div></section>
@@ -3035,9 +3055,10 @@ function xrProjectHTML(t,per){
         <td class="small">${x.forecast_target||x.planned_target?fmtDY(x.forecast_target||x.planned_target):'—'}</td><td class="small">${esc(x.schedule_impact||'—')}</td></tr>`).join('')}</tbody></table></div>`
       :'<p class="muted small">No open issues were recorded for this project when the release was approved.</p>'):NOEV('No progress release for this period, so no released issues.')}</section>
   ${money?`<section class="panel"><div class="card-head"><h2>Cost and billing</h2><span class="small muted">Released cost report · SAR</span></div>
-    ${c?`<div class="g g-kpi">${kpi('Approved budget',sar(+c.budget_current),`Rev-0 ${sar(+c.budget_rev0)} + supplements ${sar(+c.supplements_approved)}`)}${kpi('Actual to date',sar(+c.actual),`commitments ${sar(+c.commitment)}`)}
+    ${c?`<div class="g g-kpi">${kpi(isWbs(c)?'Current budget':'Approved budget',sar(+c.budget_current),isWbs(c)?`Rev-0 ${sar(+c.budget_rev0)}, by WBS head`:`Rev-0 ${sar(+c.budget_rev0)} + supplements ${sar(+c.supplements_approved)}`)}${kpi('Actual to date',sar(+c.actual),`commitments ${sar(+c.commitment)}`)}
       ${kpi('EAC',sar(+c.eac),`forecast to complete ${sar(+c.ftc)}`)}${kpi('VAC',sar(+c.vac),'Approved budget − EAC',+c.vac<0?'r':'')}
-      ${c.inv_submitted!=null?kpi('Invoiced / collected',sar(+c.inv_submitted),`invoiceable ${sar(+c.inv_invoiceable||0)}, collected ${sar(+c.inv_collected||0)}`):''}</div>`:NOEV('No cost report released for this month.')}
+      ${c.inv_submitted!=null?kpi('Invoiced / collected',sar(+c.inv_submitted),`invoiceable ${sar(+c.inv_invoiceable||0)}, collected ${sar(+c.inv_collected||0)}`):''}</div>
+      ${isWbs(c)?`<div class="card-head" style="margin-top:6px"><h3 style="margin:0">Cost report by WBS head</h3><button class="btn sm" type="button" data-crexp="${esc(pid)}|${esc(per)}|${esc(cr.id)}">Export to Excel</button></div>${crTableHTML(c,per)}`:''}`:NOEV('No cost report released for this month.')}
     ${vl.rows.length?`<h3>Change orders and claims (${esc(perLabel('month',vl.b.source_period))} log)</h3><div class="scroll"><table class="tbl"><thead><tr><th>Ref</th><th>Type</th><th>Description</th><th>Client</th><th class="n">Expected price</th><th class="n">Rev-0 change</th><th>Overall</th></tr></thead><tbody>
       ${vl.rows.map(r=>`<tr><td><b>${esc(r.ref_no)}</b></td><td>${esc(r.kind)}</td><td class="small">${esc(r.description||'')}</td><td class="small">${esc(r.client_status||'—')}</td><td class="n">${r.expected_price!=null?sar(+r.expected_price):'—'}</td><td class="n">${r.rev0_change!=null?sar(+r.rev0_change):'—'}</td><td class="small">${esc(r.overall_status||'—')}</td></tr>`).join('')}</tbody></table></div>`:''}
     ${sl.rows.length?`<h3>Budget supplements (${esc(perLabel('month',sl.b.source_period))} log)</h3><p class="small">${SUPP_CATS.map(cat=>{const v=sl.rows.filter(r=>r.category===cat);return v.length?`${esc(cat)}: ${sar(v.filter(r=>/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))} approved${v.some(r=>!/^approved$/i.test(r.approval_status||''))?`, ${sar(v.filter(r=>!/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))} pending`:''}`:''}).filter(Boolean).join(' · ')}</p>`:''}</section>`:''}
@@ -3180,6 +3201,195 @@ function qtyJustLocal(d,g){
 }
 async function cloudLoadQtyJust(){
   try{DB.qtyJust=await selAll('dpr_qty_just','*',null,['id']);DB.qjMissing=false}catch(e){DB.qtyJust=[];DB.qjMissing=srvMsg(e)}
+}
+
+/* ---------- v3.3: the monthly cost report in the company format, by WBS head ----------
+   Columns: A tender, B1 Rev-0, B2 revised Rev-0 (latest approved CRF), C previous version, D current budget, E actual,
+   F commitment, G balance = D − E − F, H ETC, I EAC = E + F + H, J supplement (−) / saving (+) = D − I, justification.
+   C comes from the last released cost report. The overall figures keep their meaning for the rest of the app:
+   budget_current = Σ D, ftc = F + H, EAC = actual + ftc, VAC = budget_current − EAC. The server (pt_cost_wbs,
+   schema-update-v12.sql) works out the same figures; reports without WBS lines work as before. */
+const CR_HEADS=[['SM','Site Management'],['DE','Design'],['TEC','Testing'],['MTRL.ELC','Electrical Material'],['MAN.ELC','Electrical Manpower'],['INSTL.ELC','Electrical inst'],
+  ['MTRL.MECH','Mechanical Material'],['MAN.MECH','Mechanical Manpower'],['INSTL.MECH','Mechanical inst'],['MTRL.CVL','Civil Material'],['MAN.CVL','Civil Manpower'],['INSTL.CVL','Civil Equip'],
+  ['SAD','Saudization'],['FNE','Financing'],['PC ITEMS','Prime Cost'],['PROV. SUM','Provisional Sum'],['CONT','Contingency'],['MGT.RES','Management Reserve']];
+const CR_IN=['tender','rev0','rev0_rev','prev','budget','actual','commitment','etc'];
+const CR_COLS=[['tender','Tender','A'],['rev0','Rev-0','B1'],['rev0_rev','Revised Rev-0','B2, latest approved CRF'],['prev','Prev. version','C'],['budget','Current budget','D'],['actual','Actual','E'],
+  ['commitment','Commitment','F'],['balance','Balance','G = D−E−F'],['etc','ETC','H'],['eac','EAC','I = E+F+H'],['var','Supp. (−) / savings (+)','J = D−I']];
+const isWbs=f=>!!(f&&Array.isArray(f.wbs));
+const crN=v=>{const n=+v;return isFinite(n)?n:0};
+function crPrev(pid,per){return relRows().filter(r=>r.project_id===pid&&r.kind==='cost'&&r.status==='Released'&&String(r.period)<per).sort((a,b)=>String(b.period).localeCompare(String(a.period))||b.rev-a.rev)[0]||null}
+/* the server's rules, mirrored (throws on what the server refuses) */
+function crCompute(pid,per,f){
+  const w=f.wbs,fail=t=>{throw new Error(t)};
+  if(!Array.isArray(w)||!w.length)fail('The cost report needs at least one WBS line');if(w.length>60)fail('At most 60 WBS lines');
+  const pr=crPrev(pid,per),pw=pr&&isWbs(pr.figures)?pr.figures.wbs:null,seen=new Set(),T={t:0,r0:0,rr:0,p:0,b:0,a:0,c:0,e:0};
+  const lines=w.map(x=>{const c=String(x.code||'').trim().toUpperCase();if(!c||c.length>20)fail('Each WBS line needs a code of up to 20 characters');if(seen.has(c))fail(`WBS ${c} appears twice`);seen.add(c);
+    if(String(x.name||'').length>60)fail(`The WBS name for ${c} is too long`);if(String(x.justification||'').length>600)fail(`The justification for ${c} is too long (600 characters at most)`);
+    CR_IN.forEach(k=>{const v=x[k];if(v!=null&&v!==''&&!isFinite(+v))fail(`WBS ${c}: ${k} must be a number`);if(crN(v)<0)fail(`WBS ${c}: ${k} cannot be negative`)});
+    const g=k=>crN(x[k]),prev=pw?crN((pw.find(y=>String(y.code).toUpperCase()===c)||{}).budget):g('prev');
+    const l={code:c,name:String(x.name||'').trim().slice(0,60),tender:g('tender'),rev0:g('rev0'),rev0_rev:g('rev0_rev'),prev,budget:g('budget'),actual:g('actual'),commitment:g('commitment'),etc:g('etc'),
+      justification:String(x.justification||'').trim().slice(0,600)||null};
+    l.balance=l.budget-l.actual-l.commitment;l.eac=l.actual+l.commitment+l.etc;l.var=l.budget-l.eac;
+    T.t+=l.tender;T.r0+=l.rev0;T.rr+=l.rev0_rev;T.p+=prev;T.b+=l.budget;T.a+=l.actual;T.c+=l.commitment;T.e+=l.etc;return l});
+  ['planned_poc','actual_poc'].forEach(k=>{const v=f[k];if(v!=null&&v!==''&&(+v<0||+v>100))fail(`${k} must be between 0 and 100`)});
+  if(crN(f.contract_value)<0)fail('The contract value cannot be negative');
+  const out=Object.assign({},f,{wbs:lines,tender_total:T.t,budget_rev0:T.r0,rev0_rev_total:T.rr,prev_total:T.p,budget_current:T.b,actual:T.a,commitment:T.c,etc:T.e,balance_total:T.b-T.a-T.c,
+    ftc:T.c+T.e,eac:T.a+T.c+T.e,vac:T.b-(T.a+T.c+T.e),supplements_approved:suppApproved(pid,per)});
+  delete out.prev_period_text;if(pw)out.prev_period_text=pr.period;
+  return out;
+}
+/* a new report starts from the last released one: tender, Rev-0 and revised Rev-0 carried, previous version = its current budget */
+function crDefaults(pid,per){
+  const p=projById(pid)||{},pr=crPrev(pid,per),pf=pr&&isWbs(pr.figures)?pr.figures:null,plan=relReleased(pid,'planning','month',per),pl=plan?plan.figures:{};
+  const lines=(pf?pf.wbs:CR_HEADS.map(([code,name])=>({code,name}))).map(x=>({code:x.code,name:x.name,tender:x.tender??null,rev0:x.rev0??null,rev0_rev:x.rev0_rev??null,prev:pf?x.budget:null,
+    budget:pf?x.budget:null,actual:pf?x.actual:null,commitment:pf?x.commitment:null,etc:pf?x.etc:null,justification:''}));
+  return {wbs:lines,contract_value:pf&&pf.contract_value!=null?pf.contract_value:(+p.value?Math.round(+p.value*1e6):null),tender_month_text:pf?pf.tender_month_text:'',rev0_month_text:pf?pf.rev0_month_text:'',rev0_rev_month_text:pf?pf.rev0_rev_month_text:'',
+    planned_tcc_date:pl.baseline_finish||(pf&&pf.planned_tcc_date)||'',forecast_tcc_date:pl.forecast_finish||(pf&&pf.forecast_tcc_date)||'',planned_poc:pl.planned_pct??null,actual_poc:pl.actual_pct??null,overall_note_text:''};
+}
+const crFmt=v=>v==null||v===''?'—':Math.abs(+v)<0.5?'-':(+v<0?`(${fmt(Math.abs(Math.round(+v)))})`:fmt(Math.round(+v)));
+const crVarCell=v=>`<span class="${+v<-0.5?'r-c':+v>0.5?'g-c':''}">${crFmt(v)}</span>`;
+const crMon=v=>{const s=String(v||'');if(!/^\d{4}-\d{2}/.test(s))return s||'';return perLabel('month',s.slice(0,7))};
+const crTot=f=>({tender:f.tender_total,rev0:f.budget_rev0,rev0_rev:f.rev0_rev_total,prev:f.prev_total,budget:f.budget_current,actual:f.actual,commitment:f.commitment,balance:f.balance_total,etc:f.etc,eac:f.eac,var:f.vac});
+/* read-only table in the company layout (executive report, released reports) */
+function crTableHTML(f,per){
+  const W=f.wbs||[],cv=crN(f.contract_value),T=crTot(f);
+  const dates={tender:crMon(f.tender_month_text),rev0:crMon(f.rev0_month_text),rev0_rev:crMon(f.rev0_rev_month_text),prev:f.prev_period_text?perLabel('month',f.prev_period_text):''};
+  const B=['tender','rev0','rev0_rev','prev','budget'],gm=k=>cv?`<td class="n">${crFmt(cv-crN(T[k]))}</td>`:'<td class="n">—</td>',gp=k=>cv?`<td class="n"><b>${pct((cv-crN(T[k]))/cv,2)}</b></td>`:'<td class="n">—</td>';
+  return `<div class="crhead"><span>Planned TCC <b>${f.planned_tcc_date?fmtDY(f.planned_tcc_date):'—'}</b></span><span>Forecasted TCC <b>${f.forecast_tcc_date?fmtDY(f.forecast_tcc_date):'—'}</b></span>
+      <span>Planned POC <b>${f.planned_poc!=null&&f.planned_poc!==''?fmt(+f.planned_poc,2)+'%':'—'}</b></span><span>Actual POC <b>${f.actual_poc!=null&&f.actual_poc!==''?fmt(+f.actual_poc,2)+'%':'—'}</b></span></div>
+    <div class="scroll"><table class="tbl crtbl"><thead>
+      <tr><th rowspan="2">User field</th><th rowspan="2">WBS head</th><th colspan="4" class="crg">Budget details</th><th colspan="4" class="crg">Reporting month: ${esc(perLabel('month',per))}</th><th colspan="3" class="crg">Forecast</th><th rowspan="2">Justification</th></tr>
+      <tr>${CR_COLS.map(([k,l,c])=>`<th class="n">${esc(l)}<span class="t2">(${esc(c)})${dates[k]?' '+esc(dates[k]):''}</span></th>`).join('')}</tr></thead><tbody>
+      <tr class="crtot"><td></td><td><b>Overall</b></td>${CR_COLS.map(([k])=>`<td class="n"><b>${k==='var'?crVarCell(T[k]):crFmt(T[k])}</b></td>`).join('')}<td class="small"><b>${esc(f.overall_note_text||'')}</b></td></tr>
+      ${W.map(l=>`<tr><td><b>${esc(l.code)}</b></td><td>${esc(l.name||'')}</td>${CR_COLS.map(([k])=>`<td class="n">${k==='var'?crVarCell(l[k]):crFmt(l[k])}</td>`).join('')}<td class="small crjt">${esc(l.justification||'')}</td></tr>`).join('')}
+      <tr class="crfoot"><td></td><td>Contract value</td>${B.map(()=>`<td class="n">${cv?crFmt(cv):'—'}</td>`).join('')}<td colspan="4"></td><td class="n">${cv?crFmt(cv):'—'}</td><td colspan="2"></td></tr>
+      <tr class="crfoot"><td></td><td>Gross margin</td>${B.map(gm).join('')}<td colspan="4"></td>${gm('eac')}<td colspan="2"></td></tr>
+      <tr class="crfoot"><td></td><td>% Gross margin</td>${B.map(gp).join('')}<td colspan="4"></td>${gp('eac')}<td colspan="2"></td></tr>
+    </tbody></table></div>`;
+}
+/* the editable form (cost report drawer) */
+function crFormHTML(pid,per,f,editable){
+  const pr=crPrev(pid,per),prevFixed=!!(pr&&isWbs(pr.figures)),W=f.wbs||[];
+  const ni=(n,v)=>editable?`<input name="${n}" value="${esc(v==null?'':v)}" type="number" min="0" step="1" inputmode="decimal" data-crin>`:`<span>${crFmt(v)}</span><input type="hidden" name="${n}" value="${esc(v==null?'':v)}">`;
+  const hi=(n,l,v,type)=>F(l,editable?`<input name="${n}" value="${esc(v==null?'':v)}" ${type} data-crin>`:`<input value="${esc(v==null||v===''?'—':v)}" disabled>`);
+  return `<div class="fields crfields">${hi('h_planned_tcc_date','Planned TCC',f.planned_tcc_date,'type="date"')}${hi('h_forecast_tcc_date','Forecasted TCC',f.forecast_tcc_date,'type="date"')}
+      ${hi('h_planned_poc','Planned POC %',f.planned_poc,'type="number" min="0" max="100" step="0.01"')}${hi('h_actual_poc','Actual POC %',f.actual_poc,'type="number" min="0" max="100" step="0.01"')}
+      ${hi('h_contract_value','Contract value (SAR)',f.contract_value,'type="number" min="0" step="1"')}
+      ${hi('h_tender_month_text','Tender (A) month',f.tender_month_text,'type="month"')}${hi('h_rev0_month_text','Rev-0 (B1) month',f.rev0_month_text,'type="month"')}${hi('h_rev0_rev_month_text','Revised Rev-0 (B2) month',f.rev0_rev_month_text,'type="month"')}</div>
+    <p class="small muted" style="margin:4px 0 8px">POC and TCC are filled in from this month's released progress when there is one. ${prevFixed?`Previous version (C) is the current budget of the ${esc(perLabel('month',pr.period))} cost report.`:'No earlier cost report by WBS head: enter the previous version (C) once; from next month it is taken from the released report.'}</p>
+    <div class="scroll"><table class="tbl crtbl" id="crTable"><thead><tr><th>User field</th><th>WBS head</th>${CR_COLS.map(([k,l,c])=>`<th class="n">${esc(l)}<span class="t2">(${esc(c)})</span></th>`).join('')}<th>Justification</th></tr></thead><tbody>
+      <tr class="crtot"><td></td><td><b>Overall</b></td>${CR_COLS.map(([k])=>`<td class="n"><b data-crt="${k}"></b></td>`).join('')}<td>${editable?`<input name="h_overall_note_text" value="${esc(f.overall_note_text||'')}" maxlength="300" class="crj" placeholder="For example: expected potential savings" data-crin>`:`<b>${esc(f.overall_note_text||'')}</b>`}</td></tr>
+      ${W.map((l,i)=>`<tr data-cri="${i}"><td><b>${esc(l.code)}</b><input type="hidden" name="w${i}_code" value="${esc(l.code)}"></td><td>${esc(l.name||'')}<input type="hidden" name="w${i}_name" value="${esc(l.name||'')}"></td>
+        ${CR_COLS.map(([k])=>['balance','eac','var'].includes(k)?`<td class="n" data-crc="${i}:${k}"></td>`:k==='prev'&&prevFixed?`<td class="n">${crFmt(l.prev)}<input type="hidden" name="w${i}_prev" value="${esc(l.prev??'')}"></td>`:`<td class="n">${ni(`w${i}_${k}`,l[k])}</td>`).join('')}
+        <td>${editable?`<input name="w${i}_justification" value="${esc(l.justification||'')}" maxlength="600" class="crj" data-crin>`:`<span class="small">${esc(l.justification||'')}</span>`}</td></tr>`).join('')}
+      <tr class="crfoot"><td></td><td>Gross margin</td><td colspan="4"></td><td class="n" data-crgm="budget"></td><td colspan="4"></td><td class="n" data-crgm="eac"></td><td colspan="2"></td></tr>
+    </tbody></table></div>
+    <p class="small muted" style="margin:6px 0 0">A line with a supplement or saving (J not zero) needs a justification before the report is submitted.</p>
+    ${editable?`<div class="actions" style="margin-top:8px"><label class="btn" for="crfile">Fill from Excel (company format)</label><input id="crfile" type="file" accept=".xlsx,.xls" hidden><span class="small muted">Your monthly cost report sheet; its WBS lines and header are read into this form for you to check before saving.</span></div>`:''}`;
+}
+function crFormRead(form){
+  const g=n=>{const el=form.elements[n];return el?el.value.trim():undefined},num=n=>{const v=g(n);return v===undefined||v===''?null:+v},wbs=[];
+  for(let i=0;form.elements[`w${i}_code`];i++)wbs.push({code:g(`w${i}_code`),name:g(`w${i}_name`),...Object.fromEntries(CR_IN.map(k=>[k,num(`w${i}_${k}`)])),justification:g(`w${i}_justification`)||''});
+  const h={wbs};['planned_tcc_date','forecast_tcc_date','tender_month_text','rev0_month_text','rev0_rev_month_text','overall_note_text'].forEach(k=>{const v=g('h_'+k);if(v!==undefined)h[k]=v||null});
+  ['planned_poc','actual_poc','contract_value'].forEach(k=>{if(form.elements['h_'+k])h[k]=num('h_'+k)});
+  return h;
+}
+function crPaint(){
+  const form=$('#relForm');if(!form||!$('#crTable'))return;let c;const er=$('#relErr');
+  try{c=crCompute(form.dataset.pid,form.dataset.per,crFormRead(form))}catch(e){if(er)er.textContent=e.message;return}
+  if(er&&/^WBS|At most|needs at least|between 0 and 100|contract value/.test(er.textContent))er.textContent='';
+  c.wbs.forEach((l,i)=>['balance','eac','var'].forEach(k=>{const el=form.querySelector(`[data-crc="${i}:${k}"]`);if(el)el.innerHTML=k==='var'?crVarCell(l[k]):crFmt(l[k])}));
+  const T=crTot(c);
+  Object.entries(T).forEach(([k,v])=>{const el=form.querySelector(`[data-crt="${k}"]`);if(el)el.innerHTML=k==='var'?crVarCell(v):crFmt(v)});
+  const cv=crN(c.contract_value);['budget','eac'].forEach(k=>{const el=form.querySelector(`[data-crgm="${k}"]`);if(el)el.innerHTML=cv?`${crFmt(cv-T[k])}<span class="t2">${pct((cv-T[k])/cv,2)}</span>`:'—'});
+}
+document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('[data-crin]'))crPaint()});
+/* Excel in the company layout: header row with Tender / Actual / ETC; rows by user field code or WBS head name */
+function crParse(aoa){
+  const S=v=>String(v??'').replace(/\s+/g,' ').trim(),hi=aoa.findIndex(r=>(r||[]).some(c=>/^tender/i.test(S(c)))&&(r||[]).some(c=>/^actual/i.test(S(c))));
+  if(hi<0)return {error:'No header row with Tender and Actual columns. Use the company cost report layout.'};
+  const H=(aoa[hi]||[]).map(S),col={},used=new Set(),find=(k,re)=>{const i=H.findIndex((h,j)=>!used.has(j)&&re.test(h));if(i>=0){col[k]=i;used.add(i)}};
+  find('rev0_rev',/revised/i);find('tender',/^tender/i);find('rev0',/^rev[- ]?0\b/i);find('prev',/prev/i);find('budget',/current\s*budget|^budget$/i);find('actual',/^actual/i);find('commitment',/commit/i);
+  find('etc',/^etc\b|estimate to complete/i);find('eac',/^eac\b/i);find('just',/justif/i);
+  const miss=['tender','rev0','budget','actual','commitment','etc'].filter(k=>col[k]==null);if(miss.length)return {error:'Columns not found: '+miss.join(', ')};
+  const codeOf=t=>{const u=S(t).toUpperCase();return u?((CR_HEADS.find(([c,n])=>c===u||n.toUpperCase()===u)||[])[0]||null):null};
+  const num=v=>{if(v==null)return null;if(typeof v==='number')return v;const s=S(v);if(!s||s==='-')return 0;const neg=/^\(.*\)$/.test(s),n=+s.replace(/[(),\s]/g,'');return isFinite(n)?(neg?-n:n):NaN};
+  const MS=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const mon=v=>{if(v instanceof Date)return isoOfDate(v).slice(0,7);const s=S(v),m=s.match(/^([A-Za-z]{3})[a-z]*[-. ]?(\d{2,4})$/);if(!m)return /^\d{4}-\d{2}/.test(s)?s.slice(0,7):'';const mi=MS.indexOf(m[1].toLowerCase());if(mi<0)return '';return `${m[2].length===2?'20'+m[2]:m[2]}-${String(mi+1).padStart(2,'0')}`};
+  const out={wbs:[]},warn=[];
+  for(let r=hi+1;r<Math.min(aoa.length,hi+4);r++){const row=aoa[r]||[],m=k=>col[k]!=null?mon(row[col[k]]):'';
+    if(m('tender')&&!out.tender_month_text)out.tender_month_text=m('tender');if(m('rev0')&&!out.rev0_month_text)out.rev0_month_text=m('rev0');if(m('rev0_rev')&&!out.rev0_rev_month_text)out.rev0_rev_month_text=m('rev0_rev')}
+  let overall=null;
+  aoa.slice(hi+1).forEach(row=>{row=row||[];const cells=Array.from(row,S),code=cells.slice(0,Math.max(2,col.tender)).map(codeOf).find(Boolean);
+    if(!code){if(cells.some(c=>/^overall$/i.test(c)))overall=row;if(cells.some(c=>/^contract value$/i.test(c))){const v=num(row[col.budget]);if(v>0)out.contract_value=v}return}
+    if(out.wbs.some(l=>l.code===code))return;const l={code,name:(CR_HEADS.find(x=>x[0]===code)||[])[1]};
+    CR_IN.forEach(k=>{const v=col[k]==null?null:num(row[col[k]]);if(Number.isNaN(v))warn.push(`${code}: ${k} is not a number`);l[k]=Number.isNaN(v)?null:v;if(l[k]!=null&&l[k]<0)warn.push(`${code}: ${k} is negative`)});
+    l.justification=col.just!=null?S(row[col.just]).slice(0,600):'';out.wbs.push(l)});
+  if(!out.wbs.length)return {error:'No WBS lines found (SM, DE, TEC, MTRL.ELC …).'};
+  const flat=aoa.flatMap((row,r)=>Array.from(row||[],(c,j)=>({r,j,s:S(c)})));
+  const near=re=>{const h=flat.find(x=>re.test(x.s));if(!h)return null;const row=aoa[h.r]||[];for(let j=h.j+1;j<row.length;j++)if(S(row[j])!=='')return row[j];return null};
+  const dt=v=>{if(v instanceof Date)return isoOfDate(v);const s=S(v);if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);const m=s.match(/^(\d{1,2})[- ]([A-Za-z]{3})[a-z]*[- ](\d{2,4})$/);if(!m)return '';const mi=MS.indexOf(m[2].toLowerCase());return mi<0?'':`${m[3].length===2?'20'+m[3]:m[3]}-${String(mi+1).padStart(2,'0')}-${m[1].padStart(2,'0')}`};
+  const pc=v=>{if(v==null)return null;if(typeof v==='number')return v<=1?+(v*100).toFixed(2):v;const n=+S(v).replace('%','');return isFinite(n)?n:null};
+  const ptcc=near(/^planned tcc$/i),ftcc=near(/^forecast(ed)? tcc$/i),ppoc=near(/^planned poc/i),apoc=near(/^actual poc/i);
+  if(ptcc!=null)out.planned_tcc_date=dt(ptcc)||null;if(ftcc!=null)out.forecast_tcc_date=dt(ftcc)||null;if(ppoc!=null)out.planned_poc=pc(ppoc);if(apoc!=null)out.actual_poc=pc(apoc);
+  if(overall&&col.just!=null){const j=S(overall[col.just]);if(j)out.overall_note_text=j.slice(0,300)}
+  const sum=k=>out.wbs.reduce((t,l)=>t+crN(l[k]),0);
+  if(overall){const ob=num(overall[col.budget]);if(isFinite(ob)&&ob!=null&&Math.abs(ob-sum('budget'))>1)warn.push(`the Overall current budget in the file (${fmt(ob)}) differs from the sum of the lines (${fmt(sum('budget'))})`);
+    if(col.eac!=null){const oe=num(overall[col.eac]),se=sum('actual')+sum('commitment')+sum('etc');if(isFinite(oe)&&oe!=null&&Math.abs(oe-se)>1)warn.push(`the Overall EAC in the file (${fmt(oe)}) differs from actual + commitment + ETC of the lines (${fmt(se)})`)}}
+  return {figures:out,warn};
+}
+async function handleCrFile(file){
+  const form=$('#relForm');if(!form)return;const pid=form.dataset.pid,per=form.dataset.per;
+  try{await loadLib(LIBS.xlsx);const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
+    const aoaOf=n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,blankrows:false}),p=projById(pid)||{};
+    const name=wb.SheetNames.find(n=>peCanon(n)===peCanon(pcode(p))&&!crParse(aoaOf(n)).error)||wb.SheetNames.find(n=>!crParse(aoaOf(n)).error)||wb.SheetNames[0];
+    const r=crParse(aoaOf(name));
+    if(r.error){$('#relErr').textContent=r.error;return}
+    const cur=crFormRead(form),f=Object.assign({},cur,Object.fromEntries(Object.entries(r.figures).filter(([k,v])=>k!=='wbs'&&v!=null&&v!=='')));
+    const pr=crPrev(pid,per),fixed=pr&&isWbs(pr.figures);
+    f.wbs=r.figures.wbs.map(l=>({...l,prev:fixed?crN((pr.figures.wbs.find(y=>y.code===l.code)||{}).budget):l.prev}));
+    state.crFill={pid,per,figures:f,file:file.name,warn:r.warn};openRelease(pid,'cost','month',per);
+  }catch(e){$('#relErr').textContent='That file could not be read: '+(e.message||'')}
+}
+document.addEventListener('change',e=>{if(e.target.id==='crfile'&&e.target.files[0]){handleCrFile(e.target.files[0]);e.target.value=''}});
+/* export in the company layout */
+function crAoa(pid,per,f){
+  const p=projById(pid)||{},W=f.wbs||[],cv=crN(f.contract_value),T=crTot(f),K=CR_COLS.map(c=>c[0]),r=v=>Math.round(crN(v)),B=['tender','rev0','rev0_rev','prev','budget'];
+  return [[`${pcode(p)} (${p.name||''})`],['Planned TCC',f.planned_tcc_date||'','Planned POC%',f.planned_poc!=null&&f.planned_poc!==''?+f.planned_poc/100:''],['Forecasted TCC',f.forecast_tcc_date||'','Actual POC%',f.actual_poc!=null&&f.actual_poc!==''?+f.actual_poc/100:''],[],
+    ['User Field','WBS Head','Tender','Rev-0','Revised Rev-0 (as per latest approved CRF)','Prev. Version','Current Budget','Actual','Commitment','Balance','ETC','EAC','SUPP (-)/ SAVINGS (+)','Justification'],
+    ['','','(A)','(B1)','(B2)','(C)','(D)','(E)','(F)','(G)= D-E-F','(H)','(I)= E+F+H','(J)= D-I',''],
+    ['','',crMon(f.tender_month_text),crMon(f.rev0_month_text),crMon(f.rev0_rev_month_text),f.prev_period_text?perLabel('month',f.prev_period_text):'',...Array(7).fill(perLabel('month',per)),''],
+    ['','Overall',...K.map(k=>r(T[k])),f.overall_note_text||''],
+    ...W.map(l=>[l.code,l.name||'',...K.map(k=>r(l[k])),l.justification||'']),[],
+    ['','Contract Value',...B.map(()=>cv),'','','','',cv],
+    ['','Gross Margin',...B.map(k=>cv-r(T[k])),'','','','',cv-r(T.eac)],
+    ['','% Gross Margin',...B.map(k=>cv?(cv-r(T[k]))/cv:''),'','','','',cv?(cv-r(T.eac))/cv:'']];
+}
+async function crExport(pid,per,f){
+  try{await loadLib(LIBS.xlsx);const p=projById(pid)||{},ws=XLSX.utils.aoa_to_sheet(crAoa(pid,per,f));ws['!cols']=[{wch:12},{wch:22},...Array(11).fill({wch:14}),{wch:60}];
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,String(pcode(p)||'Cost report').replace(/[\\\/\?\*\[\]:]/g,'-').slice(0,31));
+    await saveFile(`${pcode(p)}_cost_report_${per}.xlsx`,xlsxBlob(wb))}catch(e){toast('Could not build the file: '+(e.message||''))}
+}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-crexp],[data-crconvert]');if(!t)return;
+  if(t.dataset.crexp){const [pid,per,id]=t.dataset.crexp.split('|'),r=relRows().find(x=>String(x.id)===id);if(r)crExport(pid,per,r.figures);return}
+  if(t.dataset.crconvert){const [pid,per]=t.dataset.crconvert.split('|');state.crFill={pid,per,figures:crDefaults(pid,per),file:null};openRelease(pid,'cost','month',per)}});
+
+/* demo: the seeded cost reports in the company format (sample figures spread over the WBS heads) */
+function seedV33(){
+  if(CLOUD||DB.v33Seeded)return;
+  const W={SM:.06,DE:.012,TEC:.018,'MTRL.ELC':.47,'MAN.ELC':.03,'INSTL.ELC':.014,'MTRL.MECH':.05,'MTRL.CVL':.16,'MAN.CVL':.04,'INSTL.CVL':.006,SAD:.004,FNE:.014,CONT:.076};
+  const why={SM:['Additional site management for the extended programme (sample)','Saving on site facilities (sample)'],'MTRL.ELC':['Price increase on cables, supplement expected (sample)','Expected savings based on current site progress (sample)'],CONT:['Contingency drawn for handover works (sample)','Balance contingency retained (sample)']};
+  relRows().filter(r=>String(r.id).startsWith('RS')&&r.kind==='cost'&&r.figures&&!isWbs(r.figures)).sort((a,b)=>String(a.period).localeCompare(String(b.period))).forEach(r=>{
+    const f=r.figures,p=projById(r.project_id)||{},B1=+f.budget_rev0||0,D=+f.budget_current||B1,E=+f.actual||0,Fc=+f.commitment||0,H=Math.max(0,(+f.ftc||0)-Fc),vac=D-E-Fc-H;
+    const codes=Object.keys(W),share={SM:-0.3,'MTRL.ELC':0.9,CONT:0.4},rnd=Math.round;
+    const lines=CR_HEADS.map(([code,name])=>{const w=W[code]||0,d=rnd(D*w),e=code==='CONT'?0:rnd(E*w/(1-W.CONT)),c=code==='CONT'?0:rnd(Fc*w/(1-W.CONT)),b=rnd(B1*w);
+      const j=share[code]!=null?rnd(vac*share[code]):0,h=Math.max(0,d-e-c-j);
+      return {code,name,tender:b,rev0:b,rev0_rev:b,prev:d,budget:d,actual:e,commitment:c,etc:h,justification:Math.abs(j)>0.5?(why[code]||['Supplement expected (sample)','Saving expected (sample)'])[j<0?0:1]:''}});
+    const pr=relReleased(r.project_id,'planning','month',r.period),s=pr?pr.figures:{},ml=d=>d?String(d).slice(0,7):'';
+    try{const nf=crCompute(r.project_id,r.period,Object.assign({},f,{wbs:lines,contract_value:rnd((+p.value||0)*1e6)||null,planned_tcc_date:s.baseline_finish||null,forecast_tcc_date:s.forecast_finish||null,
+      planned_poc:s.planned_pct??null,actual_poc:s.actual_pct??null,tender_month_text:ml(addDays(p.start||ASOF,-180)),rev0_month_text:ml(p.start),rev0_rev_month_text:ml(p.start),overall_note_text:'Sample figures'}));
+      Object.keys(f).forEach(k=>delete f[k]);Object.assign(f,nf)}catch(e){}});
+  DB.v33Seeded=true;save();
 }
 
 /* ---------- backup, restore and the move to the server ---------- */
@@ -3434,7 +3644,7 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.2';
+const APP_VERSION='3.3';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'xr',label:'Executive report (released)'},{v:'exec',label:'Live summary (working data)'}]},
@@ -3979,7 +4189,7 @@ function confirmBox(msg,okText){
     setTimeout(()=>{const ok=w.querySelector('[data-cfm="1"]');ok&&ok.focus()},30);
   });
 }
-function closeDrawer(){if(TIMER.kind==='review'||TIMER.kind==='approve')timerStop(true);$('#drawer').hidden=true;state.open=null}
+function closeDrawer(){if(TIMER.kind==='review'||TIMER.kind==='approve')timerStop(true);$('#drawer').hidden=true;state.open=null;$('#sheet').classList.remove('wide')}
 function notifyOver(d){const O=qtyOverOf(d);if(O.length)notify(`${d.id}: ${O.map(o=>o.a.name).join(', ')} beyond the scope quantity. The site engineer justifies the variation when reviewing.`,true)}
 function notifyLow(d){d.lines.filter(l=>lpi(l)<0.9).forEach(l=>notify(`Productivity below target: ${actById(l.act).name} reported at ${pct(lpi(l))} in ${d.id}.`,true))}
 function doAction(k){
@@ -7392,7 +7602,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

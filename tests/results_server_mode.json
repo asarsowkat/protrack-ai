@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-10 14:50",
- "app": "/home/claude/p10/app.html",
+ "run_at": "2026-10-10 16:38",
+ "app": "/home/claude/p11/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 149,
+  "PASS": 158,
   "FAIL": 0
  },
  "results": [
@@ -742,6 +742,60 @@
   {
    "area": "Quantities",
    "check": "people on the project read the justification",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost by WBS",
+   "check": "the cost report form is in the company format",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost by WBS",
+   "check": "before the v12 update the server refuses and the app says the update is needed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost by WBS",
+   "check": "the v12 update loads on top of a database in use",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost by WBS",
+   "check": "the setup check counts 2",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost by WBS",
+   "check": "after the update the costing engineer saves it; the server works out EAC = E + F + H and J = D \u2212 I",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost by WBS",
+   "check": "the server refuses to submit while the line with a supplement has no justification",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost by WBS",
+   "check": "with the justification it is submitted",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost by WBS",
+   "check": "the project manager sees it by WBS head in the executive report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost by WBS",
+   "check": "a foreman still receives no cost report",
    "result": "PASS",
    "detail": ""
   },

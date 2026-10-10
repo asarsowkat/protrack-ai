@@ -168,6 +168,12 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.3
+
+- Monthly cost report in the company format: one row per WBS head with tender, Rev-0, revised Rev-0, previous version, current budget, actual, commitment, balance, ETC, EAC, supplement/saving and justification; TCC, POC, contract value and gross margin (`schema-update-v12.sql`)
+- Fill from the company Excel sheet; export in the same layout; executive report project view shows the table
+- See RELEASE-NOTES-v3.3.md and STAGE-9-SETUP.md
+
 ## Version 3.2
 
 - New report: choosing an activity shows its scope, executed up to yesterday, balance, balance duration and plan for today (balance ÷ balance duration); the actual quantity is entered

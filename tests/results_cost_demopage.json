@@ -1,0 +1,178 @@
+{
+ "run_at": "2026-10-10 16:43",
+ "app": "/home/claude/p11/demo.html",
+ "summary": {
+  "PASS": 28,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Demo data",
+   "check": "the seeded cost reports are by WBS head, with the 18 company heads",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Formulas",
+   "check": "every line: G = D \u2212 E \u2212 F, I = E + F + H, J = D \u2212 I; totals are the sums; forecast to complete = F + H, so EAC = actual + forecast to complete as before",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Formulas",
+   "check": "previous version C of a later month = current budget D of the month before, line by line",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "the project view shows the cost report by WBS head in the company layout",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "the overall EAC and the gross margin on EAC are shown as worked out",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "export in the company layout: header row, letters row, Overall row with the totals, one row per WBS head, contract value and gross margin",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "the summary's cost table says current budget",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "a new cost report opens in the company format, in a wide panel",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "previous version C is fixed to the last released report, which is named",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "tender, Rev-0 and revised Rev-0 are carried from the last report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "as you type: G, I and J per line (a supplement in brackets) and the overall",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "a negative amount is flagged as you type",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Save",
+   "check": "saved with every line and the totals: current budget 6,000,000, EAC 5,750,000, VAC 250,000, forecast to complete 2,150,000",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Save",
+   "check": "the justification is kept with its line",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Save",
+   "check": "previous version stays the last released report's even if a browser sends another value",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "a WBS code twice is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "POC over 100% is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "the company sheet fills the form: lines by user field code, unknown rows ignored",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "header read: POC as percentages, TCC dates, column months, contract value, overall note",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "the file's Overall row is checked against its lines and a difference is reported",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "previous version still comes from the last released report, not the file",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "saved after the check: EAC = 180 + 400 + 170 = 750 and VAC = 800 \u2212 750 = 50",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "submitting is refused while a line with a supplement or saving has no justification (CONT)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "with the justification it is submitted",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Next month",
+   "check": "next month's previous version is this month's current budget",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a foreman sees no cost report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "the WBS report survives a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}
