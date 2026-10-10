@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.2, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.3, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -251,6 +251,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.3</b>
+    <b>Monthly cost report in the company format</b>: one row per WBS head with tender, Rev-0, revised Rev-0, previous version, current budget, actual, commitment, balance, ETC, EAC, supplement or saving and justification; planned and forecast TCC, POC, contract value and gross margin. Fill it from your Excel sheet, export it to Excel.</div>
   <div class="note"><b>New in version 3.2</b>
     <b>Activity quantities in the daily report</b>: choosing an activity shows its total quantity (scope), what was executed up to yesterday, the balance, the balance duration and today's plan (balance ÷ balance duration). A quantity beyond the scope is accepted, and the site engineer justifies the variation when reviewing.</div>
   <div class="note"><b>New in version 3.1</b>
@@ -437,7 +439,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <p>Daily reports are how the site reports progress. They are an input. What management reads is the version that planning and costing have reviewed and released, and the Head of Planning and Cost Control has approved.</p>
   <table><thead><tr><th>Release</th><th>Prepared by</th><th>How often</th><th>Holds</th></tr></thead><tbody>
     <tr><td>Progress release</td><td>Planning engineer</td><td>Weekly and monthly</td><td>Planned and actual progress, SPI, design and procurement progress against plan, forecast finish, productivity, workforce, and comments: summary, key issues (site, design, procurement), next actions</td></tr>
-    <tr><td>Monthly cost report</td><td>Costing engineer or costing coordinator</td><td>Monthly</td><td>Rev-0 budget, actual cost to date and commitments (from SAP), forecast cost to complete, plus the approved budget, EAC and VAC that ProTrackAI works out</td></tr>
+    <tr><td>Monthly cost report</td><td>Costing engineer or costing coordinator</td><td>Monthly</td><td>The company format, one row per WBS head (see below), with planned and forecast TCC, POC and the contract value</td></tr>
   </tbody></table>
   <h3>Preparing and releasing</h3>
   <ol class="steps">
@@ -447,6 +449,20 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>Press <b>Submit for approval</b>. The Head of Planning and Cost Control sees it in <b>Actions and approvals</b>, then presses <b>Approve and release</b> or <b>Return with comment</b>. Nobody approves a version they submitted.</li>
     <li>A released version never changes. To correct one, press <b>Start a new revision</b> and give a reason. Management keeps seeing the released revision until the new one is approved; the old one is then kept as superseded.</li>
   </ol>
+  <h3>The monthly cost report, company format</h3>
+  <p>One row per WBS head: SM Site Management, DE Design, TEC Testing, electrical, mechanical and civil material, manpower and installation, SAD Saudization, FNE Financing, PC items, provisional sum, CONT Contingency and MGT.RES Management Reserve. The Overall row adds them up.</p>
+  <table><thead><tr><th>Column</th><th>What it is</th></tr></thead><tbody>
+    <tr><td>A Tender, B1 Rev-0, B2 Revised Rev-0</td><td>Entered once, with the month of each; carried to the next report</td></tr>
+    <tr><td>C Prev. version</td><td>The current budget of the last released cost report (entered only on the first report by WBS head)</td></tr>
+    <tr><td>D Current budget, E Actual, F Commitment</td><td>Entered for the month; actual and commitment from SAP</td></tr>
+    <tr><td>G Balance</td><td>D − E − F</td></tr>
+    <tr><td>H ETC</td><td>Entered: the cost still to come beyond actual and commitment</td></tr>
+    <tr><td>I EAC</td><td>E + F + H</td></tr>
+    <tr><td>J Supplement (−) / saving (+)</td><td>D − I. A line with a supplement or a saving needs a justification before the report is submitted</td></tr>
+    <tr><td>Gross margin</td><td>Contract value − the column total, for A to D and for EAC, with the percentage</td></tr>
+  </tbody></table>
+  <p><b>Fill from Excel:</b> in the report, press <b>Fill from Excel (company format)</b> and choose your monthly sheet. Lines are matched by user field code (SM, DE …) or WBS head name; the header (TCC, POC), the column months and the contract value are read too. If the file's Overall row does not equal the sum of its lines, ProTrackAI says so. Check the figures, then save. <b>Export to Excel</b> gives the same layout for a released report. Older reports by totals only still open as before, with a button to switch to the company format.</p>
+  <p>Totals used elsewhere in ProTrackAI keep their meaning: current budget = Σ D, forecast to complete = F + H, EAC = actual + forecast to complete, VAC = current budget − EAC. The approved supplements in the budget supplement log are shown beside the report for reconciliation.</p>
   <h3>Executive report</h3>
   <p><b>Home → Executive report (released)</b>: choose Monthly or Weekly and the period, then <b>Summary</b> or <b>Project view</b>.</p>
   <ul>

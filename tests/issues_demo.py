@@ -181,7 +181,7 @@ with sync_playwright() as p:
     J(f"state.xrPid='{P0}';state.xrPer='{MON[0]}';render()"); pg.wait_for_timeout(300); v = V()
     ck('Executive report', 'the project view shows the issues saved with the release, not today\'s register', 'Cable drum delivery held at port customs' in v)
     J("state.xrPt='week';state.xrPer=null;render()"); pg.wait_for_timeout(300); v = V()
-    ck('Executive report', 'the weekly project view carries no cost', 'Cost and billing' not in v and 'Approved budget' not in v)
+    ck('Executive report', 'the weekly project view carries no cost', 'Cost and billing' not in v and 'Approved budget' not in v and 'Current budget' not in v)
     J("state.xrPt='month';state.xrPer=null;state.xrTab='sum';render()")
     if PM:
         as_(PM); J("state.xrTab='sum';go('xr')"); pg.wait_for_timeout(300)

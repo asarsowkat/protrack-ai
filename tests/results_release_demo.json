@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-10 14:52",
- "app": "/home/claude/p10/app.html",
+ "run_at": "2026-10-10 16:40",
+ "app": "/home/claude/p11/app.html",
  "summary": {
   "PASS": 53,
   "FAIL": 0
@@ -200,13 +200,13 @@
   },
   {
    "area": "Cost report",
-   "check": "the form works out approved budget, EAC and VAC as you type",
+   "check": "the form works out current budget, EAC and VAC as you type",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Cost report",
-   "check": "saved and submitted with the formulas applied (approved supplements from the log)",
+   "check": "saved and submitted with the formulas applied (approved supplements from the log shown alongside)",
    "result": "PASS",
    "detail": ""
   },
