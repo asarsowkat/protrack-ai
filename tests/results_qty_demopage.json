@@ -1,0 +1,178 @@
+{
+ "run_at": "2026-10-10 14:55",
+ "app": "/home/claude/p10/demo.html",
+ "summary": {
+  "PASS": 28,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Form",
+   "check": "choosing an activity shows its scope, executed up to yesterday, balance, balance duration and plan for today",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "scope is the activity's total quantity",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "executed up to yesterday = earlier progress + every submitted, reviewed or approved report before the date",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "balance = scope \u2212 executed up to yesterday",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "plan for today = balance \u00f7 balance duration (working days to the planned finish)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "the figures shown match (plan for today)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "the quantity field is \"Actual quantity today\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "changing the date recalculates the figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "after the planned finish the whole balance is due today",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "before the planned start the plan for today is 0",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "a quantity beyond the scope shows how much over, and that the site engineer must justify it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "within the scope there is no warning",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Submit",
+   "check": "the report beyond the scope is accepted and submitted",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Submit",
+   "check": "a notification says the quantity is beyond the scope",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "List",
+   "check": "the report list marks it \"Beyond scope\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "the report shows the scope figures as at its date and the variation",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "marking it reviewed without a justification is refused, naming the activity",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "a justification of a word or two is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "with a justification it is reviewed; the justification is kept with the quantities, who and when",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "the audit trail shows \"Quantity variation justified\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "the report shows the justification",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approve",
+   "check": "a quantity raised after review cannot be approved until it is justified",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approve",
+   "check": "with the justified quantity it is approved",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "a report within the scope has no justification box and is reviewed as before",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "...reviewed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Formulas",
+   "check": "progress and earned value still cap an activity at its scope",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "the justification survives a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

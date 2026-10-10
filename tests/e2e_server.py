@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""ProTrackAI v2.5+ (extended to v3.1) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
-from the real ProTrack schema (schema.sql + v2 ... v9, then v10 applied mid-run as on a live database) through fake_supabase.py.
+"""ProTrackAI v2.5+ (extended to v3.2) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
+from the real ProTrack schema (schema.sql + v2 ... v9, then v10 and v11 applied mid-run as on a live database) through fake_supabase.py.
 Every allow/refuse decision in these tests is made by the database (row level security and the v4
 functions), exactly as on Supabase. What is NOT covered: Supabase's own sign-in service, its REST layer
 and the email function; those are replaced by the stand-in.
@@ -482,6 +482,44 @@ with sync_playwright() as p:
     a = pg.evaluate("answer('What are the open issues?')") or ''
     ck('Issues', 'RASA answers about issues from the register held on the server', 'open issue' in a and 'issue register' in a, a[:200])
 
+    # ---------------------------------------------------------------- v3.2 quantity beyond the scope through the server
+    login(pg, 'f1')
+    r = pg.evaluate("rpc('dpr_save',{p:{project_id:'P1',report_date:'2026-09-05',lines:[{activity_id:'TT-110',qty:260,labour:[{cat:'Steel Fixer',count:4,reg:8,ot:0}],subs:[],equip:[]}],submit:true,secs:0}}).then(x=>x.id,e=>'refused: '+e.message)")
+    QD = r
+    ck('Quantities', 'a report beyond the scope (260 of 200 t) is accepted by the server', not str(r).startswith('refused') and sql(f"select status from dprs where id='{QD}'") == 'Submitted', r)
+    pg.evaluate("cloudLoadDprs().then(()=>{state.form=null;state.editing=null;go('new')})"); pg.wait_for_timeout(1200)
+    ck('Quantities', 'the new report form shows scope, executed up to yesterday, balance and plan for today', all(x in pg.inner_text('#view') for x in ['Total quantity (scope)', 'Executed up to yesterday', 'Plan for today']))
+    login(pg, 'e1')
+    pg.evaluate(f"state.scope='ALL';go('dpr');openDpr('{QD}')"); pg.wait_for_timeout(900)
+    ck('Quantities', 'the engineer sees the variation and the justification box', 'Beyond the scope' in pg.inner_text('#sheet') and pg.locator('[data-just]').count() == 1)
+    pg.click('[data-do="review"]'); pg.wait_for_timeout(600)
+    ck('Quantities', 'reviewing without a justification is stopped in the app', 'Justify the quantity variation' in pg.inner_text('#actErr') and sql(f"select status from dprs where id='{QD}'") == 'Submitted')
+    pg.fill('[data-just]', 'Extra starter bars at the lift core per RFI-07'); pg.click('[data-do="review"]'); pg.wait_for_timeout(1500)
+    ck('Quantities', 'before the v11 update the server refuses and the app says the update is needed', 'v11 database update' in pg.inner_text('#actErr') and sql(f"select status from dprs where id='{QD}'") == 'Submitted', pg.inner_text('#actErr'))
+    r = pg.evaluate(f"rpc('dpr_act',{{p_id:'{QD}',p_action:'return',p_note:'check',p_secs:0}}).then(()=>'ran',e=>'refused: '+e.message)")
+    pv = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, 'schema-update-v11.sql')], capture_output=True, text=True)
+    ck('Quantities', 'the v11 update loads on top of a database in use', pv.returncode == 0, pv.stderr[:300])
+    ck('Quantities', 'the setup check counts 2', sql("select count(*) from pg_proc where proname in ('dpr_act','pt_dpr_over') and (proname <> 'dpr_act' or pronargs = 5)") == '2')
+    login(pg, 'f1')
+    if r == 'ran':
+        pg.evaluate(f"rpc('dpr_save',{{p:{{id:'{QD}',project_id:'P1',report_date:'2026-09-05',lines:[{{activity_id:'TT-110',qty:260,labour:[{{cat:'Steel Fixer',count:4,reg:8,ot:0}}],subs:[],equip:[]}}],submit:true,secs:0}}}})"); pg.wait_for_timeout(800)
+    login(pg, 'e1')
+    r = pg.evaluate(f"rpc('dpr_act',{{p_id:'{QD}',p_action:'review',p_note:null,p_secs:0}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Quantities', 'after v11 the server itself refuses a review without a justification', r.startswith('refused') and 'TT-110' in r, r)
+    pg.evaluate(f"state.scope='ALL';go('dpr');openDpr('{QD}')"); pg.wait_for_timeout(900)
+    pg.fill('[data-just]', 'Extra starter bars at the lift core per RFI-07'); pg.click('[data-do="review"]'); pg.wait_for_timeout(1800)
+    ck('Quantities', 'with the justification the engineer reviews it on the server; the justification is stored', sql(f"select status from dprs where id='{QD}'") == 'Reviewed'
+       and sql(f"select activity_id||'/'||qty::int||'/'||(by_user::text='{U['e1']}') from dpr_qty_just where dpr_id='{QD}'") == 'TT-110/260/true')
+    pg.evaluate(f"openDpr('{QD}')"); pg.wait_for_timeout(500)
+    ck('Quantities', 'the report shows who justified it', 'Justified by' in pg.inner_text('#sheet') and 'RFI-07' in pg.inner_text('#sheet'))
+    pg.evaluate(f"rpc('dpr_save',{{p:{{id:'{QD}',project_id:'P1',report_date:'2026-09-05',lines:[{{activity_id:'TT-110',qty:270,labour:[{{cat:'Steel Fixer',count:4,reg:8,ot:0}}],subs:[],equip:[]}}],secs:0}}}})"); pg.wait_for_timeout(800)
+    login(pg, 's1')
+    r = pg.evaluate(f"rpc('dpr_act',{{p_id:'{QD}',p_action:'approve',p_note:null,p_secs:0}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Quantities', 'a quantity raised after review cannot be approved (server refuses)', r.startswith('refused') and 'not been justified' in r, r)
+    login(pg, 'f1')
+    r = pg.evaluate("SB.from('dpr_qty_just').select('note').then(x=>x.error?'err':x.data.length)")
+    ck('Quantities', 'people on the project read the justification', r == 1, r)
+
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))
     pg.evaluate("cloudLoadAll(true).then(()=>render())"); pg.wait_for_timeout(1500)
@@ -530,7 +568,9 @@ with sync_playwright() as p:
     ck('Backup', 'server backup carries the Tender details, lifecycle stages and register history (v2.8)',
        (pe1.get('project') or {}).get('te_number') == 'TE2231' and len(pe1.get('lifecycle_stages', [])) >= 4 and len(pe1.get('register_audit', [])) >= 4 and len(pe1.get('lifecycle_audit', [])) >= 4,
        {k: (len(v) if isinstance(v, list) else '') for k, v in pe1.items()})
-    ck('Backup', 'server backup holds every report with lines and history', data.get('format') == 'protrack-server-backup' and len(pr.get('dprs', [])) == 4 and len(pr.get('dpr_audit', [])) >= 8, {k: len(v) for k, v in pr.items() if isinstance(v, list)})
+    ck('Backup', 'server backup also holds the releases, logs, issues and quantity justifications (v3.0 to v3.2)', len(pr.get('report_releases', [])) >= 3 and len(pr.get('co_log', [])) == 2 and len(pr.get('issues', [])) == 2 and len(pr.get('issue_audit', [])) >= 2 and len(pr.get('dpr_qty_just', [])) == 1,
+       {k: len(v) for k, v in pr.items() if isinstance(v, list)})
+    ck('Backup', 'server backup holds every report with lines and history', data.get('format') == 'protrack-server-backup' and len(pr.get('dprs', [])) == int(sql("select count(*) from dprs where project_id='P1'")) and len(pr.get('dpr_audit', [])) >= 8, {k: len(v) for k, v in pr.items() if isinstance(v, list)})
     with pg.expect_download() as dl4:
         pg.click('[data-bkbrowser]')
     bk = json.load(open(dl4.value.path()))

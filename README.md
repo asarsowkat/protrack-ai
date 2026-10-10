@@ -168,6 +168,13 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.2
+
+- New report: choosing an activity shows its scope, executed up to yesterday, balance, balance duration and plan for today (balance ÷ balance duration); the actual quantity is entered
+- A quantity beyond the scope is accepted; the reviewer must justify it, the justification is kept, and an unjustified quantity cannot be approved (`schema-update-v11.sql`)
+- Server backup now also holds releases, logs, issues and justifications
+- See RELEASE-NOTES-v3.2.md and STAGE-8-SETUP.md
+
 ## Version 3.1
 
 - Executive report Summary (by region, by sector, critical projects, billing and collection, change order and claim status) and Project view, from released versions only

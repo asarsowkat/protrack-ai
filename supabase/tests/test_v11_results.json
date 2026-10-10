@@ -1,0 +1,237 @@
+{
+ "suite": "schema-update-v11",
+ "passed": 46,
+ "total": 46,
+ "results": [
+  {
+   "check": "v11 loads (run 1)",
+   "pass": true,
+   "detail": "psql:/home/claude/p10/sb/schema-update-v11.sql:20: NOTICE:  policy \"dqj_read\" for relation \"dpr_qty_just\" does not exist, skipping\npsql:/home/claude/p10/sb/schema-update-v11.sql:22: NOTICE:  trigger \"trg_dqj_append\" for relation \"dpr_qty_just\" does not exist, skipping\npsql:/home/claude/p10/sb/schema"
+  },
+  {
+   "check": "v11 loads (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p10/sb/schema-update-v11.sql:17: NOTICE:  relation \"dpr_qty_just\" already exists, skipping\npsql:/home/claude/p10/sb/schema-update-v11.sql:18: NOTICE:  relation \"dpr_qty_just_dpr\" already exists, skipping\npsql:/home/claude/p10/sb/schema-update-v11.sql:46: NOTICE:  function dpr_act(t"
+  },
+  {
+   "check": "the setup check counts the new function signature and helper",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the old four-argument function is gone, so calls cannot be ambiguous",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a report reviewed before v11 is untouched",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "...and it can still be approved (its quantity is within the scope)",
+   "pass": true,
+   "detail": "Approved"
+  },
+  {
+   "check": "within the scope (60 before + 30 of 100), the engineer reviews without any justification, as before",
+   "pass": true,
+   "detail": "Reviewed"
+  },
+  {
+   "check": "...and the site manager approves",
+   "pass": true,
+   "detail": "Approved"
+  },
+  {
+   "check": "no justification is recorded for it",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a report beyond the scope (60 + 30 + 20 = 110 of 100) is accepted when submitted",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the helper finds only the activity beyond its scope, with this report, the total to date and the scope",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "reviewing it without a justification is refused, naming the activity",
+   "pass": true,
+   "detail": "psql:/tmp/tmpvz749yay.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A1\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
+  },
+  {
+   "check": "a justification of a word or two is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp9ia3ow2i.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A1\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
+  },
+  {
+   "check": "a justification for another activity does not count",
+   "pass": true,
+   "detail": "psql:/tmp/tmpp9eluti6.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A1\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
+  },
+  {
+   "check": "justifications must be given per activity",
+   "pass": true,
+   "detail": "psql:/tmp/tmpi6x5qswb.sql:4: ERROR:  Justifications must be given per activity\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 42 at RAISE"
+  },
+  {
+   "check": "...nothing was recorded by the refused attempts",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "with a justification the engineer reviews it",
+   "pass": true,
+   "detail": "Reviewed"
+  },
+  {
+   "check": "the justification is kept with the quantities, who and when",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "it is also in the report audit trail",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the justification cannot be changed",
+   "pass": true,
+   "detail": "ERROR:  dpr_qty_just is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "...or deleted",
+   "pass": true,
+   "detail": "ERROR:  dpr_qty_just is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "...or emptied",
+   "pass": true,
+   "detail": "ERROR:  dpr_qty_just cannot be emptied\nCONTEXT:  PL/pgSQL function pt_no_truncate() line 2 at RAISE"
+  },
+  {
+   "check": "nobody can write a justification directly from the browser",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the engineer edits the reviewed report and raises the quantity",
+   "pass": true,
+   "detail": "DPR-00003"
+  },
+  {
+   "check": "the site manager cannot approve a quantity that was not justified",
+   "pass": true,
+   "detail": "psql:/tmp/tmp90hyibin.sql:4: ERROR:  The quantity beyond the scope of A1 has not been justified by the reviewer; return the report so the site engineer can justify it\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 57 at RAISE"
+  },
+  {
+   "check": "the site manager returns it with a comment (no justification needed to return)",
+   "pass": true,
+   "detail": "Draft"
+  },
+  {
+   "check": "the foreman resubmits",
+   "pass": true,
+   "detail": "DPR-00003"
+  },
+  {
+   "check": "the engineer reviews with a new justification",
+   "pass": true,
+   "detail": "Reviewed"
+  },
+  {
+   "check": "the site manager approves",
+   "pass": true,
+   "detail": "Approved"
+  },
+  {
+   "check": "both justifications are kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "another foreman's report of the same day counts towards the scope (5 + 10 + 45 = 60 of 50)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the project manager reviewing must justify too",
+   "pass": true,
+   "detail": "psql:/tmp/tmpkwyceh2i.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A2\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
+  },
+  {
+   "check": "the project manager reviews with a justification",
+   "pass": true,
+   "detail": "Reviewed"
+  },
+  {
+   "check": "a report beyond the scope can still be returned without a justification",
+   "pass": true,
+   "detail": "Draft"
+  },
+  {
+   "check": "...or rejected by the project manager",
+   "pass": true,
+   "detail": "DPR-00006"
+  },
+  {
+   "check": "rejected",
+   "pass": true,
+   "detail": "Rejected"
+  },
+  {
+   "check": "drafts and rejected reports do not count (60 + 30 + 25 + 1 = 116, without the 40 in a draft and the 5 rejected)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "people on the project read the justifications",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "people without access to the project read none",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the helper is not callable from the browser",
+   "pass": true,
+   "detail": "psql:/tmp/tmpzjvvh0y0.sql:4: ERROR:  permission denied for function pt_dpr_over"
+  },
+  {
+   "check": "rollback runs (run 1)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback runs (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p10/sb/schema-rollback-v11.sql:3: NOTICE:  function dpr_act(text,text,text,pg_catalog.int4,jsonb) does not exist, skipping\npsql:/home/claude/p10/sb/schema-rollback-v11.sql:4: NOTICE:  function pt_dpr_over(text) does not exist, skipping"
+  },
+  {
+   "check": "rollback restores the four-argument function",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback keeps every justification",
+   "pass": true,
+   "detail": "3"
+  },
+  {
+   "check": "after rollback reviews work as before (no justification asked)",
+   "pass": true,
+   "detail": "Reviewed"
+  },
+  {
+   "check": "v11 can be applied again after a rollback",
+   "pass": true,
+   "detail": "psql:/home/claude/p10/sb/schema-update-v11.sql:17: NOTICE:  relation \"dpr_qty_just\" already exists, skipping\npsql:/home/claude/p10/sb/schema-update-v11.sql:18: NOTICE:  relation \"dpr_qty_just_dpr\" already exists, skipping"
+  }
+ ]
+}

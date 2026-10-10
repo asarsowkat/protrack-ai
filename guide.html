@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.1, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.2, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -251,6 +251,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.2</b>
+    <b>Activity quantities in the daily report</b>: choosing an activity shows its total quantity (scope), what was executed up to yesterday, the balance, the balance duration and today's plan (balance ÷ balance duration). A quantity beyond the scope is accepted, and the site engineer justifies the variation when reviewing.</div>
   <div class="note"><b>New in version 3.1</b>
     <b>Executive report Summary and Project view</b>: by region, by sector, critical projects, billing and collection, and change order and claim status, all from released versions; one project's full released picture. ·
     <b>Issue register</b> (Projects &amp; Handover): planning and costing engineers keep the issues of their own projects with the company issue log columns; the Head reviews them by region or sector; open issues are saved with each approved progress release. ·
@@ -561,7 +563,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Sign in on your phone.</b> You see daily reports, new report and your own performance, for your projects only.</li>
     <li><b>New report.</b> Date and project are filled in; choose yourself as foreman.</li>
     <li><b>Work location, work type, WBS, activity.</b> Each choice narrows the next, so the activity list is short.</li>
-    <li><b>Quantity executed today</b> — the <b>total</b> placed on that activity, including anything done by subcontractors.</li>
+    <li><b>Read the activity's figures:</b> total quantity (scope), executed up to yesterday, balance, balance duration (working days to the planned finish) and <b>plan for today</b> = balance ÷ balance duration. Before the planned start the plan is 0; after the planned finish the whole balance is due.</li>
+    <li><b>Actual quantity today</b> — the <b>total</b> placed on that activity, including anything done by subcontractors. The form shows the total to date with today. If it goes beyond the scope, the quantity is still accepted; an amber note says the site engineer must justify it.</li>
     <li><b>Own labour</b> — trade, workers, regular and overtime hours. The usual crew is pre-filled; correct what differs.</li>
     <li><b>Subcontractor</b> — choose the company once, enter <b>the quantity they executed</b>, then <b>Add trade</b> for each of their trades with workers and hours. A second company is a second block.</li>
     <li><b>Equipment</b> — type, units, hours.</li>
@@ -576,6 +579,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h3 id="s-eng">Site engineer — review every foreman's report, daily</h3>
   <ol class="steps">
     <li><b>Daily reports → Submitted.</b> Open each report the foremen sent; a timer runs while it is open.</li>
+    <li><b>Quantities beyond the scope</b> are marked "Beyond scope" in the list. In the report, each such activity shows the scope, the total to date and how much over, with a box for your justification (for example a re-measurement, a drawing revision or an instruction). You cannot mark the report reviewed until each one is justified. The justification is kept with the report and cannot be changed; if the quantity is changed after your review, the site manager cannot approve it until it is justified again.</li>
     <li><b>Mark as reviewed</b> once quantity and crews are right, or <b>return with comments</b>. It then goes to the site manager assigned to you on that project. You only see the Review button on reports from foremen assigned to you.</li>
     <li><b>Daily reports → Draft.</b> Nothing should stay in draft overnight.</li>
     <li><b>Check quantities against survey or measurement,</b> and crews against the gate count.</li>

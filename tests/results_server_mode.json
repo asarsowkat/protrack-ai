@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-10 12:59",
- "app": "/home/claude/p9/app.html",
+ "run_at": "2026-10-10 14:50",
+ "app": "/home/claude/p10/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 136,
+  "PASS": 149,
   "FAIL": 0
  },
  "results": [
@@ -674,6 +674,78 @@
    "detail": ""
   },
   {
+   "area": "Quantities",
+   "check": "a report beyond the scope (260 of 200 t) is accepted by the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "the new report form shows scope, executed up to yesterday, balance and plan for today",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "the engineer sees the variation and the justification box",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "reviewing without a justification is stopped in the app",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "before the v11 update the server refuses and the app says the update is needed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "the v11 update loads on top of a database in use",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "the setup check counts 2",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "after v11 the server itself refuses a review without a justification",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "with the justification the engineer reviews it on the server; the justification is stored",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "the report shows who justified it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "a quantity raised after review cannot be approved (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Quantities",
+   "check": "people on the project read the justification",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
    "area": "Errors",
    "check": "a failed server load shows a warning with Try again",
    "result": "PASS",
@@ -742,6 +814,12 @@
   {
    "area": "Backup",
    "check": "server backup carries the Tender details, lifecycle stages and register history (v2.8)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Backup",
+   "check": "server backup also holds the releases, logs, issues and quantity justifications (v3.0 to v3.2)",
    "result": "PASS",
    "detail": ""
   },
