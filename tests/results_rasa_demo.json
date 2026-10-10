@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-10 10:43",
- "app": "/home/claude/p7/app.html",
+ "run_at": "2026-10-10 11:53",
+ "app": "/home/claude/p8/app.html",
  "summary": {
   "PASS": 32,
   "FAIL": 0
@@ -56,13 +56,13 @@
   },
   {
    "area": "No evidence",
-   "check": "untracked topics (commitments, accruals, SAP, cash-flow forecast, variations, safety, weather, materials) get a clear no-evidence reply",
+   "check": "untracked topics (accruals, cash-flow forecast, safety, weather, materials) get a clear no-evidence reply",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "No evidence",
-   "check": "SAP questions say ProTrackAI has no SAP connection and that its actual cost is not SAP actual cost",
+   "check": "SAP questions say ProTrackAI has no SAP connection and answer from the released cost reports",
    "result": "PASS",
    "detail": ""
   },

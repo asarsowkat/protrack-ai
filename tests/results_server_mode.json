@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-10 11:23",
- "app": "/home/claude/protrack-ai/live.html",
+ "run_at": "2026-10-10 11:59",
+ "app": "/home/claude/p8/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 108,
+  "PASS": 119,
   "FAIL": 0
  },
  "results": [
@@ -502,6 +502,72 @@
   {
    "area": "RASA",
    "check": "untracked figures get \"No evidence\" on the server too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the planning engineer prepares and submits the monthly progress release on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the planning engineer cannot approve it (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "before approval, management sees no released report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the Head finds it in Actions and approvals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the Head approves it on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "a released version cannot be saved over (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the costing engineer saves the cost report; the server works out EAC and VAC",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "the project manager's executive report shows the released progress and cost, not live data",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Releases",
+   "check": "a foreman receives the progress release but never the cost report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "the costing engineer uploads the change order and claim log; the server saves the two good rows as one batch",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Logs",
+   "check": "a foreman receives none of the log",
    "result": "PASS",
    "detail": ""
   },

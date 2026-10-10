@@ -27,7 +27,7 @@ def sql(q, db=DBN):
 # ------------------------------------------------------------------ database
 subprocess.run(PG + ['-d', 'postgres', '-c', f'drop database if exists {DBN}'], capture_output=True)
 subprocess.run(PG + ['-d', 'postgres', '-c', f'create database {DBN}'], check=True, capture_output=True)
-for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql', 'schema-update-v5.sql', 'schema-update-v6.sql', 'schema-update-v7.sql', 'schema-update-v8.sql']:
+for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql', 'schema-update-v5.sql', 'schema-update-v6.sql', 'schema-update-v7.sql', 'schema-update-v8.sql', 'schema-update-v9.sql']:
     p = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, f)], capture_output=True, text=True)
     if p.returncode: raise SystemExit(f + ': ' + p.stderr)
 people = [('sa', 'Sara Admin', 'sa'), ('pm', 'Paul Manager', 'pm'), ('e1', 'Eng. Omar Engineer', 'eng'), ('e2', 'Eng. Hadi Other', 'eng'),
@@ -365,6 +365,53 @@ with sync_playwright() as p:
     ck('RASA', 'a project manager\'s billing answer names the invoice register batch it came from', 'invoice register' in a and 'IMP-' in a, a[-400:])
     a = pg.evaluate("answer('What are the accruals?')")
     ck('RASA', 'untracked figures get "No evidence" on the server too', 'No evidence in ProTrackAI' in a and 'SAR' not in a)
+
+
+    # ---------------------------------------------------------------- v3.0 released reporting through the server
+    pg.evaluate("closeDrawer()")
+    sql(f"insert into project_access values ('{U['hd']}','P1') on conflict do nothing")
+    per = pg.evaluate("curMonth()")
+    login(pg, 'pl')
+    pg.evaluate(f"state.scope='ALL';state.relTab='planning';state.relPt='month';state.relPer='{per}';go('rel')"); pg.wait_for_timeout(900)
+    pg.click('[data-relopen="P1"]'); pg.wait_for_timeout(700)
+    pg.fill('#relForm [name=n_issues]', 'Raft pour delayed by pump breakdown')
+    pg.click('[data-reldo="submit"]'); pg.wait_for_timeout(2500)
+    ck('Releases', 'the planning engineer prepares and submits the monthly progress release on the server', sql(f"select status||'/'||(narrative->>'issues') from report_releases where project_id='P1' and kind='planning' and period='{per}'") == 'Submitted/Raft pour delayed by pump breakdown')
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'approve',project_id:'P1',kind:'planning',period_type:'month',period:'{per}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Releases', 'the planning engineer cannot approve it (server refuses)', r.startswith('refused'), r)
+    login(pg, 'pm')
+    pg.evaluate(f"state.scope='ALL';state.xrPt='month';state.xrPer=null;go('xr')"); pg.wait_for_timeout(900)
+    ck('Releases', 'before approval, management sees no released report', 'No monthly report has been released' in pg.inner_text('#view'), pg.inner_text('#view')[:200])
+    login(pg, 'hd')
+    pg.evaluate("go('act');state.actF={who:'mine'};render()"); pg.wait_for_timeout(900)
+    ck('Releases', 'the Head finds it in Actions and approvals', 'Progress release' in pg.inner_text('#view') and 'approve or return' in pg.inner_text('#view'))
+    pg.evaluate(f"openRelease('P1','planning','month','{per}')"); pg.wait_for_timeout(700); pg.click('[data-reldo="approve"]'); pg.wait_for_timeout(2500)
+    ck('Releases', 'the Head approves it on the server', sql(f"select status||'/'||(approved_by::text='{U['hd']}') from report_releases where project_id='P1' and kind='planning' and period='{per}'") == 'Released/true')
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'save',project_id:'P1',kind:'planning',period_type:'month',period:'{per}',figures:{{actual_pct:99}}}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Releases', 'a released version cannot be saved over (server refuses)', r.startswith('refused') and 'revise' in r.lower(), r)
+    login(pg, 'c1')
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'save',project_id:'P1',kind:'cost',period_type:'month',period:'{per}',data_date:'2026-09-21',figures:{{budget_rev0:50000000,actual:21000000,commitment:6000000,ftc:31000000,eac:1}}}}}}).then(x=>x,e=>({{err:e.message}}))")
+    ck('Releases', 'the costing engineer saves the cost report; the server works out EAC and VAC', r.get('figures', {}).get('eac') == 52000000 and r.get('figures', {}).get('vac') == -2000000, r)
+    pg.evaluate(f"rpc('release_act',{{p:{{action:'submit',project_id:'P1',kind:'cost',period_type:'month',period:'{per}'}}}})"); pg.wait_for_timeout(800)
+    login(pg, 'hd')
+    pg.evaluate(f"rpc('release_act',{{p:{{action:'approve',project_id:'P1',kind:'cost',period_type:'month',period:'{per}'}}}})"); pg.wait_for_timeout(800)
+    login(pg, 'pm')
+    pg.evaluate("state.scope='ALL';state.xrPt='month';state.xrPer=null;go('xr')"); pg.wait_for_timeout(900)
+    v = pg.inner_text('#view')
+    ck('Releases', 'the project manager\'s executive report shows the released progress and cost, not live data', 'Raft pour delayed by pump breakdown' in v and pg.evaluate("sar(52000000)") in v and 'Live daily reports are not used' in v, v[:400])
+    login(pg, 'f1')
+    r = pg.evaluate("SB.from('report_releases').select('kind').then(x=>x.error?'err':x.data.map(r=>r.kind).sort().join())")
+    ck('Releases', 'a foreman receives the progress release but never the cost report', r == 'planning', r)
+    login(pg, 'c1')
+    pg.evaluate("state.scope='ALL';state.logTab='vo';state.logPid='P1';go('logs')"); pg.wait_for_timeout(900)
+    vo = [['Ref no', 'Type (VO or Claim)', 'Description', 'Client approval status', 'Estimated price', 'Expected price to be approved', 'Change in Rev-0 budget'],
+          ['VO-001', 'VO', 'Extra piles', 'Approved', 800000, 750000, 500000], ['CL-001', 'Claim', 'Standby', 'Pending', 300000, 100000, 0], ['X-1', 'Other', 'bad', '', '', '', '']]
+    pg.fill('#logMonth', per); pg.set_input_files('#logfile', files=[book(vo, 'Log', 'vo_log.xlsx')]); pg.wait_for_timeout(1200)
+    pg.evaluate("(document.getElementById('logAck')||{}).checked=true"); pg.click('[data-loggo]'); pg.wait_for_timeout(2500)
+    ck('Logs', 'the costing engineer uploads the change order and claim log; the server saves the two good rows as one batch', sql("select count(*) from co_log where project_id='P1'") == '2' and sql("select recon_status from import_batches where kind='volog'") == 'Accepted with difference')
+    login(pg, 'f1')
+    r = pg.evaluate("SB.from('co_log').select('*').then(x=>x.error?'err':x.data.length)")
+    ck('Logs', 'a foreman receives none of the log', r == 0, r)
 
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))

@@ -110,7 +110,7 @@ with sync_playwright() as p:
     pg.evaluate("go('cdash')"); pg.wait_for_timeout(700)
     v = pg.inner_text('#view')
     tc = pg.evaluate("document.querySelector('#view').textContent")
-    ck('Cost dashboard', 'budget revisions, commitments and accruals shown as not tracked, never estimated', tc.count('Not tracked yet') >= 3 * pg.evaluate("scopeProjects().length"), tc.count('Not tracked yet'))
+    ck('Cost dashboard', 'accruals shown as not tracked, never estimated (v3.0: supplements and commitments come from the released cost report)', tc.count('Not tracked yet') >= pg.evaluate("scopeProjects().length") and 'report' in tc, tc.count('Not tracked yet'))
     ck('Cost dashboard', 'says actual cost is labour from daily reports, not SAP', 'not SAP actual cost' in v)
     ck('Cost dashboard', 'source reconciliation section present', 'Source reconciliation' in v)
     pg.click('#view tbody tr.click >> nth=0'); pg.wait_for_timeout(700)

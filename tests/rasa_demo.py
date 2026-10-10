@@ -20,8 +20,7 @@ TOPICS = ["Today's productivity", 'Early warnings', 'Invoiceable value', 'Invoic
           'Manpower forecast', 'Milestones and EOT', 'Design and procurement', 'Underperforming activities', 'Compare foremen', 'Best subcontractor',
           'What is waiting for me', 'Lifecycle stages', 'Tender register']
 MONEY = ['Invoiceable value', 'Invoicing and collection', 'Unit rates', 'EAC forecast']
-UNTRACKED = ['What are our commitments this month?', 'Show the accruals', 'What is the SAP actual cost?', 'Give me the cash flow forecast',
-             'How many variation orders are open?', 'Any safety incidents this week?', 'What was the weather on site?', 'Material stock level for cement']
+UNTRACKED = ['Show the accruals', 'Give me the cash flow forecast', 'Any safety incidents this week?', 'What was the weather on site?', 'Material stock level for cement']   # v3.0: commitments, SAP actual cost and variations now come from released cost reports and the logs
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
     def page(llm=False):
@@ -51,8 +50,8 @@ with sync_playwright() as p:
 
     # ---- 2. no evidence
     bad = [q for q in UNTRACKED if 'No evidence in ProTrackAI' not in A(q) or 'SAR' in A(q)]
-    ck('No evidence', 'untracked topics (commitments, accruals, SAP, cash-flow forecast, variations, safety, weather, materials) get a clear no-evidence reply', not bad, bad)
-    ck('No evidence', 'SAP questions say ProTrackAI has no SAP connection and that its actual cost is not SAP actual cost', 'no connection to SAP' in A('SAP posted cost') and 'not SAP actual cost' in A('SAP posted cost'))
+    ck('No evidence', 'untracked topics (accruals, cash-flow forecast, safety, weather, materials) get a clear no-evidence reply', not bad, bad)
+    ck('No evidence', 'SAP questions say ProTrackAI has no SAP connection and answer from the released cost reports', 'no SAP connection' in A('SAP posted cost') and 'cost report for' in A('SAP posted cost'))
     ck('No evidence', 'an unknown question without the language model is a no-evidence reply, not a guess', A('What colour is the site office?') == '' and 'No evidence in ProTrackAI' in J("RASA_NOEV_HELP()"))
     J("ask('What colour is the site office?')"); pg.wait_for_timeout(900)
     ck('No evidence', 'in the chat, that question gets the no-evidence reply', 'No evidence in ProTrackAI for that question' in J("state.chat.filter(m=>m.b).pop().h"))

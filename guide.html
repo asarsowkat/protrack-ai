@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 2.9, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.0, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -202,6 +202,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#features">5. Features at a glance</a>
   <a href="#domains" class="sub">Finding your way: the domains</a>
   <a href="#overview" class="sub">Project overview</a>
+  <a href="#releases">Released reporting</a>
   <a href="#tender">Tender register and PE numbers</a>
   <a href="#lifecycle">Project lifecycle, actions and dashboards</a>
   <a href="#imports">Import centre and controlled uploads</a>
@@ -249,6 +250,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.0</b>
+    <b>Released reporting</b>: the planning engineer releases progress weekly and monthly; the costing engineer releases a monthly cost report with actual, commitments, approved budget, EAC and VAC. The Head of Planning and Cost Control approves each one before management sees it. ·
+    <b>Executive report</b> (Home): built only from released versions, for any saved month or week. Daily reports are the site's input, not the management figure. ·
+    <b>Change order and claim log</b> and <b>budget supplement log</b>, uploaded monthly per project, with every month kept.</div>
   <div class="note"><b>New in version 2.9</b>
     <b>Governed RASA answers</b>: every answer and insight says what it is based on, the data date and the scope. ·
     <b>"No evidence"</b> instead of a guess, including for figures ProTrackAI does not track (SAP actual cost, commitments, accruals). ·
@@ -418,6 +423,30 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>Approval email</b><span>The moment a report is approved, a summary with a link goes to everyone on the project in the chosen roles.</span></div>
     <div class="card"><b>Settings</b><span>Projects, users, role access, approval matrix, approval email, trades and dated rates, subcontractors and purchase orders, regions, cities, sectors, change log.</span></div>
   </div>
+</section>
+
+<section id="releases">
+  <h2>Released reporting</h2>
+  <p>Daily reports are how the site reports progress. They are an input. What management reads is the version that planning and costing have reviewed and released, and the Head of Planning and Cost Control has approved.</p>
+  <table><thead><tr><th>Release</th><th>Prepared by</th><th>How often</th><th>Holds</th></tr></thead><tbody>
+    <tr><td>Progress release</td><td>Planning engineer</td><td>Weekly and monthly</td><td>Planned and actual progress, SPI, design and procurement progress against plan, forecast finish, productivity, workforce, and comments: summary, key issues (site, design, procurement), next actions</td></tr>
+    <tr><td>Monthly cost report</td><td>Costing engineer or costing coordinator</td><td>Monthly</td><td>Rev-0 budget, actual cost to date and commitments (from SAP), forecast cost to complete, plus the approved budget, EAC and VAC that ProTrackAI works out</td></tr>
+  </tbody></table>
+  <h3>Preparing and releasing</h3>
+  <ol class="steps">
+    <li>Open <b>Planning &amp; Scheduling → Progress releases</b> or <b>Cost Control → Monthly cost report</b>, choose the week or month, and press <b>Prepare</b> beside the project.</li>
+    <li><b>Progress:</b> ProTrackAI fills in what it computes now from daily reports, the baseline and the weekly engineering and procurement update. You can change any figure, but a change needs a reason; the computed value and your reason are kept. Add your comments.</li>
+    <li><b>Cost:</b> type the Rev-0 budget, actual cost to date, commitments and forecast cost to complete, or upload them for several projects with the template. ProTrackAI adds the approved supplements from the latest budget supplement log and works out the rest: <i>approved budget = Rev-0 + approved supplements; EAC = actual + forecast to complete; VAC = approved budget − EAC</i>. The server applies the same formulas, so every cost report uses them.</li>
+    <li>Press <b>Submit for approval</b>. The Head of Planning and Cost Control sees it in <b>Actions and approvals</b>, then presses <b>Approve and release</b> or <b>Return with comment</b>. Nobody approves a version they submitted.</li>
+    <li>A released version never changes. To correct one, press <b>Start a new revision</b> and give a reason. Management keeps seeing the released revision until the new one is approved; the old one is then kept as superseded.</li>
+  </ol>
+  <h3>Executive report</h3>
+  <p><b>Home → Executive report (released)</b>: choose Monthly or Weekly and the period. It shows, per project, the released progress with key issues. For a month it also shows the released cost (approved budget, actual, commitments, EAC, VAC), change orders and claims, and budget supplements by category. A project without a release for that period shows <i>Not released</i>; live figures are never filled in. Weekly reports carry progress only. Foremen, site engineers and site managers see no cost figures. <b>Live summary (working data)</b> is the previous executive summary, for the people preparing the releases.</p>
+  <h3>Change order and claim log, budget supplement log</h3>
+  <p>The costing engineer or costing coordinator uploads both every month for each project (<b>Claims &amp; Variations → Change order and claim log</b>, <b>Cost Control → Budget supplements</b>). Download the template, fill it in, choose the month and upload. Rows with a missing reference, a wrong type or category, a number that is not a number or a bad date are refused, and you confirm them by ticking the box before the rest is saved. Each upload is a numbered batch, and the same file for the same month is not loaded twice. Every month's log is kept and can be shown later.</p>
+  <p><b>Change order and claim log columns:</b> reference, type (VO or Claim), description, submission status and date, client approval status, estimated price, estimated cost, expected price to be approved, price and cost considered internally, change in Rev-0 budget, internal workflow status, overall approval status with the client, remarks.</p>
+  <p><b>Budget supplement categories:</b> Project execution, Under estimate, External factor, Saudization, Finance, Claims, Change order. Only <i>Approved</i> supplements are added to the budget in the cost report.</p>
+  <p>The columns will be matched to your company's VO log when the sample arrives.</p>
 </section>
 
 <section id="tender">
