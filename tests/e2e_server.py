@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""ProTrackAI v2.5+ (extended to v2.8) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
-from the real ProTrack schema (schema.sql + v2 + v3 + v4) through fake_supabase.py.
+"""ProTrackAI v2.5+ (extended to v3.1) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
+from the real ProTrack schema (schema.sql + v2 ... v9, then v10 applied mid-run as on a live database) through fake_supabase.py.
 Every allow/refuse decision in these tests is made by the database (row level security and the v4
 functions), exactly as on Supabase. What is NOT covered: Supabase's own sign-in service, its REST layer
 and the email function; those are replaced by the stand-in.
@@ -412,6 +412,75 @@ with sync_playwright() as p:
     login(pg, 'f1')
     r = pg.evaluate("SB.from('co_log').select('*').then(x=>x.error?'err':x.data.length)")
     ck('Logs', 'a foreman receives none of the log', r == 0, r)
+
+    # ---------------------------------------------------------------- v3.1 issue register and released summary through the server
+    login(pg, 'pl')
+    pg.evaluate("state.scope='ALL';go('iss')"); pg.wait_for_timeout(900)
+    ck('Issues', 'before the v10 update the issue register says the database update is needed (the rest of the app works)', 'v10 database update' in pg.inner_text('#view'), pg.inner_text('#view')[:200])
+    pv = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, 'schema-update-v10.sql')], capture_output=True, text=True)
+    ck('Issues', 'the v10 update loads on top of a database already in use', pv.returncode == 0, pv.stderr[:300])
+    ck('Issues', 'the setup check counts 4 issue functions', sql("select count(*) from pg_proc where proname in ('issue_act','issue_import','pt_issue_snapshot','pt_issue_apply')") == '4')
+    pg.reload(); pg.wait_for_timeout(1500); login(pg, 'pl')
+    pg.evaluate("state.scope='ALL';go('iss')"); pg.wait_for_timeout(900)
+    ck('Issues', 'after the update the warning is gone', 'v10 database update' not in pg.inner_text('#view'))
+    pg.click('[data-issnew]'); pg.wait_for_timeout(500)
+    pg.select_option('#issForm [name=project_id]', 'P1')
+    pg.fill('#issForm [name=description]', 'Concrete pump breakdown stopping the raft pour'); pg.select_option('#issForm [name=impact]', 'Extremely High')
+    pg.fill('#issForm [name=owner]', 'Subcontractor'); pg.fill('#issForm [name=cost_impact]', 'SAR 40k standby'); pg.fill('#issForm [name=forecast_target]', '2026-10-05')
+    pg.click('[data-issdo="save"]'); pg.wait_for_timeout(2000)
+    ck('Issues', 'the planning engineer adds an issue; the server numbers it and records the history', sql("select issue_no||'/'||impact||'/'||(created_by::text='" + U['pl'] + "') from issues where project_id='P1'") == 'ISS-001/Extremely High/true'
+       and sql("select count(*) from issue_audit where action='Created'") == '1')
+    pg.evaluate("closeDrawer()")
+    for who, lab in (('e1', 'a site engineer'), ('pm', 'the project manager')):
+        login(pg, who)
+        r = pg.evaluate("rpc('issue_act',{p:{action:'save',project_id:'P1',fields:{description:'x'}}}).then(()=>'ran',e=>'refused: '+e.message)")
+        ck('Issues', f'{lab} cannot add issues (server refuses)', r.startswith('refused'), r)
+    login(pg, 'f1')
+    r = pg.evaluate("SB.from('issues').select('id').then(x=>x.error?'err':x.data.length)")
+    ck('Issues', 'a foreman receives no issues from the server', r == 0, r)
+    login(pg, 'pl')
+    pg.evaluate("state.scope='ALL';go('iss')"); pg.wait_for_timeout(900)
+    head = ['', 'Project', 'Region', 'Data date', 'Issue owner', 'Sub Issue owner', 'Issue Type', 'Issue Start date', 'Issue description', 'Impact', 'Action Taken', 'Action Required',
+            'Priority By SEC', 'Priority by Alfanar', 'Action By', 'Planned Target', 'Forecast/Expected Target', 'Issue Status', 'Issue Closure date', 'Remarks', 'Schedule Impact', 'Cost Impact']
+    rows = [head, ['', 'P1', 'Central', '2026-09-21', 'Client', 'Consultant', 'Design inputs', '2026-08-01', 'Shop drawing approval pending', 'High', 'Reminder', 'Approve', 'A', 'B', 'Client', '', '2026-10-10', 'Open', '', '', '2 weeks', ''],
+            ['', 'P1', '', '2026-09-21', '', '', '', '', 'Concrete pump breakdown stopping the raft pour', 'High', 'Pump replaced', '', '', '', '', '', '', 'Open', '', '', '', ''],
+            ['', 'PE-77777', '', '', '', '', '', '', 'Unknown project', 'High', '', '', '', '', '', '', '', 'Open', '', '', '', '']]
+    pg.set_input_files('#issfile', files=[book(rows, 'Issue Register', 'issue_log.xlsx')]); pg.wait_for_timeout(1200)
+    pg.evaluate("(document.getElementById('issAck')||{}).checked=true"); pg.click('[data-issupgo]'); pg.wait_for_timeout(2500)
+    ck('Issues', 'the issue log upload: one new issue, the existing one updated (not duplicated), the unknown project refused and logged',
+       sql("select count(*) from issues where project_id='P1'") == '2' and sql("select impact from issues where issue_no='ISS-001'") == 'High'
+       and sql("select rows_rejected||'/'||kind from import_batches where kind='issues'") == '1/issues', sql("select count(*) from issues"))
+    login(pg, 'hd')
+    pg.evaluate("state.scope='ALL';go('iss')"); pg.wait_for_timeout(900)
+    iid = sql("select id from issues where issue_no='ISS-002'")
+    pg.evaluate(f"openIssue('{iid}')"); pg.wait_for_timeout(500); pg.fill('#issNote', 'Central region review'); pg.click('[data-issdo="review"]'); pg.wait_for_timeout(2000)
+    ck('Issues', 'the Head marks an issue reviewed on the server', sql(f"select (reviewed_by::text='{U['hd']}')::text||'/'||review_note from issues where id='{iid}'") == 'true/Central region review')
+    pg.evaluate("closeDrawer()")
+    wk = pg.evaluate("curWeek()")
+    login(pg, 'pl')
+    pg.evaluate(f"rpc('release_act',{{p:{{action:'save',project_id:'P1',kind:'planning',period_type:'week',period:'{wk}',figures:{{actual_pct:30,planned_pct:35,spi:0.86}},narrative:{{issues:'Pump'}}}}}})"); pg.wait_for_timeout(800)
+    pg.evaluate(f"rpc('release_act',{{p:{{action:'submit',project_id:'P1',kind:'planning',period_type:'week',period:'{wk}'}}}})"); pg.wait_for_timeout(800)
+    login(pg, 'hd')
+    pg.evaluate(f"rpc('release_act',{{p:{{action:'approve',project_id:'P1',kind:'planning',period_type:'week',period:'{wk}'}}}})"); pg.wait_for_timeout(800)
+    ck('Issues', 'approving the weekly progress release saves the open issues with it on the server, without the cost impact',
+       sql(f"select jsonb_array_length(issues_snapshot)||'/'||(issues_snapshot->0->>'impact')||'/'||(issues_snapshot::text like '%cost_impact%')::text from report_releases where kind='planning' and period='{wk}' and status='Released'") == '2/High/false')
+    login(pg, 'c1')
+    prev = pg.evaluate("recentMonths(3)[1]")
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'save',project_id:'P1',kind:'cost',period_type:'month',period:'{prev}',data_date:'2026-08-31',figures:{{budget_rev0:50000000,actual:18000000,commitment:5000000,ftc:33000000,inv_invoiceable:20000000,inv_submitted:19000000,inv_approved:17000000,inv_collected:12000000}}}}}}).then(x=>x,e=>({{err:e.message}}))")
+    ck('Billing', 'the cost report keeps the billing figures on the server; EAC and VAC are unchanged by them', r.get('figures', {}).get('inv_collected') == 12000000 and r.get('figures', {}).get('eac') == 51000000, r)
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'save',project_id:'P1',kind:'cost',period_type:'month',period:'{prev}',figures:{{budget_rev0:1,actual:1,commitment:1,ftc:1,inv_submitted:-1}}}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Billing', 'a negative billing amount is refused by the server', r.startswith('refused') and 'negative' in r, r)
+    pg.evaluate(f"cloudLoadReleases().then(()=>{{state.relTab='cost';state.relPer='{prev}';go('rel')}})"); pg.wait_for_timeout(1200); pg.evaluate(f"openRelease('P1','cost','month','{prev}')"); pg.wait_for_timeout(700)
+    ck('Billing', 'the cost report form shows the saved billing figures', pg.input_value('#relForm [name=c_inv_collected]') == '12000000')
+    pg.evaluate("closeDrawer()")
+    login(pg, 'pm')
+    pg.evaluate("state.scope='ALL';state.xrPt='month';state.xrPer=null;state.xrTab='sum';go('xr')"); pg.wait_for_timeout(900); v = pg.inner_text('#view')
+    ck('Executive report', 'the released Summary shows region, sector, critical projects, billing and change order status', all(x in v for x in ['By region', 'By sector', 'Critical projects', 'Billing and collection', 'Change order and claim status']), v[:300])
+    pg.evaluate("state.xrPt='week';state.xrPer=null;state.xrTab='proj';state.xrPid='P1';render()"); pg.wait_for_timeout(700); v = pg.inner_text('#view')
+    ck('Executive report', 'the weekly Project view shows the issues saved with the release', 'Concrete pump breakdown stopping the raft pour' in v and 'Shop drawing approval pending' in v and 'SAR 40k' not in v, v[:300])
+    pg.evaluate("state.xrTab='sum';state.xrPt='month'")
+    a = pg.evaluate("answer('What are the open issues?')") or ''
+    ck('Issues', 'RASA answers about issues from the register held on the server', 'open issue' in a and 'issue register' in a, a[:200])
 
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))

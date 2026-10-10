@@ -1,0 +1,262 @@
+{
+ "suite": "schema-update-v10",
+ "passed": 51,
+ "total": 51,
+ "results": [
+  {
+   "check": "v10 loads (run 1)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v10.sql:43: NOTICE:  policy \"is_read\" for relation \"issues\" does not exist, skipping\npsql:/home/claude/p2/db/schema-update-v10.sql:45: NOTICE:  policy \"isa_read\" for relation \"issue_audit\" does not exist, skipping\npsql:/home/claude/p2/db/schema-update-v10.sql:47"
+  },
+  {
+   "check": "v10 loads (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v10.sql:32: NOTICE:  relation \"issues\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v10.sql:33: NOTICE:  relation \"issues_proj\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v10.sql:40: NOTICE:  relation \"issue_audit\" already e"
+  },
+  {
+   "check": "existing releases keep an empty issue snapshot",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "foreman cannot add an issue",
+   "pass": true,
+   "detail": "psql:/tmp/tmph3n2l_8r.sql:4: ERROR:  Only the planning and costing engineers of this project, the Head of Planning and Cost Control or a super admin can change its issues\nCONTEXT:  PL/pgSQL function issue_act(jsonb) line 20 at RAISE"
+  },
+  {
+   "check": "pm cannot add an issue",
+   "pass": true,
+   "detail": "psql:/tmp/tmpft86rna_.sql:4: ERROR:  Only the planning and costing engineers of this project, the Head of Planning and Cost Control or a super admin can change its issues\nCONTEXT:  PL/pgSQL function issue_act(jsonb) line 20 at RAISE"
+  },
+  {
+   "check": "exec cannot add an issue",
+   "pass": true,
+   "detail": "psql:/tmp/tmpweahco5a.sql:4: ERROR:  Only the planning and costing engineers of this project, the Head of Planning and Cost Control or a super admin can change its issues\nCONTEXT:  PL/pgSQL function issue_act(jsonb) line 20 at RAISE"
+  },
+  {
+   "check": "a planning engineer of another project cannot add one here",
+   "pass": true,
+   "detail": "psql:/tmp/tmp6qfvnpjw.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function issue_act(jsonb) line 12 at RAISE"
+  },
+  {
+   "check": "an issue needs a description",
+   "pass": true,
+   "detail": "psql:/tmp/tmp4e97x714.sql:4: ERROR:  Describe the issue\nCONTEXT:  PL/pgSQL function issue_act(jsonb) line 23 at RAISE"
+  },
+  {
+   "check": "impact must be one of the four levels",
+   "pass": true,
+   "detail": "psql:/tmp/tmp11rga3n9.sql:4: ERROR:  Impact must be Extremely High, High, Medium or Low\nCONTEXT:  PL/pgSQL function pt_issue_apply(uuid,jsonb) line 10 at RAISE\nPL/pgSQL function issue_act(jsonb) line 25 at assignment"
+  },
+  {
+   "check": "priority must be A, B or C",
+   "pass": true,
+   "detail": "psql:/tmp/tmpwgup72xe.sql:4: ERROR:  Priority must be A, B or C\nCONTEXT:  PL/pgSQL function pt_issue_apply(uuid,jsonb) line 12 at RAISE\nPL/pgSQL function issue_act(jsonb) line 25 at assignment"
+  },
+  {
+   "check": "dates must be real",
+   "pass": true,
+   "detail": "psql:/tmp/tmpb8q3ys30.sql:4: ERROR:  The planned target is not a valid date\nCONTEXT:  PL/pgSQL function pt_issue_apply(uuid,jsonb) line 6 at RAISE\nPL/pgSQL function issue_act(jsonb) line 25 at assignment"
+  },
+  {
+   "check": "the planning engineer adds an issue; impact and priority are written the standard way",
+   "pass": true,
+   "detail": "{'id': '86b7ed5a-0e54-4cb8-8533-b1d281f08348', 'owner': 'Vendor', 'impact': 'Extremely High', 'status': 'Open', 'remarks': None, 'issue_no': 'ISS-001', 'action_by': 'PM', 'closed_on': None, 'data_date': '2026-09-24', 'sub_owner': 'SPTC', 'created_at': '2026-10-10T12:52:53.511734+03:00', 'created_by'"
+  },
+  {
+   "check": "the costing engineer adds one too",
+   "pass": true,
+   "detail": "{'id': 'd345f214-a476-44a2-9408-cd667a1fa625', 'owner': 'Internal', 'impact': 'High', 'status': 'Open', 'remarks': None, 'issue_no': 'ISS-002', 'action_by': None, 'closed_on': None, 'data_date': None, 'sub_owner': None, 'created_at': '2026-10-10T12:52:53.565268+03:00', 'created_by': '00000000-0000-0"
+  },
+  {
+   "check": "a third, medium impact",
+   "pass": true,
+   "detail": "{'id': '1be9ac39-632a-49d1-a310-22c843d9e3dc', 'owner': 'Client', 'impact': 'Medium', 'status': 'Open', 'remarks': None, 'issue_no': 'ISS-003', 'action_by': None, 'closed_on': None, 'data_date': None, 'sub_owner': 'SEC', 'created_at': '2026-10-10T12:52:53.61812+03:00', 'created_by': '00000000-0000-0"
+  },
+  {
+   "check": "an update records which fields changed",
+   "pass": true,
+   "detail": "{'id': '86b7ed5a-0e54-4cb8-8533-b1d281f08348', 'owner': 'Vendor', 'impact': 'Extremely High', 'status': 'Open', 'remarks': None, 'issue_no': 'ISS-001', 'action_by': 'PM', 'closed_on': None, 'data_date': '2026-09-24', 'sub_owner': 'SPTC', 'created_at': '2026-10-10T12:52:53.511734+03:00', 'created_by'"
+  },
+  {
+   "check": "the history holds the creation and the change",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the Head (a project manager with the designation) can keep issues on any of their projects",
+   "pass": true,
+   "detail": "{'id': '1be9ac39-632a-49d1-a310-22c843d9e3dc', 'owner': 'Client', 'impact': 'Medium', 'status': 'Open', 'remarks': None, 'issue_no': 'ISS-003', 'action_by': 'SEC/PM', 'closed_on': None, 'data_date': None, 'sub_owner': 'SEC', 'created_at': '2026-10-10T12:52:53.61812+03:00', 'created_by': '00000000-00"
+  },
+  {
+   "check": "only the Head or a super admin marks an issue reviewed",
+   "pass": true,
+   "detail": "psql:/tmp/tmp84d7pn55.sql:4: ERROR:  Only the Head of Planning and Cost Control or a super admin marks issues reviewed\nCONTEXT:  PL/pgSQL function issue_act(jsonb) line 14 at RAISE"
+  },
+  {
+   "check": "the Head marks it reviewed",
+   "pass": true,
+   "detail": "{'id': '86b7ed5a-0e54-4cb8-8533-b1d281f08348', 'owner': 'Vendor', 'impact': 'Extremely High', 'status': 'Open', 'remarks': None, 'issue_no': 'ISS-001', 'action_by': 'PM', 'closed_on': None, 'data_date': '2026-09-24', 'sub_owner': 'SPTC', 'created_at': '2026-10-10T12:52:53.511734+03:00', 'created_by'"
+  },
+  {
+   "check": "the costing engineer closes an issue",
+   "pass": true,
+   "detail": "{'id': 'd345f214-a476-44a2-9408-cd667a1fa625', 'owner': 'Internal', 'impact': 'High', 'status': 'Closed', 'remarks': None, 'issue_no': 'ISS-002', 'action_by': None, 'closed_on': '2026-09-20', 'data_date': None, 'sub_owner': None, 'created_at': '2026-10-10T12:52:53.565268+03:00', 'created_by': '00000"
+  },
+  {
+   "check": "a closed issue cannot be edited",
+   "pass": true,
+   "detail": "psql:/tmp/tmp8xu00im3.sql:4: ERROR:  This issue is closed; reopen it first\nCONTEXT:  PL/pgSQL function issue_act(jsonb) line 28 at RAISE"
+  },
+  {
+   "check": "reopening needs a comment",
+   "pass": true,
+   "detail": "psql:/tmp/tmpp0639ph0.sql:4: ERROR:  Add a comment saying why the issue is reopened\nCONTEXT:  PL/pgSQL function issue_act(jsonb) line 41 at RAISE"
+  },
+  {
+   "check": "it can be reopened with a comment",
+   "pass": true,
+   "detail": "{'id': 'd345f214-a476-44a2-9408-cd667a1fa625', 'owner': 'Internal', 'impact': 'High', 'status': 'Open', 'remarks': None, 'issue_no': 'ISS-002', 'action_by': None, 'closed_on': None, 'data_date': None, 'sub_owner': None, 'created_at': '2026-10-10T12:52:53.565268+03:00', 'created_by': '00000000-0000-0"
+  },
+  {
+   "check": "office staff with access to the project read its issues; others do not",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "site staff (foreman) read no issues and no issue history, even on their project",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the issue history cannot be edited",
+   "pass": true,
+   "detail": "ERROR:  issue_audit is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "a direct write from the browser changes nothing",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "foreman cannot upload the issue log",
+   "pass": true,
+   "detail": "psql:/tmp/tmphlibm24x.sql:4: ERROR:  Only planning and costing engineers, the Head of Planning and Cost Control or a super admin upload the issue log\nCONTEXT:  PL/pgSQL function issue_import(jsonb) line 6 at RAISE"
+  },
+  {
+   "check": "pm cannot upload the issue log",
+   "pass": true,
+   "detail": "psql:/tmp/tmpsivfqr_w.sql:4: ERROR:  Only planning and costing engineers, the Head of Planning and Cost Control or a super admin upload the issue log\nCONTEXT:  PL/pgSQL function issue_import(jsonb) line 6 at RAISE"
+  },
+  {
+   "check": "refused rows must be acknowledged; nothing is saved until then",
+   "pass": true,
+   "detail": "psql:/tmp/tmpanzcn7dn.sql:4: ERROR:  5 row(s) refused; acknowledge them to save the rest. First: row 4 not one of your projects\nCONTEXT:  PL/pgSQL function issue_import(jsonb) line 28 at RAISE"
+  },
+  {
+   "check": "...and nothing changed",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "acknowledged, the upload updates the matching issue, adds two and refuses five",
+   "pass": true,
+   "detail": "{'created': 2, 'updated': 1, 'batch_id': '724d9f4e-a6cb-4f44-81ad-b16a9afd1af1', 'rejected': [{'row': 4, 'error': 'not one of your projects', 'project': 'P2'}, {'row': 5, 'error': 'impact must be Extremely High, High, Medium or Low', 'project': 'P1'}, {'row': 6, 'error': 'unknown project', 'project'"
+  },
+  {
+   "check": "refused rows keep the row number of the file when it is sent",
+   "pass": true,
+   "detail": "[{'row': 4, 'error': 'not one of your projects', 'project': 'P2'}, {'row': 5, 'error': 'impact must be Extremely High, High, Medium or Low', 'project': 'P1'}, {'row': 6, 'error': 'unknown project', 'project': 'PX'}, {'row': 42, 'error': 'priority must be A, B or C', 'project': 'P1'}, {'row': 8, 'err"
+  },
+  {
+   "check": "the matched issue keeps its number and history, with the new impact and remarks",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a closed row comes in closed with its date",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the upload is a numbered batch with the acknowledged difference",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the same file again changes nothing",
+   "pass": true,
+   "detail": "{'duplicate': True}"
+  },
+  {
+   "check": "a file with no valid rows saves nothing",
+   "pass": true,
+   "detail": "psql:/tmp/tmpdgxsvg1a.sql:4: ERROR:  No valid rows, so nothing was saved. First problem: row 1 not one of your projects\nCONTEXT:  PL/pgSQL function issue_import(jsonb) line 26 at RAISE"
+  },
+  {
+   "check": "approving a progress release saves the project's open issues with it, worst first",
+   "pass": true,
+   "detail": "{'id': '803dd699-3c09-4d78-a74e-4ce713502fe5', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Released', 'figures': {'actual_pct': 52}, 'data_date': None, 'narrative': {}, 'overrides': [], 'project_id': 'P1', 'updated_at': '2026-10-10T12:52:55.346943+03:00', 'approved_at': '2026-10-10"
+  },
+  {
+   "check": "the saved issues carry no cost impact (site staff can read progress releases)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "closing an issue later does not change what was released",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the saved issues cannot be changed, even from the database console",
+   "pass": true,
+   "detail": "ERROR:  A released version cannot be changed; issue a new revision\nCONTEXT:  PL/pgSQL function pt_release_frozen() line 7 at RAISE"
+  },
+  {
+   "check": "a cost report can carry billing figures from the invoice register",
+   "pass": true,
+   "detail": "{'id': 'd440e26f-46d3-409c-9dae-a2893f292089', 'rev': 0, 'kind': 'cost', 'period': '2026-09', 'status': 'Draft', 'figures': {'eac': 110, 'ftc': 70, 'vac': -10, 'actual': 40, 'commitment': 10, 'budget_rev0': 100, 'inv_approved': 45, 'inv_collected': 30, 'inv_submitted': 50, 'budget_current': 100, 'in"
+  },
+  {
+   "check": "billing amounts cannot be negative",
+   "pass": true,
+   "detail": "psql:/tmp/tmpadcpojc8.sql:4: ERROR:  inv_collected cannot be negative\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 70 at RAISE"
+  },
+  {
+   "check": "billing figures must be numbers",
+   "pass": true,
+   "detail": "psql:/tmp/tmp1rerj0tm.sql:4: ERROR:  Figure inv_submitted must be a number\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 54 at RAISE"
+  },
+  {
+   "check": "rollback runs (run 1)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback runs (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-rollback-v10.sql:3: NOTICE:  function issue_act(jsonb) does not exist, skipping\npsql:/home/claude/p2/db/schema-rollback-v10.sql:4: NOTICE:  function issue_import(jsonb) does not exist, skipping\npsql:/home/claude/p2/db/schema-rollback-v10.sql:136: NOTICE:  function pt_i"
+  },
+  {
+   "check": "rollback removes the issue functions",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback keeps every issue, history entry and saved snapshot",
+   "pass": true,
+   "detail": "5/13/1"
+  },
+  {
+   "check": "after rollback releases work as in v9",
+   "pass": true,
+   "detail": "{'id': 'abd2c0dd-0500-4945-b15e-5146d752c09f', 'rev': 0, 'kind': 'planning', 'period': '2026-W40', 'status': 'Released', 'figures': {'actual_pct': 53}, 'data_date': None, 'narrative': {}, 'overrides': [], 'project_id': 'P1', 'updated_at': '2026-10-10T12:52:56.21328+03:00', 'approved_at': '2026-10-10"
+  },
+  {
+   "check": "v10 can be applied again after a rollback",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v10.sql:32: NOTICE:  relation \"issues\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v10.sql:33: NOTICE:  relation \"issues_proj\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v10.sql:40: NOTICE:  relation \"issue_audit\" already e"
+  }
+ ]
+}
