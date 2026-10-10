@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-10 10:40",
- "app": "/home/claude/p7/demo.html",
+ "run_at": "2026-10-10 11:24",
+ "app": "/home/claude/protrack-ai/index.html",
  "summary": {
   "PASS": 32,
   "FAIL": 0

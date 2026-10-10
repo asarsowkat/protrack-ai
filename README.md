@@ -161,6 +161,13 @@ Production needs:
 
 ---
 
+## Until go-live: sample data on the main address
+
+- `index.html` (the main link) and `demo.html` show **sample data** in the visitor's browser and never connect to the server.
+- `live.html` is the real app, connected to the ProTrack server, for the team. Password-reset and approval-email links that land on the main address are sent on to `live.html`.
+- Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
+- **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
+
 ## Version 2.9
 
 - Governed RASA answers: sources and data date under every answer and insight, "No evidence" instead of guesses, untracked figures named

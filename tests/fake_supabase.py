@@ -179,7 +179,7 @@ class H(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split('?')[0]
-        if path in ('/', '/index.html'): return self.send(200, open(APP, 'rb').read(), 'text/html; charset=utf-8')
+        if path in ('/', '/index.html', '/live.html'): return self.send(200, open(APP, 'rb').read(), 'text/html; charset=utf-8')
         if path == '/demo.html' and os.path.exists(os.path.join(os.path.dirname(APP), 'demo.html')):
             return self.send(200, open(os.path.join(os.path.dirname(APP), 'demo.html'), 'rb').read(), 'text/html; charset=utf-8')
         if path == '/config.js':

@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-10 10:39",
- "app": "/home/claude/p7/app.html",
+ "run_at": "2026-10-10 11:23",
+ "app": "/home/claude/protrack-ai/live.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 105,
+  "PASS": 108,
   "FAIL": 0
  },
  "results": [
@@ -634,6 +634,24 @@
   {
    "area": "Demo page",
    "check": "no script errors on the demo page",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "the sample-data sign-in links team members to the server sign-in (live.html)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "an approval-email link that lands on the sample-data page is sent on to the live app",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo page",
+   "check": "so is a password-reset link",
    "result": "PASS",
    "detail": ""
   }
