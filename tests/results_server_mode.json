@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-10 11:59",
- "app": "/home/claude/p8/app.html",
+ "run_at": "2026-10-10 12:59",
+ "app": "/home/claude/p9/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 119,
+  "PASS": 136,
   "FAIL": 0
  },
  "results": [
@@ -568,6 +568,108 @@
   {
    "area": "Logs",
    "check": "a foreman receives none of the log",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "before the v10 update the issue register says the database update is needed (the rest of the app works)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "the v10 update loads on top of a database already in use",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "the setup check counts 4 issue functions",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "after the update the warning is gone",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "the planning engineer adds an issue; the server numbers it and records the history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "a site engineer cannot add issues (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "the project manager cannot add issues (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "a foreman receives no issues from the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "the issue log upload: one new issue, the existing one updated (not duplicated), the unknown project refused and logged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "the Head marks an issue reviewed on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "approving the weekly progress release saves the open issues with it on the server, without the cost impact",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "the cost report keeps the billing figures on the server; EAC and VAC are unchanged by them",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "a negative billing amount is refused by the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Billing",
+   "check": "the cost report form shows the saved billing figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "the released Summary shows region, sector, critical projects, billing and change order status",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "the weekly Project view shows the issues saved with the release",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Issues",
+   "check": "RASA answers about issues from the register held on the server",
    "result": "PASS",
    "detail": ""
   },

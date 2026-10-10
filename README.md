@@ -168,6 +168,13 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.1
+
+- Executive report Summary (by region, by sector, critical projects, billing and collection, change order and claim status) and Project view, from released versions only
+- Issue register with the company issue log columns: planning and costing engineers keep their own projects, the Head reviews by region or sector, Excel upload and export, every change kept; open issues saved with each approved progress release (`schema-update-v10.sql`)
+- Billing to date in the monthly cost report, filled in from the invoice register
+- See RELEASE-NOTES-v3.1.md and STAGE-7-SETUP.md
+
 ## Version 3.0
 
 - Released reporting: weekly and monthly progress releases by planning, monthly cost reports by costing (actual, commitments, approved budget, EAC, VAC), approved by the Head of Planning and Cost Control; revisions instead of edits (`schema-update-v9.sql`)

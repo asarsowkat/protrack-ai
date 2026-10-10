@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-10 12:01",
- "app": "/home/claude/p8/demo.html",
+ "run_at": "2026-10-10 13:03",
+ "app": "/home/claude/p9/demo.html",
  "results": [
   {
    "area": "Auth",
@@ -106,91 +106,91 @@
   },
   {
    "area": "Reports",
-   "check": "report actprog builds (0.01 s)",
+   "check": "report actprog builds (0.05 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report projprog builds (0.01 s)",
+   "check": "report projprog builds (0.15 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report regprog builds (0.01 s)",
+   "check": "report regprog builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report histo builds (0.57 s)",
+   "check": "report histo builds (1.51 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report prod builds (0.02 s)",
+   "check": "report prod builds (0.1 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report eac builds (0.02 s)",
+   "check": "report eac builds (0.04 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report basecmp builds (0.02 s)",
+   "check": "report basecmp builds (0.03 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report recon builds (0.01 s)",
+   "check": "report recon builds (0.07 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report unitrate builds (0.01 s)",
+   "check": "report unitrate builds (0.11 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report invoice builds (0.01 s)",
+   "check": "report invoice builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report cash builds (0.02 s)",
+   "check": "report cash builds (0.32 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report timing builds (0.02 s)",
+   "check": "report timing builds (0.13 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report mhrec builds (0.0 s)",
+   "check": "report mhrec builds (0.03 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report p6upd builds (0.04 s)",
+   "check": "report p6upd builds (0.27 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report warn builds (0.09 s)",
+   "check": "report warn builds (0.45 s)",
    "result": "PASS",
    "detail": ""
   },

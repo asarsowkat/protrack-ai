@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.0, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.1, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -203,6 +203,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#domains" class="sub">Finding your way: the domains</a>
   <a href="#overview" class="sub">Project overview</a>
   <a href="#releases">Released reporting</a>
+  <a href="#issues" class="sub">Issue register</a>
   <a href="#tender">Tender register and PE numbers</a>
   <a href="#lifecycle">Project lifecycle, actions and dashboards</a>
   <a href="#imports">Import centre and controlled uploads</a>
@@ -250,6 +251,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.1</b>
+    <b>Executive report Summary and Project view</b>: by region, by sector, critical projects, billing and collection, and change order and claim status, all from released versions; one project's full released picture. ·
+    <b>Issue register</b> (Projects &amp; Handover): planning and costing engineers keep the issues of their own projects with the company issue log columns; the Head reviews them by region or sector; open issues are saved with each approved progress release. ·
+    <b>Billing to date</b> in the monthly cost report, filled in from the invoice register.</div>
   <div class="note"><b>New in version 3.0</b>
     <b>Released reporting</b>: the planning engineer releases progress weekly and monthly; the costing engineer releases a monthly cost report with actual, commitments, approved budget, EAC and VAC. The Head of Planning and Cost Control approves each one before management sees it. ·
     <b>Executive report</b> (Home): built only from released versions, for any saved month or week. Daily reports are the site's input, not the management figure. ·
@@ -441,12 +446,33 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>A released version never changes. To correct one, press <b>Start a new revision</b> and give a reason. Management keeps seeing the released revision until the new one is approved; the old one is then kept as superseded.</li>
   </ol>
   <h3>Executive report</h3>
-  <p><b>Home → Executive report (released)</b>: choose Monthly or Weekly and the period. It shows, per project, the released progress with key issues. For a month it also shows the released cost (approved budget, actual, commitments, EAC, VAC), change orders and claims, and budget supplements by category. A project without a release for that period shows <i>Not released</i>; live figures are never filled in. Weekly reports carry progress only. Foremen, site engineers and site managers see no cost figures. <b>Live summary (working data)</b> is the previous executive summary, for the people preparing the releases.</p>
+  <p><b>Home → Executive report (released)</b>: choose Monthly or Weekly and the period, then <b>Summary</b> or <b>Project view</b>.</p>
+  <ul>
+    <li><b>Summary</b>: projects released, progress and SPI weighted by contract value, EAC and VAC, invoiced and collected; tables <b>by region</b> and <b>by sector</b>; <b>critical projects</b> (released SPI under 0.95, a negative VAC, a forecast finish more than 30 days after baseline, or an extremely high open issue), each with the reason and its main issue; <b>billing and collection</b> as saved in the cost reports; and <b>change order and claim status</b> by client status.</li>
+    <li><b>Project view</b>: one project's released progress, the planning engineer's comments, the issues saved with the release, cost and billing, change orders, claims and supplements, and its release history.</li>
+  </ul>
+  <p>Below the summary, it shows per project the released progress with key issues. For a month it also shows the released cost (approved budget, actual, commitments, EAC, VAC), change orders and claims, and budget supplements by category. A project without a release for that period shows <i>Not released</i>; live figures are never filled in. Weekly reports carry progress only. Foremen, site engineers and site managers see no cost figures. <b>Live summary (working data)</b> is the previous executive summary, for the people preparing the releases.</p>
   <h3>Change order and claim log, budget supplement log</h3>
   <p>The costing engineer or costing coordinator uploads both every month for each project (<b>Claims &amp; Variations → Change order and claim log</b>, <b>Cost Control → Budget supplements</b>). Download the template, fill it in, choose the month and upload. Rows with a missing reference, a wrong type or category, a number that is not a number or a bad date are refused, and you confirm them by ticking the box before the rest is saved. Each upload is a numbered batch, and the same file for the same month is not loaded twice. Every month's log is kept and can be shown later.</p>
   <p><b>Change order and claim log columns:</b> reference, type (VO or Claim), description, submission status and date, client approval status, estimated price, estimated cost, expected price to be approved, price and cost considered internally, change in Rev-0 budget, internal workflow status, overall approval status with the client, remarks.</p>
   <p><b>Budget supplement categories:</b> Project execution, Under estimate, External factor, Saudization, Finance, Claims, Change order. Only <i>Approved</i> supplements are added to the budget in the cost report.</p>
   <p>The columns will be matched to your company's VO log when the sample arrives.</p>
+  <h3>Billing to date in the cost report</h3>
+  <p>The monthly cost report has a <b>Billing to date</b> section: invoiceable, invoiced, approved and collected. ProTrackAI fills it in from the invoice register and the invoiceable value; change the figures if yours differ. It is optional and is not used in EAC or VAC. The executive report's billing and collection table shows these saved figures.</p>
+  <h2 id="issues">Issue register</h2>
+  <p><b>Projects &amp; Handover → Issue register</b> holds the issues and bottlenecks that P6 and ProTrackAI's own figures do not show, with the columns of the company issue log: data date, issue owner and sub owner, issue type, start date, description, impact (Extremely High, High, Medium, Low), action taken, action required, priority by client and internal priority (A, B, C), action by, planned and forecast targets, status, closure date, remarks, schedule impact and cost impact.</p>
+  <table><thead><tr><th>Who</th><th>Can</th></tr></thead><tbody>
+    <tr><td>Planning and costing engineers</td><td>Add, update, close and reopen the issues of their own projects; upload the issue log for them</td></tr>
+    <tr><td>Head of Planning and Cost Control, super admin</td><td>All of the above for any project, and <b>Mark reviewed</b> with a note</td></tr>
+    <tr><td>Project managers, executives, regional and portfolio managers</td><td>See the issues of their projects</td></tr>
+    <tr><td>Site staff</td><td>No access</td></tr>
+  </tbody></table>
+  <ol class="steps">
+    <li><b>Review by region or sector:</b> the two tables at the top count open, extremely high, past-target and not-reviewed issues. Tap a row to filter the register; use the other filters and search to narrow it.</li>
+    <li><b>Add or open an issue</b> to change it. Every change is kept with who, when and which fields changed. Reopening a closed issue needs a reason.</li>
+    <li><b>Upload</b> your issue log as it is, or the template. Rows are matched to existing issues by project and description, so they are updated, not duplicated. Rows for another engineer's project, an unknown project, a missing description or a wrong impact are refused and listed; tick the box to save the rest. Text such as "NA" in a date or priority column is kept in Remarks.</li>
+    <li><b>Released with progress:</b> when the Head approves a progress release, the project's open issues are saved with it and never change afterwards. The executive report shows them. The cost impact is not saved with the release.</li>
+  </ol>
 </section>
 
 <section id="tender">

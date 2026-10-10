@@ -1,0 +1,370 @@
+{
+ "run_at": "2026-10-10 13:03",
+ "app": "/home/claude/p9/demo.html",
+ "summary": {
+  "PASS": 60,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Demo data",
+   "check": "sample issues are seeded for every demo project, some reviewed, some closed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo data",
+   "check": "seeded released progress reports carry the open issues; seeded cost reports carry billing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Issue register in Projects & Handover for the super admin: yes",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Issue register in Projects & Handover for the planning engineer: yes",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Issue register in Projects & Handover for the costing engineer: yes",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Issue register in Projects & Handover for the executive: yes",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Issue register in Projects & Handover for the project manager: yes",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Issue register in Projects & Handover for the foreman: no",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "the Head of Planning and Cost Control exists in the demo",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screen",
+   "check": "shows open issues, extremely high, past target and not reviewed, with region and sector tables",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screen",
+   "check": "the list defaults to open issues, most severe first",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screen",
+   "check": "tapping a region row filters the register to that region",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screen",
+   "check": "\"only past target\" shows open issues whose target date has passed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "the export has the company issue log columns plus issue no and reviewer",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a planning engineer can add issues only to his own projects",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "an issue without a description is refused, saying why",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "the planning engineer adds an issue; it gets the next ISS number and a history entry",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "impact must be one of the four levels",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "priority must be A, B or C",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "dates must be real dates",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "an update records which fields changed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a planning engineer cannot change another project's issues",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a planning engineer cannot mark issues reviewed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "close the issue",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "a closed issue cannot be edited",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "reopening needs a comment",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "reopen with a comment",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "the costing engineer of the project can also keep its issues",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a project manager sees issues but cannot change them",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "an executive cannot change or review issues",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "the Head marks an issue reviewed with a note; it is kept in the history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the company issue log header row is recognised",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "rows are refused for another engineer's project, an unknown project, a missing description, a wrong impact and a blank continuation row",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "text such as \"NA\" in a date or priority column is kept in Remarks instead of refusing the row",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the preview lists the refused rows and says which rows match existing issues",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "saving with refused rows needs the confirmation box",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "saved: two new issues (one already closed), and the existing issue updated rather than duplicated",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the upload is logged in the import history with its refused rows",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the same file again changes nothing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "the template has the company issue log columns and an example row",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Release",
+   "check": "approving a progress release saves the project's open issues with it, most severe first",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Release",
+   "check": "closing an issue later does not change the released version",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost report",
+   "check": "the cost report has a \"Billing to date\" section with the four invoice register figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost report",
+   "check": "billing is filled in from the invoice register when there is one",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost report",
+   "check": "billing amounts cannot be negative",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost report",
+   "check": "billing is optional and does not change EAC or VAC",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "Summary and Project view tabs",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "the Summary has region, sector, critical projects, billing and collection, and change order and claim status",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "figures come from the released versions only (counts and invoiced total match the saved reports)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "every critical project is listed with the reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "a critical project carrying an extremely high released issue says so",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "\"Project view\" from a critical row opens that project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "the project view shows the issues saved with the release, not today's register",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "the weekly project view carries no cost",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "a foreman still has no executive report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "issues are answered from the issue register, with the source",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "a question naming a region is answered for that region",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "a foreman asking about issues gets \"not available for your role\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "issues, history and the upload survive a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

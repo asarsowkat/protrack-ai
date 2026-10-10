@@ -697,7 +697,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.0</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.1</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1255,7 +1255,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix()]);
-    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();
+    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadIssues();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -1354,7 +1354,7 @@ async function cloudSavePeople(before){
    and recorded as a numbered batch with the file's fingerprint. Refused rows must be acknowledged before
    the rest is saved. The Import centre lists every batch, failed attempts and retries included. */
 const IMPORT_MAX=10*1024*1024,IMPORT_EXT=/\.(xlsx|xls|csv|xer|xml)$/i;
-const IMPORT_KINDS={volog:'Change order and claim log',supplements:'Budget supplement log',invoices:'Invoice register',costing:'Costing file',baseline:'P6 baseline',update:'Weekly progress',migration:'Move to server',restore:'Restore'};
+const IMPORT_KINDS={issues:'Issue register upload',volog:'Change order and claim log',supplements:'Budget supplement log',invoices:'Invoice register',costing:'Costing file',baseline:'P6 baseline',update:'Weekly progress',migration:'Move to server',restore:'Restore'};
 const isoOk=d=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(d||''))return false;const x=new Date(d+'T00:00:00Z');return isFinite(x)&&x.toISOString().slice(0,10)===d};
 const dBad=v=>!(v instanceof Date)&&String(v??'').trim()!==''&&!isoOk(dOnly(v));
 const nBad=v=>{if(v instanceof Date||v==null)return false;const t=String(v).trim();if(!t)return false;const c=t.replace(/^(SAR|SR)\s*/i,'').replace(/[,\s]/g,'');return !/^-?\d*\.?\d+$/.test(c)};
@@ -2316,7 +2316,8 @@ function relActLocal(p){
       else if(v!=null&&v!==''&&!isFinite(+v))fail(`Figure ${key} must be a number`)}
     if(k==='planning'){['planned_pct','actual_pct','eng_pct','prc_pct','eng_plan_pct','prc_plan_pct'].forEach(key=>{const v=f[key];if(v!=null&&v!==''&&(+v<0||+v>100))fail(`${key} must be between 0 and 100`)});
       if(f.actual_pct==null||f.actual_pct==='')fail('Enter the actual progress')}
-    else{COST_IN.forEach(([key,l])=>{const v=f[key];if(v==null||v===''||!isFinite(+v))fail('Enter the '+l.toLowerCase());if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});f=costCompute(pid,per,f)}
+    else{COST_IN.forEach(([key,l])=>{const v=f[key];if(v==null||v===''||!isFinite(+v))fail('Enter the '+l.toLowerCase());if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});
+      INV_IN.forEach(([key])=>{const v=f[key];if(v==null||v==='')return;if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});f=costCompute(pid,per,f)}
     const o=p.overrides||[];o.forEach(x=>{if(!String(x.reason||'').trim())fail(`Give a reason for changing ${x.label||x.field||'a figure'}`)});
     if(rel){Object.assign(rel,{figures:f,overrides:o,narrative:p.narrative||{},data_date:p.data_date||null,prepared_by:meU.id});log(rel,'Updated')}
     else{rel={id:'R'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),project_id:pid,kind:k,period_type:pt,period:per,rev:DB.releases.filter(same).reduce((m,r)=>Math.max(m,r.rev+1),0),status:'Draft',
@@ -2330,7 +2331,7 @@ function relActLocal(p){
   else if(a==='approve'){if(!canApproveRel())fail('Only the Head of Planning and Cost Control or a super admin can approve a release');if(rel.status!=='Submitted')fail('Only a submitted version can be approved');
     if(rel.submitted_by===meU.id)fail('You submitted this version, so someone else must approve it');
     DB.releases.filter(r=>same(r)&&r.status==='Released').forEach(r=>{r.status='Superseded'});
-    rel.status='Released';rel.approved_by=meU.id;rel.approved_at=new Date().toISOString();log(rel,'Approved and released',note,{rev:rel.rev})}
+    rel.status='Released';rel.approved_by=meU.id;rel.approved_at=new Date().toISOString();if(rel.kind==='planning')rel.issues_snapshot=issSnapshot(rel.project_id);log(rel,'Approved and released',note,{rev:rel.rev})}
   else if(a==='return'){if(!canApproveRel())fail('Only the Head of Planning and Cost Control or a super admin can return a release');if(rel.status!=='Submitted')fail('Only a submitted version can be returned');
     if(!note)fail('Add a comment saying what to fix');rel.status='Draft';rel.submitted_by=null;rel.submitted_at=null;log(rel,'Returned',note)}
   save();return rel;
@@ -2410,6 +2411,7 @@ function openRelease(pid,k,t,per){
         <tr><td><b>VAC</b></td><td class="n"><b data-cc="vac" class="${(r?+f.vac:c.vac)<0?'r-c':'g-c'}">${sar(r?+f.vac:c.vac)}</b></td><td class="small muted">Approved budget − EAC; negative is an overrun</td></tr>
         <tr><td>Change orders and claims</td><td class="n">${vo.length}</td><td class="small muted">${vl.b?`${vo.filter(x=>x.kind==='VO').length} VO${vo.filter(x=>x.kind==='VO').length===1?'':'s'}, ${vo.filter(x=>x.kind==='Claim').length} claim${vo.filter(x=>x.kind==='Claim').length===1?'':'s'} in the ${perLabel('month',vl.b.source_period)} log; expected price ${sar(vo.reduce((t,x)=>t+(+x.expected_price||0),0))}, approved by the client ${sar(appr.reduce((t,x)=>t+(+x.expected_price||+x.est_price||0),0))}`:'No change order and claim log uploaded up to this month'}</td></tr>
       </tbody></table>
+      ${relInvFields(pid,f,editable)}
       ${F('Comments',`<textarea name="n_summary" rows="2" ${editable?'':'disabled'}>${esc(nar.summary||'')}</textarea>`,true)}`;
   }
   const canSubmit=open&&open.status==='Draft'&&canPrepRel(k),canDecide=open&&open.status==='Submitted'&&canApproveRel();
@@ -2441,7 +2443,7 @@ function relFormPayload(){
       if(differs)overrides.push({field:key,label:l,computed:cv==null?null:cv,value:val,reason:(f.elements['r_'+key]?.value||'').trim()})});
     ['next_ms_text','next_ms_date','baseline_finish'].forEach(x=>{figures[x]=comp[x]});
     ['summary','issues','next'].forEach(x=>{const el=f.elements['n_'+x];if(el)nar[x]=el.value.trim()})}
-  else{COST_IN.forEach(([key])=>{const el=f.elements['c_'+key];if(el)figures[key]=el.value.trim()===''?null:+el.value});const el=f.elements.n_summary;if(el)nar.summary=el.value.trim()}
+  else{[...COST_IN,...INV_IN].forEach(([key])=>{const el=f.elements['c_'+key];if(el)figures[key]=el.value.trim()===''?null:+el.value});const el=f.elements.n_summary;if(el)nar.summary=el.value.trim()}
   return {figures,overrides,narrative:nar,data_date:ASOF};
 }
 document.addEventListener('input',e=>{
@@ -2525,7 +2527,9 @@ function renderXr(){
   const rels=relRows().filter(r=>relVisible(r)&&r.status==='Released'&&SCOPE.has(r.project_id)&&r.period_type===t);
   const pers=[...new Set(rels.map(r=>r.period))].sort().reverse();
   const per=state.xrPer&&pers.includes(state.xrPer)?state.xrPer:pers[0];
-  const head=`<div class="fields" style="margin-bottom:8px">${F('Report',sel('xrpt',[['month','Monthly'],['week','Weekly']],t,'data-xrpt'))}${pers.length?F(t==='month'?'Month':'Week',sel('xrper',pers.map(x=>[x,perLabel(t,x)]),per,'data-xrper')):''}</div>`;
+  const tab=state.xrTab==='proj'?'proj':'sum';
+  const head=`<div class="fields" style="margin-bottom:8px">${F('Report',sel('xrpt',[['month','Monthly'],['week','Weekly']],t,'data-xrpt'))}${pers.length?F(t==='month'?'Month':'Week',sel('xrper',pers.map(x=>[x,perLabel(t,x)]),per,'data-xrper')):''}</div>
+    <div class="chips" role="group" aria-label="Report view"><button type="button" class="chip" data-xrtab="sum" aria-pressed="${tab==='sum'}">Summary</button><button type="button" class="chip" data-xrtab="proj" aria-pressed="${tab==='proj'}">Project view</button></div>`;
   if(!per){$('#view').innerHTML=`${crumb()}<section class="panel"><div class="card-head"><h2>Executive report</h2><span class="small muted">Released versions only</span></div>${head}
     ${NOEV(`No ${t==='month'?'monthly':'weekly'} report has been released for the projects in this scope yet.`,'Planning and costing prepare the releases; the Head of Planning and Cost Control approves them.')}</section>`;return}
   const pl=pid=>relReleased(pid,'planning',t,per),co=pid=>t==='month'&&money?relReleased(pid,'cost','month',per):null;
@@ -2535,11 +2539,12 @@ function renderXr(){
   const vo=t==='month'&&money?ps.map(p=>({p,...voLatest(p.id,per)})).filter(x=>x.b):[],su=t==='month'&&money?ps.map(p=>({p,...suppLatest(p.id,per)})).filter(x=>x.b):[];
   const voRows=vo.flatMap(x=>x.rows.map(r=>({...r,p:x.p}))),suRows=su.flatMap(x=>x.rows.map(r=>({...r,p:x.p})));
   const pctc=v=>v==null||v===''?'—':fmt(+v,1)+'%';
-  $('#view').innerHTML=`${crumb()}
-  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Executive report · ${esc(perLabel(t,per))}</h2><span class="small muted">Released versions only, approved by the Head of Planning and Cost Control. Live daily reports are not used.</span></div>${head}</section>
-  ${t==='month'&&money?`<div class="g g-kpi">${kpi('Approved budget',T.n?sar(T.budget_current):'—',`${T.n} of ${ps.length} projects released`)}${kpi('Actual cost to date',T.n?sar(T.actual):'—','From the released cost reports')}
-    ${kpi('EAC',T.n?sar(T.eac):'—',T.n?`commitments ${sar(T.commitment)}`:'')}${kpi('VAC',T.n?sar(T.vac):'—','Approved budget − EAC',T.n&&T.vac<0?'r':'')}</div>`:''}
-  <section class="panel"><div class="card-head"><h2>Progress</h2><span class="small muted">Released by planning</span></div>
+  const top=`${crumb()}
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Executive report · ${esc(perLabel(t,per))}</h2><span class="small muted">Released versions only, approved by the Head of Planning and Cost Control. Live daily reports are not used.</span></div>${head}</section>`;
+  if(tab==='proj'){$('#view').innerHTML=top+xrProjectHTML(t,per);return}
+  $('#view').innerHTML=`${top}
+  ${xrSummaryHTML(t,per)}
+  <section class="panel"><div class="card-head"><h2>Progress by project</h2><span class="small muted">Released by planning</span></div>
     <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Planned</th><th class="n">Actual</th><th class="n">SPI</th><th class="n">Design</th><th class="n">Procurement</th><th>Forecast finish</th><th>Release</th></tr></thead><tbody>
     ${rows.map(({p,pr})=>{if(!pr)return `<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}</span></td><td colspan="7" class="muted small">Not released for ${esc(perLabel(t,per))}</td></tr>`;const f=pr.figures;
       return `<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}</span></td><td class="n">${pctc(f.planned_pct)}</td><td class="n"><b>${pctc(f.actual_pct)}</b>${(pr.overrides||[]).some(o=>o.field==='actual_pct')?'<span class="t2" title="Changed by the planning engineer, with a reason">reviewed</span>':''}</td>
@@ -2548,12 +2553,12 @@ function renderXr(){
         <td class="small">rev ${pr.rev}<span class="t2">${esc(who(pr.approved_by))}, ${esc(tStamp(pr.approved_at).slice(0,10))}</span></td></tr>`}).join('')}
     </tbody></table></div>
     ${rows.some(x=>x.pr&&(x.pr.narrative||{}).issues)?`<h3>Key issues</h3><ul>${rows.filter(x=>x.pr&&(x.pr.narrative||{}).issues).map(x=>`<li><b>${esc(x.p.short)}</b>: ${esc(x.pr.narrative.issues)}${x.pr.narrative.next?` <span class="muted">Next: ${esc(x.pr.narrative.next)}</span>`:''}</li>`).join('')}</ul>`:''}</section>
-  ${t==='month'&&money?`<section class="panel"><div class="card-head"><h2>Cost</h2><span class="small muted">Released by costing · SAR</span></div>
+  ${t==='month'&&money?`<section class="panel"><div class="card-head"><h2>Cost by project</h2><span class="small muted">Released by costing · SAR${T.n?` · approved budget ${sar(T.budget_current)}, actual ${sar(T.actual)}, commitments ${sar(T.commitment)}`:''}</span></div>
     <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Rev-0 budget</th><th class="n">Approved supplements</th><th class="n">Approved budget</th><th class="n">Actual to date</th><th class="n">Commitments</th><th class="n">EAC</th><th class="n">VAC</th><th>Release</th></tr></thead><tbody>
     ${rows.map(({p,cr})=>{if(!cr)return `<tr><td><b>${esc(p.short)}</b></td><td colspan="8" class="muted small">Not released for ${esc(perLabel('month',per))}</td></tr>`;const f=cr.figures;
       return `<tr><td><b>${esc(p.short)}</b></td><td class="n">${sar(+f.budget_rev0)}</td><td class="n">${sar(+f.supplements_approved)}</td><td class="n">${sar(+f.budget_current)}</td><td class="n">${sar(+f.actual)}</td><td class="n">${sar(+f.commitment)}</td><td class="n"><b>${sar(+f.eac)}</b></td><td class="n ${+f.vac<0?'r-c':'g-c'}">${sar(+f.vac)}</td><td class="small">rev ${cr.rev}<span class="t2">${esc(who(cr.approved_by))}</span></td></tr>`}).join('')}
     </tbody></table></div></section>
-  <section class="panel"><div class="card-head"><h2>Change orders and claims</h2><span class="small muted">Logs uploaded up to ${esc(perLabel('month',per))}</span></div>
+  <section class="panel"><div class="card-head"><h2>Change orders and claims by project</h2><span class="small muted">Logs uploaded up to ${esc(perLabel('month',per))}</span></div>
     ${voRows.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Type</th><th class="n">Items</th><th class="n">Estimated price</th><th class="n">Expected price</th><th class="n">Approved by client</th><th class="n">Rev-0 budget change</th></tr></thead><tbody>
       ${vo.flatMap(x=>['VO','Claim'].map(k=>{const L=x.rows.filter(r=>r.kind===k);if(!L.length)return '';const ap=L.filter(r=>/approved/i.test(r.client_status||'')&&!/partial/i.test(r.client_status||''));
         return `<tr><td>${esc(x.p.short)}<span class="t2">${batchNo(x.b)}, ${esc(perLabel('month',x.b.source_period))}</span></td><td>${k==='VO'?'Change orders':'Claims'}</td><td class="n">${L.length}</td><td class="n">${sar(L.reduce((t,r)=>t+(+r.est_price||0),0))}</td><td class="n">${sar(L.reduce((t,r)=>t+(+r.expected_price||0),0))}</td><td class="n">${ap.length} · ${sar(ap.reduce((t,r)=>t+(+r.expected_price||+r.est_price||0),0))}</td><td class="n">${sar(L.reduce((t,r)=>t+(+r.rev0_change||0),0))}</td></tr>`})).join('')}
@@ -2699,6 +2704,398 @@ function seedReleases(){
     if(i%2===0){const act=Math.round(bud*f0*1.03);push({project_id:p.id,kind:'cost',period_type:'month',period:mon[0],status:'Draft',data_date:ASOF,figures:costCompute(p.id,mon[0],{budget_rev0:bud,actual:act,commitment:Math.round(bud*0.16),ftc:Math.round((bud-act)*1.0)}),prepared_by:co.id},[['Prepared',co,`${ASOF}T08:30:00`]])}
   });
   DB.relSeeded=true;save();
+}
+
+/* ---------- v3.1: issue register ----------
+   Planning and costing engineers keep the issues of their own projects (beyond what P6 and ProTrackAI's own data
+   show), with the columns of the company issue log. The Head of Planning and Cost Control and super admins can keep
+   any project's and mark issues reviewed; leads review by region or sector. Every change is kept. When a progress
+   release is approved, the project's open issues are saved with it. On the server: issue_act, issue_import. */
+const ISS_IMPACT=['Extremely High','High','Medium','Low'];
+const ISS_TYPES=['Delivery','Design Submission / Rectifications','Design inputs','Construction','Permits / Request from Client','Client Issues','PO Issuance Delay','VO/EOT','Resources',
+  'Installation','Test & Comm.','Shutdown','Funding','Close Out','Equipment / Engineering','FAT Test','Enabling works / Site handing over','Revised PO','ROW (Right of Way)','Treasury','Tender','IQAMA Issues','Local Content'];
+const ISS_OWNERS=['Client','Vendor','Internal','Subcontractor'];
+const ISS_FIELDS=[['data_date','Data date','date'],['owner','Issue owner','owner'],['sub_owner','Sub issue owner',''],['issue_type','Issue type','type'],['started_on','Issue start date','date'],
+  ['description','Issue description','long'],['impact','Impact','impact'],['action_taken','Action taken','long'],['action_required','Action required','long'],['priority_client','Priority by client','prio'],
+  ['priority_internal','Priority (internal)','prio'],['action_by','Action by',''],['planned_target','Planned target','date'],['forecast_target','Forecast / expected target','date'],
+  ['remarks','Remarks','long'],['schedule_impact','Schedule impact',''],['cost_impact','Cost impact','']];
+const canIssView=()=>state.role!=='foreman'&&(!ROLE_VIEWS[state.role]||ROLE_VIEWS[state.role].includes('iss'));
+const canIssEdit=pid=>accessIds().includes(pid)&&(state.role==='sa'||isHead()||['plan','costing'].includes(state.role));
+const canIssReview=()=>state.role==='sa'||isHead();
+const issImpact=t=>({'extremely high':'Extremely High','very high':'Extremely High',high:'High',medium:'Medium',low:'Low'})[String(t||'').trim().toLowerCase()]||null;
+const issPrio=t=>['A','B','C'].includes(String(t||'').trim().toUpperCase())?String(t).trim().toUpperCase():null;
+const issRank=i=>({'Extremely High':0,High:1,Medium:2,Low:3})[i]??4;
+const issRows=()=>(DB.issues||[]);
+const issAuditOf=id=>(DB.issAudit||[]).filter(a=>a.issue_id===id).sort((a,b)=>(+a.id||0)-(+b.id||0));
+const issTarget=i=>i.forecast_target||i.planned_target||null;
+const issOverdue=i=>i.status==='Open'&&issTarget(i)&&issTarget(i)<TODAY;
+function issSnapshot(pid){return issRows().filter(i=>i.project_id===pid&&i.status==='Open').sort((a,b)=>issRank(a.impact)-issRank(b.impact)||String(a.started_on||'9').localeCompare(String(b.started_on||'9'))||a.issue_no.localeCompare(b.issue_no))
+  .map(i=>({no:i.issue_no,type:i.issue_type,owner:i.owner,sub_owner:i.sub_owner,description:String(i.description||'').slice(0,600),impact:i.impact,action_required:String(i.action_required||'').slice(0,400),action_by:i.action_by,
+    planned_target:i.planned_target,forecast_target:i.forecast_target,priority_client:i.priority_client,priority_internal:i.priority_internal,started_on:i.started_on,schedule_impact:i.schedule_impact}))}
+/* the same rules as issue_act, in this browser */
+function issApplyLocal(i,f){
+  const ch=[],fail=t=>{throw new Error(t)};
+  ['data_date','started_on','planned_target','forecast_target','closed_on'].forEach(k=>{if(k in f&&f[k]&&!isoOk(f[k]))fail(`The ${k.replace('_',' ')} is not a valid date`)});
+  if('description' in f&&!String(f.description||'').trim())fail('The issue description cannot be empty');
+  if('impact' in f&&String(f.impact||'').trim()&&!issImpact(f.impact))fail('Impact must be Extremely High, High, Medium or Low');
+  ['priority_client','priority_internal'].forEach(k=>{if(k in f&&String(f[k]||'').trim()&&!issPrio(f[k]))fail('Priority must be A, B or C')});
+  const nx={};ISS_FIELDS.forEach(([k])=>{if(!(k in f))return;let v=String(f[k]??'').trim()||null;if(k==='impact')v=issImpact(v);if(k.startsWith('priority'))v=issPrio(v);if((i[k]??null)!==v){ch.push(k);nx[k]=v}});
+  return {ch,nx};
+}
+function issueActLocal(p){
+  const a=p.action,meU=me(),fail=t=>{throw new Error(t)},note=String(p.note||'').trim();DB.issues=DB.issues||[];DB.issAudit=DB.issAudit||[];
+  let i=p.id?issRows().find(x=>x.id===p.id):null;if(p.id&&!i)fail('Unknown issue');const pid=i?i.project_id:p.project_id;
+  if(!['save','close','reopen','review'].includes(a))fail('Unknown action '+a);
+  if(!pid||!accessIds().includes(pid))fail('You do not have access to this project');
+  const log=(x,action,n,detail)=>DB.issAudit.push({id:DB.issAudit.reduce((m,y)=>Math.max(m,+y.id||0),0)+1,issue_id:x.id,project_id:x.project_id,action,note:n||null,detail:detail||null,by_user:meU.id,by_name:meU.name,by_role:state.role,at_time:new Date().toISOString()});
+  if(a==='review'){if(!canIssReview())fail('Only the Head of Planning and Cost Control or a super admin marks issues reviewed');if(!i)fail('Unknown issue');
+    Object.assign(i,{reviewed_by:meU.id,reviewed_at:new Date().toISOString(),review_note:note.slice(0,1000)||null});log(i,'Reviewed',note);save();return i}
+  if(!canIssEdit(pid))fail('Only the planning and costing engineers of this project, the Head of Planning and Cost Control or a super admin can change its issues');
+  const f=p.fields||{};
+  if(a==='save'){
+    if(!i){if(!String(f.description||'').trim())fail('Describe the issue');const r=issApplyLocal({},f);
+      const n=issRows().filter(x=>x.project_id===pid).reduce((m,x)=>Math.max(m,+(String(x.issue_no).replace(/\D/g,''))||0),0)+1;
+      i={id:'I'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),project_id:pid,issue_no:'ISS-'+String(n).padStart(3,'0'),status:'Open',closed_on:null,created_by:meU.id,created_at:new Date().toISOString(),
+        ...Object.fromEntries(ISS_FIELDS.map(([k])=>[k,null])),...r.nx,updated_by:meU.id,updated_at:new Date().toISOString()};DB.issues.push(i);log(i,'Created',null,{fields:r.ch})}
+    else{if(i.status==='Closed')fail('This issue is closed; reopen it first');const r=issApplyLocal(i,f);if(r.ch.length){Object.assign(i,r.nx,{updated_by:meU.id,updated_at:new Date().toISOString()});log(i,'Updated',note,{changes:r.ch})}}
+  }else if(a==='close'){if(!i)fail('Unknown issue');if(i.status==='Closed')fail('This issue is already closed');if(p.closed_on&&!isoOk(p.closed_on))fail('The closure date is not a valid date');
+    Object.assign(i,{status:'Closed',closed_on:p.closed_on||localISO(),updated_by:meU.id,updated_at:new Date().toISOString()});log(i,'Closed',note)}
+  else{if(!i)fail('Unknown issue');if(i.status!=='Closed')fail('Only a closed issue can be reopened');if(!note)fail('Add a comment saying why the issue is reopened');
+    Object.assign(i,{status:'Open',closed_on:null,updated_by:meU.id,updated_at:new Date().toISOString()});log(i,'Reopened',note)}
+  save();return i;
+}
+async function cloudLoadIssues(){
+  try{const [i,a]=await Promise.all([selAll('issues','*',null,['project_id','issue_no']),selAll('issue_audit','*',null,['id'])]);DB.issues=i;DB.issAudit=a;DB.issMissing=false}
+  catch(e){DB.issues=[];DB.issAudit=[];DB.issMissing=srvMsg(e)}
+}
+async function issueAct(p){
+  issueAct.err='';
+  if(CLOUD_ME){let r;try{r=await rpc('issue_act',{p})}catch(e){issueAct.err='The server refused this: '+srvMsg(e);toast(issueAct.err);return null}try{await cloudLoadIssues()}catch(e){}save();return r}
+  try{return issueActLocal(p)}catch(e){issueAct.err=e.message;toast(e.message);return null}
+}
+
+/* ---------- Excel issue log: template, upload, export ---------- */
+const ISS_HEAD=[['project',/^project$|project (no|code|number)|pe ?no/i],['data_date',/data ?date/i],['sub_owner',/sub.*owner/i],['owner',/issue owner|^owner$/i],['issue_type',/issue type|^type$/i],
+  ['started_on',/start/i],['description',/descr/i],['schedule_impact',/schedule impact/i],['cost_impact',/cost impact/i],['impact',/^impact$|severity/i],['action_taken',/action taken/i],
+  ['action_required',/action required/i],['priority_client',/priority.*(sec|client)/i],['priority_internal',/priority.*(alfanar|internal|company|own)/i],['action_by',/action by/i],
+  ['planned_target',/planned target/i],['forecast_target',/forecast|expected target/i],['status',/status/i],['closed_on',/closure|closed on|close date/i],['remarks',/remark/i]];
+const ISS_XHEAD=['Project','Region','Data date','Issue owner','Sub Issue owner','Issue Type','Issue Start date','Issue description','Impact','Action Taken','Action Required','Priority by client','Priority (internal)','Action By','Planned Target','Forecast/Expected Target','Issue Status','Issue Closure date','Remarks','Schedule Impact','Cost Impact','Issue no','Reviewed by'];
+function issParse(aoa){
+  const hi=aoa.findIndex(r=>r.some(c=>/descr/i.test(String(c||'')))&&r.some(c=>/project/i.test(String(c||''))));
+  if(hi<0)return {error:'No header row with Project and Issue description columns. Use the template, or your issue log with its header row.'};
+  const head=aoa[hi].map(c=>String(c||'').trim()),col={},used=new Set();
+  ISS_HEAD.forEach(([k,re])=>{const i=head.findIndex((h,j)=>!used.has(j)&&re.test(h));if(i>=0){col[k]=i;used.add(i)}});
+  const rows=[];
+  aoa.slice(hi+1).forEach((r,ix)=>{if(!r.some(c=>String(c??'').trim()))return;const g=k=>col[k]==null?null:r[col[k]],x={row:hi+ix+2},notes=[];
+    const code=String(g('project')??'').trim(),pr=code?DB.master.projects.find(p=>peCanon(pcode(p))===peCanon(code)||String(p.id).toUpperCase()===code.toUpperCase()):null;
+    x.code=code;x.project_id=pr?pr.id:null;
+    ['owner','sub_owner','issue_type','description','action_taken','action_required','action_by','remarks','schedule_impact','cost_impact'].forEach(k=>{const v=g(k);x[k]=v==null?null:String(v instanceof Date?isoOfDate(v):v).trim()||null});
+    ['data_date','started_on','planned_target','forecast_target','closed_on'].forEach(k=>{const v=g(k);if(v==null||String(v).trim()===''){x[k]=null;return}
+      const d=cellIso(v);if(d&&d!=='bad'&&d>='1990-01-01'&&d<='2100-12-31')x[k]=d;else{x[k]=null;notes.push(`${(ISS_FIELDS.find(f=>f[0]===k)||[k,k])[1]||k}: ${v instanceof Date?isoOfDate(v):String(v).trim()}`)}});
+    const im=g('impact');x.impact=im==null||String(im).trim()===''?null:issImpact(im);if(im!=null&&String(im).trim()&&!x.impact)x.bad_impact=String(im);
+    ['priority_client','priority_internal'].forEach(k=>{const v=g(k);x[k]=issPrio(v);if(v!=null&&String(v).trim()&&!x[k])notes.push(`${k==='priority_client'?'Priority by client':'Priority (internal)'}: ${String(v).trim()}`)});
+    const st=String(g('status')??'').trim().toLowerCase();x.status=st==='closed'?'Closed':'Open';
+    if(notes.length)x.remarks=[x.remarks,'(From upload: '+notes.join('; ')+')'].filter(Boolean).join(' ');
+    x.err=!code&&!x.description?'no project or description (a continuation row?)':!x.project_id?`unknown project ${code}`:!canIssEdit(x.project_id)?'not one of your projects':!x.description?'description missing':x.bad_impact?'impact must be Extremely High, High, Medium or Low':'';
+    rows.push(x)});
+  return {rows};
+}
+async function issTemplate(){
+  try{await loadLib(LIBS.xlsx);const p=scopeProjects()[0];
+    const ws=XLSX.utils.aoa_to_sheet([ISS_XHEAD.slice(0,21),[p?pcode(p):'PE-000',p?regName(p):'','2026-09-24','Vendor','Supplier name','Delivery','2026-07-01','Power transformer delivery delayed at factory','Extremely High','Letter sent to vendor','Expedite FAT and shipment','A','A','PM','2026-10-15','2026-11-05','Open','','','2 months','No impact']]);
+    ws['!cols']=ISS_XHEAD.slice(0,21).map(h=>({wch:Math.max(12,h.length+2)}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Issue Register');
+    await saveFile('ProTrack_issue_register_template.xlsx',xlsxBlob(wb))}catch(e){toast('Could not build the template: '+(e.message||''))}
+}
+async function issExport(list){
+  try{await loadLib(LIBS.xlsx);const u=id=>{const x=id&&userById(id);return x?x.name:''};
+    const rows=list.map(i=>{const p=projById(i.project_id)||{};return [pcode(p),regName(p),i.data_date||'',i.owner||'',i.sub_owner||'',i.issue_type||'',i.started_on||'',i.description||'',i.impact||'',i.action_taken||'',i.action_required||'',i.priority_client||'',i.priority_internal||'',i.action_by||'',i.planned_target||'',i.forecast_target||'',i.status,i.closed_on||'',i.remarks||'',i.schedule_impact||'',i.cost_impact||'',i.issue_no,u(i.reviewed_by)]});
+    const ws=XLSX.utils.aoa_to_sheet([ISS_XHEAD,...rows]);ws['!cols']=ISS_XHEAD.map(h=>({wch:Math.max(12,h.length+2)}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Issue Register');
+    await saveFile(`ProTrack_issue_register_${localISO()}.xlsx`,xlsxBlob(wb))}catch(e){toast('Could not build the file: '+(e.message||''))}
+}
+async function handleIssFile(file){
+  try{await loadLib(LIBS.xlsx);const buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true}),ws=wb.Sheets[wb.SheetNames.find(n=>/issue/i.test(n))||wb.SheetNames[0]];
+    const r=issParse(XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false}));state.issUp=r.error?{error:r.error,file:file.name}:{file:file.name,rows:r.rows,hash:await sha256Hex(buf)};render()}
+  catch(e){state.issUp={error:'That file could not be read: '+(e.message||''),file:file.name};render()}
+}
+async function issUploadGo(btn){
+  const U=state.issUp;if(!U||!U.rows)return;const bad=U.rows.filter(r=>r.err),good=U.rows.filter(r=>!r.err),ack=!!$('#issAck')?.checked;
+  if(bad.length&&!ack)return toast('Tick the box to confirm the refused rows first.');btn.disabled=true;
+  const clean=good.map(({row,err,code,bad_impact,...x})=>x);
+  /* the server checks every row again and records the refused ones with their file row numbers */
+  const all=U.rows.map(({err,code,bad_impact,...x})=>({...x,project_id:x.project_id||code||null,impact:bad_impact||x.impact}));
+  if(CLOUD_ME){let r;try{r=await rpc('issue_import',{p:{file_name:U.file,hash:U.hash,ack:true,rows:all}})}catch(e){btn.disabled=false;toast('The server refused this: '+srvMsg(e));return}
+    try{await cloudLoadIssues();await cloudLoadInvoices()}catch(e){}state.issUp=null;save();render();toast(r.duplicate?'This is the same file as your last upload, so nothing changed.':`${r.created} issues added, ${r.updated} updated, ${r.unchanged} unchanged${(r.rejected||[]).length?`, ${r.rejected.length} refused`:''}`);return}
+  const last=(DB.batches||[]).filter(b=>b.kind==='issues'&&b.by_name===me().name).sort((a,b)=>(b.seq||0)-(a.seq||0))[0];
+  if(last&&last.file_hash===U.hash){btn.disabled=false;state.issUp=null;render();toast('This is the same file as your last upload, so nothing changed.');return}
+  let created=0,updated=0,same=0;const norm=t=>String(t||'').trim().replace(/\s+/g,' ').toLowerCase();
+  for(const x of clean){const ex=issRows().find(i=>i.project_id===x.project_id&&norm(i.description)===norm(x.description));const f={...x};delete f.project_id;delete f.status;delete f.closed_on;
+    try{if(!ex){const i=issueActLocal({action:'save',project_id:x.project_id,fields:f});if(x.status==='Closed')Object.assign(i,{status:'Closed',closed_on:x.closed_on||x.data_date||localISO()});created++}
+      else{delete f.description;const wasClosed=ex.status==='Closed';if(wasClosed)ex.status='Open';const before=JSON.stringify(ex);issueActLocal({action:'save',id:ex.id,fields:f});if(wasClosed)ex.status='Closed';
+        let changed=JSON.stringify(ex)!==before.replace('"status":"Open"','"status":"Closed"')&&!(wasClosed&&JSON.stringify(ex)===before);
+        if(x.status!==ex.status){Object.assign(ex,{status:x.status,closed_on:x.status==='Closed'?(x.closed_on||localISO()):null});changed=true}
+        changed?updated++:same++}}catch(e){btn.disabled=false;toast('Nothing more was saved: '+e.message);return}}
+  logBatch({kind:'issues',project_id:new Set(clean.map(x=>x.project_id)).size===1?clean[0].project_id:null,file_name:U.file,file_hash:U.hash,rows_total:U.rows.length,rows_accepted:good.length,rows_rejected:bad.length,
+    recon_status:bad.length?'Accepted with difference':'Matched',recon_accepted_by:bad.length?me().name:null,detail:{rejected:bad.map(r=>({row:r.row,project:r.code,error:r.err}))}});
+  state.issUp=null;save();render();toast(`${created} issues added, ${updated} updated, ${same} unchanged`);
+}
+
+/* ---------- Issue register screen ---------- */
+function issFiltered(){
+  const f=state.issF||(state.issF={st:'Open'}),q=String(f.q||'').toLowerCase();
+  return issRows().filter(i=>SCOPE.has(i.project_id)).filter(i=>{const p=projById(i.project_id)||{};
+    return (f.st==='All'||i.status===f.st)&&(!f.region||p.region===f.region)&&(!f.sector||p.sector===f.sector)&&(!f.impact||i.impact===f.impact)&&(!f.owner||i.owner===f.owner)&&(!f.type||i.issue_type===f.type)
+      &&(!f.rev||(f.rev==='yes'?!!i.reviewed_by:!i.reviewed_by))&&(!f.over||issOverdue(i))&&(!q||[i.description,i.action_required,i.action_taken,i.sub_owner,i.issue_no,pcode(p),p.short].some(x=>String(x||'').toLowerCase().includes(q)))})
+    .sort((a,b)=>issRank(a.impact)-issRank(b.impact)||(issOverdue(b)-issOverdue(a))||String(a.project_id).localeCompare(String(b.project_id))||a.issue_no.localeCompare(b.issue_no));
+}
+function issPivot(by){
+  const open=issRows().filter(i=>SCOPE.has(i.project_id)&&i.status==='Open'),keys=by==='region'?DB.master.regions.map(r=>[r.id,r.name+' Region']):DB.master.sectors.map(s=>[s.id,s.name]);
+  return keys.map(([id,name])=>{const L=open.filter(i=>(projById(i.project_id)||{})[by]===id);return {id,name,n:L.length,eh:L.filter(i=>i.impact==='Extremely High').length,h:L.filter(i=>i.impact==='High').length,
+    m:L.filter(i=>i.impact==='Medium'||i.impact==='Low'||!i.impact).length,od:L.filter(issOverdue).length,nr:L.filter(i=>!i.reviewed_by).length,projects:new Set(L.map(i=>i.project_id)).size}}).filter(x=>x.n);
+}
+function renderIss(){
+  if(!canIssView()){$('#view').innerHTML='<section class="panel"><p>The issue register is for engineers, project managers and management.</p></section>';return}
+  const f=state.issF||(state.issF={st:'Open'}),L=issFiltered(),all=issRows().filter(i=>SCOPE.has(i.project_id)),open=all.filter(i=>i.status==='Open'),U=state.issUp,canAny=scopeProjects().some(p=>canIssEdit(p.id));
+  const opt=(arr,v)=>[['','All'],...arr].map(([a,b])=>`<option value="${esc(a)}" ${a===(v||'')?'selected':''}>${esc(b)}</option>`).join('');
+  const piv=by=>{const R=issPivot(by);return R.length?`<div class="scroll"><table class="tbl"><thead><tr><th>${by==='region'?'Region':'Sector'}</th><th class="n">Projects</th><th class="n">Open</th><th class="n">Extremely high</th><th class="n">High</th><th class="n">Medium / low</th><th class="n">Past target</th><th class="n">Not reviewed</th></tr></thead><tbody>
+    ${R.map(x=>`<tr class="click" data-issby="${by}:${esc(x.id)}" tabindex="0"><td><b>${esc(x.name)}</b></td><td class="n">${x.projects}</td><td class="n">${x.n}</td><td class="n ${x.eh?'r-c':''}">${x.eh}</td><td class="n">${x.h}</td><td class="n">${x.m}</td><td class="n ${x.od?'r-c':''}">${x.od}</td><td class="n">${x.nr}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted small">No open issues.</p>'};
+  $('#view').innerHTML=`${crumb()}
+  ${CLOUD_ME&&DB.issMissing?`<div class="warn-box" style="margin-bottom:14px">The issue register needs the v10 database update (see STAGE-7-SETUP). <span class="small">${esc(DB.issMissing)}</span></div>`:''}
+  <div class="g g-kpi">${kpi('Open issues',fmt(open.length),`${new Set(open.map(i=>i.project_id)).size} projects`)}${kpi('Extremely high, open',fmt(open.filter(i=>i.impact==='Extremely High').length),'Impact',open.some(i=>i.impact==='Extremely High')?'r':'')}
+    ${kpi('Past target',fmt(open.filter(issOverdue).length),'Forecast or planned target passed',open.some(issOverdue)?'a':'')}${kpi('Not reviewed',fmt(open.filter(i=>!i.reviewed_by).length),'Open issues the Head has not reviewed')}</div>
+  <div class="grid2"><section class="panel"><div class="card-head"><h2>Open issues by region</h2><span class="small muted">Tap a row to filter</span></div>${piv('region')}</section>
+    <section class="panel"><div class="card-head"><h2>Open issues by sector</h2><span class="small muted">Tap a row to filter</span></div>${piv('sector')}</section></div>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Issue register</h2><div class="actions" style="margin:0">${canAny?'<button class="btn primary" type="button" data-issnew>Add issue</button>':''}<button class="btn" type="button" data-issexp>Export to Excel</button></div></div>
+    <p class="small muted" style="margin:0 0 10px">Issues and bottlenecks beyond what P6 and ProTrackAI's own data show. Planning and costing engineers keep the issues of their own projects; the Head of Planning and Cost Control reviews them by region or sector. The open issues are saved with each approved progress release.</p>
+    <div class="fields" style="margin-bottom:8px">
+      <label class="field">Status<select data-issf="st">${['Open','Closed','All'].map(x=>`<option ${f.st===x?'selected':''}>${x}</option>`).join('')}</select></label>
+      <label class="field">Region<select data-issf="region">${opt(DB.master.regions.map(r=>[r.id,r.name]),f.region)}</select></label>
+      <label class="field">Sector<select data-issf="sector">${opt(DB.master.sectors.map(s=>[s.id,s.name]),f.sector)}</select></label>
+      <label class="field">Impact<select data-issf="impact">${opt(ISS_IMPACT.map(x=>[x,x]),f.impact)}</select></label>
+      <label class="field">Owner<select data-issf="owner">${opt([...new Set([...ISS_OWNERS,...all.map(i=>i.owner).filter(Boolean)])].map(x=>[x,x]),f.owner)}</select></label>
+      <label class="field">Type<select data-issf="type">${opt([...new Set([...ISS_TYPES,...all.map(i=>i.issue_type).filter(Boolean)])].map(x=>[x,x]),f.type)}</select></label>
+      <label class="field">Reviewed<select data-issf="rev">${opt([['yes','Reviewed'],['no','Not reviewed']],f.rev)}</select></label>
+      <label class="field">Search<input data-issq value="${esc(f.q||'')}" placeholder="Words, issue no, PE no"></label>
+    </div>
+    <p class="small"><label class="chk"><input type="checkbox" data-issover ${f.over?'checked':''}><span>Only past target</span></label> · ${L.length} of ${all.length} issues${f.region||f.sector||f.impact||f.owner||f.type||f.rev||f.q||f.over?' · <button class="link" type="button" data-issclear>Clear filters</button>':''}</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>No</th><th>Project</th><th>Type</th><th>Owner</th><th>Issue</th><th>Impact</th><th>Priority</th><th>Action by</th><th>Target</th><th>Status</th><th></th></tr></thead><tbody>
+    ${L.slice(0,300).map(i=>{const p=projById(i.project_id)||{};return `<tr class="${issOverdue(i)?'rowwarn':''}"><td><b>${esc(i.issue_no)}</b></td><td>${esc(p.short||i.project_id)}<span class="t2">${esc(pcode(p))} · ${esc(regName(p)||'')}</span></td>
+      <td class="small">${esc(i.issue_type||'—')}</td><td class="small">${esc(i.owner||'—')}${i.sub_owner?`<span class="t2">${esc(i.sub_owner)}</span>`:''}</td>
+      <td class="small" style="min-width:240px">${esc(String(i.description||'').slice(0,220))}${i.action_required?`<span class="t2">Required: ${esc(String(i.action_required).slice(0,160))}</span>`:''}</td>
+      <td><span class="sev ${i.impact==='Extremely High'||i.impact==='High'?'High':i.impact==='Medium'?'Medium':'Low'}">${esc(i.impact||'—')}</span></td><td class="small">${esc(i.priority_client||'—')} / ${esc(i.priority_internal||'—')}</td>
+      <td class="small">${esc(i.action_by||'—')}</td><td class="small">${issTarget(i)?fmtDY(issTarget(i)):'—'}${issOverdue(i)?' <span class="r-c">past</span>':''}</td>
+      <td class="small">${esc(i.status)}${i.closed_on?`<span class="t2">${fmtDY(i.closed_on)}</span>`:''}${i.reviewed_by?'<span class="t2">reviewed</span>':''}</td><td class="n"><button class="btn sm" type="button" data-issopen="${esc(i.id)}">Open</button></td></tr>`}).join('')||`<tr><td colspan="11" class="muted">${all.length?'No issue matches these filters.':'No issues recorded in this scope yet.'}</td></tr>`}
+    </tbody></table></div>${L.length>300?`<p class="small muted">Showing the first 300; use the filters or export to Excel for all ${L.length}.</p>`:''}</section>
+  ${canAny?`<section class="panel"><div class="card-head"><h2>Upload the issue log</h2><span class="small muted">Your Excel issue log or the template; rows are matched to existing issues by project and description</span></div>
+    <div class="actions" style="margin:0"><button class="btn" type="button" data-isstpl>Download template</button><label class="btn primary" for="issfile">Choose file</label><input id="issfile" type="file" accept=".xlsx,.xls,.csv" hidden></div>
+    ${U&&U.error?`<div class="warn-box" style="margin-top:10px"><b>${esc(U.error)}</b></div>`:''}
+    ${U&&U.rows?(()=>{const bad=U.rows.filter(r=>r.err),good=U.rows.filter(r=>!r.err),norm=t=>String(t||'').trim().replace(/\s+/g,' ').toLowerCase(),upd=good.filter(x=>issRows().some(i=>i.project_id===x.project_id&&norm(i.description)===norm(x.description))).length;
+      return `<p style="margin-top:10px"><b>${esc(U.file)}</b>: ${U.rows.length} rows; ${good.length} ready (${good.length-upd} new, ${upd} matching existing issues), ${bad.length} refused.</p>
+      ${good.some(r=>/\(From upload:/.test(r.remarks||''))?'<p class="small muted">Text found in date or priority columns (for example "NA") is kept in Remarks rather than refused.</p>':''}
+      ${bad.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Row</th><th>Project</th><th>Refused because</th></tr></thead><tbody>${bad.slice(0,100).map(r=>`<tr class="rowwarn"><td>${r.row}</td><td>${esc(r.code||'')}</td><td class="r-c">${esc(r.err)}</td></tr>`).join('')}</tbody></table></div>${bad.length>100?`<p class="small muted">${bad.length-100} more refused rows not shown.</p>`:''}
+        <label class="chk"><input type="checkbox" id="issAck"><span>I have checked the refused rows; save the others</span></label>`:''}
+      <div class="actions"><button class="btn primary" type="button" data-issupgo ${good.length?'':'disabled'}>Save ${good.length} rows</button><button class="btn" type="button" data-issupcancel>Cancel</button></div>`})():''}</section>`:''}`;
+}
+function openIssue(id,pid){
+  const i=id?issRows().find(x=>x.id===id):null;pid=i?i.project_id:pid;const p=projById(pid)||{},edit=canIssEdit(pid)&&(!i||i.status==='Open'),H=i?issAuditOf(i.id).slice().reverse():[],u=x=>{const y=x&&userById(x);return y?y.name:'—'};
+  const ed=scopeProjects().filter(x=>canIssEdit(x.id));
+  const fld=([k,l,t])=>{const v=i?i[k]:(k==='data_date'?localISO():null),dis=edit?'':'disabled';
+    if(t==='long')return F(l,`<textarea name="${k}" rows="2" ${dis}>${esc(v||'')}</textarea>`,true);
+    if(t==='date')return F(l,`<input type="date" name="${k}" value="${esc(v||'')}" ${dis}>`);
+    if(t==='impact')return F(l,`<select name="${k}" ${dis}><option value="">—</option>${ISS_IMPACT.map(x=>`<option ${v===x?'selected':''}>${x}</option>`).join('')}</select>`);
+    if(t==='prio')return F(l,`<select name="${k}" ${dis}><option value="">—</option>${['A','B','C'].map(x=>`<option ${v===x?'selected':''}>${x}</option>`).join('')}</select>`);
+    const list=t==='owner'?ISS_OWNERS:t==='type'?ISS_TYPES:null;
+    return F(l,`<input name="${k}" value="${esc(v||'')}" ${list?`list="dl_${k}"`:''} ${dis}>${list?`<datalist id="dl_${k}">${list.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`:''}`)};
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${i?esc(i.issue_no)+' · '+esc(p.short||''):'New issue'}</h2>${i?`<span class="st ${i.status==='Open'?'Reviewed':'Draft'}">${esc(i.status)}</span>`:''}<button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <form id="issForm" data-id="${esc(i?i.id:'')}" novalidate>
+    ${i?`<p class="small muted" style="margin:0 0 10px">${esc(pcode(p))} · ${esc(p.name||'')} · ${esc(regName(p)||'')} Region · ${esc(secById(p.sector)?.name||'')}</p>`:F('Project',`<select name="project_id">${ed.map(x=>`<option value="${esc(x.id)}" ${x.id===pid?'selected':''}>${esc(x.short)} (${esc(pcode(x))})</option>`).join('')}</select>`,true)}
+    <div class="fields">${ISS_FIELDS.map(fld).join('')}</div>
+    ${i&&i.reviewed_by?`<p class="small">Reviewed by ${esc(u(i.reviewed_by))}, ${esc(tStamp(i.reviewed_at))}${i.review_note?`: ${esc(i.review_note)}`:''}.</p>`:''}
+    ${i?`<label class="field">Comment (needed to reopen; optional otherwise)<textarea id="issNote" rows="2"></textarea></label>`:''}
+    ${i&&i.status==='Open'&&canIssEdit(pid)?F('Closure date',`<input type="date" id="issClosed" value="${esc(localISO())}">`):''}
+    <p class="err" id="issErr"></p>
+    <div class="actions">${edit?`<button class="btn primary" type="button" data-issdo="save">${i?'Save changes':'Add issue'}</button>`:''}
+      ${i&&i.status==='Open'&&canIssEdit(pid)?'<button class="btn" type="button" data-issdo="close">Close issue</button>':''}
+      ${i&&i.status==='Closed'&&canIssEdit(pid)?'<button class="btn" type="button" data-issdo="reopen">Reopen</button>':''}
+      ${i&&canIssReview()?'<button class="btn" type="button" data-issdo="review">Mark reviewed</button>':''}
+      ${!edit&&!(i&&canIssReview())?'<span class="small muted">View only: the planning and costing engineers of this project keep its issues.</span>':''}</div></form>
+    ${i?`<h3>History</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.action)}</b> by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}${a.detail&&a.detail.changes?`<span class="t2">${esc(a.detail.changes.join(', '))}</span>`:''}</li>`).join('')}</ul>`:''}`;
+  $('#drawer').hidden=false;
+}
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-issopen],[data-issnew],[data-issdo],[data-issby],[data-issclear],[data-isstpl],[data-issexp],[data-issupgo],[data-issupcancel],[data-xrtab],[data-xrproj]');if(!t)return;const d=t.dataset;
+  if(d.issopen){openIssue(d.issopen);return}
+  if('issnew' in d){openIssue(null,(scopeProjects().find(p=>canIssEdit(p.id))||{}).id);return}
+  if(d.issby){const [by,id]=d.issby.split(':');state.issF=Object.assign(state.issF||{st:'Open'},{region:by==='region'?id:'',sector:by==='sector'?id:''});render();return}
+  if('issclear' in d){state.issF={st:(state.issF||{}).st||'Open'};render();return}
+  if('isstpl' in d){issTemplate();return}
+  if('issexp' in d){issExport(issFiltered());return}
+  if('issupgo' in d){issUploadGo(t);return}
+  if('issupcancel' in d){state.issUp=null;render();return}
+  if(d.xrtab){state.xrTab=d.xrtab;render();return}
+  if(d.xrproj){state.xrTab='proj';state.xrPid=d.xrproj;render();window.scrollTo(0,0);return}
+  if(d.issdo){const f=$('#issForm'),id=f.dataset.id,a=d.issdo,note=($('#issNote')?.value||'').trim(),err=m=>{$('#issErr').textContent=m};
+    const fields={};ISS_FIELDS.forEach(([k])=>{const el=f.elements[k];if(el&&!el.disabled)fields[k]=el.value.trim()||null});
+    let p;if(a==='save')p=id?{action:'save',id,fields,note}:{action:'save',project_id:f.elements.project_id?.value,fields};
+    else if(a==='close')p={action:'close',id,note,closed_on:$('#issClosed')?.value||null};else p={action:a,id,note};
+    t.disabled=true;const r=await issueAct(p);t.disabled=false;if(!r){err('Not saved: '+(issueAct.err||'see the message at the bottom of the screen.'));return}
+    toast({save:id?'Issue saved':'Issue added',close:'Issue closed',reopen:'Issue reopened',review:'Marked reviewed'}[a]);openIssue(r.id);render();return}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;if(!t.matches)return;
+  if(t.matches('[data-issf]')){state.issF=state.issF||{st:'Open'};state.issF[t.dataset.issf]=t.value;render();return}
+  if(t.matches('[data-issover]')){state.issF=state.issF||{st:'Open'};state.issF.over=t.checked;render();return}
+  if(t.id==='issfile'&&t.files[0]){handleIssFile(t.files[0]);t.value='';return}
+  if(t.matches('[data-xrpid]')){state.xrPid=t.value;render()}
+});
+document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('[data-issq]')){state.issF=state.issF||{st:'Open'};state.issF.q=e.target.value;clearTimeout(renderIss.h);renderIss.h=setTimeout(()=>{render();const el=document.querySelector('[data-issq]');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}},350)}});
+
+/* ---------- released summary: region, sector, critical, billing and collection, change orders and claims ---------- */
+function xrRows(t,per){
+  const money=t==='month'&&rasaMoneyOk();
+  return scopeProjects().filter(p=>p.status!=='Cancelled').map(p=>{const pr=relReleased(p.id,'planning',t,per),cr=money?relReleased(p.id,'cost','month',per):null,f=pr?pr.figures:{},c=cr?cr.figures:null;
+    const slip=f.forecast_finish&&f.baseline_finish?diffDays(f.baseline_finish,f.forecast_finish):null,iss=pr?(pr.issues_snapshot||[]):[];
+    const why=[];if(pr&&f.spi!=null&&+f.spi<0.95)why.push(`SPI ${fmt(+f.spi,2)}`);if(c&&+c.vac<0)why.push(`VAC ${sar(+c.vac)}`);if(slip!=null&&slip>30)why.push(`finish ${slip} days after baseline`);
+    if(iss.some(x=>x.impact==='Extremely High'))why.push(`${iss.filter(x=>x.impact==='Extremely High').length} extremely high issue${iss.filter(x=>x.impact==='Extremely High').length>1?'s':''}`);
+    return {p,pr,cr,f,c,slip,iss,why,w:+p.value||1}});
+}
+function xrAgg(L){const P=L.filter(x=>x.pr),C=L.filter(x=>x.c),W=P.reduce((t,x)=>t+x.w,0)||1,s=k=>C.reduce((t,x)=>t+(+x.c[k]||0),0);
+  return {n:L.length,np:P.length,nc:C.length,value:L.reduce((t,x)=>t+(+x.p.value||0),0),plan:P.reduce((t,x)=>t+(+x.f.planned_pct||0)*x.w,0)/W,act:P.reduce((t,x)=>t+(+x.f.actual_pct||0)*x.w,0)/W,
+    spi:P.filter(x=>x.f.spi!=null).length?P.filter(x=>x.f.spi!=null).reduce((t,x)=>t+(+x.f.spi)*x.w,0)/(P.filter(x=>x.f.spi!=null).reduce((t,x)=>t+x.w,0)||1):null,
+    budget:s('budget_current'),eac:s('eac'),vac:s('vac'),actual:s('actual'),commit:s('commitment'),inv:s('inv_submitted'),coll:s('inv_collected'),appr:s('inv_approved'),invable:s('inv_invoiceable'),
+    billed:C.filter(x=>x.c.inv_submitted!=null).length,issues:P.reduce((t,x)=>t+x.iss.length,0),eh:P.reduce((t,x)=>t+x.iss.filter(i=>i.impact==='Extremely High').length,0),crit:L.filter(x=>x.why.length).length}}
+function xrGroupTable(L,by,money){
+  const keys=by==='region'?DB.master.regions.map(r=>[r.id,r.name]):DB.master.sectors.map(s=>[s.id,s.name]);
+  const G=keys.map(([id,name])=>({id,name,a:xrAgg(L.filter(x=>x.p[by]===id))})).filter(g=>g.a.n);
+  return `<div class="scroll"><table class="tbl"><thead><tr><th>${by==='region'?'Region':'Sector'}</th><th class="n">Projects</th><th class="n">Value</th><th>Progress (released)</th><th class="n">SPI</th>${money?'<th class="n">EAC</th><th class="n">VAC</th><th class="n">Invoiced</th><th class="n">Collected</th>':''}<th class="n">Open issues</th><th class="n">Critical</th></tr></thead><tbody>
+    ${G.map(g=>`<tr><td><b>${esc(g.name)}</b><span class="t2">${g.a.np} of ${g.a.n} released</span></td><td class="n">${g.a.n}</td><td class="n">SAR ${fmt(g.a.value)}M</td>
+      <td>${g.a.np?pbar(g.a.plan/100,g.a.act/100)+`<span class="t2">${pct(g.a.act/100,0)} of plan ${pct(g.a.plan/100,0)}</span>`:'<span class="muted small">Not released</span>'}</td>
+      <td class="n ${g.a.spi!=null?light(g.a.spi)+'-c':''}">${g.a.spi!=null?fmt(g.a.spi,2):'—'}</td>
+      ${money?`<td class="n">${g.a.nc?sar(g.a.eac):'—'}</td><td class="n ${g.a.nc&&g.a.vac<0?'r-c':''}">${g.a.nc?sar(g.a.vac):'—'}</td><td class="n">${g.a.billed?sar(g.a.inv):'—'}</td><td class="n">${g.a.billed?sar(g.a.coll):'—'}</td>`:''}
+      <td class="n">${g.a.issues}${g.a.eh?`<span class="t2 r-c">${g.a.eh} extremely high</span>`:''}</td><td class="n ${g.a.crit?'r-c':''}">${g.a.crit}</td></tr>`).join('')||`<tr><td colspan="11" class="muted">No projects.</td></tr>`}
+  </tbody></table></div>`;
+}
+function xrSummaryHTML(t,per){
+  const money=t==='month'&&rasaMoneyOk(),L=xrRows(t,per),A=xrAgg(L),crit=L.filter(x=>x.why.length).sort((a,b)=>b.why.length-a.why.length);
+  const vo=money?L.map(x=>({p:x.p,...voLatest(x.p.id,per)})).filter(x=>x.b).flatMap(x=>x.rows):[];
+  const stOf=r=>{const s=String(r.client_status||'').toLowerCase();return /partial/.test(s)?'Partially approved':/approved/.test(s)?'Approved':/reject/.test(s)?'Rejected':/pending|submitted|review/.test(s)||!s?'Pending':'Other'};
+  const STS=['Approved','Partially approved','Pending','Rejected','Other'];
+  return `<div class="g g-kpi">${kpi('Projects released',`${A.np} of ${A.n}`,`${perLabel(t,per)}`,A.np<A.n?'a':'')}${kpi('Progress, released',A.np?pct(A.act/100,0):'—',A.np?`plan ${pct(A.plan/100,0)}, weighted by contract value`:'')}
+    ${kpi('Schedule, SPI',A.spi!=null?fmt(A.spi,2):'—','Released, weighted by value',A.spi!=null?light(A.spi):'')}
+    ${money?kpi('EAC / VAC',A.nc?sar(A.eac):'—',A.nc?`VAC <span class="${A.vac<0?'r-c':'g-c'}">${sar(A.vac)}</span> on budget ${sar(A.budget)}`:'',A.nc&&A.vac<0?'r':''):''}
+    ${money?kpi('Invoiced / collected',A.billed?sar(A.inv):'—',A.billed?`collected ${sar(A.coll)}, outstanding ${sar(Math.max(0,A.appr-A.coll))}`:'No billing in the released cost reports'):''}
+    ${kpi('Projects needing attention',`${A.crit} of ${A.n}`,`${A.issues} open issues released${A.eh?`, ${A.eh} extremely high`:''}`,A.crit?'r':'')}</div>
+  <section class="panel"><div class="card-head"><h2>By region</h2><span class="small muted">Released versions for ${esc(perLabel(t,per))}</span></div>${xrGroupTable(L,'region',money)}</section>
+  <section class="panel"><div class="card-head"><h2>By sector</h2></div>${xrGroupTable(L,'sector',money)}</section>
+  <section class="panel"><div class="card-head"><h2>Critical projects</h2><span class="small muted">Released SPI under 0.95${money?', a negative VAC':''}, a finish more than 30 days after baseline, or an extremely high open issue</span></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Region and sector</th><th class="n">Actual</th><th class="n">SPI</th>${money?'<th class="n">VAC</th>':''}<th>Why</th><th>Main issue</th><th></th></tr></thead><tbody>
+    ${crit.map(x=>{const top=x.iss[0];return `<tr><td><b>${esc(x.p.short)}</b><span class="t2">${esc(pcode(x.p))}</span></td><td class="small">${esc(regName(x.p))}<span class="t2">${esc(secById(x.p.sector)?.name||'')}</span></td>
+      <td class="n">${x.pr?pct((+x.f.actual_pct||0)/100,0)+`<span class="t2">plan ${pct((+x.f.planned_pct||0)/100,0)}</span>`:'—'}</td><td class="n ${x.f.spi!=null?light(+x.f.spi)+'-c':''}">${x.f.spi!=null?fmt(+x.f.spi,2):'—'}</td>
+      ${money?`<td class="n ${x.c&&+x.c.vac<0?'r-c':''}">${x.c?sar(+x.c.vac):'—'}</td>`:''}<td class="small">${esc(x.why.join('; '))}</td>
+      <td class="small" style="min-width:200px">${top?`<b>${esc(top.impact||'')}</b> ${esc(String(top.description).slice(0,140))}${top.action_by?`<span class="t2">Action by ${esc(top.action_by)}${top.forecast_target||top.planned_target?', target '+fmtDY(top.forecast_target||top.planned_target):''}</span>`:''}`:esc((x.pr&&x.pr.narrative||{}).issues||'—')}</td>
+      <td class="n"><button class="btn sm" type="button" data-xrproj="${esc(x.p.id)}">Project view</button></td></tr>`}).join('')||`<tr><td colspan="8" class="muted">No project meets the critical thresholds in the released versions.</td></tr>`}
+    </tbody></table></div></section>
+  ${money?`<section class="panel"><div class="card-head"><h2>Billing and collection</h2><span class="small muted">As saved in the released cost reports · SAR</span></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Invoiceable</th><th class="n">Invoiced</th><th class="n">Approved</th><th class="n">Collected</th><th class="n">Not yet invoiced</th><th class="n">Outstanding</th></tr></thead><tbody>
+    ${L.map(x=>{const c=x.c;if(!c||c.inv_submitted==null)return `<tr><td><b>${esc(x.p.short)}</b></td><td colspan="6" class="muted small">${c?'No billing figures in this cost report':'Cost report not released for '+esc(perLabel('month',per))}</td></tr>`;
+      return `<tr><td><b>${esc(x.p.short)}</b></td><td class="n">${sar(+c.inv_invoiceable||0)}</td><td class="n">${sar(+c.inv_submitted||0)}</td><td class="n">${sar(+c.inv_approved||0)}</td><td class="n">${sar(+c.inv_collected||0)}</td>
+        <td class="n ${(+c.inv_invoiceable||0)-(+c.inv_submitted||0)>1?'a-c':''}">${sar(Math.max(0,(+c.inv_invoiceable||0)-(+c.inv_submitted||0)))}</td><td class="n">${sar(Math.max(0,(+c.inv_approved||0)-(+c.inv_collected||0)))}</td></tr>`}).join('')}
+    ${A.billed?`<tr><td><b>Total</b></td><td class="n"><b>${sar(A.invable)}</b></td><td class="n"><b>${sar(A.inv)}</b></td><td class="n"><b>${sar(A.appr)}</b></td><td class="n"><b>${sar(A.coll)}</b></td><td class="n"><b>${sar(Math.max(0,A.invable-A.inv))}</b></td><td class="n"><b>${sar(Math.max(0,A.appr-A.coll))}</b></td></tr>`:''}
+    </tbody></table></div></section>
+  <section class="panel"><div class="card-head"><h2>Change order and claim status</h2><span class="small muted">Client approval status, from the logs up to ${esc(perLabel('month',per))}</span></div>
+    ${vo.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Status with client</th><th class="n">Change orders</th><th class="n">VO expected price</th><th class="n">Claims</th><th class="n">Claim expected price</th></tr></thead><tbody>
+      ${STS.map(s=>{const V=vo.filter(r=>r.kind==='VO'&&stOf(r)===s),C=vo.filter(r=>r.kind==='Claim'&&stOf(r)===s);if(!V.length&&!C.length)return '';
+        return `<tr><td>${esc(s)}</td><td class="n">${V.length}</td><td class="n">${sar(V.reduce((t,r)=>t+(+r.expected_price||0),0))}</td><td class="n">${C.length}</td><td class="n">${sar(C.reduce((t,r)=>t+(+r.expected_price||0),0))}</td></tr>`}).join('')}
+      <tr><td><b>Total</b></td><td class="n"><b>${vo.filter(r=>r.kind==='VO').length}</b></td><td class="n"><b>${sar(vo.filter(r=>r.kind==='VO').reduce((t,r)=>t+(+r.expected_price||0),0))}</b></td><td class="n"><b>${vo.filter(r=>r.kind==='Claim').length}</b></td><td class="n"><b>${sar(vo.filter(r=>r.kind==='Claim').reduce((t,r)=>t+(+r.expected_price||0),0))}</b></td></tr>
+      </tbody></table></div>`:NOEV('No change order and claim log has been uploaded for these projects up to this month.')}</section>`:''}`;
+}
+function xrProjectHTML(t,per){
+  const ps=scopeProjects().filter(p=>p.status!=='Cancelled');if(!state.xrPid||!ps.some(p=>p.id===state.xrPid))state.xrPid=(ps[0]||{}).id;const pid=state.xrPid,p=projById(pid);
+  if(!p)return '<p class="muted">No project in this scope.</p>';
+  const money=t==='month'&&rasaMoneyOk(),pr=relReleased(pid,'planning',t,per),cr=money?relReleased(pid,'cost','month',per):null,f=pr?pr.figures:{},c=cr?cr.figures:null,who=id=>{const x=id&&userById(id);return x?x.name:'—'};
+  const vl=money?voLatest(pid,per):{rows:[]},sl=money?suppLatest(pid,per):{rows:[]},iss=pr?(pr.issues_snapshot||[]):[],nar=(pr&&pr.narrative)||{};
+  const hist=relRows().filter(r=>r.project_id===pid&&relVisible(r)&&['Released','Superseded'].includes(r.status)).sort((a,b)=>String(b.period).localeCompare(String(a.period))||b.rev-a.rev).slice(0,12);
+  const pc=v=>v==null||v===''?'—':pct(+v/100,1);
+  return `<section class="panel"><div class="fields">${F('Project',`<select data-xrpid>${ps.map(x=>`<option value="${esc(x.id)}" ${x.id===pid?'selected':''}>${esc(x.short)} (${esc(pcode(x))})</option>`).join('')}</select>`)}</div>
+    <h2 class="ptitle" style="margin-top:6px">${esc(pcode(p))} · ${esc(p.name)}</h2><p class="small muted" style="margin:0">${esc(regName(p))} Region · ${esc(secById(p.sector)?.name||'')} · ${esc(cityName(p)||p.location||'')} · contract SAR ${fmt(+p.value||0)}M${p.client?' · '+esc(p.client):''}</p>
+    <p class="small" style="margin:6px 0 0">${pr?`Progress release ${esc(perLabel(t,per))}, rev ${pr.rev}, approved by ${esc(who(pr.approved_by))} ${esc(tStamp(pr.approved_at).slice(0,10))}`:`<span class="r-c">No progress release for ${esc(perLabel(t,per))}.</span>`}${money?(cr?` · cost report rev ${cr.rev}, approved by ${esc(who(cr.approved_by))}`:' · <span class="r-c">no cost report released</span>'):''}</p></section>
+  ${pr?`<div class="g g-kpi">${kpi('Actual progress',pc(f.actual_pct),`plan ${pc(f.planned_pct)}`)}${kpi('SPI',f.spi!=null?fmt(+f.spi,2):'—','Released',f.spi!=null?light(+f.spi):'')}
+    ${kpi('Design',pc(f.eng_pct),f.eng_plan_pct!=null?`plan ${pc(f.eng_plan_pct)}`:'')}${kpi('Procurement',pc(f.prc_pct),f.prc_plan_pct!=null?`plan ${pc(f.prc_plan_pct)}`:'')}
+    ${kpi('Forecast finish',f.forecast_finish?fmtDY(f.forecast_finish):'—',f.baseline_finish?`baseline ${fmtDY(f.baseline_finish)}`:'',f.forecast_finish&&f.baseline_finish&&f.forecast_finish>f.baseline_finish?'a':'')}
+    ${kpi('Workforce',f.workforce!=null?fmt(+f.workforce):'—',f.productivity_pct!=null?`productivity ${pc(f.productivity_pct)}`:'')}</div>
+  <section class="panel"><h2>Planning engineer's comments</h2><p><b>Summary.</b> ${esc(nar.summary||'—')}</p><p><b>Key issues.</b> ${esc(nar.issues||'—')}</p><p><b>Next period.</b> ${esc(nar.next||'—')}</p>
+    ${(pr.overrides||[]).length?`<p class="small muted">Figures changed by the planning engineer: ${(pr.overrides||[]).map(o=>`${esc(o.label||o.field)} ${esc(String(o.computed??'—'))} → ${esc(String(o.value??'—'))} (${esc(o.reason)})`).join('; ')}.</p>`:''}</section>`:''}
+  <section class="panel"><div class="card-head"><h2>Issues and bottlenecks</h2><span class="small muted">${pr?`Open issues saved with the release (${iss.length})`:'Released with the progress release'}</span></div>
+    ${pr?(iss.length?`<div class="scroll"><table class="tbl"><thead><tr><th>No</th><th>Type</th><th>Owner</th><th>Issue</th><th>Impact</th><th>Priority</th><th>Action by</th><th>Target</th><th>Schedule impact</th></tr></thead><tbody>
+      ${iss.map(x=>`<tr><td><b>${esc(x.no)}</b></td><td class="small">${esc(x.type||'—')}</td><td class="small">${esc(x.owner||'—')}${x.sub_owner?`<span class="t2">${esc(x.sub_owner)}</span>`:''}</td><td class="small" style="min-width:220px">${esc(x.description)}${x.action_required?`<span class="t2">Required: ${esc(x.action_required)}</span>`:''}</td>
+        <td><span class="sev ${x.impact==='Extremely High'||x.impact==='High'?'High':x.impact==='Medium'?'Medium':'Low'}">${esc(x.impact||'—')}</span></td><td class="small">${esc(x.priority_client||'—')} / ${esc(x.priority_internal||'—')}</td><td class="small">${esc(x.action_by||'—')}</td>
+        <td class="small">${x.forecast_target||x.planned_target?fmtDY(x.forecast_target||x.planned_target):'—'}</td><td class="small">${esc(x.schedule_impact||'—')}</td></tr>`).join('')}</tbody></table></div>`
+      :'<p class="muted small">No open issues were recorded for this project when the release was approved.</p>'):NOEV('No progress release for this period, so no released issues.')}</section>
+  ${money?`<section class="panel"><div class="card-head"><h2>Cost and billing</h2><span class="small muted">Released cost report · SAR</span></div>
+    ${c?`<div class="g g-kpi">${kpi('Approved budget',sar(+c.budget_current),`Rev-0 ${sar(+c.budget_rev0)} + supplements ${sar(+c.supplements_approved)}`)}${kpi('Actual to date',sar(+c.actual),`commitments ${sar(+c.commitment)}`)}
+      ${kpi('EAC',sar(+c.eac),`forecast to complete ${sar(+c.ftc)}`)}${kpi('VAC',sar(+c.vac),'Approved budget − EAC',+c.vac<0?'r':'')}
+      ${c.inv_submitted!=null?kpi('Invoiced / collected',sar(+c.inv_submitted),`invoiceable ${sar(+c.inv_invoiceable||0)}, collected ${sar(+c.inv_collected||0)}`):''}</div>`:NOEV('No cost report released for this month.')}
+    ${vl.rows.length?`<h3>Change orders and claims (${esc(perLabel('month',vl.b.source_period))} log)</h3><div class="scroll"><table class="tbl"><thead><tr><th>Ref</th><th>Type</th><th>Description</th><th>Client</th><th class="n">Expected price</th><th class="n">Rev-0 change</th><th>Overall</th></tr></thead><tbody>
+      ${vl.rows.map(r=>`<tr><td><b>${esc(r.ref_no)}</b></td><td>${esc(r.kind)}</td><td class="small">${esc(r.description||'')}</td><td class="small">${esc(r.client_status||'—')}</td><td class="n">${r.expected_price!=null?sar(+r.expected_price):'—'}</td><td class="n">${r.rev0_change!=null?sar(+r.rev0_change):'—'}</td><td class="small">${esc(r.overall_status||'—')}</td></tr>`).join('')}</tbody></table></div>`:''}
+    ${sl.rows.length?`<h3>Budget supplements (${esc(perLabel('month',sl.b.source_period))} log)</h3><p class="small">${SUPP_CATS.map(cat=>{const v=sl.rows.filter(r=>r.category===cat);return v.length?`${esc(cat)}: ${sar(v.filter(r=>/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))} approved${v.some(r=>!/^approved$/i.test(r.approval_status||''))?`, ${sar(v.filter(r=>!/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))} pending`:''}`:''}).filter(Boolean).join(' · ')}</p>`:''}</section>`:''}
+  <section class="panel"><h2>Release history</h2><ul class="audit">${hist.map(r=>`<li><b>${esc(REL_KIND[r.kind])}</b> ${esc(perLabel(r.period_type,r.period))}, rev ${r.rev} <span class="muted small">${esc(r.status)}, approved ${esc(tStamp(r.approved_at).slice(0,10))} by ${esc(who(r.approved_by))}</span></li>`).join('')||'<li class="muted">Nothing released yet.</li>'}</ul></section>`;
+}
+
+/* ---------- demo: sample issues, billing in the seeded cost reports, issues in the seeded releases ---------- */
+function seedV31(){
+  if(CLOUD||DB.v31Seeded)return;
+  DB.issues=DB.issues||[];DB.issAudit=DB.issAudit||[];let an=DB.issAudit.length;
+  const S=[['Delivery','Vendor','Transformer supplier','Power transformer delivery delayed at the factory','Extremely High','Weekly expediting calls; letter to vendor','Expedite FAT and shipment','A','A','PM / Procurement',45,'2 months',''],
+    ['Design Submission / Rectifications','Client','Consultant','Approval of protection settings pending with the consultant','High','Reminders sent','Consultant to approve the settings','A','B','Client',20,'1 month',''],
+    ['Permits / Request from Client','Client','Utility','Shutdown permit for tie-in not yet granted','High','Request submitted','Grant the shutdown window','B','A','Client / PM',14,'3 weeks',''],
+    ['Resources','Internal','Testing & commissioning','Testing and commissioning team not yet mobilised','Medium','PO under finalisation','Mobilise the team','B','B','Management',10,'',''],
+    ['PO Issuance Delay','Internal','Supply chain','Purchase order for cable terminations pending','High','Quotes received','Issue the PO this week','A','A','Supply chain',7,'2 weeks',''],
+    ['Funding','Internal','Finance','Budget supplement awaiting approval','Medium','Submitted for approval','Approve the supplement','C','B','Finance',30,'','SAR 1.2M'],
+    ['Construction','Subcontractor','Civil subcontractor','Civil subcontractor short of manpower','Medium','Warning letter issued','Add two crews','B','A','PM',-5,'',''],
+    ['Close Out','Internal','Project team','Punch list and as-built drawings still open','Low','Daily tracking','Close the remaining points','C','C','PM',21,'','']];
+  PROJECTS.forEach((p,pi)=>{const pl=teamOf(p.id,'plan')[0]||me(),co=teamOf(p.id,'costing')[0]||pl,n=3+pi%3;
+    for(let k=0;k<n;k++){const s=S[(pi*2+k)%S.length],closed=k===n-1&&pi%2===0,iid='IS'+p.id+(k+1),by=k%2?co:pl;
+      DB.issues.push({id:iid,project_id:p.id,issue_no:'ISS-'+String(k+1).padStart(3,'0'),data_date:ASOF,issue_type:s[0],owner:s[1],sub_owner:s[2],description:s[3],impact:s[4],action_taken:s[5],action_required:s[6],
+        priority_client:s[7],priority_internal:s[8],action_by:s[9],started_on:addDays(TODAY,-40-k*9),planned_target:addDays(TODAY,s[10]-10),forecast_target:addDays(TODAY,s[10]),status:closed?'Closed':'Open',closed_on:closed?addDays(TODAY,-3):null,
+        remarks:null,schedule_impact:s[11]||null,cost_impact:s[12]||null,reviewed_by:k===0&&pi%3===0?(pccHeads()[0]||{}).id||null:null,reviewed_at:k===0&&pi%3===0?addDays(TODAY,-2)+'T10:00:00':null,review_note:null,
+        created_by:by.id,created_at:addDays(TODAY,-40-k*9)+'T09:00:00',updated_by:by.id,updated_at:addDays(TODAY,-4)+'T09:00:00'});
+      DB.issAudit.push({id:++an,issue_id:iid,project_id:p.id,action:'Created',by_user:by.id,by_name:by.name,by_role:by.role,at_time:addDays(TODAY,-40-k*9)+'T09:00:00'});
+      if(closed)DB.issAudit.push({id:++an,issue_id:iid,project_id:p.id,action:'Closed',by_user:by.id,by_name:by.name,by_role:by.role,at_time:addDays(TODAY,-3)+'T09:00:00'})}});
+  relRows().filter(r=>String(r.id).startsWith('RS')).forEach(r=>{
+    if(r.kind==='planning'&&r.status==='Released'&&!(r.issues_snapshot||[]).length)r.issues_snapshot=issSnapshot(r.project_id);
+    if(r.kind==='cost'&&r.figures&&r.figures.inv_submitted==null){const p=projById(r.project_id),bp=p?billPosition(p):null,inv=bp?Math.max(bp.invoiceable,(+r.figures.actual||0)*1.08):0;
+      Object.assign(r.figures,{inv_invoiceable:Math.round(inv),inv_submitted:Math.round(inv*0.9),inv_approved:Math.round(inv*0.82),inv_collected:Math.round(inv*0.7)})}});
+  DB.v31Seeded=true;save();
+}
+
+/* ---------- billing to date in the monthly cost report (optional; pre-filled from the invoice register) ---------- */
+const INV_IN=[['inv_invoiceable','Invoiceable to date'],['inv_submitted','Invoiced (submitted) to date'],['inv_approved','Approved by the client to date'],['inv_collected','Collected to date']];
+function relInvDefaults(pid){
+  const p=projById(pid);if(!p)return null;let bp;try{bp=billPosition(p)}catch(e){return null}
+  if(!bp||(!bp.invoiceable&&!bp.t.submitted&&!bp.t.collected))return null;
+  return {inv_invoiceable:Math.round(bp.invoiceable||0),inv_submitted:Math.round(bp.t.submitted||0),inv_approved:Math.round(bp.t.approved||0),inv_collected:Math.round(bp.t.collected||0)};
+}
+function relInvFields(pid,f,editable){
+  const has=INV_IN.some(([k])=>f[k]!=null&&f[k]!==''),d=editable&&!has?relInvDefaults(pid):null,v=k=>has?f[k]:(d?d[k]:null);
+  return `<h3>Billing to date</h3><p class="small muted" style="margin:0 0 6px">${editable?(d?`Filled in from the invoice register and the invoiceable value on ${fmtDY(ASOF)}; change them if your figures differ.`:'Optional. Enter the amounts from the invoice register, or leave them empty.'):'As saved in this cost report.'}</p>
+    <div class="fields">${INV_IN.map(([k,l])=>F(l+' (SAR)',editable?inp('c_'+k,v(k)==null?'':v(k),'type="number" min="0" step="1"'):`<input value="${esc(v(k)==null||v(k)===''?'—':sar(+v(k)))}" disabled>`)).join('')}</div>`;
+}
+
+/* ---------- RASA: issues and bottlenecks, from the issue register ---------- */
+function rasaIssTopic(s){
+  if(!/\bissues?\b|bottlenecks?|issue (log|register)|obstacles?/.test(s)||/lifecycle|stage/.test(s))return null;
+  if(!canIssView())return '<p><b>Not available for your role.</b> The issue register is kept by planning and costing for management. Your project manager can help.</p>';
+  const reg=DB.master.regions.find(r=>s.includes(String(r.name).toLowerCase())),sec=DB.master.sectors.find(x=>s.includes(String(x.name).toLowerCase()));
+  const ps=scopeProjects().filter(p=>(!reg||p.region===reg.id)&&(!sec||p.sector===sec.id)),ids=new Set(ps.map(p=>p.id));
+  const open=issRows().filter(i=>ids.has(i.project_id)&&i.status==='Open').sort((a,b)=>issRank(a.impact)-issRank(b.impact)||(issOverdue(b)-issOverdue(a)));
+  const where=[reg?reg.name+' Region':'',sec?sec.name:''].filter(Boolean).join(', ')||'this scope';
+  if(!issRows().some(i=>ids.has(i.project_id)))return NOEV(`No issues have been recorded in the issue register for ${where}.`,'Planning and costing engineers add them in Projects & Handover → Issue register, or upload the issue log.');
+  if(!open.length)return `<p>There are no open issues for ${esc(where)} in the issue register.</p><p><button class="btn sm" type="button" data-go="iss">Open the issue register</button></p>`+rasaEv([],'the issue register');
+  const by=k=>open.filter(i=>i.impact===k).length,od=open.filter(issOverdue),proj=new Set(open.map(i=>i.project_id)).size;
+  const types={};open.forEach(i=>{const t=i.issue_type||'Not given';types[t]=(types[t]||0)+1});const top=Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  return `<p><b>${open.length}</b> open issue${open.length>1?'s':''} on ${proj} project${proj>1?'s':''} in ${esc(where)}: ${by('Extremely High')} extremely high, ${by('High')} high, ${by('Medium')+by('Low')} medium or low. ${od.length?`<span class="r-c">${od.length} past their target date.</span>`:'None is past its target date.'} ${open.filter(i=>!i.reviewed_by).length} not yet reviewed by the Head of Planning and Cost Control.</p>
+    <p>Most common types: ${top.map(([t,n])=>`${esc(t)} (${n})`).join(', ')}.</p>
+    <ul>${open.slice(0,5).map(i=>{const p=projById(i.project_id)||{};return `<li><b>${esc(p.short||i.project_id)} ${esc(i.issue_no)}</b> (${esc(i.impact||'impact not given')}): ${esc(String(i.description||'').slice(0,160))}${i.action_by?`. Action by ${esc(i.action_by)}`:''}${issTarget(i)?`, target ${fmtDY(issTarget(i))}`:''}</li>`}).join('')}</ul>
+    <p><button class="btn sm" type="button" data-go="iss">Open the issue register</button></p>`+rasaEv([],`the issue register, kept by the planning and costing engineers of each project (${open.length} open issues)`);
 }
 
 /* ---------- backup, restore and the move to the server ---------- */
@@ -2919,12 +3316,12 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={
   xr:'<path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 4-5"/>',rel:'<path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/><path d="M9 12l2 2 4-4"/>',logs:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>',
-  tender:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 9h6M9 13h6M9 17h3"/>',
+  tender:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 9h6M9 13h6M9 17h3"/>',iss:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',
   act:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',pdash:'<path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/>',cdash:'<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
   proj:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/>',
   mat:'<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>',
@@ -2951,13 +3348,13 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.0';
+const APP_VERSION='3.1';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'xr',label:'Executive report (released)'},{v:'exec',label:'Live summary (working data)'}]},
   {k:'projects',label:'Projects & Handover',ic:'proj',items:[
     {v:'proj',label:'Project overview'},{v:'act',label:'Actions and approvals'},
-    {v:'tender',label:'Tender register'},{plan:'Contract register'},{plan:'Handover checklist'}]},
+    {v:'tender',label:'Tender register'},{v:'iss',label:'Issue register'},{plan:'Contract register'},{plan:'Handover checklist'}]},
   {k:'planning',label:'Planning & Scheduling',ic:'base',items:[
     {v:'pdash',label:'Planning dashboard'},{v:'rel',sec:'planning',label:'Progress releases'},{v:'base',sec:'p6',label:'Baselines and P6 import'},{v:'upd',label:'Weekly E&P update'},
     {v:'rep',rep:'basecmp',label:'Baseline comparison'},{v:'rep',rep:'p6upd',label:'P6 progress update'},
@@ -3240,9 +3637,9 @@ document.addEventListener('click',e=>{
 
 /* ---------- shell ---------- */
 function renderNav(){
-  const L=T[state.lang];const views=['xr','exec','proj','tender','act','rel','logs','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView()));
+  const L=T[state.lang];const views=['xr','exec','proj','tender','iss','act','rel','logs','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView()));
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['proj','tender','imp','pdash','cdash','act','rel','logs','xr'].includes(v)).map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['proj','tender','iss','imp','pdash','cdash','act','rel','logs','xr'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -3265,7 +3662,7 @@ let charts=[];const killCharts=()=>{charts.forEach(c=>c.destroy());charts=[]};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
-  ({xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -4550,6 +4947,7 @@ function rasaRelTopics(s){
 function answer(q){
   const s=q.toLowerCase();RASA_TOPIC=null;
   const sc=rasaScopeCheck(s);if(sc)return sc;
+  const it=rasaIssTopic(s);if(it)return it;
   const rt=rasaRelTopics(s);if(rt)return rt;
   const u=RASA_UNTRACKED.find(([re])=>re.test(s));if(u)return NOEV(u[1],u[2]);
   const n=rasaNewTopics(s);if(n)return n+rasaEv(RASA_T[RASA_TOPIC].src);
@@ -6903,7 +7301,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

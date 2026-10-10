@@ -1,4 +1,4 @@
-# ProTrack Supabase updates (current: v3.0)
+# ProTrack Supabase updates (current: v3.1)
 
 | File | Run it? |
 |---|---|
@@ -8,6 +8,8 @@
 | `schema-update-v7.sql` | **Yes, on your live project, after v6.** Step 1 of STAGE-4B-SETUP.md |
 | `schema-update-v8.sql` | **Yes, on your live project, after v7.** Step 1 of STAGE-5-SETUP.md |
 | `schema-update-v9.sql` | **Yes, on your live project, after v8.** Step 1 of STAGE-6-SETUP.md |
+| `schema-update-v10.sql` | **Yes, on your live project, after v9.** Step 1 of STAGE-7-SETUP.md |
+| `schema-rollback-v10.sql` | Only to undo v10. Keeps all data |
 | `schema-rollback-v9.sql` | Only to undo v9. Keeps all data |
 | `schema-rollback-v8.sql` | Only to undo v8. Keeps all data |
 | `schema-rollback-v7.sql` | Only to undo v7. Keeps all data |
