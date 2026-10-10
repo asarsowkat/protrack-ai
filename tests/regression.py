@@ -106,7 +106,7 @@ with sync_playwright() as p:
     tops=pg.locator('#nav .nav-top').all_inner_texts()
     ck('Navigation v2.3','super admin sees all 12 domains',len(tops)==12,tops)
     planned=pg.locator('#nav .nav-item.planned')
-    ck('Navigation v2.3','planned items present and disabled (v2.7: cost reconciliation is now live)',planned.count()>=14 and planned.evaluate_all("e=>e.every(b=>b.disabled&&/Planned/.test(b.textContent))"),planned.count())
+    ck('Navigation v2.3','planned items present and disabled (v2.7: cost reconciliation is live; v2.8: Tender register is live)',planned.count()>=13 and planned.evaluate_all("e=>e.every(b=>b.disabled&&/Planned/.test(b.textContent))"),planned.count())
     pg.click('[data-navgrp="cost"]');pg.wait_for_timeout(200)
     pl=pg.locator('[data-navgrp="cost"] + .nav-sub .planned').first
     pl.click(force=True);pg.wait_for_timeout(300)

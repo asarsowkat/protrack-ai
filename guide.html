@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 2.7, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 2.8, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -202,6 +202,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#features">5. Features at a glance</a>
   <a href="#domains" class="sub">Finding your way: the domains</a>
   <a href="#overview" class="sub">Project overview</a>
+  <a href="#tender">Tender register and PE numbers</a>
   <a href="#lifecycle">Project lifecycle, actions and dashboards</a>
   <a href="#imports">Import centre and controlled uploads</a>
   <a href="#steps">6. Step by step, by role</a>
@@ -247,6 +248,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 2.8</b>
+    <b>Tender register</b> (Projects &amp; Handover): the costing coordinator records each L1 project from Tender's list, with TE number, client, location and expected value. ·
+    <b>PE numbers</b>: ProTrackAI proposes the number and never gives one number to two live projects; a cancelled project releases its number for the next L1 project, and the history keeps both. ·
+    <b>Stages 1 to 5 follow the Tender-to-SAP process</b> and are approved by the Head of Planning and Cost Control. Stage 4 is due 7 days after contract signing.</div>
   <div class="note"><b>New in version 2.7</b>
     <b>Governed project lifecycle</b>: twelve stages from tender notification to closeout, each with owner, due date, required deliverables, next action, blockers and history. A stage closes only when its owner submits it and the project manager or a super admin approves it; nobody approves their own work. ·
     <b>Actions and approvals</b>: one list of everything waiting on you or your team. ·
@@ -409,15 +414,43 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   </div>
 </section>
 
+<section id="tender">
+  <h2>Tender register and PE numbers</h2>
+  <p>Projects &amp; Handover → <b>Tender register</b> lists every project in your scope with its PE number, the TE number from Tender's L1 list, client, location, expected value, status and current lifecycle stage, and below it the PE number history.</p>
+  <h3>Designations</h3>
+  <p>The super admin ticks two designations on a person in Settings → Users and access. A designation sits on top of the person's role; it does not replace it.</p>
+  <table><thead><tr><th>Designation</th><th>Can do</th></tr></thead><tbody>
+    <tr><td>Costing coordinator</td><td>Registers L1 projects from Tender's list, keeps their Tender details, and owns stages 1 to 4 of the projects they register</td></tr>
+    <tr><td>Head of Planning and Cost Control</td><td>Approves, returns and skips stages 1 to 5, assigns their owners, and cancels projects</td></tr>
+  </tbody></table>
+  <h3>Registering an L1 project</h3>
+  <ol class="steps">
+    <li>Press <b>Register an L1 project</b> and copy the TE number, project name, region, client, location and expected value from Tender's list.</li>
+    <li>ProTrackAI fills in the <b>PE number</b>. It offers a number released by a cancelled project first; otherwise it offers the next in sequence. Only a super admin can type another.</li>
+    <li>Press <b>Register</b>. The project appears with status <b>Pre-award</b> and its 12 stages. The costing coordinator owns stages 1 to 4, and the Heads and coordinators get access to it.</li>
+    <li>When the notice of award arrives, open the project in the register and enter the <b>award date</b>; the project becomes <b>Active</b>. When you enter the <b>contract signing date</b>, stage 4 becomes due 7 days later, unless its owner has set another date.</li>
+  </ol>
+  <h3>Rules for PE numbers</h3>
+  <ul>
+    <li>A TE number can be registered only once. PE-5, PE-05 and PE-005 count as the same number.</li>
+    <li>No two live projects can hold the same PE number. The database itself refuses a duplicate, even from the database console.</li>
+    <li><b>Cancel</b> (Head or super admin, with a reason): the project becomes <b>Cancelled</b> and read-only, nothing is deleted, and its PE number is released for another L1 project. The new project gets a separate record (for example <i>PE-001-R2</i>) and shows as PE-001.</li>
+    <li><b>Reinstate</b> (super admin): the project returns to its earlier status. If its number has gone to another project since, give it a new one.</li>
+    <li><b>Change PE number</b> (super admin, with a reason): the old number is released.</li>
+    <li>The PE number history cannot be edited or deleted.</li>
+  </ul>
+  <p>Projects created before version 2.8 keep their project code as their PE number. A coordinator can add their TE number once; after that only a super admin can change it.</p>
+</section>
+
 <section id="lifecycle">
   <h2>Project lifecycle, actions and dashboards</h2>
   <h3>The twelve stages</h3>
   <table><thead><tr><th>#</th><th>Stage</th><th>Department</th><th>Required deliverables (examples)</th></tr></thead><tbody>
-    <tr><td>1</td><td>Tender notification</td><td>Tendering</td><td>Tender notice received; bid or no-bid decision recorded</td></tr>
-    <tr><td>2</td><td>Tender and project registration</td><td>Tendering</td><td>Project number under the numbering convention; project registered</td></tr>
-    <tr><td>3</td><td>Award and contract signing</td><td>Contracts</td><td>Letter of award; contract signed; value and payment terms recorded</td></tr>
-    <tr><td>4</td><td>Tender-to-project handover</td><td>Projects</td><td>Documents handed over; scope and BOQ clarified; team assigned</td></tr>
-    <tr><td>5</td><td>Planning and Cost Control assignments</td><td>Planning and Cost Control</td><td>Planning and costing engineers assigned; approval matrix set</td></tr>
+    <tr><td>1</td><td>Tender L1 notification</td><td>Tendering (recorded by the costing coordinator)</td><td>TE number, project name, region, client and location recorded; expected value recorded</td></tr>
+    <tr><td>2</td><td>PE number allocation</td><td>Planning and Cost Control</td><td>PE number allocated against the TE number; Tender informed (optional)</td></tr>
+    <tr><td>3</td><td>Award, finance WBS and SAP activation</td><td>Planning and Cost Control</td><td>Notice of award; higher-level WBS created in SAP; finance WBS sent to Tender for the advance bank guarantee; SAP team activated only that WBS for actual cost; contract signed</td></tr>
+    <tr><td>4</td><td>Kick-off and handover to Planning</td><td>Tendering and Planning</td><td>Kick-off held by Tender; tender documents and the costing file with detailed breakup handed over. Due 7 days after contract signing</td></tr>
+    <tr><td>5</td><td>Costing review, finance pack and SAP upload</td><td>Planning and Cost Control (costing engineer)</td><td>Site management, installation, mechanical and civil breakups checked; project brief and cash flow prepared and sent with the signed contract to Finance / Treasury; costing uploaded to SAP with the standard template</td></tr>
     <tr><td>6</td><td>Baseline preparation and approval</td><td>Planning</td><td>Baseline loaded; costing applied; submitted to and approved by the client</td></tr>
     <tr><td>7</td><td>Execution and progress updates</td><td>Projects and site</td><td>Daily reports flowing; weekly updates current</td></tr>
     <tr><td>8</td><td>Procurement and materials</td><td>Procurement</td><td>Purchase orders recorded; long-lead items tracked</td></tr>
@@ -426,12 +459,13 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <tr><td>11</td><td>Monthly reporting and review</td><td>Planning and project management</td><td>Monthly report issued; management review held</td></tr>
     <tr><td>12</td><td>Final account and closeout</td><td>Commercial and projects</td><td>TCC and PAC achieved; final account agreed; handover to operations</td></tr>
   </tbody></table>
+  <p><b>Who approves:</b> stages 1 to 5, the <b>Head of Planning and Cost Control</b> or a super admin; stages 6 to 12, a project manager on that project or a super admin. The same people assign owners and mark stages not applicable. ProTrackAI has no connection to SAP, so SAP steps show no evidence: the owner ticks them when done.</p>
   <h3>Working a stage</h3>
   <ol class="steps">
-    <li><b>The project manager</b> (or a super admin) opens the stage on the Project overview and assigns the <b>owner</b> and <b>due date</b>; the owner must have access to the project.</li>
+    <li><b>The approver for that stage</b> opens it on the Project overview and assigns the <b>owner</b> and <b>due date</b>; the owner must have access to the project.</li>
     <li><b>The owner</b> records the next action, any blockers and risks, and ticks each deliverable as it is done. Beside each deliverable ProTrackAI shows the evidence it holds, for example "ProTrackAI holds: 120 activities in the baseline". Evidence never ticks a box; the owner does.</li>
     <li>When every <b>required</b> deliverable is ticked, the owner presses <b>Submit for approval</b>. The stage turns amber and appears in the approver's Actions and approvals.</li>
-    <li><b>The approver</b> (a project manager on that project, or a super admin) presses <b>Approve</b>, or <b>Return with comment</b> to send it back. Nobody can approve a stage they submitted.</li>
+    <li><b>The approver</b> presses <b>Approve</b>, or <b>Return with comment</b> to send it back. Nobody can approve a stage they submitted.</li>
     <li>A stage that does not apply is marked <b>Not applicable</b> by the project manager with a reason. A closed stage is read-only; only a super admin can <b>reopen</b> it, with a reason.</li>
     <li>Every change, with who, role, time and comment, is kept in the stage's <b>history</b>, which cannot be edited or deleted. Closing a project hides or deletes nothing.</li>
   </ol>

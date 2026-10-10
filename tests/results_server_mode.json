@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-09 23:46",
- "app": "/home/claude/p4/app.html",
+ "run_at": "2026-10-10 09:54",
+ "app": "/home/claude/p6/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 78,
+  "PASS": 98,
   "FAIL": 0
  },
  "results": [
@@ -350,6 +350,120 @@
    "detail": ""
   },
   {
+   "area": "Tender",
+   "check": "the super admin names the Head and the costing coordinator on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "even a super admin cannot set a PE number by writing to the table",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the coordinator sees the register with the next PE number from the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the form shows the server proposal, read-only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "registered on the server as PE-001, pre-award, with the coordinator owning stages 1 to 4",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the app shows the new project from the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the coordinator submits stage 1 through the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "award and signing saved; stage 4 due 7 days later, on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "a project manager can no longer decide stages 1 to 5 (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the Head finds stage 1 in Actions and approvals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the Head approves stage 1 through the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the Head cancels it; the server releases PE-001",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the released number is proposed again",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the form says the number was released by the cancelled TE",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the next L1 project gets PE-001 on the server, as a new record",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the app history shows both TE numbers against PE-001",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the coordinator cannot cancel (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "every screen renders with pre-award and cancelled server projects",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tender",
+   "check": "the users screen shows designations held on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
    "area": "Errors",
    "check": "a failed server load shows a warning with Try again",
    "result": "PASS",
@@ -412,6 +526,12 @@
   {
    "area": "Move to server",
    "check": "moving again creates nothing twice",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Backup",
+   "check": "server backup carries the Tender details, lifecycle stages and register history (v2.8)",
    "result": "PASS",
    "detail": ""
   },

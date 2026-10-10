@@ -1080,7 +1080,10 @@ const projToDb=p=>({id:p.id,name:p.name,short:p.short,sector:p.sector||null,regi
   status:p.status||'Active',mh_source:p.mhSrc||'Costing file',billing:p.billing||{},eot:p.eot||{}});
 const projFromDb=r=>({id:r.id,name:r.name,short:r.short,sector:r.sector,region:r.region,city:r.city,ptype:r.ptype,
   start:r.start_date,finish:r.finish_date,value:+r.value_m||0,status:r.status||'Active',mhSrc:r.mh_source,
-  billing:r.billing||{},eot:r.eot||{},pm:'Unassigned',eng:'Unassigned',foremen:[],milestones:[]});
+  billing:r.billing||{},eot:r.eot||{},pm:'Unassigned',eng:'Unassigned',foremen:[],milestones:[],
+  te:r.te_number||null,pe:r.pe_number||null,client:r.client||'',location:r.location||'',expected:r.expected_value_m==null?null:+r.expected_value_m,
+  notified:r.notified_on||null,award:r.award_on||null,signed:r.contract_signed_on||null,cancelledOn:r.cancelled_on||null,cancelReason:r.cancel_reason||'',registeredBy:r.registered_by||null});
+const pcode=p=>p?(p.pe||p.id):'';                // the PE number when the Tender register holds one, else the project code
 
 async function cloudSeedMasters(){            // first run: copy regions, sectors and cities up
   if(state.role!=='sa')return;
@@ -1123,7 +1126,8 @@ async function cloudSaveMilestones(pid){
    server has accepted it. Nothing falls back to this browser when the server refuses. */
 let CLOUD_LOAD={ok:false,at:null,err:null};
 const UKEY='protrack-unsynced-v1';           // browser data from before stage 2b, kept until moved to the server
-const srvMsg=e=>String((e&&(e.message||e.error_description||e.details||e.hint))||e||'Unknown error').replace(/^.*?ERROR:\s*/,'').trim();
+const srvMsg=e=>{const m=String((e&&(e.message||e.error_description||e.details||e.hint))||e||'Unknown error').replace(/^.*?ERROR:\s*/,'').trim();
+  return /projects_pe_live_uq/.test(m)?'That PE number is already given to a live project':/projects_te_uq/.test(m)?'That TE number is already registered':m};
 async function rpc(fn,args){const {data,error}=await SB.rpc(fn,args||{});if(error)throw new Error(srvMsg(error));return data}
 async function selAll(table,cols,mod,order){       // the server returns at most 1000 rows a request
   const out=[];
@@ -1247,7 +1251,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix()]);
-    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();
+    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -1544,16 +1548,17 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- Phase 4: governed project lifecycle ----------
-   Twelve stages per project. A stage is complete only when its owner submits it and an approver (the
-   project's project manager, or a super admin) approves it; nobody approves their own submission.
+   Twelve stages per project. A stage is complete only when its owner submits it and an approver approves
+   it: the Head of Planning and Cost Control or a super admin for stages 1 to 5 (v2.8), the project's
+   project manager or a super admin for stages 6 to 12. Nobody approves their own submission.
    ProTrackAI shows the evidence it holds next to each deliverable, but evidence never ticks a box or
    completes a stage by itself. On the server the same rules are enforced by lifecycle_act. */
 const LC_STAGES=[
-  {n:1,name:'Tender notification',dept:'Tendering',items:[['notice','Tender notice received',1],['bid','Bid or no-bid decision recorded',1],['team','Tender team named',0]]},
-  {n:2,name:'Tender and project registration',dept:'Tendering',items:[['number','Project number given under the numbering convention',1],['registered','Project registered in ProTrackAI',1],['notified','Stakeholders notified',0]]},
-  {n:3,name:'Award and contract signing',dept:'Contracts',items:[['loa','Letter of award received',1],['contract','Contract signed',1],['terms','Contract value and payment terms recorded',1],['bonds','Bonds and insurances in place',0]]},
-  {n:4,name:'Tender-to-project handover',dept:'Projects',items:[['docs','Tender documents handed over',1],['scope','Scope and BOQ clarified',1],['minutes','Handover meeting minutes',0],['team','Project team assigned',1]]},
-  {n:5,name:'Planning and Cost Control assignments',dept:'Planning and Cost Control',items:[['planner','Planning engineer assigned',1],['coster','Costing engineer assigned',1],['matrix','Approval matrix set for the site team',1]]},
+  {n:1,name:'Tender L1 notification',dept:'Tendering',items:[['te','TE number, project name, region, client and location recorded from the Tender L1 list',1],['value','Expected project value recorded',1]]},
+  {n:2,name:'PE number allocation',dept:'Planning and Cost Control',items:[['number','PE number allocated against the TE number',1],['informed','Tender department informed of the PE number',0]]},
+  {n:3,name:'Award, finance WBS and SAP activation',dept:'Planning and Cost Control',items:[['loa','Notice of award received from the client',1],['wbs','Higher-level WBS created in SAP',1],['fwbs','Finance WBS sent to Tender for the advance bank guarantee charges',1],['sapact','SAP team activated only the finance WBS for actual cost',1],['contract','Contract signed',1]]},
+  {n:4,name:'Kick-off and handover to Planning',dept:'Tendering and Planning',items:[['kickoff','Kick-off meeting held by Tender',1],['docs','Tender documents handed over to Planning',1],['costfile','Costing file with detailed breakup handed over',1],['minutes','Kick-off meeting minutes',0]]},
+  {n:5,name:'Costing review, finance pack and SAP upload',dept:'Planning and Cost Control',items:[['site','Site management breakup checked',1],['install','Installation breakup checked',1],['mech','Mechanical breakup checked',1],['civil','Civil breakup checked',1],['missing','Missing items received from Tender (if any were missing)',0],['brief','Project brief prepared',1],['cashflow','Cash flow prepared',1],['finance','Project brief, cash flow and signed contract copy sent to Finance / Treasury',1],['sapupload','Costing uploaded to SAP with the standard template',1]]},
   {n:6,name:'Baseline preparation and approval',dept:'Planning',items:[['prepared','Baseline programme prepared and loaded',1],['dcma','Schedule quality check reviewed',0],['costing','Costing file applied',1],['submitted','Baseline submitted to the client',1],['approved','Client approval of the baseline received',1]]},
   {n:7,name:'Execution and progress updates',dept:'Projects and site',items:[['dpr','Daily reports flowing',1],['weekly','Weekly progress updates current',1],['lookahead','Look-ahead programme issued',0]]},
   {n:8,name:'Procurement and materials',dept:'Procurement',items:[['pos','Subcontract purchase orders recorded',1],['longlead','Long-lead items tracked',1],['materials','Material tracking in place',0]]},
@@ -1569,9 +1574,17 @@ function lcGet(pid,n){const L=(DB.lifecycle||{})[pid]||{};return L[n]||lcBlank(p
 const lcAudit=(pid,n)=>(DB.lcAudit||[]).filter(a=>a.project_id===pid&&a.stage_no===n).sort((a,b)=>(a.id>b.id?1:-1));
 const lcOverdue=s=>!LC_DONE.has(s.status)&&s.due_date&&s.due_date<TODAY;
 const lcPMs=pid=>teamOf(pid,'pm');
-const lcBoss=pid=>state.role==='sa'||(state.role==='pm'&&accessIds().includes(pid));
-const lcEditor=(pid,s)=>lcBoss(pid)||(!!s.owner&&s.owner===me().id);
-const lcApproverText=pid=>{const pm=lcPMs(pid).map(u=>u.name);return pm.length?pm.join(' or ')+' (project manager)':'a super admin'};
+/* v2.8 designations, given by the super admin: Head of Planning and Cost Control, costing coordinator */
+const pccOf=id=>((DB.pcc||{})[id]||[]);
+const isHead=u=>{u=u||me();return !!u&&u.active!==false&&pccOf(u.id).includes('head')};
+const isCoord=u=>{u=u||me();return !!u&&u.active!==false&&pccOf(u.id).includes('coordinator')};
+const pccHeads=()=>DB.master.users.filter(u=>isHead(u));
+const lcBoss=(pid,n)=>state.role==='sa'||(n<=5?isHead()&&accessIds().includes(pid):state.role==='pm'&&accessIds().includes(pid));
+const lcBossText=n=>n<=5?'the Head of Planning and Cost Control or a super admin':'the project manager or a super admin';
+const lcEditor=(pid,s)=>lcBoss(pid,s.stage_no)||(!!s.owner&&s.owner===me().id);
+const lcApproverText=(pid,n)=>{
+  if(n<=5){const h=pccHeads().filter(u=>u.role==='sa'||onProject(u,pid)).map(u=>u.name);return h.length?h.join(' or ')+' (Head of Planning and Cost Control)':'a super admin'}
+  const pm=lcPMs(pid).map(u=>u.name);return pm.length?pm.join(' or ')+' (project manager)':'a super admin'};
 const lcCurrent=pid=>LC_STAGES.map(S=>lcGet(pid,S.n)).find(s=>!LC_DONE.has(s.status))||lcGet(pid,12);
 
 /* What ProTrackAI already holds for a deliverable: shown beside it, never ticks it */
@@ -1583,7 +1596,13 @@ function lcEvidence(p,k){
   const unassigned=teamOf(p.id,'foreman').filter(u=>!assigned(p.id,'fm',u.id)).length+teamOf(p.id,'eng').filter(u=>!assigned(p.id,'eng',u.id)).length;
   const ms=t=>(p.milestones||[]).find(m=>m.t===t);
   const E={
-    registered:['ok',`${p.id} · ${p.name}`],
+    registered:['ok',`${pcode(p)} · ${p.name}`],
+    te:p.te?[p.client&&p.location?'ok':'warn',`${p.te} · client ${p.client||'not recorded'} · location ${p.location||'not recorded'}`]:['no','no TE number recorded in the Tender register'],
+    value:site?null:[p.expected!=null&&p.expected!==''?'ok':'no',p.expected!=null&&p.expected!==''?`expected SAR ${fmt(+p.expected,1)} M`:'no expected value recorded'],
+    number:(()=>{const a=(DB.regAudit||[]).filter(x=>x.project_id===p.id&&x.action==='PE allocated').pop();return [/^PE-\d+$/i.test(pcode(p))?'ok':'no',/^PE-\d+$/i.test(pcode(p))?`${pcode(p)}${a?', allocated '+fmtDY(String(a.at_time).slice(0,10))+' by '+(a.by_name||'—'):''}`:'no PE number']})(),
+    loa:p.award?['ok',`award recorded ${fmtDY(p.award)}`]:['no','no award date in the Tender register'],
+    contract:p.signed?['ok',`signed ${fmtDY(p.signed)}`]:['no','no signing date in the Tender register'],
+    costfile:site?null:(DB.costing||{})[p.id]?['ok',`costing file ${(DB.costing[p.id].file||'')} loaded ${DB.costing[p.id].at||''}`]:['no','no costing file loaded in ProTrackAI yet'],
     terms:site?null:[p.value&&p.billing?'ok':'no',p.value?`contract SAR ${fmt(+p.value,1)} M${p.billing&&p.billing.v?', payment terms saved':''}`:'no contract value'],
     team:[p.pm&&p.pm!=='Unassigned'&&p.eng&&p.eng!=='Unassigned'?'ok':'no',`PM ${p.pm||'—'}, site engineer ${p.eng||'—'}`],
     planner:(()=>{const u=teamOf(p.id,'plan');return [u.length?'ok':'no',u.length?u.map(x=>x.name).join(', '):'no planning engineer has access']})(),
@@ -1612,10 +1631,11 @@ function seedLifecycle(){
   PROJECTS.forEach((p,pi)=>{
     const pm=lcPMs(p.id)[0],pl=teamOf(p.id,'plan')[0]||pm,co=teamOf(p.id,'costing')[0]||pm,L=DB.lifecycle[p.id]={};
     const upto=[6,6,5,7,6,5][pi%6];
-    LC_STAGES.forEach(S=>{const s=lcBlank(p.id,S.n),own=S.n===6||S.n===11?pl:S.n===9?co:pm;s.owner=own?own.id:null;
+    const cc=DB.master.users.find(u=>isCoord(u)&&onProject(u,p.id))||co,hd=pccHeads()[0]||pm;
+    LC_STAGES.forEach(S=>{const s=lcBlank(p.id,S.n),own=S.n<=4?cc:S.n===5?co:S.n===6||S.n===11?pl:S.n===9?co:pm,apr=S.n<=5?hd:pm;s.owner=own?own.id:null;
       if(S.n<=upto){s.status='Complete';s.deliverables.forEach(x=>{x.done=true;x.by=own?own.name:'';x.at=at(addDays(p.start||TODAY,S.n*7))});
-        s.submitted_by=own?own.id:null;s.approved_by=pm?pm.id:null;s.approved_at=addDays(p.start||TODAY,S.n*7+2);
-        DB.lcAudit.push({id:id++,project_id:p.id,stage_no:S.n,action:'Approved',by_name:pm?pm.name:'Super admin',by_role:'pm',at_time:s.approved_at+'T10:00:00'})}
+        s.submitted_by=own?own.id:null;s.approved_by=apr?apr.id:null;s.approved_at=addDays(p.start||TODAY,S.n*7+2);
+        DB.lcAudit.push({id:id++,project_id:p.id,stage_no:S.n,action:'Approved',by_name:apr?apr.name:'Super admin',by_role:apr?apr.role:'sa',at_time:s.approved_at+'T10:00:00'})}
       else if(S.n<=9){s.status=S.n===upto+1&&pi%3===1?'Awaiting approval':'In progress';s.due_date=addDays(TODAY,S.n===upto+1&&pi%2?-5:14+S.n);
         s.deliverables.forEach((x,i)=>{if(i<s.deliverables.length-1||s.status==='Awaiting approval'){x.done=true;x.by=own?own.name:'';x.at=at(addDays(TODAY,-10))}});
         if(s.status==='Awaiting approval'){s.submitted_by=own?own.id:null;s.submitted_at=addDays(TODAY,-2)+'T09:00:00'}
@@ -1635,13 +1655,14 @@ async function lcAct(pid,n,action,payload){
     try{await cloudLoadLifecycle()}catch(e){}
     save();return true;
   }
-  const s=JSON.parse(JSON.stringify(lcGet(pid,n))),meId=me().id,boss=lcBoss(pid),editor=boss||(!!s.owner&&s.owner===meId),note=(payload.note||'').trim();
+  const s=JSON.parse(JSON.stringify(lcGet(pid,n))),meId=me().id,boss=lcBoss(pid,n),editor=boss||(!!s.owner&&s.owner===meId),note=(payload.note||'').trim(),who=lcBossText(n);
   const no=t=>{toast(t);return false};const changes=[];
+  if((projById(pid)||{}).status==='Cancelled')return no('This project was cancelled; a super admin must reinstate it in the Tender register before its stages change');
   if(action==='update'){
-    if(!editor)return no('Only the stage owner, the project manager or a super admin can change this stage');
+    if(!editor)return no(`Only the stage owner, ${who} can change this stage`);
     if(LC_DONE.has(s.status))return no(`This stage is ${s.status.toLowerCase()}; a super admin must reopen it first`);
     const f=payload.fields||{};
-    if('owner' in f){if(!boss)return no('Only the project manager or a super admin can assign the owner');
+    if('owner' in f){if(!boss)return no(`Only ${who} can assign the owner`);
       if(f.owner&&!onProject(userById(f.owner),pid))return no('The owner must be an active person with access to this project');
       if((f.owner||null)!==s.owner)changes.push('owner '+(f.owner?userById(f.owner).name:'none'));s.owner=f.owner||null}
     if('due_date' in f){if(f.due_date&&!isoOk(f.due_date))return no('The due date is not a valid date');if((f.due_date||null)!==s.due_date)changes.push('due '+(f.due_date||'none'));s.due_date=f.due_date||null}
@@ -1649,17 +1670,17 @@ async function lcAct(pid,n,action,payload){
     (payload.ticks||[]).forEach(t=>{const d=s.deliverables.find(x=>x.k===t.k);if(d&&!!d.done!==!!t.done){d.done=!!t.done;d.by=me().name;d.at=stamp();changes.push((t.done?'ticked ':'unticked ')+t.k)}});
     if(s.status==='Not started'&&changes.length&&s.deliverables.some(x=>x.done)){s.status='In progress';changes.push('started')}
     if(!changes.length)return true;
-  }else if(action==='start'){if(!editor)return no('Only the stage owner, the project manager or a super admin can start this stage');if(s.status!=='Not started')return no('This stage has already started');s.status='In progress'}
-  else if(action==='submit'){if(!editor)return no('Only the stage owner, the project manager or a super admin can submit this stage');
+  }else if(action==='start'){if(!editor)return no(`Only the stage owner, ${who} can start this stage`);if(s.status!=='Not started')return no('This stage has already started');s.status='In progress'}
+  else if(action==='submit'){if(!editor)return no(`Only the stage owner, ${who} can submit this stage`);
     if(!['Not started','In progress'].includes(s.status))return no('Only a stage in progress can be submitted');
     if(!s.owner)return no('Assign an owner before submitting');
     const miss=s.deliverables.filter(x=>x.req&&!x.done).map(x=>x.label);if(miss.length)return no('Required deliverables are not done: '+miss.join('; '));
     s.status='Awaiting approval';s.submitted_by=meId;s.submitted_at=new Date().toISOString()}
-  else if(action==='approve'){if(!boss)return no('Only the project manager or a super admin can approve a stage');if(s.status!=='Awaiting approval')return no('Only a stage awaiting approval can be approved');
+  else if(action==='approve'){if(!boss)return no(`Only ${who} can approve stage ${n}`);if(s.status!=='Awaiting approval')return no('Only a stage awaiting approval can be approved');
     if(s.submitted_by===meId)return no('You submitted this stage, so someone else must approve it');s.status='Complete';s.approved_by=meId;s.approved_at=new Date().toISOString()}
-  else if(action==='return'){if(!boss)return no('Only the project manager or a super admin can return a stage');if(s.status!=='Awaiting approval')return no('Only a stage awaiting approval can be returned');
+  else if(action==='return'){if(!boss)return no(`Only ${who} can return stage ${n}`);if(s.status!=='Awaiting approval')return no('Only a stage awaiting approval can be returned');
     if(!note)return no('Add a comment saying what to fix');s.status='In progress';s.submitted_by=null;s.submitted_at=null}
-  else if(action==='na'){if(!boss)return no('Only the project manager or a super admin can mark a stage not applicable');if(LC_DONE.has(s.status))return no('This stage is already closed');
+  else if(action==='na'){if(!boss)return no(`Only ${who} can mark stage ${n} not applicable`);if(LC_DONE.has(s.status))return no('This stage is already closed');
     if(!note)return no('Add a comment saying why the stage does not apply');s.status='Not applicable'}
   else if(action==='reopen'){if(state.role!=='sa')return no('Only a super admin can reopen a stage');if(!LC_DONE.has(s.status))return no('Only a complete or not-applicable stage can be reopened');
     if(!note)return no('Add a comment saying why the stage is reopened');s.status='In progress';s.approved_by=s.approved_at=s.submitted_by=s.submitted_at=null}
@@ -1695,26 +1716,27 @@ function lcWorkflowHTML(p){
         <span class="lc-st">${esc(s.status)}${late?' <b class="r-c">overdue</b>':''}</span>
         <span class="t2">${esc(s.department||S.dept)} · owner ${esc(user(s.owner))}</span>
         ${s.due_date&&!LC_DONE.has(s.status)?`<span class="t2">Due ${fmtDY(s.due_date)}</span>`:''}
-        ${s.status==='Awaiting approval'?`<span class="t2">Waiting for ${esc(lcApproverText(p.id))}</span>`:''}
+        ${s.status==='Awaiting approval'?`<span class="t2">Waiting for ${esc(lcApproverText(p.id,S.n))}</span>`:''}
         ${s.next_action&&!LC_DONE.has(s.status)?`<span class="t2">Next: ${esc(s.next_action)}</span>`:''}
         ${s.blockers&&!LC_DONE.has(s.status)?`<span class="t2 r-c">Blocked: ${esc(s.blockers)}</span>`:''}
         <div class="lc-foot"><div class="lc-bar"><i style="width:${req.length?dn/req.length*100:0}%"></i></div><span>${dn}/${req.length}</span></div></button>`}).join('')}</div></section>`;
 }
 function openStage(pid,n){
-  const p=projById(pid),S=lcDef(n),s=lcGet(pid,n),boss=lcBoss(pid),editor=lcEditor(pid,s),locked=LC_DONE.has(s.status),meId=me().id;
+  const p=projById(pid),S=lcDef(n),s=lcGet(pid,n),cancelled=p.status==='Cancelled',boss=lcBoss(pid,n)&&!cancelled,editor=lcEditor(pid,s)&&!cancelled,locked=LC_DONE.has(s.status)||cancelled,meId=me().id;
   const team=DB.master.users.filter(u=>u.active!==false&&onProject(u,pid));
   const user=id=>{const u=id&&userById(id);return u?u.name:'—'};
   const H=lcAudit(pid,n);
   const canSubmit=editor&&['Not started','In progress'].includes(s.status),canDecide=boss&&s.status==='Awaiting approval';
   $('#sheet').innerHTML=`<div class="sheet-head"><h2>Stage ${n} · ${esc(S.name)}</h2><span class="sev ${({ok:'Low',warn:'Medium',prog:'Low',none:'Low',plan:'Low'})[lcCls(s)]}">${esc(s.status)}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
-    <p class="small muted" style="margin:0 0 10px">${esc(p.id)} · ${esc(p.name)}. ${locked?'Closed stages are read-only; a super admin can reopen one with a reason.':'Ticks and evidence never close a stage: the owner submits it and the project manager or a super admin approves it.'}</p>
+    <p class="small muted" style="margin:0 0 10px">${esc(pcode(p))} · ${esc(p.name)}. ${cancelled?'This project was cancelled, so its stages are read-only. A super admin can reinstate it in the Tender register.':locked?'Closed stages are read-only; a super admin can reopen one with a reason.':`Ticks and evidence never close a stage: the owner submits it and ${lcBossText(n)} approves it.`}</p>
     <form id="lcForm" data-lcp="${esc(pid)}" data-lcn="${n}">
     <div class="fields">
       ${F('Department',`<input name="department" value="${esc(s.department||S.dept)}" disabled>`)}
       ${F('Owner',boss&&!locked?`<select name="owner"><option value="">Not assigned</option>${team.map(u=>`<option value="${esc(u.id)}" ${u.id===s.owner?'selected':''}>${esc(u.name)}, ${esc(ROLES[u.role]||u.role)}</option>`).join('')}</select>`:`<input value="${esc(user(s.owner))}" disabled>`)}
       ${F('Due date',`<input type="date" name="due_date" value="${esc(s.due_date||'')}" ${editor&&!locked?'':'disabled'}>${lcOverdue(s)?'<span class="err">Overdue</span>':''}`)}
     </div>
-    ${F('Approver',`<input value="${esc(lcApproverText(pid))}" disabled>`,true)}
+    ${F('Approver',`<input value="${esc(lcApproverText(pid,n))}" disabled>`,true)}
+    ${n===4&&p.signed?`<p class="small muted" style="margin:-4px 0 8px">Contract signed ${fmtDY(p.signed)}: this stage is due within 7 days (${fmtDY(addDays(p.signed,7))}) unless the owner sets another date.</p>`:''}
     ${F('Next action',`<input name="next_action" value="${esc(s.next_action||'')}" ${editor&&!locked?'':'disabled'} placeholder="What happens next, and by whom">`,true)}
     ${F('Blockers and dependencies',`<input name="blockers" value="${esc(s.blockers||'')}" ${editor&&!locked?'':'disabled'} placeholder="Anything stopping this stage">`,true)}
     ${F('Risks',`<input name="risk" value="${esc(s.risk||'')}" ${editor&&!locked?'':'disabled'}>`,true)}
@@ -1723,7 +1745,7 @@ function openStage(pid,n){
       ${ev?`<span class="lc-ev ${ev.st}" title="Evidence held in ProTrackAI; it does not tick the box">ProTrackAI holds: ${esc(ev.note)}</span>`:''}</li>`}).join('')}</ul>
     ${s.submitted_by?`<p class="small">Submitted by ${esc(user(s.submitted_by))}${s.submitted_at?', '+esc(tStamp(s.submitted_at)):''}.</p>`:''}
     ${s.approved_by?`<p class="small">Approved by ${esc(user(s.approved_by))}${s.approved_at?', '+esc(tStamp(s.approved_at)):''}.</p>`:''}
-    ${canDecide||boss||state.role==='sa'?`<label class="field">Comment (needed to return, mark not applicable or reopen)<textarea id="lcNote" rows="2"></textarea></label>`:''}
+    ${!cancelled&&(canDecide||boss||state.role==='sa')?`<label class="field">Comment (needed to return, mark not applicable or reopen)<textarea id="lcNote" rows="2"></textarea></label>`:''}
     <div class="actions">
       ${editor&&!locked?'<button class="btn" type="button" data-lcdo="update">Save changes</button>':''}
       ${editor&&s.status==='Not started'?'<button class="btn" type="button" data-lcdo="start">Start stage</button>':''}
@@ -1732,8 +1754,8 @@ function openStage(pid,n){
       ${canDecide&&s.submitted_by===meId?'<span class="small muted">You submitted this stage, so someone else approves it.</span>':''}
       ${canDecide?'<button class="btn" type="button" data-lcdo="return">Return with comment</button>':''}
       ${boss&&!locked?'<button class="btn" type="button" data-lcdo="na">Not applicable</button>':''}
-      ${state.role==='sa'&&locked?'<button class="btn" type="button" data-lcdo="reopen">Reopen</button>':''}
-      ${!editor&&!boss?'<span class="small muted">View only: the stage owner, the project manager or a super admin can change it.</span>':''}
+      ${state.role==='sa'&&locked&&!cancelled?'<button class="btn" type="button" data-lcdo="reopen">Reopen</button>':''}
+      ${!editor&&!boss&&!cancelled?`<span class="small muted">View only: the stage owner or ${lcBossText(n)} can change it.</span>`:''}
     </div></form>
     <h3>History</h3>
     <ul class="audit">${H.slice().reverse().map(a=>`<li><b>${esc(a.action)}</b> by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}${a.detail&&a.detail.changes&&a.detail.changes.length?`<span class="t2">${esc(a.detail.changes.join(', '))}</span>`:''}</li>`).join('')||'<li class="muted">No changes yet.</li>'}</ul>`;
@@ -1756,7 +1778,7 @@ document.addEventListener('click',async e=>{
   const ok=await lcAct(pid,n,a,a==='update'?payload:{note});
   if(!ok){t.disabled=false;return}
   const s=lcGet(pid,n);
-  if(a==='submit')notify(`${projById(pid).short}: stage ${n}, ${lcDef(n).name}, submitted for approval by ${me().name}. Waiting for ${lcApproverText(pid)}.`);
+  if(a==='submit')notify(`${projById(pid).short}: stage ${n}, ${lcDef(n).name}, submitted for approval by ${me().name}. Waiting for ${lcApproverText(pid,n)}.`);
   if(a==='approve')notify(`${projById(pid).short}: stage ${n}, ${lcDef(n).name}, approved by ${me().name}.`);
   if(a==='return')notify(`${projById(pid).short}: stage ${n}, ${lcDef(n).name}, returned by ${me().name}: ${note}`,true);
   toast(a==='update'?'Saved':`Stage ${n}: ${s.status.toLowerCase()}`);openStage(pid,n);render();
@@ -1769,8 +1791,8 @@ function actionItems(){
     const R=routeOf(d),who=d.status==='Submitted'?R.revName:R.aprName,mine=actionsFor(d).some(k=>k==='review'||k==='approve');
     out.push({type:'Daily report',what:`${d.id}: ${d.status==='Submitted'?'review':'approve'} (${d.foreman}, ${fmtDY(d.date)})`,pid:d.p,who,mine,since:d.date,age:diffDays(d.date,TODAY),late:diffDays(d.date,TODAY)>1,open:{dpr:d.id}})});
   DB.dprs.filter(d=>ids.has(d.p)&&d.status==='Draft'&&d.returned).forEach(d=>out.push({type:'Daily report',what:`${d.id}: returned, fix and resubmit`,pid:d.p,who:d.foreman,mine:d.foreman===my.name,since:d.date,age:diffDays(d.date,TODAY),late:true,open:{dpr:d.id}}));
-  [...ids].forEach(pid=>LC_STAGES.forEach(S=>{const s=lcGet(pid,S.n),own=s.owner&&userById(s.owner);
-    if(s.status==='Awaiting approval')out.push({type:'Lifecycle approval',what:`Stage ${S.n}, ${S.name}: approve or return`,pid,who:lcApproverText(pid),mine:lcBoss(pid)&&s.submitted_by!==my.id,since:(s.submitted_at||'').slice(0,10)||null,age:s.submitted_at?diffDays(String(s.submitted_at).slice(0,10),TODAY):null,late:s.submitted_at&&diffDays(String(s.submitted_at).slice(0,10),TODAY)>3,open:{stage:[pid,S.n]}});
+  [...ids].filter(pid=>(projById(pid)||{}).status!=='Cancelled').forEach(pid=>LC_STAGES.forEach(S=>{const s=lcGet(pid,S.n),own=s.owner&&userById(s.owner);
+    if(s.status==='Awaiting approval')out.push({type:'Lifecycle approval',what:`Stage ${S.n}, ${S.name}: approve or return`,pid,who:lcApproverText(pid,S.n),mine:lcBoss(pid,S.n)&&s.submitted_by!==my.id,since:(s.submitted_at||'').slice(0,10)||null,age:s.submitted_at?diffDays(String(s.submitted_at).slice(0,10),TODAY):null,late:s.submitted_at&&diffDays(String(s.submitted_at).slice(0,10),TODAY)>3,open:{stage:[pid,S.n]}});
     else if(lcOverdue(s))out.push({type:'Lifecycle stage overdue',what:`Stage ${S.n}, ${S.name}${s.next_action?': '+s.next_action:''}`,pid,who:own?own.name:'No owner',mine:!!own&&own.id===my.id,since:s.due_date,age:diffDays(s.due_date,TODAY),late:true,open:{stage:[pid,S.n]}});
     else if(!LC_DONE.has(s.status)&&s.status!=='Not started'&&own&&own.id===my.id)out.push({type:'Lifecycle stage',what:`Stage ${S.n}, ${S.name}${s.next_action?': '+s.next_action:''}`,pid,who:own.name,mine:true,since:s.due_date,age:null,late:false,open:{stage:[pid,S.n]}})}));
   if(canImpView()){const all=impBatches();
@@ -1887,6 +1909,309 @@ function renderCdash(){
   <section class="panel"><div class="card-head"><h2>Cash-flow forecast</h2>${PLANNED('Planned')}</div><p class="small muted" style="margin:0">Planned once commitments and the invoicing schedule are tracked.</p></section>`;
 }
 
+/* ---------- v2.8: Tender register and PE numbers ----------
+   The costing coordinator records each L1 project from Tender's list. ProTrackAI proposes the PE number:
+   a number released by a cancelled project first, otherwise the next in sequence. Only a super admin can
+   choose another. No two live projects ever hold the same PE number; a cancelled project releases its
+   number for another L1 project, and the history keeps both. On the server, tender_act enforces the
+   same rules (schema-update-v7.sql). */
+const canRegister=()=>state.role==='sa'||isHead()||isCoord();
+const canTenderView=()=>PLAN_ROLES.includes(state.role)||isHead()||isCoord();
+const PE_RE=/^PE\s*-?\s*[0-9]{1,6}$/;
+function peCanon(t){
+  const x=String(t||'').trim().toUpperCase();if(!x)return null;
+  if(!PE_RE.test(x))return x;
+  const d=x.match(/([0-9]+)$/)[1].replace(/^0+/,'')||'0';
+  return 'PE-'+(d.length>=3?d:d.padStart(3,'0'));
+}
+const peSeq=t=>{const c=peCanon(t);return c&&/^PE-\d+$/.test(c)?+c.slice(3):null};
+const isPE=t=>/^PE-\d{3,6}$/.test(peCanon(t)||'');
+function peHolderLocal(pe,except){const c=peCanon(pe);const h=DB.master.projects.find(p=>p.status!=='Cancelled'&&p.id!==except&&peCanon(pcode(p))===c);return h?h.id:null}
+function peProposeLocal(){
+  const seqs=[...DB.master.projects.flatMap(p=>[peSeq(p.id),peSeq(p.pe)]),...(DB.regAudit||[]).map(a=>peSeq(a.pe_number))].filter(n=>n!=null);
+  const next=peCanon('PE-'+((seqs.length?Math.max(...seqs):0)+1));
+  const last={};(DB.regAudit||[]).filter(a=>a.action==='PE released'&&peSeq(a.pe_number)!=null).forEach(a=>{last[peCanon(a.pe_number)]=a});
+  const released=Object.values(last).filter(a=>!peHolderLocal(a.pe_number,null)).sort((a,b)=>String(a.at_time)<String(b.at_time)?-1:1)
+    .map(a=>({pe:peCanon(a.pe_number),te:a.te_number,project:a.project_id,at:a.at_time}));
+  return {proposed:released.length?released[0].pe:next,next,released};
+}
+function regLog(p,action,note,detail,pe){
+  DB.regAudit=DB.regAudit||[];
+  DB.regAudit.push({id:DB.regAudit.reduce((m,a)=>Math.max(m,+a.id||0),0)+1,project_id:p.id,te_number:p.te||null,pe_number:pe||peCanon(pcode(p)),
+    action,note:note||null,detail:detail||null,by_user:me().id,by_name:me().name,by_role:state.role,at_time:new Date().toISOString()});
+}
+function lcLog(pid,n,action,note,detail){
+  DB.lcAudit=DB.lcAudit||[];
+  DB.lcAudit.push({id:DB.lcAudit.reduce((m,a)=>Math.max(m,+a.id||0),0)+1,project_id:pid,stage_no:n,action,note:note||null,detail:detail||null,
+    by_name:me().name,by_role:state.role,at_time:new Date().toISOString()});
+}
+function lcPut(pid,s){DB.lifecycle=DB.lifecycle||{};(DB.lifecycle[pid]=DB.lifecycle[pid]||{})[s.stage_no]=s}
+
+/* Demo mode: the same rules as tender_act, applied in this browser */
+function tenderActLocal(a,pid,f,note){
+  f=f||{};note=String(note||'').trim();const r=state.role,meU=me(),fail=t=>{throw new Error(t)};
+  const num=v=>v===''||v==null?null:(isFinite(+v)&&String(v).trim()!==''?+v:NaN);
+  const up=t=>String(t||'').trim().toUpperCase();
+  if(!['register','update','change_pe','cancel','reinstate'].includes(a))fail('Unknown action '+a);
+  if('expected_value_m' in f&&(Number.isNaN(num(f.expected_value_m))||num(f.expected_value_m)<0))fail('The expected value must be a number of SAR millions, zero or more');
+  for(const [k,l] of [['notified_on','notification'],['award_on','award'],['contract_signed_on','contract signing']])if(f[k]&&!isoOk(f[k]))fail(`The ${l} date is not a valid date`);
+  if(f.award_on&&f.award_on>addDays(localISO(),1))fail('The award date cannot be in the future');
+  if(f.contract_signed_on&&f.contract_signed_on>addDays(localISO(),1))fail('The contract signing date cannot be in the future');
+  if(f.region&&!regById(f.region))fail('Unknown region');
+  if(a==='register'){
+    if(!canRegister())fail('Only the costing coordinator, the Head of Planning and Cost Control or a super admin can register a Tender L1 project');
+    const te=up(f.te_number);if(!te)fail('Enter the TE number from the Tender list');if(te.length>30)fail('The TE number is too long');
+    const dup=DB.master.projects.find(p=>p.te&&up(p.te)===te);if(dup)fail(`TE number ${te} is already registered, as ${pcode(dup)}`);
+    const name=String(f.name||'').trim();if(!name)fail('Enter the project name');
+    const prop=peProposeLocal(),pe=r==='sa'&&String(f.pe_number||'').trim()?peCanon(f.pe_number):prop.proposed;
+    if(!isPE(pe))fail('A PE number looks like PE-123');
+    const h=peHolderLocal(pe,null);if(h)fail(`${pe} is already given to a live project (${h})`);
+    const reused=prop.released.some(x=>x.pe===pe);let id=pe,k=1;while(projById(id)){k++;id=pe+'-R'+k}
+    const p={id,name:name.slice(0,200),short:(String(f.short||'').trim()||name).slice(0,22),sector:f.sector||(DB.master.sectors[0]||{}).id||'',region:f.region||'',city:'',ptype:'Other',
+      start:null,finish:null,value:0,status:'Pre-award',mhSrc:'Costing file',billing:{},eot:{},milestones:[],pm:'Unassigned',eng:'Unassigned',foremen:[],
+      te,pe,client:String(f.client||'').trim(),location:String(f.location||'').trim(),expected:num(f.expected_value_m),notified:f.notified_on||null,award:null,signed:null,
+      cancelledOn:null,cancelReason:'',registeredBy:meU.id,registeredAt:new Date().toISOString()};
+    DB.master.projects.push(p);
+    DB.master.users.filter(u=>u.active!==false&&!['sa','exec'].includes(u.role)&&(u.id===meU.id||pccOf(u.id).length)).forEach(u=>{u.projects=u.projects||[];if(!u.projects.includes(id))u.projects.push(id)});
+    if(isCoord()&&r!=='sa')for(let n=1;n<=4;n++){const s=lcBlank(id,n);s.owner=meU.id;lcPut(id,s);lcLog(id,n,'Updated','Owner set when the project was registered from the Tender list',{changes:['owner '+meU.name]})}
+    regLog(p,'Registered',null,{te,name:p.name,client:p.client,location:p.location,region:p.region,expected_value_m:p.expected,notified_on:p.notified});
+    regLog(p,'PE allocated',reused?'Reallocated: released earlier by a cancelled project':null,{pe,proposed:prop.proposed,chosen_by_super_admin:pe!==prop.proposed,reused},pe);
+    logChange(`Registered ${te} as ${pe} (${p.short})`);applyMaster();save();
+    return Object.assign({},p,{pe_number:pe,proposed:prop.proposed});
+  }
+  const p=projById(pid);if(!p||!accessIds().includes(pid))fail('You do not have access to this project');
+  if(a==='update'){
+    if(!canRegister())fail('Only the costing coordinator, the Head of Planning and Cost Control or a super admin can change the Tender details');
+    if(p.status==='Cancelled')fail('This project was cancelled; a super admin must reinstate it first');
+    const ch=[],q=Object.assign({},p),oldSigned=q.signed||null;   // validate on a copy; nothing changes unless all is valid
+    if('te_number' in f){const te=up(f.te_number)||null;
+      if(te!==(q.te?up(q.te):null)){if(q.te&&r!=='sa')fail('Only a super admin can change a TE number once it is recorded');if(!te)fail('Enter the TE number');if(te.length>30)fail('The TE number is too long');
+        if(DB.master.projects.some(x=>x.id!==pid&&x.te&&up(x.te)===te))fail(`TE number ${te} is already registered`);ch.push(`TE ${q.te||'none'} to ${te}`);q.te=te}}
+    if('name' in f){const v=String(f.name||'').trim();if(!v)fail('The project name cannot be empty');if(v!==q.name){ch.push('name');q.name=v.slice(0,200)}}
+    ['client','location'].forEach(k=>{if(k in f){const v=String(f[k]||'').trim();if(v!==(q[k]||'')){ch.push(k);q[k]=v}}});
+    if('region' in f&&(f.region||'')!==(q.region||'')){ch.push('region');q.region=f.region||''}
+    if('expected_value_m' in f&&num(f.expected_value_m)!==(q.expected==null?null:+q.expected)){ch.push('expected value '+(f.expected_value_m||'none'));q.expected=num(f.expected_value_m)}
+    if('notified_on' in f&&(f.notified_on||null)!==(q.notified||null)){ch.push('notified '+(f.notified_on||'none'));q.notified=f.notified_on||null}
+    if('award_on' in f&&(f.award_on||null)!==(q.award||null)){ch.push('award '+(f.award_on||'none'));q.award=f.award_on||null;if(q.award&&q.status==='Pre-award'){q.status='Active';ch.push('status Active')}}
+    if('contract_signed_on' in f&&(f.contract_signed_on||null)!==oldSigned){ch.push('contract signed '+(f.contract_signed_on||'none'));q.signed=f.contract_signed_on||null}
+    Object.assign(p,q);
+    if(!ch.length)return p;
+    regLog(p,'Details updated',null,{changes:ch});
+    if(p.signed&&p.signed!==oldSigned){const s=lcGet(pid,4),due=addDays(p.signed,7);
+      if(['Not started','In progress'].includes(s.status)&&(!s.due_date||(oldSigned&&s.due_date===addDays(oldSigned,7)))&&s.due_date!==due){
+        const c=JSON.parse(JSON.stringify(s));c.due_date=due;lcPut(pid,c);lcLog(pid,4,'Updated','Due 7 days after contract signing',{changes:['due '+due]})}}
+    logChange(`${pcode(p)} Tender details updated: ${ch.join(', ')}`);applyMaster();save();return p;
+  }
+  if(a==='change_pe'){
+    if(r!=='sa')fail('Only a super admin can change a PE number');
+    if(p.status==='Cancelled')fail('Reinstate the project before changing its PE number');
+    if(!note)fail('Add a comment saying why the PE number changes');
+    const pe=peCanon(f.pe_number);if(!isPE(pe))fail('A PE number looks like PE-123');
+    const prev=peCanon(pcode(p));if(pe===prev)fail('That is already this project\'s PE number');
+    const h=peHolderLocal(pe,pid);if(h)fail(`${pe} is already given to a live project (${h})`);
+    p.pe=pe;regLog(p,'PE changed',note,{from:prev,to:pe},pe);
+    if(peSeq(prev)!=null)regLog(p,'PE released','Released when the PE number was changed',{pe:prev},prev);
+    logChange(`PE number of ${p.short} changed from ${prev} to ${pe} (${note})`);applyMaster();save();return p;
+  }
+  if(a==='cancel'){
+    if(!(r==='sa'||isHead()))fail('Only the Head of Planning and Cost Control or a super admin can cancel a project');
+    if(p.status==='Cancelled')fail('This project is already cancelled');
+    if(!note)fail('Add a comment saying why, for example cancelled by the client after L1');
+    const prev=p.status;p.status='Cancelled';p.cancelledOn=localISO();p.cancelReason=note.slice(0,500);
+    regLog(p,'Cancelled',note,{previous_status:prev});
+    if(peSeq(pcode(p))!=null)regLog(p,'PE released','Released when the project was cancelled; it can go to another L1 project',{pe:peCanon(pcode(p))});
+    logChange(`${pcode(p)} ${p.short} cancelled: ${note}`);applyMaster();save();return p;
+  }
+  // reinstate
+  if(r!=='sa')fail('Only a super admin can reinstate a cancelled project');
+  if(p.status!=='Cancelled')fail('Only a cancelled project can be reinstated');
+  if(!note)fail('Add a comment saying why the project is reinstated');
+  const cur=peCanon(pcode(p)),pe=peCanon(String(f.pe_number||'').trim())||cur;
+  if(pe!==cur&&!isPE(pe))fail('A PE number looks like PE-123');
+  const h=peHolderLocal(pe,pid);if(h)fail(`${pe} now belongs to another live project (${h}). Give this project a new PE number to reinstate it`);
+  const lastC=(DB.regAudit||[]).filter(x=>x.project_id===pid&&x.action==='Cancelled').pop(),prev=((lastC||{}).detail||{}).previous_status;
+  p.status=prev&&prev!=='Cancelled'?prev:'Active';p.cancelledOn=null;p.cancelReason='';if(pe!==cur)p.pe=pe;
+  regLog(p,'Reinstated',note,{status:p.status});regLog(p,'PE allocated','Allocated again when the project was reinstated',{pe,reinstated:true},pe);
+  logChange(`${pcode(p)} ${p.short} reinstated: ${note}`);applyMaster();save();return p;
+}
+async function cloudLoadRegister(){
+  try{
+    const [d,a]=await Promise.all([selAll('pcc_designations','*',null,['user_id','designation']),selAll('register_audit','*',null,['id'])]);
+    DB.pcc={};d.forEach(x=>{(DB.pcc[x.user_id]=DB.pcc[x.user_id]||[]).push(x.designation)});DB.regAudit=a;DB.regMissing=false;
+  }catch(e){DB.pcc={};DB.regAudit=[];DB.regMissing=srvMsg(e)}
+}
+async function tenderAct(a,pid,fields,note){
+  if(CLOUD_ME){
+    let r;try{r=await rpc('tender_act',{p:{action:a,project_id:pid||null,note:note||null,fields:fields||{}}})}
+    catch(e){toast('The server refused this: '+srvMsg(e));return null}
+    try{await cloudLoadProjects();await cloudLoadDirectory();const d=DB.master.users.find(u=>u.id===CLOUD_ME.id);if(d){CLOUD_ME.projects=d.projects;CLOUD_ME.regions=d.regions}
+      await cloudLoadLifecycle();await cloudLoadRegister()}catch(e){toast('Saved, but the list could not refresh: '+srvMsg(e))}
+    applyMaster();save();return r;
+  }
+  try{return tenderActLocal(a,pid,fields,note)}catch(e){toast(e.message);return null}
+}
+async function peProposal(){
+  if(!CLOUD_ME)return peProposeLocal();
+  try{return await rpc('pe_proposal')}catch(e){return {error:srvMsg(e)}}
+}
+async function savePcc(uid,before,want){        // designations, super admin only
+  const diff=[...['head','coordinator'].filter(d=>want.includes(d)!==before.includes(d))];
+  if(!diff.length)return;
+  if(CLOUD_ME){for(const d of diff)await rpc('pcc_designate',{p:{user_id:uid,designation:d,on:want.includes(d)}});await cloudLoadRegister();return}
+  DB.pcc=DB.pcc||{};DB.pcc[uid]=want.slice();
+}
+
+/* ---------- the Tender register screen ---------- */
+const TEN_ST={all:'All',pre:'Pre-award',live:'Active and other',cx:'Cancelled'};
+const tenderStatusOk=(p,f)=>f==='all'||(f==='pre'&&p.status==='Pre-award')||(f==='cx'&&p.status==='Cancelled')||(f==='live'&&!['Pre-award','Cancelled'].includes(p.status));
+function renderTender(){
+  if(!canTenderView()){go('dash');return}
+  const f=state.tenF||'all',ps=PROJECTS.filter(p=>SCOPE.has(p.id)),list=ps.filter(p=>tenderStatusOk(p,f)).sort((a,b)=>(peSeq(pcode(b))||0)-(peSeq(pcode(a))||0)||pcode(a).localeCompare(pcode(b)));
+  const hist=(DB.regAudit||[]).filter(a=>SCOPE.has(a.project_id)).slice().sort((a,b)=>b.id-a.id).slice(0,40);
+  const chip=(v)=>`<button type="button" class="chip" data-tenf="${v}" aria-pressed="${f===v}">${TEN_ST[v]} (${ps.filter(p=>tenderStatusOk(p,v)).length})</button>`;
+  const cur=p=>{const s=lcCurrent(p.id);return `${s.stage_no}. ${lcDef(s.stage_no).name}`};
+  $('#view').innerHTML=`${crumb()}
+  ${CLOUD_ME&&DB.regMissing?`<div class="warn-box" style="margin-bottom:14px">The Tender register needs the v7 database update (see STAGE-4B-SETUP). <span class="small">${esc(DB.regMissing)}</span></div>`:''}
+  <div class="g g-kpi">${kpi('From the Tender list',fmt(ps.filter(p=>p.te).length),'Projects with a TE number')}
+    ${kpi('Pre-award',fmt(ps.filter(p=>p.status==='Pre-award').length),'L1, award not yet recorded')}
+    ${kpi('Cancelled',fmt(ps.filter(p=>p.status==='Cancelled').length),'PE number released')}
+    ${kpi('Next PE number',`<span id="tenNext">${CLOUD_ME?'…':esc(peProposeLocal().proposed)}</span>`,'Proposed by ProTrackAI')}</div>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Tender register</h2>
+    <div class="chips" role="group" aria-label="Status">${Object.keys(TEN_ST).map(chip).join('')}</div>
+    ${canRegister()?'<button class="btn primary" type="button" data-tenreg>Register an L1 project</button>':''}</div>
+    <p class="small muted" style="margin:0 0 10px">One row per project: the TE number from Tender's L1 list and the PE number given against it. ProTrackAI proposes each PE number and never gives one number to two live projects. A cancelled project releases its number for the next L1 project, and the history below keeps both.</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>PE number</th><th>TE number</th><th>Project</th><th>Client and location</th><th class="n">Expected value</th><th>Status</th><th>Current stage</th><th></th></tr></thead><tbody>
+    ${list.map(p=>`<tr class="click${p.status==='Cancelled'?' muted':''}" data-tenopen="${esc(p.id)}" tabindex="0"><td><b>${esc(pcode(p))}</b>${p.pe&&p.pe!==p.id?`<span class="t2">record ${esc(p.id)}</span>`:''}</td>
+      <td>${p.te?esc(p.te):'<span class="muted small">not recorded</span>'}</td><td>${esc(p.short)}<span class="t2">${esc(p.name)}</span></td>
+      <td>${esc(p.client||'—')}<span class="t2">${esc(p.location||'')}${p.region?(p.location?', ':'')+esc(regName(p))+' Region':''}</span></td>
+      <td class="n">${p.expected!=null&&p.expected!==''?'SAR '+fmt(+p.expected,1)+'M':'—'}</td>
+      <td><span class="st ${stCls(p.status)}">${esc(p.status)}</span>${p.status==='Cancelled'&&p.cancelledOn?`<span class="t2">${fmtDY(p.cancelledOn)}</span>`:''}</td>
+      <td class="small">${p.status==='Cancelled'?'—':esc(cur(p))}</td><td class="n"><button class="btn sm" type="button" data-tenopen="${esc(p.id)}">Open</button></td></tr>`).join('')||`<tr><td colspan="8" class="muted">${f==='all'?'No project in this scope yet.':'No project with this status.'}</td></tr>`}
+    </tbody></table></div></section>
+  <section class="panel"><div class="card-head"><h2>PE number history</h2><span class="small muted">Append-only: entries cannot be changed or deleted</span></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>When</th><th>PE number</th><th>TE number</th><th>What happened</th><th>By</th></tr></thead><tbody>
+    ${hist.map(a=>`<tr><td class="small">${esc(tStamp(a.at_time))}</td><td><b>${esc(a.pe_number||'—')}</b></td><td>${esc(a.te_number||'—')}</td><td>${esc(a.action)}${a.note?`<span class="t2">${esc(a.note)}</span>`:''}${a.detail&&a.detail.changes?`<span class="t2">${esc(a.detail.changes.join(', '))}</span>`:''}</td><td class="small">${esc(a.by_name||'')}</td></tr>`).join('')||'<tr><td colspan="5" class="muted">Nothing recorded yet.</td></tr>'}
+    </tbody></table></div></section>`;
+  if(CLOUD_ME&&canRegister())peProposal().then(x=>{const el=$('#tenNext');if(el)el.textContent=x&&x.proposed?x.proposed:'—'});
+  else if(CLOUD_ME){const el=$('#tenNext');if(el)el.textContent='—'}
+}
+async function openTenderForm(){
+  const m=DB.master,sa=state.role==='sa';
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>Register an L1 project</h2><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <p class="small muted" style="margin:0 0 10px">Copy the details from Tender's L1 list. ProTrackAI gives the PE number; the project then appears in your scope with its 12 lifecycle stages.</p>
+    <form id="tenForm" novalidate><div class="fields">
+      ${F('TE number',inp('te_number','','maxlength="30" placeholder="e.g. TE2231" autocomplete="off"'))}
+      ${F('PE number',`<input name="pe_number" id="tenPe" value="" ${sa?'':'readonly'} aria-describedby="tenPeHelp"><span class="small muted" id="tenPeHelp">Working out the next number…</span>`)}
+      ${F('Project name',inp('name','','maxlength="200" placeholder="As on the Tender list"'),true)}
+      ${F('Short name',inp('short','','maxlength="22" placeholder="Shown on dashboards (optional)"'))}
+      ${F('Region',sel('region',m.regions.map(r=>[r.id,r.name]),(m.regions[0]||{}).id))}
+      ${F('Client',inp('client','','maxlength="200"'))}
+      ${F('Location',inp('location','','maxlength="200" placeholder="Site or city"'))}
+      ${F('Expected value (SAR M)',inp('expected_value_m','','type="number" min="0" step="0.1" inputmode="decimal"'))}
+      ${F('Date Tender notified',inp('notified_on',localISO(),'type="date"'))}
+    </div><div id="tenRel"></div><p class="err" id="tenErr"></p>
+    <div class="actions"><button class="btn primary" type="submit">Register</button><button class="btn" type="button" data-close>Cancel</button></div></form>`;
+  $('#drawer').hidden=false;
+  const x=await peProposal(),pe=$('#tenPe'),help=$('#tenPeHelp');if(!pe)return;
+  if(!x||x.error){help.textContent='Could not get the next PE number: '+((x&&x.error)||'unknown error');return}
+  pe.value=x.proposed;pe.dataset.proposed=x.proposed;
+  help.textContent=(x.released||[]).some(r=>r.pe===x.proposed)?`Proposed: ${x.proposed}, released when ${(x.released.find(r=>r.pe===x.proposed)||{}).te||'another project'} was cancelled. ${sa?'As super admin you can type another PE number.':'Only a super admin can change it.'}`
+    :`Proposed: the next in sequence. ${sa?'As super admin you can type another PE number.':'Only a super admin can change it.'}`;
+  if(sa&&(x.released||[]).length)$('#tenRel').innerHTML=`<p class="small" style="margin:6px 0">Released numbers you can reuse: ${x.released.map(r=>`<button class="btn sm" type="button" data-tenuse="${esc(r.pe)}">${esc(r.pe)}</button> <span class="muted small">from ${esc(r.te||r.project)}</span>`).join(' ')} · next in sequence <button class="btn sm" type="button" data-tenuse="${esc(x.next)}">${esc(x.next)}</button></p>`;
+}
+async function submitTenderForm(fd){
+  const v=k=>String(fd.get(k)??'').trim(),e=t=>{$('#tenErr').textContent=t};
+  if(!v('te_number'))return e('Enter the TE number from the Tender list.');
+  if(!v('name'))return e('Enter the project name.');
+  const pe=$('#tenPe'),fields={te_number:v('te_number'),name:v('name'),short:v('short'),region:v('region'),client:v('client'),location:v('location'),expected_value_m:v('expected_value_m'),notified_on:v('notified_on')};
+  if(state.role==='sa'&&pe&&pe.value.trim()&&pe.value.trim()!==pe.dataset.proposed)fields.pe_number=pe.value.trim();
+  const btn=$('#tenForm [type=submit]');if(btn)btn.disabled=true;
+  const r=await tenderAct('register',null,fields);
+  if(!r){if(btn)btn.disabled=false;e('Not registered: see the message at the bottom of the screen.');return}
+  const got=r.pe_number||r.pe,asked=pe&&pe.dataset.proposed;
+  closeDrawer();render();toast(`${String(fields.te_number).toUpperCase()} registered as ${got}${asked&&got!==asked&&!fields.pe_number?` (${asked} was taken a moment ago)`:''}`);
+}
+function openTender(pid){
+  const p=projById(pid);if(!p)return;
+  const sa=state.role==='sa',cx=p.status==='Cancelled',edit=canRegister()&&!cx,H=(DB.regAudit||[]).filter(a=>a.project_id===pid).slice().reverse();
+  const row=(l,v)=>`<tr><td>${l}</td><td>${v}</td></tr>`;
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${esc(pcode(p))} · ${esc(p.short)}</h2><span class="st ${stCls(p.status)}">${esc(p.status)}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <table class="tbl kv"><tbody>
+      ${row('PE number',`<b>${esc(pcode(p))}</b>${p.pe&&p.pe!==p.id?` <span class="muted small">(record ${esc(p.id)})</span>`:''}`)}
+      ${cx?row('Cancelled',`${p.cancelledOn?fmtDY(p.cancelledOn):''}${p.cancelReason?': '+esc(p.cancelReason):''}`):''}
+    </tbody></table>
+    <form id="tenEdit" data-pid="${esc(pid)}" novalidate><div class="fields">
+      ${F('TE number',inp('te_number',p.te||'',`maxlength="30" ${edit&&(sa||!p.te)?'':'disabled'}`))}
+      ${F('Project name',inp('name',p.name,edit?'maxlength="200"':'disabled'),true)}
+      ${F('Client',inp('client',p.client||'',edit?'maxlength="200"':'disabled'))}
+      ${F('Location',inp('location',p.location||'',edit?'maxlength="200"':'disabled'))}
+      ${F('Region',sel('region',DB.master.regions.map(r=>[r.id,r.name]),p.region,edit?'':'disabled'))}
+      ${F('Expected value (SAR M)',inp('expected_value_m',p.expected==null?'':p.expected,`type="number" min="0" step="0.1" ${edit?'':'disabled'}`))}
+      ${F('Date Tender notified',inp('notified_on',p.notified||'',`type="date" ${edit?'':'disabled'}`))}
+      ${F('Notice of award received',inp('award_on',p.award||'',`type="date" ${edit?'':'disabled'}`))}
+      ${F('Contract signed',inp('contract_signed_on',p.signed||'',`type="date" ${edit?'':'disabled'}`))}
+    </div>
+    <p class="small muted">Recording the award makes a pre-award project Active. Stage 4 (kick-off and handover) falls due 7 days after the contract signing date.</p>
+    <p class="err" id="tenEditErr"></p>
+    <div class="actions">${edit?'<button class="btn primary" type="submit">Save Tender details</button>':''}<button class="btn" type="button" data-tenproj="${esc(pid)}">Open project overview</button></div></form>
+    ${(sa||isHead())&&!cx?`<div class="note" style="margin-top:16px"><b>Cancel this project</b>For example, the client cancelled after L1. Nothing is deleted: the project, its stages and history stay, and ${esc(pcode(p))} is released for the next L1 project.
+      <label class="field" style="margin-top:8px">Reason<textarea id="tenCxNote" rows="2"></textarea></label><div class="actions" style="margin:8px 0 0"><button class="btn danger" type="button" data-tencancel="${esc(pid)}">Cancel ${esc(pcode(p))}</button></div></div>`:''}
+    ${sa&&!cx?`<div class="note" style="margin-top:12px"><b>Change the PE number</b>Super admin only. The old number is released and the change is kept in the history.
+      <div class="fields" style="margin-top:8px">${F('New PE number',inp('newpe','','id="tenNewPe" placeholder="PE-123"'))}${F('Reason',inp('pereason','','id="tenPeNote"'))}</div>
+      <div class="actions" style="margin:8px 0 0"><button class="btn" type="button" data-tenchpe="${esc(pid)}">Change PE number</button></div></div>`:''}
+    ${sa&&cx?`<div class="note" style="margin-top:16px"><b>Reinstate this project</b>Super admin only. If ${esc(pcode(p))} has gone to another project since, give a new PE number.
+      <div class="fields" style="margin-top:8px">${F('PE number (leave empty to keep '+esc(pcode(p))+')',inp('repe','','id="tenRePe" placeholder="PE-123"'))}${F('Reason',inp('rereason','','id="tenReNote"'))}</div>
+      <div class="actions" style="margin:8px 0 0"><button class="btn" type="button" data-tenreinstate="${esc(pid)}">Reinstate</button></div></div>`:''}
+    <h3>History</h3>
+    <ul class="audit">${H.map(a=>`<li><b>${esc(a.action)}</b>${a.pe_number?' '+esc(a.pe_number):''} by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}${a.detail&&a.detail.changes?`<span class="t2">${esc(a.detail.changes.join(', '))}</span>`:''}</li>`).join('')||'<li class="muted">No register history yet. Projects created before v2.8 start their history with the first change.</li>'}</ul>`;
+  $('#drawer').hidden=false;
+}
+async function submitTenderEdit(fd){
+  const f=$('#tenEdit'),pid=f.dataset.pid,p=projById(pid),fields={};
+  const cur={te_number:p.te||'',name:p.name||'',client:p.client||'',location:p.location||'',region:p.region||'',expected_value_m:p.expected==null?'':String(p.expected),notified_on:p.notified||'',award_on:p.award||'',contract_signed_on:p.signed||''};
+  Object.keys(cur).forEach(k=>{const el=f.elements[k];if(!el||el.disabled)return;const v=el.value.trim();if(v!==String(cur[k]))fields[k]=v===''?null:v});
+  if(!Object.keys(fields).length){toast('Nothing changed');return}
+  const r=await tenderAct('update',pid,fields);if(!r){$('#tenEditErr').textContent='Not saved: see the message at the bottom of the screen.';return}
+  toast(`${pcode(projById(pid)||p)} Tender details saved`);openTender(pid);render();
+}
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-tenf],[data-tenreg],[data-tenopen],[data-tenuse],[data-tenproj],[data-tencancel],[data-tenchpe],[data-tenreinstate]');if(!t)return;
+  const d=t.dataset;
+  if(d.tenf){state.tenF=d.tenf;render();return}
+  if(d.tenreg!==undefined){openTenderForm();return}
+  if(d.tenopen){e.stopPropagation();openTender(d.tenopen);return}
+  if(d.tenuse){const pe=$('#tenPe');if(pe)pe.value=d.tenuse;return}
+  if(d.tenproj){closeDrawer();state.scope=d.tenproj;state.sector='ALL';go('proj');return}
+  if(d.tencancel){const note=($('#tenCxNote')?.value||'').trim();if(!note){toast('Add a reason for the cancellation');return}
+    const ok=await confirmBox(`Cancel ${pcode(projById(d.tencancel))}?\nThe project, its stages and history are kept, and its PE number is released for another L1 project.`,'Cancel project');if(!ok)return;
+    t.disabled=true;const r=await tenderAct('cancel',d.tencancel,{},note);t.disabled=false;if(r){toast(`${pcode(projById(d.tencancel))} cancelled; its PE number is released`);openTender(d.tencancel);render()}return}
+  if(d.tenchpe){const pe=($('#tenNewPe')?.value||'').trim(),note=($('#tenPeNote')?.value||'').trim();if(!pe||!note){toast('Enter the new PE number and the reason');return}
+    t.disabled=true;const r=await tenderAct('change_pe',d.tenchpe,{pe_number:pe},note);t.disabled=false;if(r){toast(`PE number changed to ${r.pe_number||r.pe}`);openTender(d.tenchpe);render()}return}
+  if(d.tenreinstate){const pe=($('#tenRePe')?.value||'').trim(),note=($('#tenReNote')?.value||'').trim();if(!note){toast('Add a reason for reinstating');return}
+    t.disabled=true;const r=await tenderAct('reinstate',d.tenreinstate,pe?{pe_number:pe}:{},note);t.disabled=false;if(r){toast(`${pcode(projById(d.tenreinstate))} reinstated`);openTender(d.tenreinstate);render()}return}
+});
+document.addEventListener('submit',e=>{
+  if(e.target.id==='tenForm'){e.preventDefault();submitTenderForm(new FormData(e.target))}
+  if(e.target.id==='tenEdit'){e.preventDefault();submitTenderEdit(new FormData(e.target))}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('tr[data-tenopen]'))openTender(e.target.dataset.tenopen)});
+
+/* One-time, in this browser: stages 1 to 5 not yet submitted take the v2.8 checklists, keeping every tick
+   (the server does the same in schema-update-v7.sql) */
+function lcUpgrade28(){
+  if(CLOUD||DB.lcV>=28)return;
+  Object.entries(DB.lifecycle||{}).forEach(([pid,L])=>{for(let n=1;n<=5;n++){const s=L[n];if(!s||!['Not started','In progress'].includes(s.status))continue;
+    const tpl=lcDef(n).items,keys=new Set(tpl.map(x=>x[0])),old=s.deliverables||[];
+    const merged=tpl.map(([k,label,req])=>{const o=old.find(x=>x.k===k);return o?Object.assign({},o,{label,req:!!req}):{k,label,req:!!req,done:false}});
+    const legacy=s.status==='In progress'?old.filter(x=>!keys.has(x.k)).map(x=>Object.assign({},x,{req:false,legacy:true})):[];
+    const next=merged.concat(legacy);if(JSON.stringify(next)===JSON.stringify(old))continue;
+    const added=tpl.filter(([k])=>!old.some(x=>x.k===k)).map(x=>x[1]);
+    s.deliverables=next;s.department=lcDef(n).dept;
+    DB.lcAudit=DB.lcAudit||[];DB.lcAudit.push({id:DB.lcAudit.reduce((m,a)=>Math.max(m,+a.id||0),0)+1,project_id:pid,stage_no:n,action:'Checklist updated',
+      note:'Stages 1 to 5 now follow the Tender-to-SAP process (ProTrackAI v2.8). Ticks already given are kept.',detail:{added,now_optional:legacy.map(x=>x.label)},by_name:'ProTrackAI v2.8 update',by_role:'system',at_time:new Date().toISOString()})}});
+  DB.lcV=28;
+}
+
 /* ---------- backup, restore and the move to the server ---------- */
 const backupName=k=>`protrack-${k}-${localISO()}.json`;
 async function downloadBrowserBackup(){
@@ -1897,7 +2222,9 @@ async function downloadBrowserBackup(){
 async function downloadServerBackup(){
   const ids=accessIds();if(!ids.length)return toast('No projects to back up');
   const out={format:'protrack-server-backup',version:1,app:APP_VERSION,exported_at:new Date().toISOString(),projects:[]};
-  for(const id of ids){try{out.projects.push(await rpc('export_project',{p:id}))}catch(e){return toast(`Backup stopped at ${projById(id).short}: ${srvMsg(e)}`)}}
+  for(const id of ids){try{const x=await rpc('export_project',{p:id});
+      for(const t of ['lifecycle_stages','lifecycle_audit','register_audit']){try{x[t]=await selAll(t,'*',q=>q.eq('project_id',id),t==='lifecycle_stages'?['stage_no']:['id'])}catch(e){}}   // lifecycle (v2.7) and register (v2.8) records, when installed
+      out.projects.push(x)}catch(e){return toast(`Backup stopped at ${projById(id).short}: ${srvMsg(e)}`)}}
   await saveFile(backupName('server-backup'),new Blob([JSON.stringify(out)],{type:'application/json'}));
   toast(`Server backup of ${ids.length} project${ids.length>1?'s':''} downloaded`);
 }
@@ -2103,10 +2430,11 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={
+  tender:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 9h6M9 13h6M9 17h3"/>',
   act:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',pdash:'<path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/>',cdash:'<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
   proj:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/>',
   mat:'<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>',
@@ -2133,13 +2461,13 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='2.7';
+const APP_VERSION='2.8';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'exec',label:'Executive summary'}],single:true},
   {k:'projects',label:'Projects & Handover',ic:'proj',items:[
     {v:'proj',label:'Project overview'},{v:'act',label:'Actions and approvals'},
-    {plan:'Tender register'},{plan:'Contract register'},{plan:'Handover checklist'}]},
+    {v:'tender',label:'Tender register'},{plan:'Contract register'},{plan:'Handover checklist'}]},
   {k:'planning',label:'Planning & Scheduling',ic:'base',items:[
     {v:'pdash',label:'Planning dashboard'},{v:'base',sec:'p6',label:'Baselines and P6 import'},{v:'upd',label:'Weekly E&P update'},
     {v:'rep',rep:'basecmp',label:'Baseline comparison'},{v:'rep',rep:'p6upd',label:'P6 progress update'},
@@ -2353,7 +2681,7 @@ function renderProj(){
   const tabHTML=`<div class="ptabs">${tabs.map(([l,g,on])=>on?`<span class="ptab on">${l}</span>`:g?(()=>{const [v,r]=g.split(':');return `<button type="button" class="ptab" data-go="${v}"${r?` data-rep="${r}"`:''}>${l}</button>`})():`<span class="ptab off" title="Planned: not available yet">${l} <span class="pend sm">Planned</span></span>`).join('')}</div>`;
   const status=k.crit===0?['On track','Low']:k.crit===1?['Watch','Medium']:['At risk','High'];
   $('#view').innerHTML=`<div class="crumb"><button type="button" class="linkbtn" data-projall="1">Projects</button> › ${esc(p.short)}</div>
-    <div class="phead"><div><h2 class="ptitle">${esc(p.id)} · ${esc(p.name)} <span class="sev ${status[1]}">${status[0]}</span></h2>
+    <div class="phead"><div><h2 class="ptitle">${esc(pcode(p))} · ${esc(p.name)} <span class="sev ${status[1]}">${status[0]}</span></h2>
       <div class="pmeta"><span>${esc(cityName(p))}, ${esc(regName(p))} Region</span><span>${esc(secById(p.sector)?.name||'')}${p.ptype?` · ${esc(p.ptype)}`:''}</span><span>${fmtDY(p.start)} to ${fmtDY(p.finish)} (${Math.round(diffDays(p.start,p.finish)/30.4)} months)</span><span>PM ${esc(p.pm||'—')} · Site engineer lead ${esc(p.eng||'—')}</span></div></div>
       <div class="pbtns">${state.role==='sa'?`<button type="button" class="btn sm" data-go="admin" data-atab="projects">Edit project</button>`:''}<button type="button" class="btn sm" disabled title="Planned: document register not available yet">Documents <span class="pend sm">Planned</span></button>${ROLE_VIEWS[state.role]&&!ROLE_VIEWS[state.role].includes('rep')?'':`<button type="button" class="btn primary sm" data-go="rep">Project reports</button>`}</div></div>
     ${strip}${tabHTML}
@@ -2421,9 +2749,9 @@ document.addEventListener('click',e=>{
 
 /* ---------- shell ---------- */
 function renderNav(){
-  const L=T[state.lang];const views=['exec','proj','act','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro'));
+  const L=T[state.lang];const views=['exec','proj','tender','act','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView()));
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['proj','imp','pdash','cdash','act'].includes(v)).map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['proj','tender','imp','pdash','cdash','act'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -2446,7 +2774,7 @@ let charts=[];const killCharts=()=>{charts.forEach(c=>c.destroy());charts=[]};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
-  ({act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({tender:renderTender,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -3972,7 +4300,7 @@ function renderExecList(){
   const rows=execProjects().map(projKPI).filter(k=>!q||k.p.id.toLowerCase().includes(q)||k.p.name.toLowerCase().includes(q)||k.p.short.toLowerCase().includes(q)||(secById(k.p.sector)?.name||'').toLowerCase().includes(q));
   const el=$('#execList');if(!el)return;
   el.innerHTML=rows.length?`<table class="tbl"><thead><tr><th>Project</th><th>Sector and region</th><th class="n">Plan %</th><th class="n">Actual %</th><th class="n">Var</th><th class="n">SPI</th><th class="n">CPI</th><th class="n">Productivity</th><th></th></tr></thead><tbody>
-    ${rows.map(k=>`<tr class="click" data-execp="${k.p.id}"><td><b>${esc(k.p.short)}</b><span class="t2">${k.p.id}, ${esc(k.p.name)}</span></td><td>${esc(secById(k.p.sector)?.name||'')}<span class="t2">${esc(regName(k.p))}</span></td><td class="n">${pct(k.plan,0)}</td><td class="n">${pct(k.act,0)}</td><td class="n">${fmtType.pctv(k.va)}</td><td class="n ${light(k.f.spi)}-c">${k.f.spi.toFixed(2)}</td><td class="n ${light(k.f.cpi)}-c">${k.f.cpi.toFixed(2)}</td><td class="n">${k.pi?tl(k.pi):'—'}</td><td class="n"><button class="btn sm" type="button" data-execp="${k.p.id}">Open</button></td></tr>`).join('')}
+    ${rows.map(k=>`<tr class="click" data-execp="${k.p.id}"><td><b>${esc(k.p.short)}</b><span class="t2">${esc(pcode(k.p))}, ${esc(k.p.name)}</span></td><td>${esc(secById(k.p.sector)?.name||'')}<span class="t2">${esc(regName(k.p))}</span></td><td class="n">${pct(k.plan,0)}</td><td class="n">${pct(k.act,0)}</td><td class="n">${fmtType.pctv(k.va)}</td><td class="n ${light(k.f.spi)}-c">${k.f.spi.toFixed(2)}</td><td class="n ${light(k.f.cpi)}-c">${k.f.cpi.toFixed(2)}</td><td class="n">${k.pi?tl(k.pi):'—'}</td><td class="n"><button class="btn sm" type="button" data-execp="${k.p.id}">Open</button></td></tr>`).join('')}
   </tbody></table>`:'<p class="muted">No project matches that search.</p>';
 }
 function renderExec(){
@@ -4036,7 +4364,7 @@ function execProject(){
   const bn=bottlenecks(p),head=agg(V.filter(l=>l.date===V.map(x=>x.date).sort().pop()));
   $('#execBody').innerHTML=`
   <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>${esc(p.name)}</h2><button class="btn sm" type="button" data-execp="">Search another project</button></div>
-    <p class="small muted" style="margin:0">${p.id}, ${esc(secById(p.sector)?.name||'')}, ${esc(regName(p))} Region, ${esc(cityName(p))}. Project manager ${esc(p.pm)}, site engineer ${esc(p.eng)}. Contract value SAR ${fmt(p.value)}M. ${esc(p.status)}.</p></section>
+    <p class="small muted" style="margin:0">${esc(pcode(p))}, ${esc(secById(p.sector)?.name||'')}, ${esc(regName(p))} Region, ${esc(cityName(p))}. Project manager ${esc(p.pm)}, site engineer ${esc(p.eng)}. Contract value SAR ${fmt(p.value)}M. ${esc(p.status)}.</p></section>
   <section class="g g-kpi">
     <div class="panel kpi"><div class="l">Progress</div><div class="v">${pct(k.act,0)}</div><div class="s">Plan ${pct(k.plan,0)} by today, ${fmtType.pctv(k.va)}</div><div style="margin-top:10px">${pbar(k.plan,k.act)}</div></div>
     <div class="panel kpi"><div class="l">Schedule (SPI)</div><div class="gaugerow">${gauge(k.f.spi,'SPI')}<div class="s">Forecast finish<br><b>${k.f.fin?fmtDY(k.f.fin):'—'}</b><br>${k.f.slip>900?'':k.f.slip>0?`<span class="r-c">${k.f.slip} days late</span>`:`<span class="g-c">${Math.abs(k.f.slip)} days early</span>`}</div></div></div>
@@ -5424,13 +5752,13 @@ const ATABS={projects:'Projects',users:'Users and access',roles:'Role access',ma
 const NOUN={projects:'project',users:'user',trades:'trade',subs:'subcontractor',regions:'region',cities:'city',sectors:'sector'};
 function usedBy(type,id){if(type==='regions')return PROJECTS.filter(p=>p.region===id).length+DB.master.cities.filter(c=>c.region===id).length;if(type==='cities')return PROJECTS.filter(p=>p.city===id).length;if(type==='sectors')return PROJECTS.filter(p=>p.sector===id).length;return 0}
 function accessText(u){if(u.role==='sa')return 'Everything, including settings';const r=u.regions.map(id=>regById(id)?.name).filter(Boolean),ps=u.projects.map(id=>projById(id)?.short).filter(Boolean);return [r.length?r.join(', ')+(r.length>1?' regions':' region'):'',ps.join(', ')].filter(Boolean).join('; ')||'No access yet'}
-const stCls=s=>s==='Active'?'Approved':s==='On hold'?'Reviewed':'Draft';
+const stCls=s=>s==='Active'?'Approved':s==='On hold'||s==='Pre-award'?'Reviewed':'Draft';
 function renderAdmin(){
   if(state.role!=='sa'){go('dash');return}
   const m=DB.master,t=state.adminTab,add=['log','roles','matrix','mail','system'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>`;
   const edit=(k,id,del)=>`<td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-aedit="${k}:${id}">Edit</button>${del===undefined?'':del?` <button class="btn sm" type="button" disabled title="In use, cannot delete">In use</button>`:` <button class="btn sm danger" type="button" data-adel="${k}:${id}">Delete</button>`}</td>`;
   let body='',count=0;
-  if(t==='projects'){count=PROJECTS.length;body=`<table class="tbl"><thead><tr><th>Project</th><th>Sector</th><th>Region and city</th><th>Team</th><th class="n">Activities</th><th class="n">Value</th><th>Status</th><th></th></tr></thead><tbody>${PROJECTS.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${p.id}, ${esc(p.name)}</span></td><td>${esc(secById(p.sector)?.name||'—')}</td><td>${esc(regName(p))}<span class="t2">${esc(cityName(p))}</span></td><td>${esc(p.pm)}<span class="t2">${esc(p.eng)}, ${p.foremen.length} foreman${p.foremen.length===1?'':'en'}</span></td><td class="n">${ACTS.filter(a=>a.p===p.id).length}</td><td class="n">SAR ${fmt(p.value)}M</td><td><span class="st ${stCls(p.status)}">${p.status}</span></td>${edit('projects',p.id,false)}</tr>`).join('')}</tbody></table>`}
+  if(t==='projects'){count=PROJECTS.length;body=`<table class="tbl"><thead><tr><th>Project</th><th>Sector</th><th>Region and city</th><th>Team</th><th class="n">Activities</th><th class="n">Value</th><th>Status</th><th></th></tr></thead><tbody>${PROJECTS.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}${p.te?' · '+esc(p.te):''}, ${esc(p.name)}</span></td><td>${esc(secById(p.sector)?.name||'—')}</td><td>${esc(regName(p))}<span class="t2">${esc(cityName(p))}</span></td><td>${esc(p.pm)}<span class="t2">${esc(p.eng)}, ${p.foremen.length} foreman${p.foremen.length===1?'':'en'}</span></td><td class="n">${ACTS.filter(a=>a.p===p.id).length}</td><td class="n">SAR ${fmt(p.value)}M</td><td><span class="st ${stCls(p.status)}">${p.status}</span></td>${edit('projects',p.id,false)}</tr>`).join('')}</tbody></table>`}
   if(t==='users'){const us=m.users.slice().sort((a,b)=>Object.keys(ROLES).indexOf(a.role)-Object.keys(ROLES).indexOf(b.role));count=us.length;body=`<table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Access</th><th>Status</th><th></th></tr></thead><tbody>${us.map(u=>`<tr><td><b>${esc(u.name)}</b><span class="t2">${esc(u.email)}</span></td><td>${ROLES[u.role]}<span class="t2">${esc(u.title)}</span></td><td class="small">${esc(accessText(u))}</td><td><span class="st ${u.active?'Approved':'Draft'}">${u.active?'Active':'Inactive'}</span></td>${edit('users',u.id)}</tr>`).join('')}</tbody></table>`}
   if(t==='trades'){const tr=m.trades||[];count=tr.length;body=`<p class="small muted" style="margin:0 0 12px">Cost rates are dated. A new rate applies to reports from its effective date onwards; reports already filed keep the rate that applied when the work was done.</p><table class="tbl"><thead><tr><th>Trade</th><th class="n">Basic salary</th><th class="n">Cost rate</th><th>Effective from</th><th class="n">Rate changes</th><th>Status</th><th></th></tr></thead><tbody>${tr.map(x=>{const rs=(x.rates||[]).slice().sort((a,b)=>a.from.localeCompare(b.from));let cur=rs[0];rs.forEach(r=>{if(r.from<=TODAY)cur=r});const next=rs.find(r=>r.from>TODAY);
     if(!cur)return `<tr><td><b>${esc(x.name)}</b></td><td class="n muted">—</td><td class="n muted">No rate set</td><td>—</td><td class="n">0</td><td><span class="st Draft">${x.active?'Active':'Inactive'}</span></td>${edit('trades',x.name)}</tr>`;
@@ -5460,7 +5788,7 @@ function admDrawer(type,id){
     const us=r=>m.users.filter(u=>u.active&&u.role===r);
     html=`<div class="fields">
       ${F('Project code',inp('code',p.id,id?'disabled':'maxlength="24" placeholder="e.g. PE-000, EL-000, P-2026/014"'))}
-      ${F('Status',sel('status',['Active','On hold','Completed'],p.status))}
+      ${F('Status',p.status==='Cancelled'?'<input value="Cancelled" disabled>':sel('status',['Pre-award','Active','On hold','Completed'],p.status))}
       ${F('Project name',inp('name',p.name,'placeholder="Full contract name"'),true)}
       ${F('Short name',inp('short',p.short,'maxlength="22" placeholder="Shown on dashboards"'))}
       ${F('Sector',sel('sector',m.sectors.map(x=>[x.id,x.name]),p.sector))}
@@ -5475,6 +5803,7 @@ function admDrawer(type,id){
       ${F('EOT days claimed',inp('eotdays',(p.eot||{}).days||'','type="number" min="0"'))}
       ${F('EOT reference',inp('eotref',(p.eot||{}).ref||'','placeholder="e.g. EOT-02"'))}
     </div>
+    ${id&&(p.te||p.pe||p.status==='Cancelled')?`<p class="small muted" style="margin:6px 0 0">${esc(pcode(p))}${p.te?' · '+esc(p.te):''}${p.status==='Cancelled'?' · cancelled':''}. The TE number, PE number and cancellation are managed in Projects &amp; Handover → Tender register.</p>`:''}
     <h3>Project team</h3><div class="fields">
       ${F('Project manager',sel('pm',[['','Not assigned'],...us('pm').map(u=>[u.id,u.name])],us('pm').find(u=>u.projects.includes(p.id))?.id||''))}
       ${F('Site engineer',sel('eng',[['','Not assigned'],...us('eng').map(u=>[u.id,u.name])],us('eng').find(u=>u.projects.includes(p.id))?.id||''))}
@@ -5495,6 +5824,7 @@ function admDrawer(type,id){
     <div id="accSA" class="note-box">Full access to every project. Super Admin can also change settings; an Executive Manager is read only.</div>
     <div id="accR" class="field" style="margin-top:12px">Region access<div class="checks">${m.regions.map(r=>chk('regions',r.id,u.regions.includes(r.id),r.name+' Region',PROJECTS.filter(p=>p.region===r.id).length+' projects')).join('')}</div></div>
     <div id="accP" class="field" style="margin-top:12px">Project access<div class="checks">${projectChecks(u.projects)}</div></div>
+    <div class="field" style="margin-top:12px">Planning and Cost Control<div class="checks">${chk('pcc','head',!!id&&pccOf(id).includes('head'),'Head of Planning and Cost Control','approves lifecycle stages 1 to 5 and cancels projects')}${chk('pcc','coordinator',!!id&&pccOf(id).includes('coordinator'),'Costing coordinator','registers Tender L1 projects and records stages 1 to 4')}</div>${CLOUD_ME&&!id?'<span class="small muted">Save the person first, then reopen them to tick these.</span>':''}</div>
     <p class="small muted" style="margin-top:10px">Who reviews and approves this person's reports is set per project in Settings → Approval matrix.</p>
     ${CLOUD_ME&&!id?'<p class="small" style="margin-top:6px"><b>On the server:</b> first create the sign-in account in Supabase (Authentication → Users → Add user, tick Auto Confirm), then save the person here with the same email. Their role and access are saved on the server.</p>':''}
     <p class="small muted" id="accHint"></p>`;
@@ -5568,18 +5898,19 @@ function baselineHTML(pid){
 }
 function saveAdm(fd){
   const {type,id}=state.adm,m=DB.master,v=k=>String(fd.get(k)??'').trim(),err=t=>{$('#admErr').textContent=t};let msg='';
-  const peopleBefore=CLOUD_ME?new Map(m.users.map(u=>[u.id,personKey(u)])):null;
+  const peopleBefore=CLOUD_ME?new Map(m.users.map(u=>[u.id,personKey(u)])):null;let pccChange=null;
   if(type==='projects'){
     const code=id||v('code');
     if(!id){
       if(code.length<2||code.length>24)return err('Project code must be between 2 and 24 characters.');
       if(/[:"'<>\\]/.test(code))return err('Project code cannot contain : " \' < > or \\. Letters, numbers, hyphens, slashes, dots and underscores are all fine.');
       if(PROJECTS.some(x=>x.id.toLowerCase()===code.toLowerCase()))return err('That project code is already in use.');
+      {const h=DB.master.projects.find(x=>x.status!=='Cancelled'&&peCanon(pcode(x))===peCanon(code));if(h)return err(`That PE number is already given to ${h.short} (${pcode(h)}).`)}
     }
     if(!v('name')||!v('short'))return err('Enter the project name and a short name.');
     if(!v('city'))return err('Choose a city. If it is missing, add it under Cities first.');
     if(v('finish')<=v('start'))return err('The finish date must be after the start date.');
-    const data={name:v('name'),short:v('short'),sector:v('sector'),region:v('region'),city:v('city'),start:v('start'),finish:v('finish'),value:+v('value')||0,status:v('status')||'Active',ptype:v('ptype')||'Other',mhSrc:v('mhsrc')||'Costing file',eot:{status:v('eotst')||'Not applicable',days:+v('eotdays')||0,ref:v('eotref'),sub:((id&&projById(id).eot)||{}).sub||''}};
+    const data={name:v('name'),short:v('short'),sector:v('sector'),region:v('region'),city:v('city'),start:v('start'),finish:v('finish'),value:+v('value')||0,status:id&&projById(id).status==='Cancelled'?'Cancelled':(v('status')||'Active'),ptype:v('ptype')||'Other',mhSrc:v('mhsrc')||'Costing file',eot:{status:v('eotst')||'Not applicable',days:+v('eotdays')||0,ref:v('eotref'),sub:((id&&projById(id).eot)||{}).sub||''}};
     let p=id?projById(id):null;if(p)Object.assign(p,data);else{p={id:code,...data};m.projects.push(p)}
     const one=(role,uid)=>m.users.filter(u=>u.role===role).forEach(u=>{const has=u.projects.includes(p.id);if(u.id===uid&&!has)u.projects.push(p.id);if(u.id!==uid&&has)u.projects=u.projects.filter(x=>x!==p.id)});
     one('pm',v('pm'));one('eng',v('eng'));
@@ -5598,6 +5929,8 @@ function saveAdm(fd){
     if(role==='ro'&&!regions.length&&!projects.length)return err('Give read-only access to at least one region or project.');
     const data={name:v('name'),email,title:v('title')||ROLES[role],role,regions:['rm','pf','ro'].includes(role)?regions:[],projects:['sa','exec','rm','pf'].includes(role)?[]:projects,active:self?true:v('status')!=='Inactive'};
     let u=id?userById(id):null;if(u)Object.assign(u,data);else{u={id:'U'+String(m.nextUser++).padStart(2,'0'),...data};m.users.push(u)}
+    pccChange={uid:u.id,before:pccOf(u.id).slice(),want:fd.getAll('pcc')};
+    if(!CLOUD_ME){DB.pcc=DB.pcc||{};DB.pcc[u.id]=pccChange.want.slice()}
     if(role==='rm')regions.forEach(r=>{const g=regById(r);if(g&&!userById(g.manager)?.active)g.manager=u.id});
     msg=`${id?'Updated':'Created'} user ${u.name} as ${ROLES[role]} with access to ${accessText(u)}${u.active?'':' (inactive)'}`;
   }
@@ -5655,7 +5988,7 @@ function saveAdm(fd){
     return;
   }
   if(CLOUD_ME&&type==='users'){
-    cloudSavePeople(peopleBefore).then(()=>{closeDrawer();render();toast(msg.split(',')[0]+' on the server')})
+    cloudSavePeople(peopleBefore).then(()=>id&&pccChange?savePcc(pccChange.uid,pccChange.before,pccChange.want):null).then(()=>{closeDrawer();render();toast(msg.split(',')[0]+' on the server')})
       .catch(e=>{err('The server did not save this: '+e.message);render()});
     return;
   }
@@ -5929,8 +6262,15 @@ async function doReset(){
 }
 function pwMeter(){const p=$('#rsPw').value,ok=pwRules(p).filter(([o])=>o).length;const m=$('#rsMeter');[...m.children].forEach((b,i)=>{b.className=i<ok?['','w','w','m','s'][ok]:''});
   const miss=pwRules(p).filter(([o])=>!o).map(([,t])=>t);$('#rsHint').textContent=p?(miss.length?'Still needs '+miss.join(', ')+'.':'Strong enough.'):'Needs at least 10 characters, an uppercase letter, a lowercase letter and a number.'}
+function seedPcc(){                            // demo: designations and Tender details (never on the server)
+  if(CLOUD||DB.pccSeeded)return;
+  DB.pcc=DB.pcc||{};if(userById('U28'))DB.pcc.U28=['head'];if(userById('U40'))DB.pcc.U40=['coordinator'];
+  const cl=['Ministry of Municipal and Rural Affairs','Saudi Electricity Company','Royal Commission','National Water Company','Ministry of Education','Saudi Aramco'];
+  PROJECTS.forEach((p,i)=>{if(!p.te){p.te='TE'+(2411+i);p.client=p.client||cl[i%cl.length];p.location=p.location||cityName(p);p.expected=p.expected!=null?p.expected:+p.value||null}});
+  DB.pccSeeded=true;save();
+}
 async function boot(){
-  seedTopUp();seedMatrix();seedLifecycle();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

@@ -1,0 +1,527 @@
+{
+ "suite": "schema-update-v7",
+ "passed": 104,
+ "total": 104,
+ "results": [
+  {
+   "check": "v7 loads (run 1)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v7.sql:51: NOTICE:  policy \"pccd_read\" for relation \"pcc_designations\" does not exist, skipping\npsql:/home/claude/p2/db/schema-update-v7.sql:64: NOTICE:  policy \"ra_read\" for relation \"register_audit\" does not exist, skipping\npsql:/home/claude/p2/db/schema-updat"
+  },
+  {
+   "check": "v7 loads (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v7.sql:13: NOTICE:  column \"te_number\" of relation \"projects\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v7.sql:14: NOTICE:  column \"pe_number\" of relation \"projects\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v7.sql:15: N"
+  },
+  {
+   "check": "stage 1 in progress takes the new required items",
+   "pass": true,
+   "detail": "[{'k': 'te', 'req': True, 'done': False, 'label': 'TE number, project name, region, client and location recorded from the Tender L1 list'}, {'k': 'value', 'req': True, 'done': False, 'label': 'Expected project value recorded'}, {'k': 'notice', 'at': '2026-10-10 09:31', 'by': 'User PM', 'req': False,"
+  },
+  {
+   "check": "stage 1 keeps the old ticked item, as optional and marked from the old checklist",
+   "pass": true,
+   "detail": "[{'k': 'te', 'req': True, 'done': False, 'label': 'TE number, project name, region, client and location recorded from the Tender L1 list'}, {'k': 'value', 'req': True, 'done': False, 'label': 'Expected project value recorded'}, {'k': 'notice', 'at': '2026-10-10 09:31', 'by': 'User PM', 'req': False,"
+  },
+  {
+   "check": "stage 2 keeps the tick on the same item (PE number) under its new label",
+   "pass": true,
+   "detail": "[{'k': 'number', 'at': '2026-10-10 09:31', 'by': 'User PM', 'req': True, 'done': True, 'label': 'PE number allocated against the TE number'}, {'k': 'informed', 'req': False, 'done': False, 'label': 'Tender department informed of the PE number'}, {'k': 'registered', 'req': False, 'done': False, 'labe"
+  },
+  {
+   "check": "a complete stage is not touched",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a stage awaiting approval is not touched",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a not-started stage gets exactly the new checklist (9 items, nothing old kept)",
+   "pass": true,
+   "detail": "[{'k': 'site', 'req': True, 'done': False, 'label': 'Site management breakup checked'}, {'k': 'install', 'req': True, 'done': False, 'label': 'Installation breakup checked'}, {'k': 'mech', 'req': True, 'done': False, 'label': 'Mechanical breakup checked'}, {'k': 'civil', 'req': True, 'done': False, "
+  },
+  {
+   "check": "its due date is kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "each update is written once to the stage history, even after a second run",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "no project or stage was removed",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "only a super admin gives designations",
+   "pass": true,
+   "detail": "psql:/tmp/tmpzvp466lx.sql:4: ERROR:  Only a super admin can change designations\nCONTEXT:  PL/pgSQL function pcc_designate(jsonb) line 5 at RAISE"
+  },
+  {
+   "check": "the super admin names the Head of Planning and Cost Control",
+   "pass": true,
+   "detail": "['head']"
+  },
+  {
+   "check": "the super admin names costing coordinator c1",
+   "pass": true,
+   "detail": "['coordinator']"
+  },
+  {
+   "check": "the super admin names costing coordinator c2",
+   "pass": true,
+   "detail": "['coordinator']"
+  },
+  {
+   "check": "an unknown designation is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpckv9yt_g.sql:4: ERROR:  Unknown designation\nCONTEXT:  PL/pgSQL function pcc_designate(jsonb) line 6 at RAISE"
+  },
+  {
+   "check": "the change log records who was named",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "signed-in people can see who holds a designation",
+   "pass": true,
+   "detail": "4"
+  },
+  {
+   "check": "a signed-out visitor cannot",
+   "pass": true,
+   "detail": "psql:/tmp/tmpm7afnzx0.sql:4: ERROR:  permission denied for table pcc_designations"
+  },
+  {
+   "check": "nobody writes designations directly",
+   "pass": true,
+   "detail": "psql:/tmp/tmpab3gf137.sql:4: ERROR:  new row violates row-level security policy for table \"pcc_designations\""
+  },
+  {
+   "check": "a foreman cannot ask for a PE number",
+   "pass": true,
+   "detail": "psql:/tmp/tmpwll7j1tb.sql:4: ERROR:  Only the costing coordinator, the Head of Planning and Cost Control or a super admin can register projects\nCONTEXT:  PL/pgSQL function pe_proposal() line 3 at RAISE"
+  },
+  {
+   "check": "the proposal follows the highest PE number already used (PE-330 -> PE-331)",
+   "pass": true,
+   "detail": "{'next': 'PE-331', 'proposed': 'PE-331', 'released': []}"
+  },
+  {
+   "check": "a foreman cannot register a project",
+   "pass": true,
+   "detail": "psql:/tmp/tmpeqaw8wrz.sql:4: ERROR:  Only the costing coordinator, the Head of Planning and Cost Control or a super admin can register a Tender L1 project\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 22 at RAISE"
+  },
+  {
+   "check": "a project manager without the designation cannot either",
+   "pass": true,
+   "detail": "psql:/tmp/tmpupkeo51c.sql:4: ERROR:  Only the costing coordinator, the Head of Planning and Cost Control or a super admin can register a Tender L1 project\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 22 at RAISE"
+  },
+  {
+   "check": "the costing coordinator registers TE-2231 and gets the proposed PE-331, whatever number they send",
+   "pass": true,
+   "detail": "{'id': 'PE-331', 'eot': {}, 'city': None, 'name': 'Riyadh substation 132 kV', 'ptype': None, 'short': 'Riyadh substation 132 ', 'client': 'SEC', 'region': 'R1', 'sector': None, 'status': 'Pre-award', 'billing': {}, 'value_m': None, 'award_on': None, 'location': 'Riyadh', 'proposed': 'PE-331', 'mh_so"
+  },
+  {
+   "check": "the coordinator owns stages 1 to 4 from the start",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the coordinators and the Head get access; super admins already see everything",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the register history shows the registration and the PE allocation",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the same TE number cannot be registered twice (any case)",
+   "pass": true,
+   "detail": "psql:/tmp/tmph7cgqlhr.sql:4: ERROR:  TE number TE-2231 is already registered, as PE-331\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 27 at RAISE"
+  },
+  {
+   "check": "a TE number is required",
+   "pass": true,
+   "detail": "psql:/tmp/tmpp2cqt6q9.sql:4: ERROR:  Enter the TE number from the Tender list\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 24 at RAISE"
+  },
+  {
+   "check": "a project name is required",
+   "pass": true,
+   "detail": "psql:/tmp/tmp6_itlhtq.sql:4: ERROR:  Enter the project name\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 28 at RAISE"
+  },
+  {
+   "check": "the expected value must be a number",
+   "pass": true,
+   "detail": "psql:/tmp/tmpmdqi6ull.sql:4: ERROR:  The expected value must be a number of SAR millions, zero or more\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 11 at RAISE"
+  },
+  {
+   "check": "a negative expected value is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmppsl7grvl.sql:4: ERROR:  The expected value must be a number of SAR millions, zero or more\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 11 at RAISE"
+  },
+  {
+   "check": "an impossible date is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp5h0xo13i.sql:4: ERROR:  The notification date is not a valid date\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 12 at RAISE"
+  },
+  {
+   "check": "an unknown region is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpwszjzgg0.sql:4: ERROR:  Unknown region\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 17 at RAISE"
+  },
+  {
+   "check": "a super admin can choose another PE number",
+   "pass": true,
+   "detail": "{'id': 'PE-400', 'eot': {}, 'city': None, 'name': 'Jeddah depot', 'ptype': None, 'short': 'Jeddah depot', 'client': 'SEC', 'region': 'R1', 'sector': None, 'status': 'Pre-award', 'billing': {}, 'value_m': None, 'award_on': None, 'location': 'Riyadh', 'proposed': 'PE-332', 'mh_source': 'Costing file',"
+  },
+  {
+   "check": "the next proposal continues after it (PE-401)",
+   "pass": true,
+   "detail": "{'next': 'PE-401', 'proposed': 'PE-401', 'released': []}"
+  },
+  {
+   "check": "a PE number already held by a live project is refused, even an old one",
+   "pass": true,
+   "detail": "psql:/tmp/tmpgkoyc0tr.sql:4: ERROR:  PE-329 is already given to a live project (PE-329)\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 37 at RAISE"
+  },
+  {
+   "check": "PE-0400 is the same number as PE-400",
+   "pass": true,
+   "detail": "psql:/tmp/tmpegt4totv.sql:4: ERROR:  PE-400 is already given to a live project (PE-400)\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 37 at RAISE"
+  },
+  {
+   "check": "a number that is not a PE number is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpb711jju7.sql:4: ERROR:  A PE number looks like PE-123\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 35 at RAISE"
+  },
+  {
+   "check": "pe 77 is written as PE-077",
+   "pass": true,
+   "detail": "{'id': 'PE-077', 'eot': {}, 'city': None, 'name': 'Small job', 'ptype': None, 'short': 'Small job', 'client': 'SEC', 'region': 'R1', 'sector': None, 'status': 'Pre-award', 'billing': {}, 'value_m': None, 'award_on': None, 'location': 'Riyadh', 'proposed': 'PE-401', 'mh_source': 'Costing file', 'pe_n"
+  },
+  {
+   "check": "a browser cannot set a PE number directly, even as super admin",
+   "pass": true,
+   "detail": "psql:/tmp/tmpmm7dva2i.sql:4: ERROR:  Tender details, PE numbers and cancellations are recorded in the Tender register\nCONTEXT:  PL/pgSQL function pt_proj_guard() line 10 at RAISE"
+  },
+  {
+   "check": "or a TE number",
+   "pass": true,
+   "detail": "psql:/tmp/tmpnkcipwug.sql:4: ERROR:  Tender details, PE numbers and cancellations are recorded in the Tender register\nCONTEXT:  PL/pgSQL function pt_proj_guard() line 10 at RAISE"
+  },
+  {
+   "check": "or cancel a project by changing its status",
+   "pass": true,
+   "detail": "psql:/tmp/tmpbagavvm8.sql:4: ERROR:  Tender details, PE numbers and cancellations are recorded in the Tender register\nCONTEXT:  PL/pgSQL function pt_proj_guard() line 10 at RAISE"
+  },
+  {
+   "check": "or create a project that carries a TE number",
+   "pass": true,
+   "detail": "psql:/tmp/tmpzxnwd674.sql:4: ERROR:  Tender details, PE numbers and cancellations are recorded in the Tender register\nCONTEXT:  PL/pgSQL function pt_proj_guard() line 6 at RAISE"
+  },
+  {
+   "check": "ordinary edits by the super admin still work",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the database itself refuses a second live project with the same PE number",
+   "pass": true,
+   "detail": "ERROR:  duplicate key value violates unique constraint \"projects_pe_live_uq\"\nDETAIL:  Key (pt_pe_canon(COALESCE(pe_number, id)))=(PE-331) already exists."
+  },
+  {
+   "check": "...including a project typed in by hand as pe-330",
+   "pass": true,
+   "detail": "psql:/tmp/tmp1s_b3734.sql:4: ERROR:  duplicate key value violates unique constraint \"projects_pe_live_uq\""
+  },
+  {
+   "check": "the coordinator ticks stage 1 and submits it",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'In progress', 'blockers': None, 'due_date': None, 'stage_no': 1, 'department': 'Tendering', 'project_id': 'PE-331', 'updated_at': '2026-10-10T09:31:23.052398+03:00', 'approved_at': None, 'approved_by': None, 'next_action': No"
+  },
+  {
+   "check": "...",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'Awaiting approval', 'blockers': None, 'due_date': None, 'stage_no': 1, 'department': 'Tendering', 'project_id': 'PE-331', 'updated_at': '2026-10-10T09:31:23.108468+03:00', 'approved_at': None, 'approved_by': None, 'next_actio"
+  },
+  {
+   "check": "the project manager cannot approve stage 1",
+   "pass": true,
+   "detail": "psql:/tmp/tmpv3c5ojl5.sql:4: ERROR:  Only the Head of Planning and Cost Control or a super admin can approve stage 1\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 64 at RAISE"
+  },
+  {
+   "check": "the coordinator cannot approve their own stage",
+   "pass": true,
+   "detail": "psql:/tmp/tmp6ik8swyc.sql:4: ERROR:  Only the Head of Planning and Cost Control or a super admin can approve stage 1\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 64 at RAISE"
+  },
+  {
+   "check": "the Head of Planning and Cost Control approves stage 1",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'Complete', 'blockers': None, 'due_date': None, 'stage_no': 1, 'department': 'Tendering', 'project_id': 'PE-331', 'updated_at': '2026-10-10T09:31:23.268645+03:00', 'approved_at': '2026-10-10T09:31:23.268645+03:00', 'approved_b"
+  },
+  {
+   "check": "the project manager cannot assign owners on stages 1 to 5 any more",
+   "pass": true,
+   "detail": "psql:/tmp/tmpko93uv9t.sql:4: ERROR:  Only the stage owner, the Head of Planning and Cost Control or a super admin can change this stage\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 21 at RAISE"
+  },
+  {
+   "check": "the Head assigns the costing engineer to stage 5",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000007', 'status': 'Not started', 'blockers': None, 'due_date': None, 'stage_no': 5, 'department': 'Planning and Cost Control', 'project_id': 'PE-331', 'updated_at': '2026-10-10T09:31:23.377529+03:00', 'approved_at': None, 'approved_by': None, '"
+  },
+  {
+   "check": "the Head does not approve or skip stages 6 to 12",
+   "pass": true,
+   "detail": "psql:/tmp/tmpgl8tdos_.sql:4: ERROR:  Only the project manager or a super admin can mark stage 6 not applicable\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 74 at RAISE"
+  },
+  {
+   "check": "the project manager still runs stage 6",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000006', 'status': 'Not started', 'blockers': None, 'due_date': None, 'stage_no': 6, 'department': 'Planning', 'project_id': 'PE-331', 'updated_at': '2026-10-10T09:31:23.481503+03:00', 'approved_at': None, 'approved_by': None, 'next_action': Non"
+  },
+  {
+   "check": "a super admin can also approve stages 1 to 5",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000004', 'status': 'Complete', 'blockers': None, 'due_date': None, 'stage_no': 2, 'department': 'Planning and Cost Control', 'project_id': 'PE-331', 'updated_at': '2026-10-10T09:31:23.657854+03:00', 'approved_at': '2026-10-10T09:31:23.657854+03:"
+  },
+  {
+   "check": "a Head whose account is switched off cannot approve",
+   "pass": true,
+   "detail": "psql:/tmp/tmpspjfys2t.sql:4: ERROR:  Sign in first\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 7 at RAISE"
+  },
+  {
+   "check": "new stages get the new checklists (stage 3 has the SAP steps)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the coordinator records the contract signing date",
+   "pass": true,
+   "detail": "{'id': 'PE-331', 'eot': {}, 'city': None, 'name': 'Riyadh substation 132 kV', 'ptype': None, 'short': 'Riyadh substation 132 ', 'client': 'SEC', 'region': 'R1', 'sector': None, 'status': 'Pre-award', 'billing': {}, 'value_m': None, 'award_on': None, 'location': 'Riyadh', 'mh_source': 'Costing file',"
+  },
+  {
+   "check": "stage 4 becomes due 7 days later",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the history says why",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a corrected signing date moves that due date",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a due date someone set by hand is left alone",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "recording the award makes the project active",
+   "pass": true,
+   "detail": "{'id': 'PE-331', 'eot': {}, 'city': None, 'name': 'Riyadh substation 132 kV', 'ptype': None, 'short': 'Riyadh substation 132 ', 'client': 'Saudi Electricity Co.', 'region': 'R1', 'sector': None, 'status': 'Active', 'billing': {}, 'value_m': None, 'award_on': '2026-09-28', 'location': 'Riyadh', 'mh_s"
+  },
+  {
+   "check": "a signing date in the future is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp6h9ow2u6.sql:4: ERROR:  The contract signing date cannot be in the future\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 16 at RAISE"
+  },
+  {
+   "check": "the coordinator cannot change a TE number once recorded",
+   "pass": true,
+   "detail": "psql:/tmp/tmpo8g2ecub.sql:4: ERROR:  Only a super admin can change a TE number once it is recorded\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 79 at RAISE"
+  },
+  {
+   "check": "a foreman cannot change Tender details",
+   "pass": true,
+   "detail": "psql:/tmp/tmpefccbv6y.sql:4: ERROR:  Only the costing coordinator, the Head of Planning and Cost Control or a super admin can change the Tender details\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 74 at RAISE"
+  },
+  {
+   "check": "the coordinator adds a TE number to an older project that had none",
+   "pass": true,
+   "detail": "{'id': 'PE-330', 'eot': {}, 'city': None, 'name': 'Legacy two', 'ptype': None, 'short': 'L2', 'client': None, 'region': 'R1', 'sector': None, 'status': 'Active', 'billing': {}, 'value_m': None, 'award_on': None, 'location': None, 'mh_source': 'Costing file', 'pe_number': None, 'te_number': 'TE-1001'"
+  },
+  {
+   "check": "every change is in the register history",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the coordinator cannot cancel a project",
+   "pass": true,
+   "detail": "psql:/tmp/tmpq0__8510.sql:4: ERROR:  Only the Head of Planning and Cost Control or a super admin can cancel a project\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 136 at RAISE"
+  },
+  {
+   "check": "a cancellation needs a comment",
+   "pass": true,
+   "detail": "psql:/tmp/tmpsb2f1c9o.sql:4: ERROR:  Add a comment saying why, for example cancelled by the client after L1\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 138 at RAISE"
+  },
+  {
+   "check": "the Head cancels PE-331 (client cancelled after L1)",
+   "pass": true,
+   "detail": "{'id': 'PE-331', 'eot': {}, 'city': None, 'name': 'Riyadh substation 132 kV', 'ptype': None, 'short': 'Riyadh substation 132 ', 'client': 'Saudi Electricity Co.', 'region': 'R1', 'sector': None, 'status': 'Cancelled', 'billing': {}, 'value_m': None, 'award_on': '2026-09-28', 'location': 'Riyadh', 'm"
+  },
+  {
+   "check": "the project and its stages are all still there",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a cancelled project's stages cannot change",
+   "pass": true,
+   "detail": "psql:/tmp/tmpu1yuklgq.sql:4: ERROR:  This project was cancelled; a super admin must reinstate it in the Tender register before its stages change\nCONTEXT:  PL/pgSQL function lifecycle_act(jsonb) line 12 at RAISE"
+  },
+  {
+   "check": "nor its Tender details",
+   "pass": true,
+   "detail": "psql:/tmp/tmp0tqx2667.sql:4: ERROR:  This project was cancelled; a super admin must reinstate it first\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 75 at RAISE"
+  },
+  {
+   "check": "PE-331 is now proposed first, as a released number",
+   "pass": true,
+   "detail": "{'next': 'PE-401', 'proposed': 'PE-331', 'released': [{'at': '2026-10-10T09:31:24.973358+03:00', 'pe': 'PE-331', 'te': 'TE-2231', 'project': 'PE-331'}]}"
+  },
+  {
+   "check": "the next L1 project gets PE-331 again",
+   "pass": true,
+   "detail": "{'id': 'PE-331-R2', 'eot': {}, 'city': None, 'name': 'Dammam pumping station', 'ptype': None, 'short': 'Dammam pumping station', 'client': 'SEC', 'region': 'R1', 'sector': None, 'status': 'Pre-award', 'billing': {}, 'value_m': None, 'award_on': None, 'location': 'Riyadh', 'proposed': 'PE-331', 'mh_s"
+  },
+  {
+   "check": "the history says it was reallocated",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "PE-331's history shows both TE numbers",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "with no released number left, the proposal is the next in sequence again",
+   "pass": true,
+   "detail": "{'next': 'PE-401', 'proposed': 'PE-401', 'released': []}"
+  },
+  {
+   "check": "only a super admin reinstates",
+   "pass": true,
+   "detail": "psql:/tmp/tmp_ovwex34.sql:4: ERROR:  Only a super admin can reinstate a cancelled project\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 148 at RAISE"
+  },
+  {
+   "check": "reinstating with its old number is refused while another project holds it",
+   "pass": true,
+   "detail": "psql:/tmp/tmpailrkxvr.sql:4: ERROR:  PE-331 now belongs to another live project (PE-331-R2). Give this project a new PE number to reinstate it\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 155 at RAISE"
+  },
+  {
+   "check": "the super admin reinstates it with a new PE number and its earlier status comes back",
+   "pass": true,
+   "detail": "{'id': 'PE-331', 'eot': {}, 'city': None, 'name': 'Riyadh substation 132 kV', 'ptype': None, 'short': 'Riyadh substation 132 ', 'client': 'Saudi Electricity Co.', 'region': 'R1', 'sector': None, 'status': 'Active', 'billing': {}, 'value_m': None, 'award_on': '2026-09-28', 'location': 'Riyadh', 'mh_s"
+  },
+  {
+   "check": "only a super admin changes a PE number",
+   "pass": true,
+   "detail": "psql:/tmp/tmpkk3_fgg3.sql:4: ERROR:  Only a super admin can change a PE number\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 120 at RAISE"
+  },
+  {
+   "check": "a change needs a comment",
+   "pass": true,
+   "detail": "psql:/tmp/tmptusqbiny.sql:4: ERROR:  Add a comment saying why the PE number changes\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 122 at RAISE"
+  },
+  {
+   "check": "a number another live project holds is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpafio1xv4.sql:4: ERROR:  PE-331 is already given to a live project (PE-331-R2)\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 128 at RAISE"
+  },
+  {
+   "check": "the super admin changes PE-400 to PE-410",
+   "pass": true,
+   "detail": "{'id': 'PE-400', 'eot': {}, 'city': None, 'name': 'Jeddah depot', 'ptype': None, 'short': 'Jeddah depot', 'client': 'SEC', 'region': 'R1', 'sector': None, 'status': 'Pre-award', 'billing': {}, 'value_m': None, 'award_on': None, 'location': 'Riyadh', 'mh_source': 'Costing file', 'pe_number': 'PE-410'"
+  },
+  {
+   "check": "PE-400 is released and proposed next",
+   "pass": true,
+   "detail": "{'next': 'PE-411', 'proposed': 'PE-400', 'released': [{'at': '2026-10-10T09:31:25.847742+03:00', 'pe': 'PE-400', 'te': 'TE-2240', 'project': 'PE-400'}]}"
+  },
+  {
+   "check": "an older project without a stored PE number can be given one",
+   "pass": true,
+   "detail": "{'id': 'EL-001', 'eot': {}, 'city': None, 'name': 'Other code', 'ptype': None, 'short': 'EL', 'client': None, 'region': 'R1', 'sector': None, 'status': 'Active', 'billing': {}, 'value_m': None, 'award_on': None, 'location': None, 'mh_source': 'Costing file', 'pe_number': 'PE-200', 'te_number': None,"
+  },
+  {
+   "check": "EL-001 is not offered as a released PE number",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the register history cannot be edited",
+   "pass": true,
+   "detail": "ERROR:  register_audit is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "or deleted, even from the database console",
+   "pass": true,
+   "detail": "ERROR:  register_audit is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "someone without access to a project does not see its register history",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "check": "the coordinators do",
+   "pass": true,
+   "detail": "2"
+  },
+  {
+   "check": "a person whose coordinator designation is removed can no longer register",
+   "pass": true,
+   "detail": "psql:/tmp/tmpuox_8ejr.sql:4: ERROR:  Only the costing coordinator, the Head of Planning and Cost Control or a super admin can register a Tender L1 project\nCONTEXT:  PL/pgSQL function tender_act(jsonb) line 22 at RAISE"
+  },
+  {
+   "check": "rollback runs (run 1)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback runs (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-rollback-v7.sql:4: NOTICE:  function tender_act(jsonb) does not exist, skipping\npsql:/home/claude/p2/db/schema-rollback-v7.sql:5: NOTICE:  function pe_proposal() does not exist, skipping\npsql:/home/claude/p2/db/schema-rollback-v7.sql:6: NOTICE:  function pcc_designate("
+  },
+  {
+   "check": "rollback removes the register functions",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback keeps every project, register entry, designation and stage history entry",
+   "pass": true,
+   "detail": "5/20/3/32"
+  },
+  {
+   "check": "after rollback the v6 rules apply again (the project manager approves stage 1)",
+   "pass": true,
+   "detail": "{'risk': None, 'owner': '00000000-0000-0000-0000-000000000006', 'status': 'Complete', 'blockers': None, 'due_date': None, 'stage_no': 1, 'department': 'Tendering', 'project_id': 'PE-329', 'updated_at': '2026-10-10T09:31:26.773582+03:00', 'approved_at': '2026-10-10T09:31:26.773582+03:00', 'approved_b"
+  },
+  {
+   "check": "v7 can be applied again after a rollback",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-update-v7.sql:13: NOTICE:  column \"te_number\" of relation \"projects\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v7.sql:14: NOTICE:  column \"pe_number\" of relation \"projects\" already exists, skipping\npsql:/home/claude/p2/db/schema-update-v7.sql:15: N"
+  },
+  {
+   "check": "re-applying does not repeat the checklist update",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

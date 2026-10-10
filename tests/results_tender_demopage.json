@@ -1,0 +1,382 @@
+{
+ "run_at": "2026-10-10 09:55",
+ "app": "/home/claude/p6/demo.html",
+ "summary": {
+  "PASS": 62,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Designations",
+   "check": "demo: the planning manager is Head of Planning and Cost Control, Priya Raman is costing coordinator",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Tender register is live in Projects & Handover (no longer planned)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo data",
+   "check": "demo projects carry sample TE numbers, clients and locations",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Register",
+   "check": "one row per project in scope, with PE, TE, client and status",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Register",
+   "check": "next PE number shown (demo projects have no PE numbers, so PE-001)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "the costing coordinator sees the register button",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Register form",
+   "check": "proposed PE number is filled in and read-only for the coordinator",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Register",
+   "check": "TE2231 registered as PE-001, pre-award",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Register",
+   "check": "the coordinator owns stages 1 to 4 and sees the project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Register",
+   "check": "history shows the registration and the PE allocation",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Register",
+   "check": "the same TE number cannot be registered twice",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Register",
+   "check": "the coordinator cannot pick another PE number (the proposal is used)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "the coordinator cannot cancel a project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a project manager can view the register but not register",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a site engineer has no Tender register",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "forcing it as a site engineer shows nothing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "PE numbers",
+   "check": "a super admin can choose another PE number",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "PE numbers",
+   "check": "the next proposal continues after it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "PE numbers",
+   "check": "PE-0050 is the same number and is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "PE numbers",
+   "check": "a code that is not a PE number is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "PE numbers",
+   "check": "the admin project form refuses a code already given as a live PE number",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 1-5",
+   "check": "the coordinator ticks stage 1 and submits it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 1-5",
+   "check": "the stage drawer names the Head as approver",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 1-5",
+   "check": "the coordinator cannot approve their own submission",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 1-5",
+   "check": "the stage 1 evidence shows the TE details and expected value",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Actions",
+   "check": "the Head sees stage 1 waiting under Mine",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 1-5",
+   "check": "the Head approves it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 1-5",
+   "check": "reopen stage 2 on an existing project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 1-5",
+   "check": "the project manager cannot approve stage 2 any more",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 6-12",
+   "check": "the project manager still decides stages 6 to 12",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Designations",
+   "check": "the user form has the two designations",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Designations",
+   "check": "saving names Nabil Haddad Head of Planning and Cost Control",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 1-5",
+   "check": "a Head who is not a super admin approves stage 2 on a project they can see",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stages 6-12",
+   "check": "but not stages 6 to 12",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Handover",
+   "check": "recording the award makes the project Active",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Handover",
+   "check": "stage 4 falls due 7 days after the contract signing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Handover",
+   "check": "a corrected signing date moves it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Handover",
+   "check": "a due date set by hand is left alone",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Handover",
+   "check": "the coordinator cannot change a recorded TE number",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Handover",
+   "check": "a refused change leaves the record untouched",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cancel",
+   "check": "the Head cancels PE-001; nothing is deleted",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cancel",
+   "check": "its PE number is released",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cancel",
+   "check": "its stages are read-only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cancel",
+   "check": "its stages leave the actions list",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reallocate",
+   "check": "PE-001 is now proposed first",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reallocate",
+   "check": "the next L1 project gets PE-001 again, as a new record",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reallocate",
+   "check": "the history shows both TE numbers against PE-001",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reallocate",
+   "check": "the register shows PE-001 twice: one cancelled, one pre-award",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reinstate",
+   "check": "reinstating with the old number is refused while another project holds it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reinstate",
+   "check": "with a new PE number it comes back with its earlier status",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Change PE",
+   "check": "a change needs a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Change PE",
+   "check": "the super admin changes PE-050 to PE-070, and PE-050 is released",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Change PE",
+   "check": "only a super admin changes a PE number",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upgrade",
+   "check": "an in-progress stage 3 from v2.7 takes the SAP steps and keeps its tick",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upgrade",
+   "check": "old items stay, optional and marked",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upgrade",
+   "check": "the change is in the stage history, once",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Admin",
+   "check": "a cancelled project shows its status as Cancelled, not editable",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Admin",
+   "check": "saving it from Settings keeps it cancelled",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "every screen renders with pre-award, reallocated and cancelled projects present",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "project count grew only by the projects registered here",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "register, designations and history survive a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}
