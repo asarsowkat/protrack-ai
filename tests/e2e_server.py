@@ -27,7 +27,7 @@ def sql(q, db=DBN):
 # ------------------------------------------------------------------ database
 subprocess.run(PG + ['-d', 'postgres', '-c', f'drop database if exists {DBN}'], capture_output=True)
 subprocess.run(PG + ['-d', 'postgres', '-c', f'create database {DBN}'], check=True, capture_output=True)
-for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql', 'schema-update-v5.sql', 'schema-update-v6.sql', 'schema-update-v7.sql']:
+for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql', 'schema-update-v5.sql', 'schema-update-v6.sql', 'schema-update-v7.sql', 'schema-update-v8.sql']:
     p = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, f)], capture_output=True, text=True)
     if p.returncode: raise SystemExit(f + ': ' + p.stderr)
 people = [('sa', 'Sara Admin', 'sa'), ('pm', 'Paul Manager', 'pm'), ('e1', 'Eng. Omar Engineer', 'eng'), ('e2', 'Eng. Hadi Other', 'eng'),
@@ -340,6 +340,31 @@ with sync_playwright() as p:
     pg.evaluate(f"go('admin');state.adminTab='users';render();admDrawer('users','{U['cc']}')"); pg.wait_for_timeout(500)
     ck('Tender', 'the users screen shows designations held on the server', pg.is_checked('#admForm [name=pcc][value=coordinator]') and not pg.is_checked('#admForm [name=pcc][value=head]'))
     pg.evaluate("closeDrawer()")
+
+
+    # ---------------------------------------------------------------- v2.9 governed RASA answers through the server
+    pg.evaluate("closeDrawer()")
+    llm = "window.__llm=[];window.claude={use:function(k){return Promise.resolve(k==='sample'?function(m){window.__llm.push(1);return Promise.resolve({text:'x'})}:null)}};"
+    pg2 = new_page(llm); login(pg2, 'f1')
+    n_srv = int(sql("select count(*) from invoices"))
+    r = pg2.evaluate("SB.from('invoices').select('*').then(x=>x.error?'err '+x.error.message:x.data.length)")
+    ck('RASA', 'the server sends a foreman no invoice rows (v8)', n_srv > 0 and r == 0, (n_srv, r))
+    r = pg2.evaluate("SB.from('import_batches').select('kind').then(x=>x.error?'err':x.data.map(b=>b.kind).sort().join())")
+    ck('RASA', 'nor invoice or costing batches; baseline and progress batches still arrive', 'invoices' not in r and 'costing' not in r and 'baseline' in r, r)
+    a = pg2.evaluate("answer('Invoiceable value')")
+    ck('RASA', 'a foreman asking for invoiceable value gets "not available for your role"', 'Not available for your role' in a and 'SAR' not in a, a[:200])
+    a = pg2.evaluate("answer(\"Today's productivity\")") or ''
+    ck('RASA', 'a foreman\'s answer names its sources and data date from the server records', 'Based on' in a and 'daily report' in a and 'Data date' in a, a[-300:])
+    pg2.evaluate("ask('What colour is the site office?')"); pg2.wait_for_timeout(1500)
+    h = pg2.evaluate("state.chat.filter(m=>m.b).pop().h")
+    ck('RASA', 'on the server the language model is never called, even where one is available', pg2.evaluate("window.__llm.length") == 0 and 'No evidence in ProTrackAI for that question' in h and 'no project data is sent to any outside AI service' in h, h[:300])
+    pg2.close()
+    login(pg, 'pm')
+    pg.evaluate("state.scope='ALL';render()")
+    a = pg.evaluate("answer('Invoicing and collection')") or ''
+    ck('RASA', 'a project manager\'s billing answer names the invoice register batch it came from', 'invoice register' in a and 'IMP-' in a, a[-400:])
+    a = pg.evaluate("answer('What are the accruals?')")
+    ck('RASA', 'untracked figures get "No evidence" on the server too', 'No evidence in ProTrackAI' in a and 'SAR' not in a)
 
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))

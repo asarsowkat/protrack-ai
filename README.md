@@ -161,6 +161,13 @@ Production needs:
 
 ---
 
+## Version 2.9
+
+- Governed RASA answers: sources and data date under every answer and insight, "No evidence" instead of guesses, untracked figures named
+- RASA answers only about projects and figures the person can open; the server no longer sends invoice and costing rows to site roles (`schema-update-v8.sql`)
+- No project data leaves ProTrackAI: the language model is off on the server, labelled on the demo page
+- See RELEASE-NOTES-v2.9.md and STAGE-5-SETUP.md
+
 ## Version 2.8
 
 - Tender register: L1 projects recorded from Tender's list with TE number, client, location and expected value; ProTrackAI proposes the PE number, refuses duplicates, and releases a cancelled project's number for the next L1 project (`schema-update-v7.sql`)

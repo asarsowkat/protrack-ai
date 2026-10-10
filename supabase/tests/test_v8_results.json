@@ -1,0 +1,147 @@
+{
+ "suite": "schema-update-v8",
+ "passed": 28,
+ "total": 28,
+ "results": [
+  {
+   "check": "v8 loads (run 1)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "v8 loads (run 2)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "foreman: no invoice rows, invoice or costing batches, or costing/invoice upload history",
+   "pass": true,
+   "detail": "0/0/1/0"
+  },
+  {
+   "check": "foreman: still sees the baseline batch for the project",
+   "pass": true,
+   "detail": "('2/2/1/2', '0/0/1/0')"
+  },
+  {
+   "check": "eng: no invoice rows, invoice or costing batches, or costing/invoice upload history",
+   "pass": true,
+   "detail": "0/0/1/0"
+  },
+  {
+   "check": "eng: still sees the baseline batch for the project",
+   "pass": true,
+   "detail": "('2/2/1/2', '0/0/1/0')"
+  },
+  {
+   "check": "sm: no invoice rows, invoice or costing batches, or costing/invoice upload history",
+   "pass": true,
+   "detail": "0/0/1/0"
+  },
+  {
+   "check": "sm: still sees the baseline batch for the project",
+   "pass": true,
+   "detail": "('2/2/1/2', '0/0/1/0')"
+  },
+  {
+   "check": "sa (sa): sees exactly what it saw before",
+   "pass": true,
+   "detail": "('3/2/2/2', '3/2/2/2')"
+  },
+  {
+   "check": "exec (ex): sees exactly what it saw before",
+   "pass": true,
+   "detail": "('3/2/2/2', '3/2/2/2')"
+  },
+  {
+   "check": "rm (rm): sees exactly what it saw before",
+   "pass": true,
+   "detail": "('3/2/1/2', '3/2/1/2')"
+  },
+  {
+   "check": "pf (pf): sees exactly what it saw before",
+   "pass": true,
+   "detail": "('3/2/1/2', '3/2/1/2')"
+  },
+  {
+   "check": "plan (pl): sees exactly what it saw before",
+   "pass": true,
+   "detail": "('2/2/2/2', '2/2/2/2')"
+  },
+  {
+   "check": "costing (co): sees exactly what it saw before",
+   "pass": true,
+   "detail": "('2/2/1/2', '2/2/1/2')"
+  },
+  {
+   "check": "pm (pm): sees exactly what it saw before",
+   "pass": true,
+   "detail": "('2/2/1/2', '2/2/1/2')"
+  },
+  {
+   "check": "ro (ro): sees exactly what it saw before",
+   "pass": true,
+   "detail": "('2/2/1/2', '2/2/1/2')"
+  },
+  {
+   "check": "pm (px): sees exactly what it saw before",
+   "pass": true,
+   "detail": "('1/0/0/0', '1/0/0/0')"
+  },
+  {
+   "check": "before v8 a foreman could read invoice rows (the gap this closes)",
+   "pass": true,
+   "detail": "2/2/1/2"
+  },
+  {
+   "check": "a foreman summing invoices gets nothing back",
+   "pass": true,
+   "detail": "0"
+  },
+  {
+   "check": "costing can still add invoices",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a foreman still cannot add invoices",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "functions the app calls still run (permission errors come from the function, not the policy)",
+   "pass": true,
+   "detail": "psql:/tmp/tmptcpfdvsh.sql:4: ERROR:  The data date is missing or not a valid date\nCONTEXT:  PL/pgSQL function import_progress(jsonb) line 6 at RAISE"
+  },
+  {
+   "check": "a switched-off account sees no cost rows",
+   "pass": true,
+   "detail": "0/0/1/0"
+  },
+  {
+   "check": "rollback runs (run 1)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "rollback runs (run 2)",
+   "pass": true,
+   "detail": "psql:/home/claude/p2/db/schema-rollback-v8.sql:10: NOTICE:  function pt_money_ok() does not exist, skipping"
+  },
+  {
+   "check": "after rollback the previous rules apply again (foreman reads invoices)",
+   "pass": true,
+   "detail": "{'fo': '3/2/1/2', 'co': '3/2/1/2'}"
+  },
+  {
+   "check": "rollback removes the helper and touches no data",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "v8 can be applied again after a rollback",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}
