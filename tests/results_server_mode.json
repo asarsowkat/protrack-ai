@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-10 09:54",
- "app": "/home/claude/p6/app.html",
+ "run_at": "2026-10-10 10:39",
+ "app": "/home/claude/p7/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 98,
+  "PASS": 105,
   "FAIL": 0
  },
  "results": [
@@ -460,6 +460,48 @@
   {
    "area": "Tender",
    "check": "the users screen shows designations held on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "the server sends a foreman no invoice rows (v8)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "nor invoice or costing batches; baseline and progress batches still arrive",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "a foreman asking for invoiceable value gets \"not available for your role\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "a foreman's answer names its sources and data date from the server records",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "on the server the language model is never called, even where one is available",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "a project manager's billing answer names the invoice register batch it came from",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "RASA",
+   "check": "untracked figures get \"No evidence\" on the server too",
    "result": "PASS",
    "detail": ""
   },

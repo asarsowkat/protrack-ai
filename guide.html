@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 2.8, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 2.9, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -229,6 +229,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#billing">10. Billing and collection</a>
   <a href="#reports">11. Reports and presentations</a>
   <a href="#rasa" class="sub">RASA, your project assistant</a>
+  <a href="#rasa-rules" class="sub">How RASA's answers are governed</a>
   <a href="#server">12. Server and demo mode</a>
   <a href="#backup" class="sub">Backup and restore</a>
   <a href="#move" class="sub">Moving browser data to the server</a>
@@ -248,6 +249,11 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 2.9</b>
+    <b>Governed RASA answers</b>: every answer and insight says what it is based on, the data date and the scope. ·
+    <b>"No evidence"</b> instead of a guess, including for figures ProTrackAI does not track (SAP actual cost, commitments, accruals). ·
+    <b>Permission-scoped</b>: RASA answers only about projects and figures you can open, and the server no longer sends invoice and costing rows to foremen, site engineers and site managers. ·
+    <b>No project data leaves ProTrackAI.</b></div>
   <div class="note"><b>New in version 2.8</b>
     <b>Tender register</b> (Projects &amp; Handover): the costing coordinator records each L1 project from Tender's list, with TE number, client, location and expected value. ·
     <b>PE numbers</b>: ProTrackAI proposes the number and never gives one number to two live projects; a cancelled project releases its number for the next L1 project, and the history keeps both. ·
@@ -804,6 +810,14 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <tr><td>Thumbs up, green glow</td><td>Done, or everything is within tolerance</td></tr>
   </tbody></table>
   <p>RASA's figures always match the tiles: both measure at the data date, the last day with approved reports. On a phone, RASA steps aside when it points, and <b>Back to RASA</b> returns to the conversation.</p>
+  <h3 id="rasa-rules">How RASA's answers are governed</h3>
+  <ul>
+    <li><b>Based on.</b> Under every answer and insight RASA lists its sources: the daily reports used (how many, their dates, how many are approved and how many are submitted or reviewed and counted before approval), the baseline and when it was loaded, the costing file or invoice register batch, the billing terms, the weekly update, and so on. Then come the scope and the data date. Anything it would have needed but ProTrackAI does not hold is listed under <b>Not available</b>.</li>
+    <li><b>No evidence.</b> If ProTrackAI holds no data for a question, RASA says <i>No evidence in ProTrackAI</i> and what is missing. It never says "everything is fine" about a project with no baseline or reports. SAP actual cost, commitments, accruals, budget revisions, cash-flow forecasts, variations, claims, materials, safety and weather are named as not tracked.</li>
+    <li><b>Only what you can open.</b> RASA answers from the projects in your access and current scope. A project outside your access is refused. A project in your access but outside the current scope is pointed to the Scope menu. Foremen, site engineers and site managers get no cost, budget or billing figures from RASA, and since version 2.9 the server does not send their browser the invoice rows or the invoice and costing import batches.</li>
+    <li><b>No outside AI with company data.</b> Signed in to the ProTrack server, RASA answers only from ProTrackAI records and no project data is sent to any outside AI service; a question it cannot answer from the records gets "No evidence". Only the demo page, on sample data inside claude.ai, may pass a question to the language model, and that answer is labelled <i>Language-model answer</i> and must be checked in Reports.</li>
+  </ul>
+  <p>New questions RASA answers from the records: <i>What is waiting for me</i> (from Actions and approvals), <i>Lifecycle stages</i> (current stage, stages awaiting approval and overdue), and <i>Tender register</i> or a PE or TE number (register row, pre-award count, next PE number).</p>
 </section>
 
 <section id="server">

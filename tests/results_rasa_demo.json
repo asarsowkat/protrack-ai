@@ -1,0 +1,202 @@
+{
+ "run_at": "2026-10-10 10:43",
+ "app": "/home/claude/p7/app.html",
+ "summary": {
+  "PASS": 32,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Sources",
+   "check": "every topic answer carries a \"Based on\" line or an explicit no-evidence reply",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sources",
+   "check": "the daily-report source gives the number of reports, their dates and how many are approved",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sources",
+   "check": "answers built on earned value state the data date",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sources",
+   "check": "the scope is named on every answer",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sources",
+   "check": "billing answers name the invoice register and the contract terms",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sources",
+   "check": "procurement answers name the weekly update and its data date",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sources",
+   "check": "insights carry their sources too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sources",
+   "check": "quick actions carry their sources (project health)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "No evidence",
+   "check": "untracked topics (commitments, accruals, SAP, cash-flow forecast, variations, safety, weather, materials) get a clear no-evidence reply",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "No evidence",
+   "check": "SAP questions say ProTrackAI has no SAP connection and that its actual cost is not SAP actual cost",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "No evidence",
+   "check": "an unknown question without the language model is a no-evidence reply, not a guess",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "No evidence",
+   "check": "in the chat, that question gets the no-evidence reply",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "No evidence",
+   "check": "a project with no baseline or reports gets no-evidence replies, never \"everything is fine\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "No evidence",
+   "check": "project health on it says there is no baseline instead of \"within tolerance\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "New topics",
+   "check": "\"what is waiting for me\" counts items from Actions and approvals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "New topics",
+   "check": "lifecycle question lists the current stage of each project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "New topics",
+   "check": "Tender register question gives pre-award count and the next PE number",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "New topics",
+   "check": "a PE number question answers from that project's register row",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a foreman asking for invoiceable value, collection, unit rates or EAC gets \"not available for your role\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a foreman asking about subcontractors gets productivity but no SAR",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a foreman cannot ask about the Tender register",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a foreman's insights hold no cost or billing figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a foreman's suggested questions hold no cost topics",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "the language-model data for a foreman holds no billing, EAC, CPI or SAR rates",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a site engineer asking about a project outside their access is refused without figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a project manager is refused on another manager's project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Permissions",
+   "check": "a project in access but outside the current scope is pointed to the Scope menu, not answered with the wrong figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Outside AI",
+   "check": "Settings, System states the RASA outside-AI policy",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Outside AI",
+   "check": "on the demo inside claude.ai, a question RASA cannot answer from records goes to the model, and the answer is labelled",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Outside AI",
+   "check": "questions RASA can answer from records never go to the model",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Outside AI",
+   "check": "what a foreman's question sends to the model holds no billing or cost figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

@@ -443,6 +443,10 @@ label.btn{display:inline-block}
 @media (max-width:900px){.grid2{grid-template-columns:1fr}}
 .panel select[data-mx]{width:100%;min-width:180px}
 /* ---------- RASA ---------- */
+.rasa-src{margin-top:8px;padding-top:7px;border-top:1px dashed var(--line);font-size:11.5px;line-height:1.45;color:var(--ink-2)}
+.rasa-src b{color:var(--ink);font-weight:600;margin-inline-end:2px}.rasa-src span{display:block;margin-top:2px}
+.rasa-src.llm{border-top-color:#f59e0b}.rasa-src.llm b{color:#b45309}
+.rasa-noev{border-inline-start:3px solid #f59e0b;padding-inline-start:9px}
 :root{--rasa-navy:#061633;--rasa-navy2:#0c2a5e;--rasa-blue:#1d63d8;--rasa-cyan:#46bdf5}
 .rasa-mini,.rasa-from i,.rasa-tag i{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:5px;background:linear-gradient(135deg,var(--rasa-cyan),var(--rasa-blue));color:#fff;font:800 10.5px/1 var(--font);font-style:normal;flex:none}
 /* floating assistant */
@@ -473,7 +477,7 @@ label.btn{display:inline-block}
 #aiPanel.wide .rasa-stage{flex-direction:column;justify-content:center;width:330px;flex:none;border-bottom:0;border-inline-end:1px solid var(--line);background:radial-gradient(120% 80% at 50% 30%,rgba(29,99,216,.16),transparent 70%)}
 .rasa-cap{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
 .rasa-cap b{font:600 14.5px var(--font);color:var(--ink)}
-.rasa-cap span{font-size:12px;color:var(--muted)}
+.rasa-cap span{font-size:12px;color:var(--ink-2)}
 #aiPanel.wide .rasa-cap{align-items:center;text-align:center;flex:none}
 #aiPanel.wide .rasa-cap b{font-size:16px}
 /* avatar */
@@ -516,7 +520,7 @@ label.btn{display:inline-block}
 #aiMsgs .msg.ins{max-width:96%;border-radius:12px;padding:10px 12px;background:linear-gradient(135deg,rgba(29,99,216,.07),rgba(70,189,245,.05));border:1px solid rgba(29,99,216,.25);border-inline-start:4px solid var(--rasa-blue)}
 #aiMsgs .msg.ins.warn{background:linear-gradient(135deg,rgba(245,158,11,.10),rgba(245,158,11,.03));border-color:rgba(245,158,11,.35);border-inline-start-color:#f59e0b}
 #aiMsgs .msg.ins.warn .rasa-from{color:#b45309}
-#aiMsgs .msg.ins p{margin:3px 0}#aiMsgs .msg .rec{font-size:13px;color:var(--muted)}
+#aiMsgs .msg.ins p{margin:3px 0}#aiMsgs .msg .rec{font-size:13px;color:var(--ink-2)}
 .rasa-hello{font:700 17px var(--font);margin:0}.rasa-sub{margin:0;color:var(--muted);font-size:12.5px}
 .rasa-cta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .rasa-qabar{display:flex;gap:6px;overflow-x:auto;padding:8px 12px 4px;border-top:1px solid var(--line);scrollbar-width:thin}
@@ -693,7 +697,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v2.8</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v2.9</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -2461,7 +2465,7 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='2.8';
+const APP_VERSION='2.9';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'exec',label:'Executive summary'}],single:true},
@@ -2731,6 +2735,7 @@ function systemHTML(){
     <table class="tbl"><tbody>
       <tr><td>ProTrackAI</td><td><b>v${APP_VERSION}</b></td></tr>
       <tr><td>Server</td><td>${CLOUD?'Connected (Supabase)':'Not connected: demo data in this browser'}</td></tr>
+      <tr><td>RASA and outside AI</td><td>${esc(RASA_POLICY.note)}</td></tr>
       ${CLOUD_ME?`<tr><td>Last loaded from the server</td><td>${CLOUD_LOAD.at?esc(tStamp(CLOUD_LOAD.at))+(CLOUD_LOAD.ok?'':' (failed)'):'—'}</td></tr>`:''}
     </tbody></table>
   </div></div>
@@ -3613,6 +3618,7 @@ function rasaInsights(){
   const rank={warn:0,insight:1,info:2};
   return out.sort((a,b)=>rank[a.sev]-rank[b.sev]).slice(0,4);
 }
+const RASA_INS_SRC={queue:['actions'],drafts:['dpr'],spi:['dpr','baseline','evm'],cpi:['dpr','baseline','rates','evm'],proc:['weekly','baseline'],prod:['dpr','baseline'],gaps:['dpr'],bill:['terms','invoices','dpr']};
 function rasaRefreshInsights(announce){
   RASA.insights=rasaInsights();
   const n=RASA.insights.length,dot=$('#aiDot');
@@ -3649,6 +3655,7 @@ function rasaQA(k){
   if(k==='ask'){RasaState.set('LISTENING',{caption:'Go ahead, ask me anything about your projects.',hold:6000,next:'IDLE'});$('#aiQ').focus();return}
   const site=SITE_ROLES.includes(state.role);let h='',meta={};
   const X=rasaPortfolio(),sc=aiScope();
+  if(['health','schedule','progress','cost','critical','manpower'].includes(k)&&!scopeActs().length){rasaTurn(lab,NOEV(`No baseline in ${sc}, so there are no progress, schedule or cost figures to report.`,'Load the P6 baseline first.'),{final:'IMPORTANT_INSIGHT'});return}
   if(k==='health'){
     const P=scopeProjects().filter(p=>ACTS.some(a=>a.p===p.id)).map(rasaProj),att=P.filter(x=>x.f.spi<0.95||(!site&&x.f.cpi<0.95)||x.f.risk>60);
     h=`<p>I checked ${esc(sc)}. Overall progress is <b>${pct(X.complete,0)}</b> against a plan of ${pct(X.plan,0)}, schedule performance <b>SPI ${fmt(X.e.spi,2)}</b>${site?'':`, cost performance <b>CPI ${fmt(X.e.cpi,2)}</b>`}, and productivity over 30 days is <b>${pct(X.pi,0)}</b>.</p>
@@ -3669,6 +3676,7 @@ function rasaQA(k){
   else if(k==='procurement'){h=`<p>I checked engineering and procurement against the milestones.</p>${answer('design and procurement')}`;meta={final:/days after the baseline/.test(h)?'WARNING':'SUCCESS'}}
   else if(k==='progress'){h=`<p>Progress is <b>${pct(X.complete,0)}</b> complete against <b>${pct(X.plan,0)}</b> planned by today.</p>${answer("today's productivity")}`;meta={point:'complete',label:`${pct(X.complete,0)} complete`,final:X.complete+0.02<X.plan?'WARNING':'SUCCESS'}}
   else if(k==='exec'){go('exec');h=`<p>I've opened the executive summary for ${esc(sc)}: ${pct(X.complete,0)} complete, SPI ${fmt(X.e.spi,2)}${site?'':`, CPI ${fmt(X.e.cpi,2)}`}. Tap any row to focus everything on that project.</p>`;meta={final:'SUCCESS'}}
+  if(['health','schedule','exec'].includes(k))h+=rasaEv(['dpr','baseline','evm']);
   meta.navigate=true;
   rasaTurn(lab,h,meta);
 }
@@ -3771,7 +3779,7 @@ function initVoice(){
 function aiOpen(open,quiet){const p=$('#aiPanel'),f=$('#aiFab');
   if(open){p.hidden=false;f.setAttribute('aria-expanded',true);f.classList.add('on');aiHint(false);
     $('#rasaQA').innerHTML=rasaQAHTML()+'<button type="button" class="rasa-qa more" data-rasamore="1">More questions</button>';
-    RasaAvatar.mount();rasaRefreshInsights(false);$('#aiDot').hidden=true;renderChat();
+    RasaAvatar.mount();rasaRefreshInsights(false);rasaChips();$('#aiDot').hidden=true;renderChat();
     RASA.tok++;RasaState.set('WELCOME');
     if(!RASA.insShown&&RASA.insights.length){RASA.insShown=true;const tk=RASA.tok;
       setTimeout(()=>{if(p.hidden||tk!==RASA.tok)return;RASA.insights.forEach(i=>state.chat.push({ins:true,i}));renderChat();
@@ -3784,7 +3792,7 @@ function aiOpen(open,quiet){const p=$('#aiPanel'),f=$('#aiFab');
 }
 function aiScope(){return SCOPE.size===1?projById([...SCOPE][0]).short:`${SCOPE.size} projects in scope`}
 const RasaMessage={
-  insight(i){return `<div class="msg ins ${i.sev}"><span class="rasa-from"><i>R</i>RASA ${i.sev==='warn'?'alert':'insight'}<em>Noticed for you</em></span><p><b>${esc(i.title)}</b></p><p>${esc(i.text)}</p>${i.rec?`<p class="rec">Recommended: ${esc(i.rec)}</p>`:''}
+  insight(i){return `<div class="msg ins ${i.sev}"><span class="rasa-from"><i>R</i>RASA ${i.sev==='warn'?'alert':'insight'}<em>Noticed for you</em></span><p><b>${esc(i.title)}</b></p><p>${esc(i.text)}</p>${i.rec?`<p class="rec">Recommended: ${esc(i.rec)}</p>`:''}${rasaEv(RASA_INS_SRC[i.id]||['dpr'])}
     <div class="rasa-cta">${i.point||i.go?`<button class="btn sm primary" type="button" data-rasashow="${i.id}">Show me</button>`:''}${i.q?`<button class="btn sm" type="button" data-q="${esc(i.q)}">Explain</button>`:''}</div></div>`},
   answer(h){return `<div class="msg b"><span class="rasa-from"><i>R</i>RASA</span>${h}</div>`},
   user(t){return `<div class="msg u">${esc(t)}</div>`}};
@@ -3800,18 +3808,19 @@ async function ask(q){
   if(rule){rasaTurn(q,rule);return}
   aiHint(false);state.chat.push({t:q});const tok=++RASA.tok;RasaState.set('THINKING',{stay:true});
   const msg={b:true,h:'<p class="muted">Thinking…</p>'};state.chat.push(msg);renderChat();
-  const sample=await samP;
-  if(!sample){msg.h=HELP;renderChat();setAI('idle');return}
+  const sample=rasaLLMAllowed()?await samP:null;
+  if(!sample){msg.h=RASA_NOEV_HELP();renderChat();rasaAfter(q,msg.h,{final:'IDLE'},tok);return}
   aiBusy=true;aiCtl=new AbortController();$('#aiSend').textContent='Stop';
   const bubble=$('#aiMsgs').lastElementChild;
-  const rules=`You are RASA, the Real-time Artificial Smart Assistant inside ProTrackAI, a construction productivity platform used by a Saudi contractor. Speak like a trusted senior project-controls colleague: natural, professional, warm and concise. Say what you checked, give the figure and what it means, and where useful end with one offer of a next step. Never sound robotic. Answer the user's question using ONLY the JSON data below. It holds project KPIs, activities, foremen, subcontractors, early warnings, manpower, milestones, extension of time, contract billing, and the rows of the ProTrack reports most relevant to the question (scope: ${scopeLabel()}; progress as of ${ASOF}; currency SAR; rates are units per manhour; index 100% = planned productivity). Be concise: under 140 words, plain sentences, "- " bullets only when listing. Quote numbers with units. If the data does not cover the question, say so and suggest which ProTrack report to open. Reply in the language of the question.\n\nDATA:\n${JSON.stringify(aiContext(q))}`;
+  const rules=`You are RASA, the Real-time Artificial Smart Assistant inside ProTrackAI, a construction productivity platform used by a Saudi contractor. Speak like a trusted senior project-controls colleague: natural, professional, warm and concise. Say what you checked, give the figure and what it means, and where useful end with one offer of a next step. Never sound robotic. Answer the user's question using ONLY the JSON data below. It holds project KPIs, activities, foremen, subcontractors, early warnings, manpower, milestones, extension of time, contract billing, and the rows of the ProTrack reports most relevant to the question (scope: ${scopeLabel()}; progress as of ${ASOF}; currency SAR; rates are units per manhour; index 100% = planned productivity). Be concise: under 140 words, plain sentences, "- " bullets only when listing. Quote numbers with units. If the data does not cover the question, say so and suggest which ProTrack report to open. Reply in the language of the question.\n\nDATA:\n${JSON.stringify(aiContextSafe(q))}`;
   try{
     const {text}=await sample([{role:'user',content:rules},{role:'assistant',content:'Understood. I will answer only from this data.'},...aiTurns.slice(-6),{role:'user',content:q}],{cache:false,signal:aiCtl.signal,onText:({text})=>{bubble.innerHTML=mdLite(text);$('#aiMsgs').scrollTop=1e6}});
-    msg.h=mdLite(text);aiTurns.push({role:'user',content:q},{role:'assistant',content:text});
+    msg.h=mdLite(text)+RASA_LLM_LABEL;aiTurns.push({role:'user',content:q},{role:'assistant',content:text});
   }catch(e){msg.h=e.text?mdLite(e.text):(e.code==='cancelled'?'<p class="muted">Stopped.</p>':e.code==='not_granted'?'<p>AI answers need your permission. Meanwhile, try one of the suggestions below.</p>':e.code==='rate_limited'?'<p>Too many questions at once. Try again in a moment.</p>':HELP)}
   finally{aiBusy=false;aiCtl=null;$('#aiSend').textContent='Send';renderChat();
     rasaAfter(q,msg.h,null,tok)}
 }
+const RASA_LLM_LABEL='<div class="rasa-src llm" data-rasasrc="llm"><b>Language-model answer</b> written by Claude from the demo\'s sample data inside claude.ai. It is not a ProTrackAI calculation: check the figures in Reports before relying on them. On the ProTrack server this is switched off and no project data leaves ProTrackAI.</div>';
 const HELP='<p>I can answer questions about productivity, progress, manpower, EAC, early warnings, foremen and subcontractors. Try one of the suggestions below, or open Reports for the full tables.</p>';
 const REPQ=[[/collect|outstanding|receiv|under-?billed/i,'cash'],[/invoice|billing|\bbill\b|retention|advance|certificat|payment|cash/i,'invoice'],
   [/reconcil|own manpower|rental|subcontract(ed)? quantit|scope (vs|against)/i,'recon'],
@@ -3854,84 +3863,194 @@ function aiContext(q){
     reports:(pickReports(q||'')||[]).map(id=>repSnapshot(id)).filter(Boolean)
   };
 }
-function answer(q){
+function answerCore(q){
   const s=q.toLowerCase(),all=valid(),acts=scopeActs(),w14=all.filter(d=>d.date>=addDays(TODAY,-14));
   const byAct=acts.map(a=>actStats(a,w14)).filter(x=>x.g.mh).sort((x,y)=>x.g.pi-y.g.pi);
   const named=acts.find(a=>a.name.toLowerCase().split(/[ ,]+/).some(w=>w.length>4&&s.includes(w)));
   const open=r=>`<p><button class="btn sm" type="button" data-go="rep" data-rep="${r}">Open ${REPORTS[r].sheet} report</button></p>`;
-  if(/collect|outstanding|cash|receiv|approved amount|under-?billed|short.*bill/.test(s)){
+  if(/collect|outstanding|cash|receiv|approved amount|under-?billed|short.*bill/.test(s)){RT('collect');
     const B=scopeProjects().map(billPosition).filter(x=>x.b.contract||x.t.n);
-    if(!B.length)return '<p>No billing data in this scope yet.</p>';
+    if(!B.length)return NOEV('No billing data in this scope yet.');
     const T=B.reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.t.submitted,ap:t.ap+x.t.approved,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
+    if(!B.some(x=>x.t.n))return `<p>Invoiceable to date is <b>${sar(T.inv)}</b> under the contract terms.</p>`+NOEV('No invoice register is loaded in this scope, so invoiced, approved and collected amounts are not known.','Upload the register in the Import centre.');
     return `<p>Invoiceable <b>${sar(T.inv)}</b>, invoiced ${sar(T.sub)}, approved ${sar(T.ap)}, collected ${sar(T.co)}.</p>
       <ul><li>Under-billed against invoiceable: <b>${sar(Math.max(0,T.inv-T.sub))}</b></li>
       <li>Short of invoiceable after approval: ${sar(Math.max(0,T.inv-T.ap))}</li>
       <li>Outstanding collection: <b>${sar(Math.max(0,T.ap-T.co))}</b></li></ul>
       ${B.filter(x=>x.gapSub>1).slice(0,3).map(x=>`<p class="small">${esc(x.p.short)}: ${sar(x.gapSub)} earned but not invoiced.</p>`).join('')}${open('cash')}`;
   }
-  if(/^invoiceable value$|invoice|billing|\bbill\b|retention|advance payment|certificat|payment/.test(s)){
+  if(/^invoiceable value$|invoice|billing|\bbill\b|retention|advance payment|certificat|payment/.test(s)){RT('invoice');
     const ps=scopeProjects().map(p=>({p,b:billing(p,ASOF)})).filter(x=>x.b.contract);
-    if(!ps.length)return '<p>No price weighting loaded for this scope, so nothing can be invoiced yet. Load the P6 schedule with its price weighting resource.</p>';
+    if(!ps.length)return NOEV('No price weighting loaded for this scope, so nothing can be invoiced yet. Load the P6 schedule with its price weighting resource.');
     const T=ps.reduce((t,x)=>({c:t.c+x.b.contract,g:t.g+x.b.billable,h:t.h+x.b.retNet,n:t.n+x.b.net,r:t.r+x.b.recovered}),{c:0,g:0,h:0,n:0,r:0});
     return `<p>Net invoiceable to date is <b>${sar(T.n)}</b>: gross billable ${sar(T.g)} less retention held ${sar(T.h)}${T.r?` and advance recovery ${sar(T.r)}`:''}, against a contract price of ${sar(T.c)}.</p>
       <ul>${ps.slice(0,4).map(({p,b})=>`<li><b>${esc(p.short)}</b>: price progress ${pct(b.progress,0)}, billable ${sar(b.billable)}, net ${sar(b.net)}${b.rows.filter(r=>r.price&&r.capped<r.gross).length?`, capped in ${b.rows.filter(r=>r.price&&r.capped<r.gross).map(r=>r.k).join(' and ')}`:''}</li>`).join('')}</ul>
       <p class="small muted">Billing follows the contract terms, not only the schedule: phase caps hold back value until the milestone is certified.</p>${open('invoice')}`;
   }
-  if(/^quantity reconciliation$|reconcil|own manpower|rental manpower|subcontract(ed)? quantity/.test(s)){
-    const r=reconRows();if(!r.length)return '<p>No construction activities in this scope to reconcile.</p>';
+  if(/^quantity reconciliation$|reconcil|own manpower|rental manpower|subcontract(ed)? quantity/.test(s)){RT('recon');
+    const r=reconRows();if(!r.length)return NOEV('No construction activities in this scope to reconcile.');
     const T=r.reduce((t,x)=>({own:t.own+x.own,rent:t.rent+x.rent,sub:t.sub+x.sub,prior:t.prior+x.prior}),{own:0,rent:0,sub:0,prior:0});
     const tot=T.own+T.rent+T.sub||1;
     return `<p>Of the quantity executed in this scope, <b>${pct(T.own/tot,0)}</b> was done by own crews, ${pct(T.rent/tot,0)} by rental manpower and ${pct(T.sub/tot,0)} by measured subcontract.</p>
       <ul>${r.slice().sort((a,b)=>b.sub+b.rent-(a.sub+a.rent)).slice(0,4).map(x=>`<li><b>${esc(x.name)}</b>: ${fmt(x.done,1)} of ${fmt(x.scope,1)} ${x.uom} done, own ${fmt(x.own,1)}, rental ${fmt(x.rent,1)}, subcontract ${fmt(x.sub,1)}</li>`).join('')}</ul>${open('recon')}`;
   }
-  if(/^unit rates$|unit rate|cost per unit|revised rate|rate analysis/.test(s)){
-    const rows=REPORTS.unitrate.build().rows.filter(r=>r.aCost);if(!rows.length)return '<p>No measured quantities yet, so no actual unit rates.</p>';
+  if(/^unit rates$|unit rate|cost per unit|revised rate|rate analysis/.test(s)){RT('unitrate');
+    const rows=REPORTS.unitrate.build().rows.filter(r=>r.aCost);if(!rows.length)return NOEV('No measured quantities yet, so no actual unit rates.');
     const worst=rows.slice().sort((a,b)=>b.vCost-a.vCost).slice(0,4);
     return `<p>Actual unit rates against the budget, worst first:</p><ul>${worst.map(r=>`<li><b>${esc(r.name)}</b>: SAR ${fmt(r.aCost,2)} per ${r.uom} against ${fmt(r.oCost,2)} budgeted, ${fmtType.pctv(r.vCost)}; manhours ${fmt(r.aRate,3)} against ${fmt(r.oRate,3)}</li>`).join('')}</ul>
       <p>Use the actual cost per unit as the revised rate for estimating similar work.</p>${open('unitrate')}`;
   }
-  if(/^manpower forecast$|mobilis|mobiliz|histogram|headcount/.test(s)){
+  if(/^manpower forecast$|mobilis|mobiliz|histogram|headcount/.test(s)){RT('histo');
     const t=REPORTS.histo.build(),tr=t.extra[0].rows.filter(r=>r.fc>0.2).slice(0,5);
-    if(!tr.length)return '<p>No manpower plan in the current window for this scope.</p>';
+    if(!tr.length)return NOEV('No manpower plan in the current window for this scope.');
     return `<p>Forecast crew needed to hold the baseline at current productivity, by trade:</p><ul>${tr.map(r=>`<li><b>${esc(r.trade)}</b>: now ${fmt(r.act,1)}, forecast ${fmt(r.fc,1)}, peak ${fmt(r.pk,1)}${r.add>0.5?`, mobilise ${fmt(r.add,1)} more`:''}</li>`).join('')}</ul>${open('histo')}`;
   }
-  if(/^milestones and eot$|milestone|\btcc\b|\bpac\b|\bfac\b|extension of time|\beot\b/.test(s)){
+  if(/^milestones and eot$|milestone|\btcc\b|\bpac\b|\bfac\b|extension of time|\beot\b/.test(s)){RT('milestones');
     const out=[];scopeProjects().forEach(p=>{msOf(p).forEach(m=>{const st=msState(m);out.push({p,m,st})})});
-    if(!out.length)return '<p>No milestones recorded for this scope.</p>';
+    if(!out.length)return NOEV('No milestones recorded for this scope.');
     const late=out.filter(x=>x.st.k==='r'||(x.m.fc&&x.m.plan&&x.m.fc>x.m.plan));
     const eot=scopeProjects().filter(p=>(p.eot||{}).status&&p.eot.status!=='Not applicable');
     return `<p>${out.length} milestones tracked, ${late.length} late or forecast late.</p><ul>${(late.length?late:out).slice(0,5).map(x=>`<li><b>${esc(x.p.short)}</b>, ${esc(x.m.n)} (${esc(x.m.t||'Intermediate')}): ${esc(x.st.t)}</li>`).join('')}</ul>
       ${eot.length?`<p>Extension of time: ${eot.map(p=>`${esc(p.short)} ${esc(p.eot.status)}${p.eot.days?`, ${p.eot.days} days`:''}${p.eot.ref?`, ${esc(p.eot.ref)}`:''}`).join('; ')}.</p>`:''}`;
   }
-  if(/^design and procurement$|engineering|procurement|vendor drawing|long lead/.test(s)){
-    const S=engProcStats();if(!S.rows.length)return '<p>No engineering or procurement activities in this scope.</p>';
+  if(/^design and procurement$|engineering|procurement|vendor drawing|long lead/.test(s)){RT('engproc');
+    const S=engProcStats();if(!S.rows.length)return NOEV('No engineering or procurement activities in this scope.');
     const late=S.rows.filter(r=>r.slip>0).sort((a,b)=>b.slip-a.slip);
     return `<p>Engineering is ${pct(S.ENG.pct,0)} complete against a plan of ${pct(S.ENG.plan,0)}; procurement ${pct(S.PRC.pct,0)} against ${pct(S.PRC.plan,0)}.</p>
       ${late.length?`<ul>${late.slice(0,4).map(r=>`<li><b>${esc(r.name)}</b> (${r.cls==='ENG'?'engineering':'procurement'}): ${esc(r.ms)}, forecast ${fmtD(r.ff)}, ${r.slip} days after the baseline</li>`).join('')}</ul>`:'<p>Nothing is forecast late.</p>'}`;
   }
-  if(/^early warnings?$|warning|risk|alert/.test(s)){const W=warnings();if(!W.length)return '<p>No early warnings in the current scope. Everything is within thresholds.</p>';const n=v=>W.filter(w=>w.sev===v).length;return `<p><b>${n('High')} high</b>, ${n('Medium')} medium and ${n('Low')} low warnings. The most urgent:</p><ul>${W.slice(0,4).map(w=>`<li><b>${esc(w.proj)}</b>, ${esc(w.item)}: ${esc(w.ind)} at ${esc(w.val)}. ${esc(w.act)}</li>`).join('')}</ul>${open('warn')}`}
-  if(/^eac forecast$|\beac\b|estimate at completion|overrun|final cost/.test(s)){const rows=scopeProjects().map(p=>{const f=forecast(p);return{p,f,x:eacOf(f)}}).filter(r=>r.f.bac);if(!rows.length)return '<p>No baseline in scope to forecast from.</p>';const T=rows.reduce((t,r)=>({bac:t.bac+r.f.bac,eac:t.eac+r.x.eac1}),{bac:0,eac:0});return `<p>Labour EAC for ${esc(aiScope())} is <b>${sar(T.eac)}</b> against a budget of ${sar(T.bac)}, ${T.eac>T.bac?'an overrun of '+sar(T.eac-T.bac):'a saving of '+sar(T.bac-T.eac)}.</p><ul>${rows.sort((a,b)=>a.x.vac-b.x.vac).slice(0,4).map(r=>`<li>${esc(r.p.short)}: EAC ${sar(r.x.eac1)}, CPI ${r.f.cpi.toFixed(2)}, finish ${r.f.slip>900?'not forecast':fmtDY(r.f.fin)}</li>`).join('')}</ul>${open('eac')}`}
-  if(/^report|histogram/.test(s))return `<p>Reports covers planned vs actual progress (activity, project and region), the manpower histogram, productivity, EAC and early warnings, each in Excel and PDF.</p>${open(/histogram/.test(s)?'histo':'actprog')}`;
-  if(/manpower|how many|crew size|required|headcount/.test(s)){
-    const x=named?actStats(named,w14):byAct[0];if(!x)return '<p>No recent reports to base this on.</p>';const a=x.a;
+  if(/^early warnings?$|warning|risk|alert/.test(s)){RT('warn');if(!acts.length)return NOEV('No baseline in this scope, so there is nothing to check for early warnings.','Load the P6 baseline first.');const W=warnings();if(!W.length)return NOEV('No early warnings in the current scope. Everything is within thresholds.');const n=v=>W.filter(w=>w.sev===v).length;return `<p><b>${n('High')} high</b>, ${n('Medium')} medium and ${n('Low')} low warnings. The most urgent:</p><ul>${W.slice(0,4).map(w=>`<li><b>${esc(w.proj)}</b>, ${esc(w.item)}: ${esc(w.ind)} at ${esc(w.val)}. ${esc(w.act)}</li>`).join('')}</ul>${open('warn')}`}
+  if(/^eac forecast$|\beac\b|estimate at completion|overrun|final cost/.test(s)){RT('eac');const rows=scopeProjects().map(p=>{const f=forecast(p);return{p,f,x:eacOf(f)}}).filter(r=>r.f.bac);if(!rows.length)return NOEV('No baseline in scope to forecast from.');const T=rows.reduce((t,r)=>({bac:t.bac+r.f.bac,eac:t.eac+r.x.eac1}),{bac:0,eac:0});return `<p>Labour EAC for ${esc(aiScope())} is <b>${sar(T.eac)}</b> against a budget of ${sar(T.bac)}, ${T.eac>T.bac?'an overrun of '+sar(T.eac-T.bac):'a saving of '+sar(T.bac-T.eac)}.</p><ul>${rows.sort((a,b)=>a.x.vac-b.x.vac).slice(0,4).map(r=>`<li>${esc(r.p.short)}: EAC ${sar(r.x.eac1)}, CPI ${r.f.cpi.toFixed(2)}, finish ${r.f.slip>900?'not forecast':fmtDY(r.f.fin)}</li>`).join('')}</ul>${open('eac')}`}
+  if(/^report|histogram/.test(s)){RT('reports');return `<p>Reports covers planned vs actual progress (activity, project and region), the manpower histogram, productivity, EAC and early warnings, each in Excel and PDF.</p>${open(/histogram/.test(s)?'histo':'actprog')}`;}
+  if(/manpower|how many|crew size|required|headcount/.test(s)){RT('crew');
+    const x=named?actStats(named,w14):byAct[0];if(!x)return NOEV('No recent reports to base this on.');const a=x.a;
     const done=a.priorQty+lines().filter(d=>d.act===a.id&&VALID.has(d.status)).reduce((t,d)=>t+(+d.qty||0),0),rem=Math.max(0,a.qty-done),days=Math.max(1,workdays(TODAY,a.bf));
     const need=rem/days,rate=x.actual||a.pp,hN=Math.ceil(need/rate/9),hP=Math.ceil(need/a.pp/9);
     const ds=w14.filter(d=>d.act===a.id),cur=ds.length?ds.reduce((t,d)=>t+headsOf(d),0)/ds.length:0;
     return `<p><b>${esc(a.name)}</b> has ${fmt(rem)} ${a.uom} left and ${days} working days to the baseline finish on ${fmtDY(a.bf)}: about ${fmt(need,1)} ${a.uom} a day.</p><p>At the recent rate of ${fmt(rate,3)} ${a.uom}/mh that needs roughly <b>${hN} workers</b> on a 9-hour day. Crews have averaged ${fmt(cur,1)}. At planned productivity, ${hP} would do.</p>`;
   }
-  if(/foreman|foremen/.test(s)){const r=foremanRows().slice().sort((a,b)=>b.g.pi-a.g.pi);return `<p>Foremen by productivity, last 30 days:</p><ul>${r.slice(0,6).map(x=>`<li>${esc(x.n)} (${esc(x.proj)}): ${pct(x.g.pi)} over ${x.nr} reports</li>`).join('')}</ul>`}
-  if(/subcontract|vendor|\bsub\b/.test(s)){const r=subRows();if(!r.length)return '<p>No subcontractor crews reported in this scope.</p>';const b=r[0],w=r[r.length-1];return `<p><b>${esc(subById(b.id).name)}</b> leads at ${pct(b.pi)}, costing SAR ${fmt(b.cpe,1)} per earned manhour.</p>${r.length>1?`<p>The lowest is ${esc(subById(w.id).name)} at ${pct(w.pi)}.</p>`:''}`}
-  if(/variance|explain/.test(s)){
-    const x=named?actStats(named,w14):byAct[0];if(!x)return '<p>No recent reports to explain.</p>';const a=x.a,ds=w14.filter(d=>d.act===a.id);
+  if(/foreman|foremen/.test(s)){RT('foremen');const r=foremanRows().slice().sort((a,b)=>b.g.pi-a.g.pi);if(!r.length)return NOEV('No foreman reports in this scope.');return `<p>Foremen by productivity, last 30 days:</p><ul>${r.slice(0,6).map(x=>`<li>${esc(x.n)} (${esc(x.proj)}): ${pct(x.g.pi)} over ${x.nr} reports</li>`).join('')}</ul>`}
+  if(/subcontract|vendor|\bsub\b/.test(s)){RT('subs');const r=subRows();if(!r.length)return NOEV('No subcontractor crews reported in this scope.');const b=r[0],w=r[r.length-1];return `<p><b>${esc(subById(b.id).name)}</b> leads at ${pct(b.pi)}${rasaMoneyOk()?`, costing SAR ${fmt(b.cpe,1)} per earned manhour`:''}.</p>${r.length>1?`<p>The lowest is ${esc(subById(w.id).name)} at ${pct(w.pi)}.</p>`:''}`}
+  if(/variance|explain/.test(s)){RT('variance');
+    const x=named?actStats(named,w14):byAct[0];if(!x)return NOEV('No recent reports to explain.');const a=x.a,ds=w14.filter(d=>d.act===a.id);
     const pr=agg(all.filter(d=>d.p===a.p)),ot=x.g.mh?x.g.ot/x.g.mh:0,pOt=pr.mh?pr.ot/pr.mh:0;
     const crewPlan=a.crew.reduce((t,[,q])=>t+q,0),crew=ds.reduce((t,d)=>t+d.labour.reduce((u,l)=>u+(+l.count||0),0),0)/Math.max(1,ds.length);
     const fm={};ds.forEach(d=>{(fm[d.foreman]=fm[d.foreman]||[]).push(d)});const fl=Object.entries(fm).map(([n,l])=>[n,agg(l).pi]).sort((p,q)=>p[1]-q[1]);
     return `<p><b>${esc(a.name)}</b> ran at ${pct(x.g.pi)} over 14 days (${fmt(x.actual,3)} vs ${fmt(a.pp,3)} ${a.uom}/mh).</p><ul><li>Overtime ${pct(ot)} of manhours vs ${pct(pOt)} for the project.</li><li>Own crews averaged ${fmt(crew,1)} workers vs ${crewPlan} planned.</li>${fl.length>1?`<li>${esc(fl[0][0])} averaged ${pct(fl[0][1])}; ${esc(fl[fl.length-1][0])} reached ${pct(fl[fl.length-1][1])}.</li>`:''}</ul>`;
   }
-  if(/underperform|worst|behind|lagging|lowest/.test(s)){const low=byAct.filter(x=>x.g.pi<0.9);return low.length?`<p>${low.length} ${low.length>1?'activities are':'activity is'} below 90% over 14 days:</p><ul>${low.map(x=>`<li><b>${esc(x.a.name)}</b> (${projById(x.a.p).short}): ${pct(x.g.pi)}, ${fmt(x.g.mh-x.g.earned)} manhours lost</li>`).join('')}</ul>`:`<p>No activity is below 90%. The lowest is ${esc(byAct[0]?.a.name||'—')} at ${pct(byAct[0]?.g.pi)}.</p>`}
-  if(/^today'?s productivity$|today|yesterday/.test(s)){const last=all.map(d=>d.date).sort().pop();if(!last)return '<p>No reports yet.</p>';const l=all.filter(d=>d.date===last),g=agg(l),r=acts.map(a=>actStats(a,l)).filter(x=>x.g.mh).sort((x,y)=>y.g.pi-x.g.pi);
+  if(/underperform|worst|behind|lagging|lowest/.test(s)){RT('under');if(!byAct.length)return NOEV('No submitted daily reports in the last 14 days in this scope, so productivity cannot be ranked.');const low=byAct.filter(x=>x.g.pi<0.9);return low.length?`<p>${low.length} ${low.length>1?'activities are':'activity is'} below 90% over 14 days:</p><ul>${low.map(x=>`<li><b>${esc(x.a.name)}</b> (${projById(x.a.p).short}): ${pct(x.g.pi)}, ${fmt(x.g.mh-x.g.earned)} manhours lost</li>`).join('')}</ul>`:`<p>No activity is below 90%. The lowest is ${esc(byAct[0]?.a.name||'—')} at ${pct(byAct[0]?.g.pi)}.</p>`}
+  if(/^today'?s productivity$|today|yesterday/.test(s)){RT('today');const last=all.map(d=>d.date).sort().pop();if(last&&!acts.some(a=>all.some(l=>l.act===a.id&&l.date===last)))return NOEV('No activity in this scope was reported on the last report date.');if(!last)return NOEV('No reports yet.');const l=all.filter(d=>d.date===last),g=agg(l),r=acts.map(a=>actStats(a,l)).filter(x=>x.g.mh).sort((x,y)=>y.g.pi-x.g.pi);
     return `<p>On ${fmtDY(last)} productivity was <b>${pct(g.pi)}</b> with ${fmt(g.heads)} workers and ${fmt(g.mh)} manhours.</p><p>Best: ${esc(r[0].a.name)} at ${pct(r[0].g.pi)}. Lowest: ${esc(r[r.length-1].a.name)} at ${pct(r[r.length-1].g.pi)}.</p>`}
   return null;
+}
+
+/* ---------- v2.9 (Phase 5): governed RASA answers ----------
+   1. Every answer and insight says what it is based on, the data date and the scope.
+   2. When ProTrackAI holds no data for a question, RASA says "No evidence" instead of guessing; things
+      ProTrackAI does not track (SAP actual cost, commitments, accruals...) are named as not tracked.
+   3. RASA answers only about projects and figures the person can open: site roles get no cost or billing
+      figures, and on the server those rows are not even sent to their browser (schema-update-v8.sql).
+   4. No project data leaves ProTrackAI. The language model is used only on the demo's sample data inside
+      claude.ai, and its answers are labelled. On the server it is never called. */
+const RASA_POLICY={note:'RASA answers from ProTrackAI records only. Signed in to the ProTrack server, no project data is sent to any outside AI service; the language model is used only on the demo page, on sample data, and its answers are labelled.'};
+const rasaLLMAllowed=()=>!CLOUD&&!CLOUD_ME;
+const rasaMoneyOk=()=>!isSiteRole();
+const RASA_T={collect:{src:['invoices','terms','dpr','evm'],money:1},invoice:{src:['terms','baseline','dpr','evm'],money:1},recon:{src:['dpr','baseline']},
+  unitrate:{src:['dpr','rates','costing'],money:1},histo:{src:['dpr','baseline']},milestones:{src:['milestones']},engproc:{src:['weekly','baseline']},
+  warn:{src:['dpr','baseline','evm']},eac:{src:['dpr','baseline','rates','evm'],money:1},reports:{src:[]},crew:{src:['dpr','baseline']},foremen:{src:['dpr']},
+  subs:{src:['dpr','rates']},variance:{src:['dpr','baseline']},under:{src:['dpr','baseline']},today:{src:['dpr']},
+  actions:{src:['actions']},lifecycle:{src:['lifecycle']},tender:{src:['register']}};
+let RASA_TOPIC=null;
+const RT=k=>{RASA_TOPIC=k};
+const NOEV=(what,next)=>`<p class="rasa-noev"><b>No evidence in ProTrackAI.</b> ${esc(what)}${next?' '+esc(next):''}</p>`;
+const RASA_UNTRACKED=[
+  [/commitment|accrual/,'Commitments and accruals are not tracked in ProTrackAI yet.','They are held in SAP; the Cost Control dashboard shows them as Not tracked yet rather than estimating them.'],
+  [/budget revision|revised budget|budget change/,'Approved budget revisions are not tracked in ProTrackAI yet.','The budget here comes from the last accepted costing file.'],
+  [/\bsap\b/,'ProTrackAI has no connection to SAP, so it holds no SAP figures.','Actual cost in ProTrackAI is labour and subcontract work measured through daily reports, which is not SAP actual cost.'],
+  [/cash.?flow (forecast|projection|plan)/,'A cash-flow forecast is not held in ProTrackAI yet (planned).','Invoicing and collection to date are in Reports.'],
+  [/variation register|variation order|change order|\bvos?\b/,'The variation register is not in ProTrackAI yet (planned).',''],
+  [/claims? register|claim (amount|value)/,'The claims register is not in ProTrackAI yet (planned).','Extension of time status is recorded per project.'],
+  [/material (tracking|stock|status|on site|delivery)|stock level|inventory|warehouse/,'Material tracking is not in ProTrackAI yet (planned).','Procurement milestones are tracked in the weekly engineering and procurement update.'],
+  [/safety|incident|\blti\b|\bhse\b|accident|near miss/,'ProTrackAI does not record safety or HSE data.',''],
+  [/weather|rain|temperature/,'ProTrackAI does not record weather.','Site remarks on daily reports may mention it.']];
+function rasaEv(kinds,extra){
+  kinds=[...new Set(kinds||[])];const L=[],M=[],ids=SCOPE,fat=t=>t?fmtDY(String(t).slice(0,10)):'';
+  const last=k=>impBatches().filter(b=>b.kind===k&&b.status==='committed').sort((a,b)=>String(b.at_time).localeCompare(String(a.at_time)))[0];
+  kinds.forEach(k=>{
+    if(k==='dpr'){const V=valid(),R=new Set(V.map(l=>l.rid)),D=V.map(l=>l.date).sort(),ap=DB.dprs.filter(d=>R.has(d.id)&&d.status==='Approved').length;
+      if(R.size)L.push(`${fmt(R.size)} daily report${R.size>1?'s':''} dated ${fmtDY(D[0])} to ${fmtDY(D[D.length-1])} (${fmt(ap)} approved, ${fmt(R.size-ap)} submitted or reviewed and counted before approval)`);else M.push('no submitted daily reports in this scope')}
+    if(k==='baseline'){const a=scopeActs(),b=last('baseline');if(a.length)L.push(`the baseline, ${fmt(a.length)} activities${b?`, last loaded ${fat(b.at_time)} in ${batchNo(b)}`:''}`);else M.push('no baseline loaded')}
+    if(k==='evm')L.push(`earned value at the data date, ${fmtDY(ASOF)}`);
+    if(k==='costing'){const b=last('costing');L.push(b?`the costing file ${b.file_name||''} (${batchNo(b)}, ${fat(b.at_time)})`:'the costing data held in ProTrackAI (no costing batch recorded in this scope)')}
+    if(k==='invoices'){const b=last('invoices');L.push(b?`the invoice register ${b.file_name||''} (${batchNo(b)}, ${fat(b.at_time)})`:'the invoice register held in ProTrackAI')}
+    if(k==='terms')L.push('the contract billing terms in Settings → Projects and terms, with price weighting from the P6 baseline');
+    if(k==='rates')L.push('dated trade cost rates and subcontract purchase-order rates');
+    if(k==='milestones')L.push('the milestone and extension-of-time records for each project');
+    if(k==='weekly'){const u=(DB.updates||[]).filter(x=>ids.has(x.p)).map(x=>x.dataDate).sort().pop();if(u)L.push(`the weekly engineering and procurement update, data date ${fmtDY(u)}`);else M.push('no weekly engineering and procurement update loaded, so forecasts use baseline dates')}
+    if(k==='lifecycle')L.push('the lifecycle stages and their history');
+    if(k==='register')L.push('the Tender register and its PE number history');
+    if(k==='actions')L.push('the daily reports, lifecycle stages and imports waiting on someone, read from the records themselves');
+  });
+  if(extra)L.push(extra);
+  const dated=kinds.some(k=>['dpr','evm','baseline'].includes(k));
+  return `<div class="rasa-src" data-rasasrc="1"><b>Based on</b> ${L.length?L.map(esc).join('; '):'ProTrackAI records'}.${M.length?` <span><b>Not available:</b> ${M.map(esc).join('; ')}.</span>`:''} <span>Scope: ${esc(aiScope())}.${dated?` Data date ${fmtDY(ASOF)}.`:''}${kinds.some(k=>['evm','rates','terms'].includes(k))?' Formulas: guide section 9.':''}</span></div>`;
+}
+/* a project named in the question must be one the person can open, and in the current scope */
+function rasaScopeCheck(s){
+  const words=p=>[p.short,p.name,p.id,p.pe,p.te].filter(x=>x&&String(x).length>=3).map(x=>String(x).toLowerCase());
+  const has=(t,w)=>new RegExp('(^|[^a-z0-9])'+w.replace(/[.*+?^${}()|[\]\\/-]/g,'\\$&')+'($|[^a-z0-9])').test(t);
+  const hit=DB.master.projects.find(p=>words(p).some(w=>has(s,w)));
+  if(!hit)return null;
+  if(!accessIds().includes(hit.id))return '<p><b>Not in your access.</b> I can only answer about projects you can open.</p>';
+  if(!SCOPE.has(hit.id))return `<p>${esc(hit.short)} (${esc(pcode(hit))}) is outside the current scope (${esc(aiScope())}). Choose it in the Scope menu at the top and ask again, so the figures cover that project.</p>`;
+  return null;
+}
+/* new grounded topics: what waits on me, lifecycle stages, Tender register */
+function rasaNewTopics(s){
+  if(/waiting (for|on) me|my (actions|approvals|tasks|items)|what('s| is) (pending|waiting)|to approve|pending approval|need(s)? my approval/.test(s)){RT('actions');
+    const all=actionItems(),mine=all.filter(x=>x.mine);
+    if(!all.length)return '<p>Nothing is waiting in this scope: no reports in the approval chain, no lifecycle stage awaiting approval or overdue, and no failed import left unretried.</p>';
+    return `<p><b>${mine.length}</b> item${mine.length===1?' is':'s are'} waiting on you, ${all.length} in the scope altogether${all.some(x=>x.late)?`, ${all.filter(x=>x.late).length} late`:''}.</p>
+      ${mine.length?`<ul>${mine.slice(0,6).map(x=>`<li>${esc(x.type)}: ${esc(x.what)}${x.pid?` (${esc((projById(x.pid)||{}).short||x.pid)})`:''}${x.late?' <span class="r-c">late</span>':''}</li>`).join('')}</ul>`:''}
+      <p><button class="btn sm" type="button" data-go="act">Open Actions and approvals</button></p>`}
+  if(/lifecycle|which stage|what stage|stage \d|kick-?off|handover|overdue stage|stages? (awaiting|waiting)/.test(s)){RT('lifecycle');
+    const ps=scopeProjects().filter(p=>p.status!=='Cancelled');if(!ps.length)return NOEV('No live project in this scope.');
+    const cur=ps.map(p=>({p,s:lcCurrent(p.id)})),late=[],wait=[];
+    ps.forEach(p=>LC_STAGES.forEach(S=>{const x=lcGet(p.id,S.n);if(lcOverdue(x))late.push({p,S,x});if(x.status==='Awaiting approval')wait.push({p,S,x})}));
+    return `<p>${ps.length} project${ps.length>1?'s':''} in scope. Current stage of each:</p><ul>${cur.slice(0,8).map(({p,s})=>`<li><b>${esc(p.short)}</b> (${esc(pcode(p))}): stage ${s.stage_no}, ${esc(lcDef(s.stage_no).name)}, ${esc(s.status.toLowerCase())}</li>`).join('')}</ul>
+      ${wait.length?`<p>${wait.length} stage${wait.length>1?'s':''} awaiting approval: ${wait.slice(0,4).map(w=>`${esc(w.p.short)} stage ${w.S.n} (waiting for ${esc(lcApproverText(w.p.id,w.S.n))})`).join('; ')}.</p>`:''}
+      ${late.length?`<p class="r-c">${late.length} stage${late.length>1?'s are':' is'} past the due date: ${late.slice(0,4).map(w=>`${esc(w.p.short)} stage ${w.S.n}, due ${fmtDY(w.x.due_date)}`).join('; ')}.</p>`:'<p>No stage is past its due date.</p>'}`}
+  if(/\bpe[- ]?\d{1,6}\b|\bte[- ]?\d{2,}|tender|pre-?award|pe number|te number|cancelled project|released number/.test(s)){RT('tender');
+    if(!canTenderView())return '<p><b>Not available for your role.</b> The Tender register is for planning, cost control and management.</p>';
+    const ps=scopeProjects();
+    const one=ps.find(p=>[p.pe,p.id,p.te].filter(Boolean).some(x=>{const c=String(x).toLowerCase().replace(/\s+/g,'');return s.replace(/\s+/g,'').includes(c)}));
+    if(one){const st=lcCurrent(one.id);return `<p><b>${esc(pcode(one))}</b>${one.te?`, ${esc(one.te)}`:''}: ${esc(one.name)}. Status <b>${esc(one.status)}</b>${one.status==='Cancelled'&&one.cancelReason?` (${esc(one.cancelReason)})`:''}.</p>
+      <ul>${one.client?`<li>Client ${esc(one.client)}${one.location?', '+esc(one.location):''}</li>`:''}${one.expected!=null&&one.expected!==''&&rasaMoneyOk()?`<li>Expected value SAR ${fmt(+one.expected,1)}M</li>`:''}${one.award?`<li>Award ${fmtDY(one.award)}</li>`:''}${one.signed?`<li>Contract signed ${fmtDY(one.signed)}</li>`:''}${one.status!=='Cancelled'?`<li>Current stage ${st.stage_no}, ${esc(lcDef(st.stage_no).name)}</li>`:''}</ul>`}
+    const pre=ps.filter(p=>p.status==='Pre-award'),cx=ps.filter(p=>p.status==='Cancelled');
+    const prop=CLOUD_ME?null:peProposeLocal();
+    if(!ps.some(p=>p.te))return NOEV('No project in this scope has been registered from the Tender list yet.','Register L1 projects in Projects & Handover → Tender register.');
+    return `<p>${ps.filter(p=>p.te).length} project${ps.filter(p=>p.te).length>1?'s':''} in scope came from the Tender list: <b>${pre.length}</b> pre-award, ${cx.length} cancelled.</p>
+      ${pre.length?`<ul>${pre.slice(0,5).map(p=>`<li>${esc(pcode(p))} · ${esc(p.te||'')}: ${esc(p.short)}${p.client?', '+esc(p.client):''}</li>`).join('')}</ul>`:''}
+      ${prop?`<p>The next PE number ProTrackAI would give is <b>${esc(prop.proposed)}</b>${prop.released.length?`, a number released by a cancelled project`:''}.</p>`:'<p>The register shows the next PE number when you open it.</p>'}
+      <p><button class="btn sm" type="button" data-go="tender">Open the Tender register</button></p>`}
+  return null;
+}
+function answer(q){
+  const s=q.toLowerCase();RASA_TOPIC=null;
+  const u=RASA_UNTRACKED.find(([re])=>re.test(s));if(u)return NOEV(u[1],u[2]);
+  const sc=rasaScopeCheck(s);if(sc)return sc;
+  const n=rasaNewTopics(s);if(n)return n+rasaEv(RASA_T[RASA_TOPIC].src);
+  const h=answerCore(q);
+  if(h==null)return null;
+  const t=RASA_T[RASA_TOPIC]||{src:['dpr']};
+  if(t.money&&!rasaMoneyOk())return '<p><b>Not available for your role.</b> Cost, budget and billing figures are shown to project managers, costing, planning and management. Your project manager can help.</p>';
+  return h+(h.startsWith('<p class="rasa-noev">')?'':rasaEv(t.src));
+}
+const RASA_NOEV_HELP=()=>`<p class="rasa-noev"><b>No evidence in ProTrackAI for that question.</b> I answer only from the records ProTrackAI holds${CLOUD_ME?', and no project data is sent to any outside AI service':''}, so I won't guess.</p><p>I can answer about progress, productivity, manpower, early warnings, milestones, engineering and procurement, foremen and subcontractors, what is waiting for you, lifecycle stages${canTenderView()?', the Tender register':''}${rasaMoneyOk()?', and EAC, unit rates, invoiceable value and collection':''}.</p>`;
+function aiContextSafe(q){
+  const c=aiContext(q);if(rasaMoneyOk())return c;
+  delete c.billing;c.projects=c.projects.map(({bac,eac,vac,cpi,...r})=>r);c.subcontractors=c.subcontractors.map(({sarPerEarnedMh,...r})=>r);
+  c.reports=(c.reports||[]).filter(r=>!/invoice|collection|EAC|estimate at completion|unit rate/i.test(r.report||''));return c;
 }
 
 /* ---------- milestones, EOT and OHTL key activities ---------- */
@@ -6766,7 +6885,10 @@ initVoice();aiHintTimer=setTimeout(()=>aiHint(true),15000);
 document.querySelectorAll('.ai-av').forEach(i=>i.src='data:image/jpeg;base64,'+AV);
 document.querySelectorAll('.logo-word').forEach(i=>i.src=LOGO);
 document.querySelectorAll('.logo-mark').forEach(i=>i.src=MARK);
-$('#aiChips').innerHTML=QS.map(q=>`<button type="button" class="chip" data-q="${esc(q)}">${esc(q)}</button>`).join('');
+function rasaChips(){const money=['Invoiceable value','Invoicing and collection','Unit rates','EAC forecast'];
+  const list=['What is waiting for me','Lifecycle stages',...QS].filter(q=>rasaMoneyOk()||!money.includes(q)).concat(canTenderView()?['Tender register']:[]);
+  const el=$('#aiChips');if(el)el.innerHTML=list.map(q=>`<button type="button" class="chip" data-q="${esc(q)}">${esc(q)}</button>`).join('')}
+rasaChips();
 $('#role').addEventListener('change',e=>{state.uid=e.target.value;state.role=me().role;state.scope='ALL';state.sector='ALL';state.chat=[];aiTurns=[];state.form=null;state.editing=null;closeDrawer();go(canExec()?'exec':(state.role==='foreman'?'dpr':'dash'));toast(`Now acting as ${me().name}, ${ROLES[state.role]}`)});
 $('#lang').addEventListener('click',()=>{state.lang=state.lang==='en'?'ar':'en';document.documentElement.lang=state.lang;document.documentElement.dir=state.lang==='ar'?'rtl':'ltr';render()});
 $('#theme').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme?document.documentElement.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;const n=dark?'light':'dark';document.documentElement.dataset.theme=n;try{localStorage.setItem(KEY+'-theme',n)}catch(x){}render()});
