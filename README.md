@@ -161,6 +161,13 @@ Production needs:
 
 ---
 
+## Version 2.8
+
+- Tender register: L1 projects recorded from Tender's list with TE number, client, location and expected value; ProTrackAI proposes the PE number, refuses duplicates, and releases a cancelled project's number for the next L1 project (`schema-update-v7.sql`)
+- Designations: Head of Planning and Cost Control (approves stages 1 to 5) and costing coordinator (registers projects, records stages 1 to 4)
+- Stages 1 to 5 follow the Tender-to-SAP process; stage 4 due 7 days after contract signing
+- See RELEASE-NOTES-v2.8.md and STAGE-4B-SETUP.md
+
 ## Version 2.7
 
 - Governed 12-stage project lifecycle: owner, due date, required deliverables with evidence, submit and approve (no self-approval), append-only history (`schema-update-v6.sql`)

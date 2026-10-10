@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ProTrackAI v2.5 in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
+"""ProTrackAI v2.5+ (extended to v2.8) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
 from the real ProTrack schema (schema.sql + v2 + v3 + v4) through fake_supabase.py.
 Every allow/refuse decision in these tests is made by the database (row level security and the v4
 functions), exactly as on Supabase. What is NOT covered: Supabase's own sign-in service, its REST layer
@@ -27,12 +27,12 @@ def sql(q, db=DBN):
 # ------------------------------------------------------------------ database
 subprocess.run(PG + ['-d', 'postgres', '-c', f'drop database if exists {DBN}'], capture_output=True)
 subprocess.run(PG + ['-d', 'postgres', '-c', f'create database {DBN}'], check=True, capture_output=True)
-for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql', 'schema-update-v5.sql', 'schema-update-v6.sql']:
+for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', 'schema-update-v3.sql', 'schema-update-v4.sql', 'schema-update-v5.sql', 'schema-update-v6.sql', 'schema-update-v7.sql']:
     p = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, f)], capture_output=True, text=True)
     if p.returncode: raise SystemExit(f + ': ' + p.stderr)
 people = [('sa', 'Sara Admin', 'sa'), ('pm', 'Paul Manager', 'pm'), ('e1', 'Eng. Omar Engineer', 'eng'), ('e2', 'Eng. Hadi Other', 'eng'),
           ('s1', 'Samir SiteManager', 'sm'), ('f1', 'Faisal Foreman', 'foreman'), ('f2', 'Fahad Foreman', 'foreman'),
-          ('c1', 'Carla Costing', 'costing'), ('pl', 'Peter Planner', 'plan')]
+          ('c1', 'Carla Costing', 'costing'), ('pl', 'Peter Planner', 'plan'), ('cc', 'Cora Coordinator', 'costing'), ('hd', 'Hana Head', 'plan')]
 U = {k: f'10000000-0000-0000-0000-0000000000{i:02d}' for i, (k, _, _) in enumerate(people, 1)}
 sql("insert into auth.users (id, email) values " + ",".join(f"('{U[k]}', '{k}@test.local')" for k, _, _ in people))
 sql("insert into profiles (id, name, role) values " + ",".join(f"('{U[k]}', '{n}', '{r}')" for k, n, r in people))
@@ -83,7 +83,11 @@ with sync_playwright() as p:
     def login(pg, who, expect_ok=True):
         if pg.locator('#app').is_visible():
             pg.evaluate("signOut()"); pg.wait_for_timeout(700)
-        pg.fill('#lgId', f'{who}@test.local'); pg.fill('#lgPw', PW); pg.click('#lgBtn'); pg.wait_for_timeout(2600)
+        pg.fill('#lgId', f'{who}@test.local'); pg.fill('#lgPw', PW); pg.click('#lgBtn'); pg.wait_for_timeout(1200)
+        if expect_ok:
+            try: pg.wait_for_selector('#app', state='visible', timeout=12000)
+            except Exception: pass
+        pg.wait_for_timeout(1400)
         pg.evaluate("window.aiHint=()=>{};window.rasaBubble=()=>{}")
         if expect_ok and not pg.locator('#app').is_visible(): raise RuntimeError('sign-in failed for ' + who + ': ' + pg.inner_text('#lgErr'))
 
@@ -276,6 +280,67 @@ with sync_playwright() as p:
     v = pg.inner_text('#view')
     ck('Dashboards', 'cost dashboard reconciles the costing and invoice batches', 'Source reconciliation' in v and 'IMP-' in v, v[-600:])
 
+
+    # ---------------------------------------------------------------- v2.8 Tender register through the server
+    login(pg, 'sa')
+    for who, d in (('hd', 'head'), ('cc', 'coordinator')):
+        pg.evaluate(f"go('admin');state.adminTab='users';render();admDrawer('users','{U[who]}')"); pg.wait_for_timeout(500)
+        pg.check(f'#admForm [name=pcc][value={d}]'); pg.click('#admForm [type=submit]'); pg.wait_for_timeout(2200)
+    ck('Tender', 'the super admin names the Head and the costing coordinator on the server', sql("select string_agg(p.name||':'||d.designation, ',' order by p.name) from pcc_designations d join profiles p on p.id=d.user_id") == 'Cora Coordinator:coordinator,Hana Head:head')
+    r = pg.evaluate("SB.from('projects').update({pe_number:'PE-999'}).eq('id','P1').then(x=>x.error?'refused: '+x.error.message:'ran')")
+    ck('Tender', 'even a super admin cannot set a PE number by writing to the table', r.startswith('refused') and sql("select coalesce(pe_number,'') from projects where id='P1'") == '', r)
+    login(pg, 'cc')
+    pg.evaluate("state.scope='ALL';go('tender')"); pg.wait_for_timeout(1200)
+    ck('Tender', 'the coordinator sees the register with the next PE number from the server', pg.inner_text('#tenNext') == 'PE-001' and pg.locator('[data-tenreg]').count() == 1, pg.inner_text('#tenNext'))
+    pg.click('[data-tenreg]'); pg.wait_for_timeout(1200)
+    ck('Tender', 'the form shows the server proposal, read-only', pg.input_value('#tenPe') == 'PE-001' and pg.get_attribute('#tenPe', 'readonly') is not None)
+    pg.fill('#tenForm [name=te_number]', 'TE2231'); pg.fill('#tenForm [name=name]', 'Riyadh 132 kV substation'); pg.fill('#tenForm [name=client]', 'SEC'); pg.fill('#tenForm [name=location]', 'Riyadh'); pg.fill('#tenForm [name=expected_value_m]', '42.5')
+    pg.click('#tenForm [type=submit]'); pg.wait_for_timeout(3000)
+    ck('Tender', 'registered on the server as PE-001, pre-award, with the coordinator owning stages 1 to 4',
+       sql("select id||'/'||pe_number||'/'||te_number||'/'||status from projects where te_number='TE2231'") == 'PE-001/PE-001/TE2231/Pre-award'
+       and sql(f"select count(*) from lifecycle_stages where project_id='PE-001' and owner='{U['cc']}'") == '4')
+    ck('Tender', 'the app shows the new project from the server', pg.evaluate("!!projById('PE-001')&&accessIds().includes('PE-001')") and 'PE-001' in pg.inner_text('#view'))
+    pg.evaluate("state.scope='PE-001';go('proj');openStage('PE-001',1)"); pg.wait_for_timeout(800)
+    for k in ['te', 'value']: pg.click(f'[data-lctick="{k}"]')
+    pg.click('[data-lcdo="submit"]'); pg.wait_for_timeout(2500)
+    ck('Tender', 'the coordinator submits stage 1 through the server', sql("select status from lifecycle_stages where project_id='PE-001' and stage_no=1") == 'Awaiting approval')
+    pg.evaluate("closeDrawer();state.scope='ALL';go('tender');openTender('PE-001')"); pg.wait_for_timeout(800)
+    pg.fill('#tenEdit [name=contract_signed_on]', '2026-09-10'); pg.fill('#tenEdit [name=award_on]', '2026-09-01'); pg.click('#tenEdit [type=submit]'); pg.wait_for_timeout(2500)
+    ck('Tender', 'award and signing saved; stage 4 due 7 days later, on the server', sql("select status||'/'||contract_signed_on from projects where id='PE-001'") == 'Active/2026-09-10'
+       and sql("select due_date from lifecycle_stages where project_id='PE-001' and stage_no=4") == '2026-09-17')
+    pg.evaluate("closeDrawer()")
+    login(pg, 'pm')
+    r = pg.evaluate("rpc('lifecycle_act',{p:{project_id:'P1',stage_no:1,action:'na',note:'x'}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Tender', 'a project manager can no longer decide stages 1 to 5 (server refuses)', r.startswith('refused') and 'Head of Planning' in r, r)
+    login(pg, 'hd')
+    pg.evaluate("go('act')"); pg.wait_for_timeout(900)
+    ck('Tender', 'the Head finds stage 1 in Actions and approvals', 'Stage 1, Tender L1 notification: approve or return' in pg.inner_text('#view'), pg.inner_text('#view')[:300])
+    pg.evaluate("openStage('PE-001',1)"); pg.wait_for_timeout(600); pg.click('[data-lcdo="approve"]'); pg.wait_for_timeout(2500)
+    ck('Tender', 'the Head approves stage 1 through the server', sql("select status||'/'||(approved_by::text='" + U['hd'] + "') from lifecycle_stages where project_id='PE-001' and stage_no=1") == 'Complete/true')
+    pg.evaluate("closeDrawer();state.scope='ALL';go('tender');openTender('PE-001')"); pg.wait_for_timeout(800)
+    pg.fill('#tenCxNote', 'Client cancelled after L1'); pg.click('[data-tencancel]'); cfm(pg); pg.wait_for_timeout(2500)
+    ck('Tender', 'the Head cancels it; the server releases PE-001', sql("select status from projects where id='PE-001'") == 'Cancelled' and sql("select count(*) from register_audit where project_id='PE-001' and action='PE released'") == '1')
+    pg.evaluate("closeDrawer()")
+    login(pg, 'cc')
+    pg.evaluate("state.scope='ALL';go('tender')"); pg.wait_for_timeout(1200)
+    ck('Tender', 'the released number is proposed again', pg.inner_text('#tenNext') == 'PE-001', pg.inner_text('#tenNext'))
+    pg.click('[data-tenreg]'); pg.wait_for_timeout(1200)
+    ck('Tender', 'the form says the number was released by the cancelled TE', 'TE2231' in pg.inner_text('#tenPeHelp'), pg.inner_text('#tenPeHelp'))
+    pg.fill('#tenForm [name=te_number]', 'TE2250'); pg.fill('#tenForm [name=name]', 'Dammam pumping station'); pg.click('#tenForm [type=submit]'); pg.wait_for_timeout(3000)
+    ck('Tender', 'the next L1 project gets PE-001 on the server, as a new record', sql("select id||'/'||pe_number from projects where te_number='TE2250'") == 'PE-001-R2/PE-001')
+    ck('Tender', 'the app history shows both TE numbers against PE-001', pg.evaluate("[...new Set(DB.regAudit.filter(a=>a.pe_number==='PE-001').map(a=>a.te_number))].sort().join()") == 'TE2231,TE2250')
+    r = pg.evaluate("rpc('tender_act',{p:{action:'cancel',project_id:'PE-001-R2',note:'x'}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Tender', 'the coordinator cannot cancel (server refuses)', r.startswith('refused') and sql("select status from projects where id='PE-001-R2'") == 'Pre-award', r)
+    bad = []
+    for view in ['exec', 'proj', 'tender', 'act', 'dash', 'pdash', 'cdash', 'eva', 'rep', 'imp']:
+        e0 = len(errs); pg.evaluate(f"go('{view}')"); pg.wait_for_timeout(400)
+        if len(errs) > e0: bad.append(view)
+    ck('Tender', 'every screen renders with pre-award and cancelled server projects', not bad, (bad, errs[-2:]))
+    login(pg, 'sa')
+    pg.evaluate(f"go('admin');state.adminTab='users';render();admDrawer('users','{U['cc']}')"); pg.wait_for_timeout(500)
+    ck('Tender', 'the users screen shows designations held on the server', pg.is_checked('#admForm [name=pcc][value=coordinator]') and not pg.is_checked('#admForm [name=pcc][value=head]'))
+    pg.evaluate("closeDrawer()")
+
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))
     pg.evaluate("cloudLoadAll(true).then(()=>render())"); pg.wait_for_timeout(1500)
@@ -319,7 +384,11 @@ with sync_playwright() as p:
     with pg.expect_download() as dl3:
         pg.click('[data-bkserver]')
     path = dl3.value.path(); data = json.load(open(path))
-    pr = data['projects'][0] if data.get('projects') else {}
+    pr = next((x for x in data.get('projects', []) if (x.get('project') or {}).get('id') == 'P1'), {})
+    pe1 = next((x for x in data.get('projects', []) if (x.get('project') or {}).get('id') == 'PE-001'), {})
+    ck('Backup', 'server backup carries the Tender details, lifecycle stages and register history (v2.8)',
+       (pe1.get('project') or {}).get('te_number') == 'TE2231' and len(pe1.get('lifecycle_stages', [])) >= 4 and len(pe1.get('register_audit', [])) >= 4 and len(pe1.get('lifecycle_audit', [])) >= 4,
+       {k: (len(v) if isinstance(v, list) else '') for k, v in pe1.items()})
     ck('Backup', 'server backup holds every report with lines and history', data.get('format') == 'protrack-server-backup' and len(pr.get('dprs', [])) == 4 and len(pr.get('dpr_audit', [])) >= 8, {k: len(v) for k, v in pr.items() if isinstance(v, list)})
     with pg.expect_download() as dl4:
         pg.click('[data-bkbrowser]')

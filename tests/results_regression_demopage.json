@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-09 23:51",
- "app": "/home/claude/p4/demo.html",
+ "run_at": "2026-10-10 09:55",
+ "app": "/home/claude/p6/demo.html",
  "results": [
   {
    "area": "Auth",
@@ -112,37 +112,37 @@
   },
   {
    "area": "Reports",
-   "check": "report projprog builds (0.01 s)",
+   "check": "report projprog builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report regprog builds (0.0 s)",
+   "check": "report regprog builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report histo builds (0.38 s)",
+   "check": "report histo builds (0.75 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report prod builds (0.01 s)",
+   "check": "report prod builds (0.16 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report eac builds (0.01 s)",
+   "check": "report eac builds (0.03 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report basecmp builds (0.01 s)",
+   "check": "report basecmp builds (0.03 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -154,43 +154,43 @@
   },
   {
    "area": "Reports",
-   "check": "report unitrate builds (0.0 s)",
+   "check": "report unitrate builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report invoice builds (0.0 s)",
+   "check": "report invoice builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report cash builds (0.01 s)",
+   "check": "report cash builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report timing builds (0.01 s)",
+   "check": "report timing builds (0.03 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report mhrec builds (0.0 s)",
+   "check": "report mhrec builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report p6upd builds (0.02 s)",
+   "check": "report p6upd builds (0.06 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report warn builds (0.05 s)",
+   "check": "report warn builds (0.12 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -346,7 +346,7 @@
   },
   {
    "area": "Navigation v2.3",
-   "check": "planned items present and disabled (v2.7: cost reconciliation is now live)",
+   "check": "planned items present and disabled (v2.7: cost reconciliation is live; v2.8: Tender register is live)",
    "result": "PASS",
    "detail": ""
   },

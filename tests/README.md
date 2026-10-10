@@ -1,11 +1,13 @@
-# ProTrackAI automated tests (v2.5)
+# ProTrackAI automated tests (v2.8)
 
 | Suite | Checks | What it covers | Needs |
 |---|---|---|---|
 | `test_v4.py` | 125 | The server rules (v4): attacks that must fail, approval chain, imports, migration, people, rollback | PostgreSQL 16 on `/tmp:5499`, the SQL files next to it |
-| `e2e_server.py` + `fake_supabase.py` | 78 | The app in server mode, end to end, against that database | PostgreSQL, Playwright, Chromium |
+| `e2e_server.py` + `fake_supabase.py` | 98 | The app in server mode, end to end, against that database (v2.8: Tender register, designations, stages 1 to 5) | PostgreSQL, Playwright, Chromium |
 | `test_v5.py` (in supabase/tests) | 64 | Controlled imports on the server: checks, reconciliation, failure, retry, concurrency, authorization, rollback | PostgreSQL 16 |
 | `test_v6.py` (in supabase/tests) | 53 | Lifecycle rules on the server: who may change, submit, approve, return, reopen; no self-approval; history | PostgreSQL 16 |
+| `test_v7.py` (in supabase/tests) | 104 | Tender register on the server: PE proposal, duplicates, release and reallocation, cancel and reinstate, stages 1 to 5 approver, 7-day handover, checklist update, rollback | PostgreSQL 16 |
+| `tender_demo.py` | 62 | Tender register, PE numbers, designations and stages 1 to 5 in demo mode | Playwright, Chromium |
 | `lifecycle_demo.py` | 36 | Lifecycle, actions and approvals, dashboards in demo mode | Playwright, Chromium |
 | `imports_demo.py` | 34 | Controlled imports and the Import centre in demo mode | Playwright, Chromium |
 | `regression.py` | 77 | Every screen and report, P6 import with DCMA, approval chain and timers, domain menu, project overview, security behaviour, RASA (demo data) | Playwright, Chromium |
@@ -19,6 +21,7 @@ python3 tests/regression.py "index.html?date=live" sample.xer > results_regressi
 python3 tests/suites.py index.html > results_suites.json
 python3 tests/reference.py index.html > results_reference.json
 python3 tests/backup_demo.py index.html > results_backup.json
+python3 tests/tender_demo.py index.html > results_tender_demo.json
 python3 test_v4.py                                    # run from the folder with the SQL files
 python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 ```

@@ -30,7 +30,7 @@ with sync_playwright() as p:
     ck('Lifecycle', 'twelve stages in the strip and the grid', pg.locator('.lc-strip.lc12 .lc-chip').count() == 12 and pg.locator('.lc12g .lc-card').count() == 12,
        (pg.locator('.lc-chip').count(), pg.locator('.lc-card').count()))
     names = pg.evaluate("LC_STAGES.map(s=>s.name)")
-    ck('Lifecycle', 'stages follow the master prompt from tender notification to closeout', names[0] == 'Tender notification' and names[-1] == 'Final account and closeout' and len(names) == 12, names)
+    ck('Lifecycle', 'stages run from the Tender L1 notification to closeout (v2.8: stages 1 to 5 follow the Tender-to-SAP process)', names[0] == 'Tender L1 notification' and names[-1] == 'Final account and closeout' and len(names) == 12, names)
     ck('Lifecycle', 'demo projects carry clearly sample stage states', pg.evaluate(f"Object.keys(DB.lifecycle['{PID}']||{{}}).length") == 12)
     pg.click('.lc12g .lc-card >> nth=6'); pg.wait_for_timeout(500)
     d = pg.inner_text('#sheet')
