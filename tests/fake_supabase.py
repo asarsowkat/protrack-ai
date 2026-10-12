@@ -7,7 +7,8 @@ ProTrack schema, as the signed-in user, with row level security switched on. So 
 the tests see is the database's own, not something imitated here.
 
 Only what ProTrackAI uses is implemented: select with eq/in/order/range and embedded child tables,
-insert, upsert, update, delete, rpc, password sign-in and function calls (recorded, never sent).
+insert, upsert, update, delete, rpc, password sign-in, function calls (recorded, never sent) and Storage upload and
+signed download (files kept in memory; the access rules are the database's own storage.objects policies).
 Usage: python3 fake_supabase.py APP_HTML DBNAME PORT
 """
 import json, os, subprocess, sys, tempfile, threading
@@ -18,6 +19,8 @@ PSQL = ['psql', '-h', '/tmp', '-p', '5499', '-U', 'postgres', '-X', '-q', '-At',
 PASSWORD = 'Test-Pass-2026'
 EMBED_FK = {'dpr_lines': 'dpr_id', 'dpr_audit': 'dpr_id'}
 CALLS = []            # function invocations (emails), for the tests to inspect
+STORE = {}            # stored files (Supabase Storage stand-in): 'bucket/path' -> (bytes, content type)
+SIGNED = {}           # signed download links -> 'bucket/path'
 FAIL = set()          # tables made to fail, to test error handling
 LOCK = threading.Lock()
 _meta = {}
@@ -48,7 +51,11 @@ function createClient(){
       getSession:async()=>({data:{session}}),getUser:async()=>({data:{user:session&&session.user}}),
       signOut:async()=>{session=null;localStorage.removeItem('sb-fake-session');return {error:null}},
       resetPasswordForEmail:async()=>({data:{},error:null})},
-    functions:{invoke:async(name,o)=>post('/fn',{name,body:o&&o.body})}};
+    functions:{invoke:async(name,o)=>post('/fn',{name,body:o&&o.body})},
+    storage:{from:bucket=>({
+      upload:async(path,file,opts)=>{const u=new Uint8Array(await file.arrayBuffer());let bin='';for(let i=0;i<u.length;i+=32768)bin+=String.fromCharCode.apply(null,u.subarray(i,i+32768));
+        return post('/storage/upload',{token:tok(),bucket,path,b64:btoa(bin),ctype:(opts&&opts.contentType)||file.type||'application/octet-stream',size:file.size})},
+      createSignedUrl:async(path,sec)=>post('/storage/sign',{token:tok(),bucket,path})})}};
 }
 window.supabase={createClient};})();"""
 
@@ -186,6 +193,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, "window.PROTRACK={SUPABASE_URL:'https://fake-project.supabase.co',SUPABASE_ANON_KEY:'test-anon-key',SITE_URL:'http://localhost/'};", 'application/javascript')
         if path == '/__sb/client.js': return self.send(200, FAKE_JS, 'application/javascript')
         if path == '/__sb/calls': return self.send(200, json.dumps(CALLS))
+        if path.startswith('/__sb/obj/') and path[10:] in SIGNED:
+            data, ctype = STORE.get(SIGNED[path[10:]], (b'', 'application/octet-stream')); return self.send(200, data, ctype)
         self.send(404, 'not found', 'text/plain')
 
     def do_POST(self):
@@ -203,6 +212,21 @@ class H(BaseHTTPRequestHandler):
             if self.path == '/__sb/rpc':
                 data, err = rpc(body['fn'], body.get('args') or {}, body.get('token'))
                 return self.send(200, json.dumps({'data': data, 'error': err}))
+            if self.path == '/__sb/storage/upload':   # the storage rules are the database's own (storage.objects policies)
+                import base64, uuid as _u
+                meta = {'size': body.get('size'), 'mimetype': body.get('ctype')}
+                sql = (f"with r as (insert into storage.objects (bucket_id, name, owner, metadata) values ({lit(body['bucket'])}, {lit(body['path'])}, auth.uid(), {lit(meta)}::jsonb) returning name) "
+                       "select coalesce(jsonb_agg(to_jsonb(r)), '[]') from r")
+                data, err = run(sql, body.get('token'))
+                if err: return self.send(200, json.dumps({'data': None, 'error': {'message': 'new row violates row-level security policy' if 'row-level security' in err['message'] else err['message']}}))
+                STORE[body['bucket'] + '/' + body['path']] = (base64.b64decode(body.get('b64') or ''), body.get('ctype') or 'application/octet-stream')
+                return self.send(200, json.dumps({'data': {'path': body['path']}, 'error': None}))
+            if self.path == '/__sb/storage/sign':
+                import uuid as _u
+                data, err = run(f"select count(*) from storage.objects where bucket_id = {lit(body['bucket'])} and name = {lit(body['path'])}", body.get('token'))
+                if err or not data: return self.send(200, json.dumps({'data': None, 'error': {'message': 'Object not found'}}))
+                t = _u.uuid4().hex; SIGNED[t] = body['bucket'] + '/' + body['path']
+                return self.send(200, json.dumps({'data': {'signedUrl': f'http://127.0.0.1:{PORT}/__sb/obj/{t}'}, 'error': None}))
             if self.path == '/__sb/fn':
                 CALLS.append(body); return self.send(200, json.dumps({'data': {'ok': True}, 'error': None}))
             if self.path == '/__sb/fail':

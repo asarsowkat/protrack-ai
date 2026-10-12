@@ -387,6 +387,31 @@ label.btn{display:inline-block}
 .repctl{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 14px;padding:10px 12px;background:var(--surface-2);border-radius:9px}
 .repctl .ctl{gap:8px;font-size:13px;color:var(--ink-2)}
 .repctl select{font-size:14px}
+.shelf{display:flex;gap:12px;overflow-x:auto;padding:8px 4px 16px;border-bottom:8px solid var(--shelf);border-radius:2px;box-shadow:0 6px 8px -6px rgba(0,0,0,.35);scrollbar-width:thin}
+.boxwrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:none}
+.boxfile{all:unset;box-sizing:border-box;cursor:pointer;width:132px;height:236px;border-radius:7px 7px 3px 3px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 8px 10px;color:#fff;position:relative;text-align:center;
+  box-shadow:inset -7px 0 0 rgba(0,0,0,.2),inset 0 3px 0 rgba(255,255,255,.12),0 2px 6px rgba(0,0,0,.2);transition:transform .15s}
+.boxfile::after{content:'';position:absolute;left:0;right:7px;bottom:0;height:24px;border-radius:0 0 3px 3px;background:rgba(0,0,0,.2);pointer-events:none}
+.boxfile:hover{transform:translateY(-3px)}.boxfile:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.boxlabel{font:700 10.5px/1.15 var(--font);letter-spacing:.05em;background:rgba(255,255,255,.94);color:#111827;padding:4px 5px;border-radius:3px;width:100%;box-sizing:border-box}
+.boxico svg{width:26px;height:26px;display:block}.boxcode{font-size:10.5px;opacity:.85;letter-spacing:.04em}
+.boxtitle{flex:none;font-size:11.5px;line-height:1.25;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.boxcount{font-size:10.5px;opacity:.95;position:absolute;bottom:5px;left:0;right:7px;z-index:1}.boxbadges{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-top:auto;margin-bottom:24px}
+.docbadge{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:999px;background:var(--surface);color:var(--ink);border:1px solid var(--line);white-space:nowrap}
+.boxfile .docbadge{background:rgba(255,255,255,.92);color:#1b2333;border-color:transparent}.docbadge.lockb::before{content:'🔒 ';font-size:9px}
+.boxfile .st{font-size:10px;padding:1px 6px}.boxhidden{opacity:.55}.boxadd{background:transparent;border:2px dashed var(--line);color:var(--ink-2);box-shadow:none;justify-content:center}.boxadd::after{display:none}
+.docrow-contract .shade0,.docrow-contract .shade2{background:#1F3A5F}.docrow-contract .shade1{background:#3F6194}
+.docrow-planning .shade0{background:#0F6B64}.docrow-planning .shade1{background:#1D4ED8}.docrow-planning .shade2{background:#475569}
+.docrow-cost .shade0{background:#2F3640}.docrow-cost .shade1{background:#1E3A8A}.docrow-cost .shade2{background:#7E6326}
+.docrow{border-top:4px solid var(--line)}.docrow-contract{border-top-color:#1F3A5F}.docrow-planning{border-top-color:#0F6B64}.docrow-cost{border-top-color:#7E6326}
+.docrown{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;color:#fff;margin-inline-end:6px;vertical-align:middle}
+.docrow-contract .docrown{background:#1F3A5F}.docrow-planning .docrown{background:#0F6B64}.docrow-cost .docrown{background:#2F3640}
+.doclive{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:0 0 10px}
+.doclive .dl{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 9px;display:flex;flex-direction:column;font-size:13px}.doclive .l{color:var(--ink-2);font-size:11.5px}
+.boxmove{display:flex;gap:4px}.docold td{opacity:.62}.docpre{max-height:60vh;overflow:auto;background:var(--surface-2);padding:10px;font-size:12px;white-space:pre-wrap;border-radius:6px}
+.docitems{columns:2;margin:6px 0;padding-inline-start:18px;list-style:none}.docform{background:var(--surface-2)}
+:root{--shelf:#A3ABB8}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--shelf:#4B5563}}:root[data-theme="dark"]{--shelf:#4B5563}
+@media (max-width:640px){.boxfile{width:118px;height:228px}.docitems{columns:1}}
 .sheet.wide{width:min(1560px,100%)}
 .crtbl{font-size:12.5px}.crtbl th,.crtbl td{padding:5px 6px;white-space:nowrap}.crtbl th .t2{font-weight:400}.crtbl input{width:112px;padding:4px 6px;font-size:12.5px;text-align:end}
 .crtbl input.crj{width:240px;text-align:start}.crtbl .crtot td{background:var(--accent-soft)}.crtbl .crfoot td{background:var(--surface-2);font-size:12px}.crtbl .crg{text-align:center;border-bottom:1px solid var(--line)}
@@ -705,7 +730,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.3</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.4</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1263,7 +1288,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadIssues();
+    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadIssues();await cloudLoadDocs();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -3392,6 +3417,374 @@ function seedV33(){
   DB.v33Seeded=true;save();
 }
 
+/* ---------- v3.4: the three-row project document rack ----------
+   Row 1 Contract & Commercial (kept by the costing engineer), Row 2 Planning & Scheduling (planning engineer),
+   Row 3 Cost Control & Costing (costing engineer); the Head of Planning and Cost Control and super admins keep all
+   three. Box files are containers for source documents only: storing a file never imports a schedule, changes a
+   budget or approves anything; those still go through their own screens. On the server: doc_act, documents,
+   doc_boxes, doc_audit and the private "project-docs" storage bucket (schema-update-v13.sql). In the demo, files are
+   kept in this browser (IndexedDB). */
+const DOC_ROWS=[
+  {k:'contract',n:1,title:'Contract & Commercial',owner:'Costing engineer',purpose:'Contract documents, tender commitments, contractual correspondence, scope changes and commercial records.'},
+  {k:'planning',n:2,title:'Planning & Scheduling',owner:'Planning engineer',purpose:'Approved and current P6 schedules, weekly and monthly reports, lookaheads, recovery, resources and schedule analysis.'},
+  {k:'cost',n:3,title:'Cost Control & Costing',owner:'Costing engineer',purpose:'Tender estimate, Rev 0 and revised budgets, monthly cost reports, forecasts and EAC, cash flow, invoices, variations and change orders.'}];
+/* [key, title, big label, icon, shade, period ('week'|'month'|''), expected contents] */
+const DOC_DEF=[
+  ['C01','Contract Agreement & Particular Conditions','CONTRACT','seal',0,'',[]],['C02','Scope of Work & Technical Specifications','SCOPE','doc',1,'',[]],
+  ['C03','Tender Documents & BOQ','TENDER','doc',0,'',[]],['C04','Contractual Deliverables & Obligations','DELIVERABLES','check',1,'',[]],
+  ['C05','Client and Consultant Correspondence','CORRESPONDENCE','mail',0,'',[]],['C06','Claims, EOT & Delay Notices','CLAIMS & EOT','alert',1,'',[]],
+  ['C07','Change Orders & Contract Amendments','CHANGE ORDERS','swap',0,'',[]],['C08','Bonds, Guarantees & Insurance','BONDS','shield',1,'',[]],
+  ['C09','Subcontract Agreements','SUBCONTRACTS','seal',0,'',[]],['C10','Commercial Records & Meeting Minutes','COMMERCIAL','doc',1,'',[]],
+  ['P01','Approved Baseline Schedule','BASELINE','lock',0,'',['Approved baseline P6 XER/XML files','Baseline narrative and approval records','Original planned dates and milestones','Baseline revision history']],
+  ['P02','Current Primavera P6 Schedule','CURRENT P6','gantt',1,'week',['Current approved or authorized working schedule','Latest P6 XER/XML files','Schedule narratives','Schedule version and data date']],
+  ['P03','Weekly Planning Reports','WEEKLY REPORTS','cal',2,'week',['Weekly progress reports','Planned versus actual progress','Weekly milestone status','Critical activities and slippages','Weekly recovery actions','Weekly schedule update files']],
+  ['P04','Monthly Planning Reports','MONTHLY REPORTS','cal',0,'month',['Monthly progress reports','Monthly planned versus actual S-curves','Milestone achievement reports','Monthly schedule variance analysis','Critical path analysis','Monthly schedule update and narrative']],
+  ['P05','Lookahead Schedules','LOOKAHEAD','gantt',1,'week',['2-week, 3-week and 4-week lookahead schedules','Upcoming activities and constraints','Work-front readiness','Planned versus actual lookahead performance']],
+  ['P06','Recovery & Catch-Up Schedules','RECOVERY','gantt',2,'',['Recovery plans','Revised execution sequences','Acceleration scenarios','Recovery schedule narratives','Schedule recovery tracking']],
+  ['P07','Resource & Manpower Planning','RESOURCES','people',0,'month',['Planned manpower histograms','Equipment deployment schedules','Resource loading reports','Planned versus actual manpower','Resource demand forecasts']],
+  ['P08','Delay Analysis & Schedule Risk','DELAY & RISK','alert',1,'',['Critical path reports','Delay registers','Impacted schedules','Time impact analyses','Extension of Time supporting schedules','Schedule risk and mitigation reports']],
+  ['P09','Progress Measurement & Productivity','PROGRESS','chart',2,'month',['Planned versus actual quantities','Progress measurement sheets','Productivity reports','Earned progress calculations','Supporting progress evidence']],
+  ['P10','Milestones & Key Deliverables','MILESTONES','flag',0,'',['Contractual milestone register','Engineering, procurement and construction milestones','Testing and commissioning schedules','Milestone forecast and achievement records']],
+  ['P11','Engineering & Procurement Schedules','ENG & PROC','gantt',1,'month',['Engineering deliverables schedules','Material submittal schedules','Purchase order and vendor schedules','Manufacturing and delivery schedules','Procurement delay reports']],
+  ['P12','Schedule Reference & Supporting Files','REFERENCE','doc',2,'',['WBS dictionaries','Activity codes','Calendars','Schedule assumptions','Schedule check reports','Authorized schedule export files']],
+  ['K01','Tender Cost Estimate','TENDER','calc',0,'',['Original tender costing files','Tender BOQ and quantity take-offs','Material, labour, equipment and subcontract estimates','Tender assumptions and exclusions','Tender rates and pricing breakdowns','Original tender budget and margin assumptions']],
+  ['K02','Rev 0 Approved Project Budget','REV 0','lock',2,'',['Rev 0 cost baseline','Approved cost breakdown structure','Budget by WBS, cost code, discipline and project package','Original budget quantities and rates','Budget approval records','Original budget reconciliation with tender']],
+  ['K03','Monthly Budget Files','MONTHLY BUDGET','sheet',1,'month',['Monthly budget allocation','Monthly planned expenditure','Monthly cost phasing','Budget versus actual cost','Monthly cost variance reports','Revised monthly forecast','Cost commitments and remaining budget']],
+  ['K04','Costing & Rate Analysis','COSTING','calc',0,'',['Detailed costing spreadsheets','Labour rates','Equipment rates','Material rates','Subcontract rates','Unit-rate analysis','Cost breakdowns and supporting calculations','Estimate revisions and assumptions']],
+  ['K05','Actual Cost & Commitments','ACTUAL & COMMIT','sheet',1,'month',['Actual expenditure records','Purchase orders','Subcontract commitments','Material commitments','Labour and equipment cost records','Accruals and outstanding commitments','Committed versus actual cost reconciliation']],
+  ['K06','EAC & Cost Forecast','EAC','chart',2,'month',['Estimate at Completion (EAC)','Estimate to Complete (ETC)','Forecast final cost','Cost-to-complete calculations','Budget overrun analysis','Forecast assumptions','Forecast revision history','Cost performance and earned value reports']],
+  ['K07','Cash Flow','CASH FLOW','cash',0,'month',['Tender cash flow','Approved baseline cash flow','Monthly planned cash flow','Actual cash flow','Updated forecast cash flow','Receipts and expenditure forecasts','Cash flow S-curves','Monthly and cumulative cash flow variance']],
+  ['K08','Invoices & Billing','INVOICES','invoice',1,'month',['Client invoices','Interim payment applications','Progress billing','Invoice registers','Certified and submitted amounts','Outstanding receivables','Retention and deductions','Subcontractor invoices','Invoice status and payment tracking']],
+  ['K09','VO — Variation Orders','VO','swap',2,'',['VO register','Proposed variations','VO cost estimates','Supporting BOQ and quantity calculations','Client submissions','Consultant evaluations','Approved and rejected VOs','Pending VO value','VO correspondence and supporting evidence']],
+  ['K10','Change Orders','CHANGE ORDERS','swap',0,'',['Change order register','Approved change orders','Pending change orders','Change order cost breakdowns','Additional scope and omitted scope','Cost impact assessments','Schedule impact references','Revised budget approvals','Contract value and budget reconciliation']],
+  ['K11','Earned Value & Cost Performance','EARNED VALUE','chart',1,'month',['Planned Value (PV)','Earned Value (EV)','Actual Cost (AC)','Cost Performance Index (CPI)','Schedule Performance Index (SPI)','Cost and schedule variance','EAC analysis','Monthly earned value reports']],
+  ['K12','Management Cost Reports','MGMT REPORTS','chart',2,'month',['Monthly cost control reports','Tender versus current budget comparisons','Original scope versus change order scope','Cost overrun and savings analysis','Margin forecast','Project cost exposure','Management dashboards','Cost risk and opportunity registers']],
+  ['K13','Purchase Orders & Subcontract Costing','PO & SUBCONTRACT','invoice',0,'',['Purchase order register','Subcontract award values','Material procurement costs','Vendor quotations','Committed cost reports','Procurement cost variations','Remaining commitment forecasts']],
+  ['K14','Cost Revisions & Audit Trail','REVISIONS','lock',1,'',['Budget revision register','Approved and pending budget changes','Revision comparison sheets','Cost transfer records','Budget approval documents','Audit evidence and supporting calculations']]];
+const DOC_STATUS=['Draft','Submitted','Issued','Approved','Certified','Rejected','Paid','Superseded','For information'];
+const DOC_EXT=/\.(pdf|docx?|xlsx?|xlsm|xlsb|csv|pptx?|xer|xml|mpp|zip|png|jpe?g|gif|webp|tiff?|txt|msg|eml|dwg|dxf)$/i;
+const DOC_ICON={seal:'<circle cx="12" cy="10" r="4"/><path d="M9 13l-1 7 4-2 4 2-1-7"/>',doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M9 11h6M9 15h6"/>',check:'<path d="M5 12l4 4 10-10"/>',
+  mail:'<path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/>',alert:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',swap:'<path d="M7 7h12l-3-3M17 17H5l3 3"/>',shield:'<path d="M12 3l8 3v6c0 4-3.5 7-8 9-4.5-2-8-5-8-9V6z"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',gantt:'<path d="M4 5h9M7 10h10M10 15h9M4 20h16"/>',cal:'<rect x="4" y="5" width="16" height="15" rx="1"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  people:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.5-6 6-6s6 2.5 6 6M15 20c0-2.5 1-4.5 3-4.5s3 2 3 4.5"/>',chart:'<path d="M4 20V4M4 20h16"/><path d="M7 16l4-5 3 3 5-7"/>',
+  flag:'<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>',calc:'<rect x="6" y="3" width="12" height="18" rx="1"/><path d="M9 7h6M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01"/>',
+  sheet:'<rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 10h16M4 15h16M10 4v16"/>',cash:'<rect x="3" y="7" width="18" height="11" rx="1"/><circle cx="12" cy="12.5" r="2.5"/>',invoice:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>'};
+const docIco=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${DOC_ICON[k]||DOC_ICON.doc}</svg>`;
+const docDefOf=k=>{const d=DOC_DEF.find(x=>x[0]===k);return d?{key:d[0],title:d[1],label:d[2],icon:d[3],shade:d[4],period:d[5],items:d[6],row:({C:'contract',P:'planning',K:'cost'})[k[0]]}:null};
+const docRowOfKey=(pid,k)=>{const b=(DB.docBoxes||[]).find(x=>x.project_id===pid&&x.box_key===k);return b?b.row_key:(docDefOf(k)||{}).row||null};
+/* rights, as on the server (pt_doc_can) */
+const docCanRead=row=>row==='planning'?state.role!=='foreman':!['foreman','eng','sm'].includes(state.role);
+const docCanKeep=row=>state.role==='sa'||isHead()||(row==='planning'&&state.role==='plan')||(row!=='planning'&&state.role==='costing');
+const canDocsView=()=>state.role!=='foreman'&&(!ROLE_VIEWS[state.role]||ROLE_VIEWS[state.role].includes('docs'));
+function docBoxes(pid,row){
+  const saved=(DB.docBoxes||[]).filter(b=>b.project_id===pid);
+  const out=DOC_DEF.filter(d=>docDefOf(d[0]).row===row).map((d,i)=>{const s=saved.find(b=>b.box_key===d[0])||{},def=docDefOf(d[0]);
+    return {...def,custom:false,title:s.title||def.title,sort:s.sort!=null?s.sort:(i+1)*10,hidden:!!s.hidden,note:s.note||''}});
+  saved.filter(b=>b.row_key===row&&!docDefOf(b.box_key)).forEach(b=>out.push({key:b.box_key,row,title:b.title||b.box_key,label:String(b.title||'').toUpperCase().slice(0,16),icon:'doc',shade:out.length%3,period:'',items:[],custom:true,sort:b.sort!=null?b.sort:1000,hidden:!!b.hidden,note:b.note||''}));
+  return out.sort((a,b)=>a.sort-b.sort||a.key.localeCompare(b.key));
+}
+const docsOf=(pid,k)=>(DB.docs||[]).filter(d=>d.project_id===pid&&d.box_key===k).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+const docSuperseded=(d,all)=>all.some(x=>x.supersedes===d.id);
+const docPer=v=>{const s=String(v||'');if(/^\d{4}-W\d{2}$/.test(s))return 'Week '+(+s.slice(6))+' · '+s.slice(0,4);if(/^\d{4}-\d{2}$/.test(s))return perLabel('month',s);return ''};
+const docSize=n=>n==null?'—':n<1024?n+' B':n<1048576?fmt(n/1024,0)+' KB':fmt(n/1048576,1)+' MB';
+const docStCls=s=>({Approved:'Approved',Certified:'Approved',Paid:'Approved',Submitted:'Submitted',Issued:'Submitted',Rejected:'Rejected',Draft:'Draft',Superseded:'Draft'})[s]||'Draft';
+const docAuditOf=id=>(DB.docAudit||[]).filter(a=>a.doc_id===id).sort((a,b)=>(+a.id||0)-(+b.id||0));
+/* demo: files stay in this browser */
+const DOCIDB={p:null,open(){return this.p||(this.p=new Promise((res,rej)=>{try{const r=indexedDB.open('protrack-docs-'+KEY,1);r.onupgradeneeded=()=>r.result.createObjectStore('files');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}))},
+  async put(k,v){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction('files','readwrite');t.objectStore('files').put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})},
+  async get(k){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction('files','readonly'),r=t.objectStore('files').get(k);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error)})}};
+/* the same rules as doc_act, in this browser */
+function docActLocal(p){
+  const a=p.action,meU=me(),fail=t=>{throw new Error(t)},now=new Date().toISOString();DB.docs=DB.docs||[];DB.docBoxes=DB.docBoxes||[];DB.docAudit=DB.docAudit||[];
+  const log=(did,pid,k,action,note,detail)=>DB.docAudit.push({id:DB.docAudit.reduce((m,x)=>Math.max(m,+x.id||0),0)+1,doc_id:did,project_id:pid,box_key:k,action,note:String(note||'').trim()||null,detail:detail||null,by_user:meU.id,by_name:meU.name,by_role:state.role,at_time:now});
+  const perOk=v=>!v||/^\d{4}-(0[1-9]|1[0-2])$/.test(v)||/^\d{4}-W(0[1-9]|[1-4]\d|5[0-3])$/.test(v);
+  if(!['add','edit','status','box_save','box_order'].includes(a))fail('Unknown action '+a);
+  if(a==='edit'||a==='status'){const d=DB.docs.find(x=>x.id===p.id);if(!d||!accessIds().includes(d.project_id)||!docCanRead(docRowOfKey(d.project_id,d.box_key)))fail('Unknown document');
+    if(!docCanKeep(docRowOfKey(d.project_id,d.box_key)))fail('You can see this document but not change it');
+    if(a==='status'){const st=p.status;if(!DOC_STATUS.includes(st))fail('Unknown status '+st);if(st===d.status)return d;
+      if((st==='Rejected'||st==='Superseded')&&!String(p.note||'').trim())fail(`Add a comment saying why the document is ${st.toLowerCase()}`);
+      const from=d.status;Object.assign(d,{status:st,updated_by:meU.id,updated_at:now});log(d.id,d.project_id,d.box_key,'Status '+st,p.note,{from,to:st});save();return d}
+    const f=p.fields||{},ch=[];if('title' in f&&!String(f.title||'').trim())fail('The title is needed (200 characters at most)');if('period' in f&&!perOk(f.period))fail('The period must look like 2026-09 or 2026-W41');
+    if('doc_date' in f&&f.doc_date&&!isoOk(f.doc_date))fail('The document date is not a valid date');
+    ['title','category','ref_no','revision','period','doc_date','description'].forEach(k=>{if(!(k in f))return;const v=String(f[k]??'').trim()||null;if((d[k]??null)!==v){ch.push(k);d[k]=v}});
+    if(ch.length){d.updated_by=meU.id;d.updated_at=now;log(d.id,d.project_id,d.box_key,'Details changed',p.note,{changes:ch})}save();return d}
+  const pid=p.project_id;if(!pid||!accessIds().includes(pid))fail('You do not have access to this project');
+  if(a==='add'){const k=String(p.box_key||'').toUpperCase(),row=docRowOfKey(pid,k);if(!row||!docCanKeep(row))fail('Only the people who keep this row can add documents to it');
+    const x=p.storage_path||'';if(x.split('/').length!==4||x.split('/')[0]!==pid||x.split('/')[1]!==k)fail('The file is not in this box\'s folder');
+    if(DB.docs.some(d=>d.storage_path===x))fail('This file is already registered');if(!String(p.title||'').trim())fail('The title is needed (200 characters at most)');
+    const st=p.status||'For information';if(!DOC_STATUS.includes(st))fail('Unknown status '+st);if(!perOk(p.period))fail('The period must look like 2026-09 or 2026-W41');if(p.doc_date&&!isoOk(p.doc_date))fail('The document date is not a valid date');
+    if(p.supersedes&&!DB.docs.some(d=>d.id===p.supersedes&&d.project_id===pid&&d.box_key===k))fail('A new revision must be in the same box as the document it replaces');
+    const d={id:'D'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),project_id:pid,box_key:k,title:String(p.title).trim().slice(0,200),category:String(p.category||'').trim()||null,ref_no:String(p.ref_no||'').trim()||null,
+      revision:String(p.revision||'').trim()||null,period:p.period||null,doc_date:p.doc_date||null,status:st,description:String(p.description||'').trim()||null,storage_path:x,file_name:p.file_name||x.split('/')[3],file_size:p.file_size??null,mime:p.mime||null,
+      sha256:p.sha256||null,supersedes:p.supersedes||null,created_by:meU.id,created_at:now,updated_by:meU.id,updated_at:now};
+    DB.docs.push(d);log(d.id,pid,k,d.supersedes?'New revision uploaded':'Uploaded',p.note,{file:d.file_name,size:d.file_size,revision:d.revision,supersedes:d.supersedes});save();return d}
+  if(a==='box_save'){let k=String(p.box_key||'').toUpperCase();
+    if(!k){const row=p.row_key;if(!['contract','planning','cost'].includes(row))fail('Choose the row for the new box');if(!String(p.title||'').trim()||String(p.title).trim().length>80)fail('The box needs a name (80 characters at most)');
+      if(!docCanKeep(row))fail('Only the people who keep this row can add boxes to it');do{k='X'+Math.random().toString(36).slice(2,8).toUpperCase()}while(DB.docBoxes.some(b=>b.project_id===pid&&b.box_key===k));
+      DB.docBoxes.push({project_id:pid,box_key:k,row_key:row,title:String(p.title).trim(),sort:p.sort??1000,hidden:false,note:String(p.note||'').trim()||null,created_by:meU.id,created_at:now});log(null,pid,k,'Box added',p.title,{row});save();return {box_key:k}}
+    const row=docRowOfKey(pid,k);if(!row)fail('Unknown box '+k);if(!docCanKeep(row))fail('Only the people who keep this row can change its boxes');
+    if('title' in p&&String(p.title||'').trim().length>80)fail('The box name is too long (80 characters at most)');
+    let b=DB.docBoxes.find(x=>x.project_id===pid&&x.box_key===k);if(!b){b={project_id:pid,box_key:k,row_key:row,title:null,sort:null,hidden:false,note:null,created_by:meU.id,created_at:now};DB.docBoxes.push(b)}
+    if('title' in p)b.title=String(p.title||'').trim()||null;if('sort' in p)b.sort=p.sort;if('hidden' in p)b.hidden=!!p.hidden;if('note' in p)b.note=String(p.note||'').trim()||null;
+    const det={...p};delete det.action;delete det.project_id;delete det.box_key;log(null,pid,k,'Box changed',null,det);save();return {box_key:k}}
+  const row=p.row_key;if(!['contract','planning','cost'].includes(row))fail('Choose the row to reorder');
+  (p.keys||[]).forEach((k0,i)=>{const k=String(k0).toUpperCase();if(docRowOfKey(pid,k)!==row)fail(`Box ${k} is not in this row`);if(!docCanKeep(row))fail('Only the people who keep this row can reorder it');
+    let b=DB.docBoxes.find(x=>x.project_id===pid&&x.box_key===k);if(!b){b={project_id:pid,box_key:k,row_key:row,title:null,hidden:false,note:null,created_by:meU.id,created_at:now};DB.docBoxes.push(b)}b.sort=(i+1)*10});
+  log(null,pid,null,'Boxes reordered',null,{row,keys:p.keys});save();return {ok:true};
+}
+async function cloudLoadDocs(){
+  try{const [b,d,a]=await Promise.all([selAll('doc_boxes','*',null,['project_id','box_key']),selAll('documents','*',null,['created_at','id']),selAll('doc_audit','*',null,['id'])]);
+    DB.docBoxes=b;DB.docs=d;DB.docAudit=a;DB.docMissing=false}
+  catch(e){DB.docBoxes=[];DB.docs=[];DB.docAudit=[];DB.docMissing=srvMsg(e)}
+}
+async function docAct(p){
+  docAct.err='';
+  if(CLOUD_ME){let r;try{r=await rpc('doc_act',{p})}catch(e){docAct.err='The server refused this: '+srvMsg(e);toast(docAct.err);return null}try{await cloudLoadDocs()}catch(e){}save();return r}
+  try{return docActLocal(p)}catch(e){docAct.err=e.message;toast(e.message);return null}
+}
+const docSafeName=n=>String(n||'file').replace(/[^A-Za-z0-9._ ()-]+/g,'_').replace(/\s+/g,' ').trim().slice(-120)||'file';
+async function docUpload(pid,k,file,meta){
+  const fail=m=>{docAct.err=m;toast(m);return null};
+  if(!file)return fail('Choose a file');if(!DOC_EXT.test(file.name))return fail('That file type is not accepted. Use PDF, Office, P6 (XER/XML), CSV, images, ZIP, TXT, MSG or drawings.');
+  const lim=CLOUD_ME?52428800:10485760;if(file.size>lim)return fail(`The file is larger than ${CLOUD_ME?'50':'10'} MB`);
+  const buf=await file.arrayBuffer(),sha=await sha256Hex(buf),id=(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)),path=`${pid}/${k}/${id}/${docSafeName(file.name)}`;
+  if(CLOUD_ME){const {error}=await SB.storage.from('project-docs').upload(path,file,{contentType:file.type||'application/octet-stream',upsert:false});
+    if(error)return fail('The file was not stored: '+srvMsg(error)+(/bucket|not found/i.test(srvMsg(error))?' (the server needs the v13 database update, see STAGE-10-SETUP)':''))}
+  else{try{await DOCIDB.put(path,new Blob([buf],{type:file.type||'application/octet-stream'}))}catch(e){return fail('This browser could not keep the file: '+(e.message||''))}}
+  return docAct({action:'add',project_id:pid,box_key:k,...meta,storage_path:path,file_name:file.name,sha256:sha,file_size:file.size,mime:file.type||null});
+}
+async function docBlob(d){
+  if(d.sample)return new Blob([`${d.title}\n\nSample document in the ProTrackAI demo. In your own ProTrackAI this is the file you upload.\n\nBox ${d.box_key} · ${d.revision||''} ${d.period||''} · ${d.status}`],{type:'text/plain'});
+  if(CLOUD_ME){const {data,error}=await SB.storage.from('project-docs').createSignedUrl(d.storage_path,600);if(error)throw new Error(srvMsg(error));const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('download failed ('+r.status+')');return r.blob()}
+  const b=await DOCIDB.get(d.storage_path);if(!b)throw new Error('This file is not in this browser any more');return b;
+}
+async function docDownload(id){const d=(DB.docs||[]).find(x=>x.id===id);if(!d)return;try{const b=await docBlob(d);await saveFile(d.sample?d.file_name.replace(/\.[a-z]+$/i,'.txt'):d.file_name,b)}catch(e){toast('Could not get the file: '+(e.message||''))}}
+async function docPreview(id){
+  const d=(DB.docs||[]).find(x=>x.id===id),box=$('#docPrev');if(!d||!box)return;box.innerHTML='<p class="muted small">Loading…</p>';
+  try{const b=await docBlob(d),n=String(d.sample?'x.txt':d.file_name).toLowerCase();
+    if(/\.(png|jpe?g|gif|webp)$/.test(n)){box.innerHTML=`<img alt="${esc(d.title)}" style="max-width:100%;border:1px solid var(--line);border-radius:6px" src="${URL.createObjectURL(b)}">`}
+    else if(/\.pdf$/.test(n)){box.innerHTML=`<iframe title="${esc(d.title)}" style="width:100%;height:70vh;border:1px solid var(--line);border-radius:6px" src="${URL.createObjectURL(new Blob([b],{type:'application/pdf'}))}"></iframe>`}
+    else if(/\.(txt|csv|xml|xer)$/.test(n)&&b.size<400000){box.innerHTML=`<pre class="docpre">${esc((await b.text()).slice(0,20000))}</pre>`}
+    else box.innerHTML='<p class="muted small">No preview for this file type. Download it to open it.</p>'}
+  catch(e){box.innerHTML=`<p class="r-c small">${esc(e.message||'Could not open the file')}</p>`}
+}
+/* figures from ProTrackAI's own records, never invented */
+const NA='<span class="muted">Data unavailable</span>';
+function docLive(row,p){
+  const f=(l,v,s)=>`<div class="dl"><span class="l">${esc(l)}</span><b>${v}</b>${s?`<span class="t2">${s}</span>`:''}</div>`;
+  if(row==='planning'){const acts=ACTS.filter(a=>a.p===p.id);if(!acts.length)return `<div class="doclive">${f('Schedule',NA,'No baseline loaded')}</div>`;
+    const k=projKPI(p),snap=relPlanSnapshot(p.id),rel=relRows().filter(r=>r.project_id===p.id&&r.kind==='planning'&&r.status==='Released').sort((a,b)=>String(b.approved_at).localeCompare(String(a.approved_at)))[0];
+    const crit=warnings().filter(w=>w.proj===p.short&&w.sev==='High').length;
+    return `<div class="doclive">${f('Planned',pct(k.plan,1),'to '+fmtDY(ASOF))}${f('Actual',pct(k.act,1),'earned')}${f('SPI',`<span class="${light(k.e.spi)}-c">${fmt(k.e.spi,2)}</span>`)}
+      ${f('Forecast finish',k.f.slip>900||!k.f.fin?NA:fmtDY(k.f.fin),k.f.base?'baseline '+fmtDY(k.f.base):'')}${f('Next milestone',snap&&snap.next_ms_text?esc(snap.next_ms_text):NA,snap&&snap.next_ms_date?fmtDY(snap.next_ms_date):'')}
+      ${f('High warnings',fmt(crit),'critical items')}${f('Last released progress',rel?esc(perLabel(rel.period_type,rel.period)):NA,rel?`actual ${fmt(+rel.figures.actual_pct,1)}%`:'')}</div>`}
+  if(row==='cost'){if(!rasaMoneyOk())return '';const c=lastCostRel(p.id),F=c?c.figures:null,vl=voLatest(p.id,curMonth()),R=vl.rows||[];
+    const appr=R.filter(r=>/approved/i.test(r.client_status||'')&&!/partial/i.test(r.client_status||'')),pend=R.filter(r=>!appr.includes(r)&&!/reject/i.test(r.client_status||''));
+    const m=(k,ok)=>F&&ok&&F[k]!=null?sar(+F[k]):NA;
+    return `<div class="doclive">${f('Tender',m('tender_total',isWbs(F)),'')}${f('Rev 0 budget',m('budget_rev0',true),'')}${f('Latest approved budget',m('budget_current',true),c?esc(perLabel('month',c.period))+' cost report':'')}
+      ${f('Actual cost',m('actual',true),'')}${f('Commitments',m('commitment',true),'')}${f('Approved change orders',vl.b?sar(appr.reduce((t,r)=>t+(+r.expected_price||+r.est_price||0),0)):NA,vl.b?appr.length+(appr.length===1?' item':' items'):'')}
+      ${f('Pending variations',vl.b?sar(pend.reduce((t,r)=>t+(+r.expected_price||0),0)):NA,vl.b?pend.length+(pend.length===1?' item':' items'):'')}${f('EAC',m('eac',true),'')}</div>`}
+  if(!rasaMoneyOk())return '';const vl=voLatest(p.id,curMonth()),R=vl.rows||[];
+  return `<div class="doclive">${f('Contract value',+p.value?'SAR '+fmt(+p.value,1)+'M':NA,'')}${f('Change orders logged',vl.b?fmt(R.filter(r=>r.kind==='VO').length):NA,'')}${f('Claims logged',vl.b?fmt(R.filter(r=>r.kind==='Claim').length):NA,'')}
+    ${f('Extension of time',p.eot&&p.eot.status?esc(p.eot.status):NA,'')}</div>`;
+}
+function docBadges(b,pid){
+  const D=docsOf(pid,b.key),latest=D[0],per=D.find(d=>d.period),rv=D.find(d=>d.revision),out=[];
+  if(per)out.push(`<span class="docbadge">${esc(/W/.test(per.period)?'Week '+(+per.period.slice(6)):docPer(per.period))}</span>`);
+  if(rv)out.push(`<span class="docbadge">${esc(rv.revision)}</span>`);
+  if((b.key==='K02'||b.key==='P01')&&D.some(d=>/^rev\.?\s*0+$/i.test(d.revision||'')||b.key==='P01'))out.push(`<span class="docbadge lockb">${b.key==='K02'?'Rev 0 kept':'Baseline kept'}</span>`);
+  if(latest)out.push(`<span class="st ${docStCls(latest.status)}">${esc(latest.status)}</span>`);
+  return out.join('');
+}
+function renderDocs(){
+  if(!canDocsView()){$('#view').innerHTML='<section class="panel"><p>The document rack is for engineers, project managers and management.</p></section>';return}
+  const ps=scopeProjects();if(!ps.length){$('#view').innerHTML=`${crumb()}<section class="panel"><p class="muted">No project in your scope.</p></section>`;return}
+  if(!state.docPid||!ps.some(p=>p.id===state.docPid))state.docPid=ps[0].id;const p=projById(state.docPid),man=!!state.docManage;
+  const rows=DOC_ROWS.filter(r=>docCanRead(r.k));
+  $('#view').innerHTML=`${crumb()}
+  ${CLOUD_ME&&DB.docMissing?`<div class="warn-box" style="margin-bottom:14px">The document rack needs the v13 database update (see STAGE-10-SETUP). <span class="small">${esc(DB.docMissing)}</span></div>`:''}
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Project document rack</h2><div class="actions" style="margin:0">
+      ${rows.some(r=>docCanKeep(r.k))?`<button class="btn sm" type="button" data-docmanage aria-pressed="${man}">${man?'Done arranging':'Arrange boxes'}</button>`:''}</div></div>
+    <div class="fields" style="margin-bottom:6px">${F('Project',`<select data-docpid>${ps.map(x=>`<option value="${esc(x.id)}" ${x.id===p.id?'selected':''}>${esc(x.short)} (${esc(pcode(x))})</option>`).join('')}</select>`)}</div>
+    <p class="small muted" style="margin:0">${esc(pcode(p))} · ${esc(p.name)}. Box files hold source documents and records. Storing a file here never imports a schedule, changes a budget or approves anything; those go through their own screens.</p></section>
+  ${rows.map(r=>{const B=docBoxes(p.id,r.k).filter(b=>man||!b.hidden||state.docHidden),keep=docCanKeep(r.k),n=(DB.docs||[]).filter(d=>d.project_id===p.id&&docRowOfKey(p.id,d.box_key)===r.k).length;
+    return `<section class="panel docrow docrow-${r.k}" aria-label="Row ${r.n}: ${esc(r.title)}"><div class="card-head" style="flex-wrap:wrap"><h2><span class="docrown">Row ${r.n}</span> ${esc(r.title)}</h2><span class="small muted">Kept by the ${esc(r.owner.toLowerCase())} · ${n} document${n===1?'':'s'}${keep?' · you can add to this row':''}</span></div>
+      <p class="small muted" style="margin:0 0 8px">${esc(r.purpose)}</p>${docLive(r.k,p)}
+      <div class="shelf" role="list">${B.map((b,i)=>{const c=docsOf(p.id,b.key).length;
+        return `<div class="boxwrap" role="listitem"><button type="button" class="boxfile shade${b.shade}${b.hidden?' boxhidden':''}" data-docbox="${esc(b.key)}" aria-label="${esc(b.key)} ${esc(b.title)}, ${c} document${c===1?'':'s'}">
+          <span class="boxlabel">${esc(b.label||'')}</span><span class="boxico">${docIco(b.icon)}</span><span class="boxcode">${esc(b.custom?'Added':b.key)}</span>
+          <span class="boxtitle">${esc(b.title)}</span><span class="boxcount">${c} doc${c===1?'':'s'}</span><span class="boxbadges">${docBadges(b,p.id)}</span>${b.hidden?'<span class="docbadge">Hidden</span>':''}</button>
+          ${man&&keep?`<span class="boxmove"><button class="iconbtn sm" type="button" data-docmv="${r.k}|${esc(b.key)}|-1" aria-label="Move ${esc(b.title)} left" ${i?'':'disabled'}>‹</button><button class="iconbtn sm" type="button" data-docmv="${r.k}|${esc(b.key)}|1" aria-label="Move ${esc(b.title)} right" ${i<B.length-1?'':'disabled'}>›</button></span>`:''}</div>`}).join('')}
+        ${man&&keep?`<div class="boxwrap"><button type="button" class="boxfile boxadd" data-docadd="${r.k}"><span class="boxico">+</span><span class="boxtitle">Add a box file</span></button></div>`:''}</div></section>`}).join('')}
+  ${rows.length<3?`<p class="small muted">${3-rows.length===2?'Rows 1 and 3 hold commercial and cost records, shown to office staff only.':'The Planning row is not shown for your role.'}</p>`:''}
+  <p class="small"><label class="chk"><input type="checkbox" data-dochid ${state.docHidden?'checked':''}><span>Show hidden boxes</span></label></p>`;
+}
+/* one box: what it should hold, what it holds, figures where ProTrackAI has them */
+function docBoxPanel(pid,b){
+  const p=projById(pid);
+  if(b.key==='P03'||b.key==='P04'){const t=b.key==='P03'?'week':'month',R=relRows().filter(r=>r.project_id===pid&&r.kind==='planning'&&r.period_type===t&&r.status==='Released').sort((a,c)=>String(c.period).localeCompare(String(a.period)));
+    const D=docsOf(pid,b.key),pers=[...new Set([...R.map(r=>r.period),...D.map(d=>d.period).filter(Boolean)])].sort().reverse();if(!pers.length)return `<p class="small muted">No ${t==='week'?'weekly':'monthly'} release or report yet: ${NA}.</p>`;
+    const A=state.docCmpA&&pers.includes(state.docCmpA)?state.docCmpA:pers[0],Bp=state.docCmpB&&pers.includes(state.docCmpB)?state.docCmpB:(pers[1]||pers[0]);
+    const col=per=>{const r=R.find(x=>x.period===per),f=r?r.figures:null,n=D.filter(d=>d.period===per).length;return {r,f,n}},a=col(A),c=col(Bp),v=(x,k,u)=>x.f&&x.f[k]!=null?(u==='d'?fmtDY(x.f[k]):fmt(+x.f[k],u==='%'?1:2)+(u==='%'?'%':'')):NA;
+    return `<h3>Compare reporting periods</h3><div class="fields">${F('Period A',`<select data-doccmp="A">${pers.map(x=>`<option value="${x}" ${x===A?'selected':''}>${esc(docPer(x))}</option>`).join('')}</select>`)}${F('Period B',`<select data-doccmp="B">${pers.map(x=>`<option value="${x}" ${x===Bp?'selected':''}>${esc(docPer(x))}</option>`).join('')}</select>`)}</div>
+      <table class="tbl"><thead><tr><th>From the released progress</th><th class="n">${esc(docPer(A))}</th><th class="n">${esc(docPer(Bp))}</th></tr></thead><tbody>
+      ${[['Planned progress','planned_pct','%'],['Actual progress','actual_pct','%'],['SPI','spi',''],['Design actual','eng_pct','%'],['Procurement actual','prc_pct','%'],['Forecast finish','forecast_finish','d']].map(([l,k,u])=>`<tr><td>${l}</td><td class="n">${v(a,k,u)}</td><td class="n">${v(c,k,u)}</td></tr>`).join('')}
+      <tr><td>Documents in this box for the period</td><td class="n">${a.n}</td><td class="n">${c.n}</td></tr></tbody></table>`}
+  if(b.key==='P10'){const M=msOf(p);return M.length?`<h3>Milestone status (from the milestone register)</h3><div class="scroll"><table class="tbl"><thead><tr><th>Milestone</th><th>Planned</th><th>Forecast / actual</th><th>Status</th></tr></thead><tbody>${M.map(m=>{const s=msState(m);return `<tr><td>${esc(m.n||'')}</td><td>${m.plan?fmtDY(m.plan):'—'}</td><td>${m.act?fmtDY(m.act):m.fc?fmtDY(m.fc):'—'}</td><td class="${s.k}-c small">${esc(s.t)}</td></tr>`}).join('')}</tbody></table></div>`:`<p class="small muted">Milestones: ${NA}.</p>`}
+  if(['K01','K02','K03','K06','K12','K14'].includes(b.key)&&rasaMoneyOk()){const C=relRows().filter(r=>r.project_id===pid&&r.kind==='cost'&&r.status==='Released').sort((a,c)=>String(c.period).localeCompare(String(a.period))),c=C[0],F=c?c.figures:null,vl=voLatest(pid,curMonth()),R=vl.rows||[];
+    const appr=R.filter(r=>/approved/i.test(r.client_status||'')&&!/partial/i.test(r.client_status||'')),pend=R.filter(r=>!appr.includes(r)&&!/reject/i.test(r.client_status||''));
+    const cell=(v,src)=>`<td class="n">${v}</td><td class="small muted">${src}</td>`,m=(k,ok)=>F&&ok&&F[k]!=null?sar(+F[k]):NA,src=c?`${perLabel('month',c.period)} cost report, rev ${c.rev}`:'no released cost report';
+    return `<h3>Separate financial measures</h3><p class="small muted" style="margin:0 0 6px">Each figure is shown on its own line with where it comes from; none is worked out from another here.</p><table class="tbl"><tbody>
+      <tr><td>Original tender estimate (A)</td>${cell(m('tender_total',isWbs(F)),isWbs(F)?src:'not in a cost report by WBS head')}</tr><tr><td>Rev 0 budget (B1)</td>${cell(m('budget_rev0',true),src)}</tr>
+      <tr><td>Latest approved budget (D)</td>${cell(m('budget_current',true),src)}</tr><tr><td>Actual cost (E)</td>${cell(m('actual',true),src)}</tr><tr><td>Commitments (F)</td>${cell(m('commitment',true),src)}</tr>
+      <tr><td>Approved change orders</td>${cell(vl.b?sar(appr.reduce((t,r)=>t+(+r.expected_price||+r.est_price||0),0)):NA,vl.b?`change order and claim log, ${perLabel('month',vl.b.source_period)}`:'no change order log')}</tr>
+      <tr><td>Pending variations</td>${cell(vl.b?sar(pend.reduce((t,r)=>t+(+r.expected_price||0),0)):NA,vl.b?`expected price, ${pend.length} items`:'no change order log')}</tr>
+      <tr><td><b>EAC</b></td>${cell(m('eac',true),src)}</tr></tbody></table>
+      ${C.length>1?`<p class="small muted">Revision history in released cost reports: ${C.slice(0,6).map(r=>`${esc(perLabel('month',r.period))} rev ${r.rev}: current budget ${sar(+r.figures.budget_current)}`).join(' · ')}</p>`:''}`}
+  if(b.key==='K08'&&rasaMoneyOk()){let bp=null;try{bp=billPosition(p)}catch(e){}
+    return bp&&bp.t&&bp.t.n?`<h3>Invoice register (from the invoice upload)</h3><p class="small">Submitted ${sar(bp.t.submitted)}, approved ${sar(bp.t.approved)}, collected ${sar(bp.t.collected)}, outstanding ${sar(bp.outstanding)}.</p>`:`<p class="small muted">Invoice register: ${NA}.</p>`}
+  return '';
+}
+function openDocBox(key,opts){
+  const pid=state.docPid,p=projById(pid),row=docRowOfKey(pid,key);if(!p||!row||!docCanRead(row))return;const b=docBoxes(pid,row).find(x=>x.key===key);if(!b)return;
+  if(state.docOpenBox!==key){state.docF={};state.docCmpA=null;state.docCmpB=null}state.docOpenBox=key;
+  const keep=docCanKeep(row),all=docsOf(pid,key),f=state.docF||(state.docF={}),showOld=!!f.old,q=String(f.q||'').toLowerCase();
+  const keepAll=key==='K02'||key==='P01',L=all.filter(d=>(showOld||keepAll||!docSuperseded(d,all))&&(!f.cat||d.category===f.cat)&&(!f.st||d.status===f.st)&&(!f.per||d.period===f.per)&&(!q||[d.title,d.ref_no,d.file_name,d.description,d.revision].some(x=>String(x||'').toLowerCase().includes(q))));
+  const u=x=>{const y=x&&userById(x);return y?y.name:''},cats=[...new Set([...b.items,...all.map(d=>d.category).filter(Boolean)])],pers=[...new Set(all.map(d=>d.period).filter(Boolean))].sort().reverse();
+  const up=opts&&opts.upload,sup=up&&opts.supersedes?all.find(d=>d.id===opts.supersedes):null,rowT=DOC_ROWS.find(r=>r.k===row);
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${esc(b.custom?'':b.key+' · ')}${esc(b.title)}</h2><span class="docbadge">${esc(b.label||'')}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <p class="small muted" style="margin:0 0 8px">Row ${rowT.n}, ${esc(rowT.title)} · ${esc(pcode(p))} · kept by the ${esc(rowT.owner.toLowerCase())}${b.note?` · ${esc(b.note)}`:''}</p>
+    ${key==='P01'?'<div class="note"><b>Approved baseline.</b> Files here are never replaced by a new working schedule; each baseline revision is kept. Storing a P6 file does not import it: use <button class="link" type="button" data-go="base">Baselines and P6 import</button>.</div>':''}
+    ${key==='P02'?'<div class="note"><b>Working schedule.</b> Kept apart from the approved baseline (P01). Storing a P6 file does not import it: use <button class="link" type="button" data-go="base">Baselines and P6 import</button>.</div>':''}
+    ${key==='K02'?'<div class="note"><b>Rev 0 stays the original approved budget.</b> Later revisions are added as new documents and never replace it.</div>':''}
+    ${row==='cost'&&!['K02'].includes(key)?'<p class="small muted">Storing a file here does not change any budget, cost report or change order; those go through the monthly cost report and the logs.</p>':''}
+    ${b.items.length?`<details ${all.length?'':'open'}><summary class="small"><b>Expected contents</b> (${b.items.length})</summary><ul class="small docitems">${b.items.map(it=>{const n=all.filter(d=>d.category===it).length;return `<li>${n?'<span class="g-c">✓</span>':'<span class="muted">○</span>'} ${esc(it)}${n?` <span class="muted">(${n})</span>`:''}</li>`}).join('')}</ul></details>`:''}
+    ${docBoxPanel(pid,b)}
+    ${up&&keep?docUploadForm(pid,b,sup,cats):''}
+    <div class="card-head" style="margin-top:12px;flex-wrap:wrap"><h3 style="margin:0">Documents (${all.length})</h3><div class="actions" style="margin:0">${keep&&!up?`<button class="btn primary sm" type="button" data-docup="${esc(key)}">Upload document</button>`:''}${keep?`<button class="btn sm" type="button" data-docboxset="${esc(key)}">Box settings</button>`:''}</div></div>
+    <div class="fields" style="margin:6px 0">${cats.length?F('Contents',`<select data-docf="cat"><option value="">All</option>${cats.map(c=>`<option ${f.cat===c?'selected':''}>${esc(c)}</option>`).join('')}</select>`):''}
+      ${F('Status',`<select data-docf="st"><option value="">All</option>${DOC_STATUS.map(s=>`<option ${f.st===s?'selected':''}>${s}</option>`).join('')}</select>`)}
+      ${pers.length?F('Period',`<select data-docf="per"><option value="">All</option>${pers.map(x=>`<option value="${x}" ${f.per===x?'selected':''}>${esc(docPer(x))}</option>`).join('')}</select>`):''}
+      ${F('Search',`<input data-docq value="${esc(f.q||'')}" placeholder="Title, reference, file">`)}</div>
+    ${keepAll?`<p class="small muted">Every revision is listed here; ${key==='K02'?'Rev 0 stays the original approved budget':'each approved baseline revision is kept'}.</p>`:`<p class="small"><label class="chk"><input type="checkbox" data-docold ${showOld?'checked':''}><span>Show earlier revisions</span></label></p>`}
+    <div class="scroll"><table class="tbl"><thead><tr><th>Document</th><th>Revision</th><th>Period</th><th>Status</th><th>File</th><th>Uploaded</th><th></th></tr></thead><tbody>
+      ${L.map(d=>{const old=docSuperseded(d,all),nx=all.find(x=>x.supersedes===d.id);return `<tr class="${old?'docold':''}"><td><b>${esc(d.title)}</b>${d.category?`<span class="t2">${esc(d.category)}</span>`:''}${d.ref_no?`<span class="t2">Ref ${esc(d.ref_no)}</span>`:''}</td>
+        <td>${d.revision?`<span class="docbadge">${esc(d.revision)}</span>`:'—'}${old?`<span class="t2">replaced by ${esc(nx&&nx.revision||'a later revision')}</span>`:''}${key==='K02'&&/^rev\.?\s*0+$/i.test(d.revision||'')?'<span class="t2">Original approved budget</span>':''}</td>
+        <td class="small">${d.period?esc(docPer(d.period)):'—'}${d.doc_date?`<span class="t2">${fmtDY(d.doc_date)}</span>`:''}</td><td><span class="st ${docStCls(d.status)}">${esc(d.status)}</span></td>
+        <td class="small">${esc(d.sample?'Sample (demo)':d.file_name)}<span class="t2">${docSize(d.file_size)}</span></td><td class="small">${esc(u(d.created_by)||'')}<span class="t2">${esc(tStamp(d.created_at))}</span></td>
+        <td class="n"><button class="btn sm" type="button" data-docopen="${esc(d.id)}">Open</button></td></tr>`}).join('')||`<tr><td colspan="7" class="muted">${all.length?'No document matches these filters.':'No documents in this box yet.'}</td></tr>`}
+    </tbody></table></div>`;
+  $('#sheet').classList.add('wide');$('#drawer').hidden=false;
+}
+function docUploadForm(pid,b,sup,cats){
+  return `<form id="docUpForm" class="panel docform" data-key="${esc(b.key)}" data-sup="${esc(sup?sup.id:'')}" novalidate><h3 style="margin-top:0">${sup?`New revision of “${esc(sup.title)}”`:'Upload a document'}</h3>
+    ${sup?`<p class="small muted">The earlier file (${esc(sup.revision||'no revision')}) is kept as it is.</p>`:''}
+    <div class="fields">${F('File (up to '+(CLOUD_ME?'50':'10')+' MB)','<input type="file" id="docFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm,.xlsb,.csv,.ppt,.pptx,.xer,.xml,.mpp,.zip,.png,.jpg,.jpeg,.gif,.webp,.tif,.tiff,.txt,.msg,.eml,.dwg,.dxf">',true)}
+      ${F('Title',`<input name="title" maxlength="200" value="${esc(sup?sup.title:'')}">`,true)}
+      ${F('Contents',`<input name="category" list="docCats" maxlength="120" value="${esc(sup?sup.category||'':'')}"><datalist id="docCats">${cats.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>`)}
+      ${F('Reference no',`<input name="ref_no" maxlength="80" value="${esc(sup?sup.ref_no||'':'')}">`)}
+      ${F('Revision',`<input name="revision" maxlength="30" placeholder="${b.key==='K02'?'Rev 0':'Rev 1'}" value="">`)}
+      ${F(b.period==='month'?'Month':b.period==='week'?'Week':'Period (optional)',b.period==='month'?`<input type="month" name="period" value="${esc(curMonth())}">`:b.period==='week'?`<input type="week" name="period" value="${esc(curWeek())}">`:'<input name="period" placeholder="2026-09 or 2026-W41">')}
+      ${F('Document date',`<input type="date" name="doc_date" value="${esc(localISO())}">`)}
+      ${F('Status',`<select name="status">${DOC_STATUS.filter(s=>s!=='Superseded').map(s=>`<option ${s===(b.row==='planning'?'Issued':'For information')?'selected':''}>${s}</option>`).join('')}</select>`)}
+      ${F('Notes',`<textarea name="description" rows="2" maxlength="2000"></textarea>`,true)}</div>
+    <p class="err" id="docUpErr"></p><div class="actions"><button class="btn primary" type="button" data-docupgo>${sup?'Upload revision':'Upload'}</button><button class="btn" type="button" data-docupcancel>Cancel</button></div></form>`;
+}
+function openDocItem(id){
+  const d=(DB.docs||[]).find(x=>x.id===id);if(!d)return;const row=docRowOfKey(d.project_id,d.box_key),keep=docCanKeep(row),all=docsOf(d.project_id,d.box_key),H=docAuditOf(d.id).slice().reverse();
+  const chain=[];let c=d;while(c&&c.supersedes){c=all.find(x=>x.id===c.supersedes);if(c)chain.push(c)}let n=all.find(x=>x.supersedes===d.id);const later=[];while(n){later.push(n);n=all.find(x=>x.supersedes===n.id)}
+  const u=x=>{const y=x&&userById(x);return y?y.name:''};
+  $('#sheet').innerHTML=`<div class="sheet-head"><button class="btn sm" type="button" data-docbox="${esc(d.box_key)}">‹ Box</button><h2>${esc(d.title)}</h2><span class="st ${docStCls(d.status)}">${esc(d.status)}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <table class="tbl kv"><tbody><tr><td>File</td><td>${esc(d.sample?'Sample (demo)':d.file_name)} · ${docSize(d.file_size)}${d.sha256?`<span class="t2">SHA-256 ${esc(d.sha256.slice(0,16))}…</span>`:''}</td></tr>
+      <tr><td>Revision</td><td>${esc(d.revision||'—')}${later.length?` <span class="a-c small">replaced by ${esc(later[later.length-1].revision||'a later revision')}</span>`:''}</td></tr>
+      <tr><td>Contents</td><td>${esc(d.category||'—')}</td></tr><tr><td>Reference</td><td>${esc(d.ref_no||'—')}</td></tr><tr><td>Period</td><td>${d.period?esc(docPer(d.period)):'—'}</td></tr>
+      <tr><td>Document date</td><td>${d.doc_date?fmtDY(d.doc_date):'—'}</td></tr><tr><td>Uploaded</td><td>${esc(u(d.created_by))} ${esc(tStamp(d.created_at))}</td></tr>${d.description?`<tr><td>Notes</td><td>${esc(d.description)}</td></tr>`:''}</tbody></table>
+    ${chain.length||later.length?`<h3>Revisions</h3><ul class="audit">${[...later.slice().reverse(),d,...chain].map(x=>`<li>${x.id===d.id?'<b>This one</b>':`<button class="link" type="button" data-docopen="${esc(x.id)}">${esc(x.revision||'No revision')}</button>`} ${x.id===d.id?esc(x.revision||''):''} <span class="muted small">${esc(tStamp(x.created_at))} · ${esc(x.status)}</span></li>`).join('')}</ul>`:''}
+    <div class="actions"><button class="btn" type="button" data-docprev="${esc(d.id)}">Preview</button><button class="btn" type="button" data-docdl="${esc(d.id)}">Download</button>
+      ${keep?`<button class="btn" type="button" data-docrev="${esc(d.id)}">Upload new revision</button>`:''}</div>
+    <div id="docPrev"></div>
+    ${keep?`<h3>Status</h3><div class="fields">${F('Status',`<select id="docSt">${DOC_STATUS.map(s=>`<option ${s===d.status?'selected':''}>${s}</option>`).join('')}</select>`)}${F('Comment (needed to reject or mark superseded)','<input id="docStNote" maxlength="300">',true)}</div>
+      <div class="actions"><button class="btn sm" type="button" data-docst="${esc(d.id)}">Change status</button></div>
+      <details><summary class="small"><b>Correct the details</b></summary><form id="docEdForm" data-id="${esc(d.id)}" novalidate><div class="fields">
+        ${['title','category','ref_no','revision','period','doc_date'].map(k=>F({title:'Title',category:'Contents',ref_no:'Reference no',revision:'Revision',period:'Period (2026-09 or 2026-W41)',doc_date:'Document date'}[k],`<input name="${k}" ${k==='doc_date'?'type="date"':''} value="${esc(d[k]||'')}">`)).join('')}
+        ${F('Notes',`<textarea name="description" rows="2">${esc(d.description||'')}</textarea>`,true)}</div><div class="actions"><button class="btn sm" type="button" data-doced>Save details</button></div></form></details>`:''}
+    <p class="err" id="docErr"></p>
+    <h3>History</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.action)}</b> by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}${a.detail&&a.detail.changes?`<span class="t2">${esc(a.detail.changes.join(', '))}</span>`:''}${a.detail&&a.detail.from?`<span class="t2">${esc(a.detail.from)} → ${esc(a.detail.to)}</span>`:''}</li>`).join('')||'<li class="muted">No history yet.</li>'}</ul>`;
+  $('#sheet').classList.add('wide');$('#drawer').hidden=false;
+}
+function openDocBoxSettings(key){
+  const pid=state.docPid,row=docRowOfKey(pid,key),b=docBoxes(pid,row).find(x=>x.key===key);if(!b||!docCanKeep(row))return;
+  $('#sheet').innerHTML=`<div class="sheet-head"><button class="btn sm" type="button" data-docbox="${esc(key)}">‹ Box</button><h2>Box settings</h2><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <form id="docBoxForm" data-key="${esc(key)}" novalidate><div class="fields">${F('Name',`<input name="title" maxlength="80" value="${esc(b.title)}" placeholder="${esc((docDefOf(key)||{}).title||'')}">`,true)}
+      ${F('Note',`<input name="note" maxlength="500" value="${esc(b.note||'')}">`,true)}</div>
+      <p class="small"><label class="chk"><input type="checkbox" name="hidden" ${b.hidden?'checked':''}><span>Hide this box from the rack (its documents are kept)</span></label></p>
+      ${b.custom?'':'<p class="small muted">Leave the name empty to go back to the standard name. The box stays in its row; its documents and rules do not change.</p>'}
+      <p class="err" id="docErr"></p><div class="actions"><button class="btn primary" type="button" data-docboxsave>Save</button></div></form>`;  $('#sheet').classList.remove('wide');$('#drawer').hidden=false;
+}
+function openDocAddBox(row){
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>Add a box file</h2><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <form id="docAddForm" data-row="${row}" novalidate><p class="small muted">Row ${DOC_ROWS.find(r=>r.k===row).n}, ${esc(DOC_ROWS.find(r=>r.k===row).title)}. The new box follows the rules of its row: the same people keep it and read it.</p>
+      <div class="fields">${F('Name','<input name="title" maxlength="80" placeholder="For example: Insurance claims">',true)}${F('Note','<input name="note" maxlength="500">',true)}</div>
+      <p class="err" id="docErr"></p><div class="actions"><button class="btn primary" type="button" data-docaddgo>Add box</button></div></form>`;
+  $('#sheet').classList.remove('wide');$('#drawer').hidden=false;
+}
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-docbox],[data-docopen],[data-docup],[data-docupcancel],[data-docupgo],[data-docrev],[data-docprev],[data-docdl],[data-docst],[data-doced],[data-docboxset],[data-docboxsave],[data-docmanage],[data-docmv],[data-docadd],[data-docaddgo],[data-docsgo]');if(!t)return;const d=t.dataset,err=m=>{const el=$('#docErr')||$('#docUpErr');if(el)el.textContent=m};
+  if('docsgo' in d){state.docPid=d.docsgo||state.docPid;go('docs');return}
+  if(d.docbox){openDocBox(d.docbox);return}
+  if(d.docopen){openDocItem(d.docopen);return}
+  if(d.docup){openDocBox(d.docup,{upload:true});return}
+  if('docupcancel' in d){openDocBox($('#docUpForm').dataset.key);return}
+  if(d.docrev){const x=(DB.docs||[]).find(y=>y.id===d.docrev);if(x)openDocBox(x.box_key,{upload:true,supersedes:x.id});return}
+  if(d.docprev){docPreview(d.docprev);return}
+  if(d.docdl){docDownload(d.docdl);return}
+  if('docmanage' in d){state.docManage=!state.docManage;render();return}
+  if(d.docmv){const [row,key,dir]=d.docmv.split('|'),B=docBoxes(state.docPid,row).filter(b=>state.docManage||!b.hidden),i=B.findIndex(b=>b.key===key),j=i+(+dir);if(i<0||j<0||j>=B.length)return;
+    const keys=B.map(b=>b.key);[keys[i],keys[j]]=[keys[j],keys[i]];t.disabled=true;await docAct({action:'box_order',project_id:state.docPid,row_key:row,keys});render();return}
+  if(d.docadd){openDocAddBox(d.docadd);return}
+  if('docaddgo' in d){const f=$('#docAddForm');t.disabled=true;const r=await docAct({action:'box_save',project_id:state.docPid,row_key:f.dataset.row,title:f.elements.title.value,note:f.elements.note.value});t.disabled=false;
+    if(!r){err(docAct.err);return}toast('Box added');closeDrawer();render();return}
+  if(d.docboxset){openDocBoxSettings(d.docboxset);return}
+  if('docboxsave' in d){const f=$('#docBoxForm');t.disabled=true;const r=await docAct({action:'box_save',project_id:state.docPid,box_key:f.dataset.key,title:f.elements.title.value,note:f.elements.note.value,hidden:f.elements.hidden.checked});t.disabled=false;
+    if(!r){err(docAct.err);return}toast('Box saved');render();openDocBox(f.dataset.key);return}
+  if('docupgo' in d){const f=$('#docUpForm'),file=$('#docFile').files[0],g=n=>(f.elements[n]?.value||'').trim();
+    if(!file){err('Choose a file');return}if(!g('title')){err('Give the document a title');return}
+    t.disabled=true;$('#docUpErr').textContent='Uploading…';
+    const r=await docUpload(state.docPid,f.dataset.key,file,{title:g('title'),category:g('category'),ref_no:g('ref_no'),revision:g('revision'),period:g('period'),doc_date:g('doc_date'),status:g('status'),description:g('description'),supersedes:f.dataset.sup||null});
+    t.disabled=false;if(!r){$('#docUpErr').textContent=docAct.err;return}toast('Document uploaded');openDocBox(f.dataset.key);render();return}
+  if(d.docst){t.disabled=true;const r=await docAct({action:'status',id:d.docst,status:$('#docSt').value,note:$('#docStNote').value});t.disabled=false;if(!r){err(docAct.err);return}toast('Status changed');openDocItem(d.docst);render();return}
+  if('doced' in d){const f=$('#docEdForm'),fields={};['title','category','ref_no','revision','period','doc_date','description'].forEach(k=>{fields[k]=f.elements[k].value});t.disabled=true;
+    const r=await docAct({action:'edit',id:f.dataset.id,fields});t.disabled=false;if(!r){err(docAct.err);return}toast('Details saved');openDocItem(f.dataset.id);render();return}
+});
+document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
+  if(t.matches('[data-docpid]')){state.docPid=t.value;state.docF={};render();return}
+  if(t.matches('[data-dochid]')){state.docHidden=t.checked;render();return}
+  if(t.matches('[data-docf]')){state.docF=state.docF||{};state.docF[t.dataset.docf]=t.value;openDocBox(state.docOpenBox);return}
+  if(t.matches('[data-docold]')){state.docF=state.docF||{};state.docF.old=t.checked;openDocBox(state.docOpenBox);return}
+  if(t.matches('[data-doccmp]')){state['docCmp'+t.dataset.doccmp]=t.value;openDocBox(state.docOpenBox);return}
+});
+document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('[data-docq]')){state.docF=state.docF||{};state.docF.q=e.target.value;clearTimeout(openDocBox.h);
+  openDocBox.h=setTimeout(()=>{openDocBox(state.docOpenBox);const el=document.querySelector('[data-docq]');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}},300)}});
+/* demo: a few sample documents so the rack is not empty */
+function seedV34(){
+  if(CLOUD||DB.v34Seeded)return;DB.docs=DB.docs||[];DB.docAudit=DB.docAudit||[];DB.docBoxes=DB.docBoxes||[];
+  const p=PROJECTS[0];if(!p){DB.v34Seeded=true;return}const pl=teamOf(p.id,'plan')[0]||me(),co=teamOf(p.id,'costing')[0]||pl,W=recentWeeks(3),M=recentMonths(3);let an=DB.docAudit.reduce((m,x)=>Math.max(m,+x.id||0),0);
+  const S=[['C01','Contract agreement and particular conditions','Contract agreement','Rev 0','','Approved',co],['C06','Delay notice for late site handover','Claims, EOT & delay notices','','','Submitted',co],
+    ['P01','Approved baseline schedule (XER)','Approved baseline P6 XER/XML files','Rev 01','','Approved',pl],['P01','Baseline narrative','Baseline narrative and approval records','Rev 01','','Approved',pl],
+    ['P02','Working schedule update','Latest P6 XER/XML files','',W[0],'Issued',pl],['P02','Working schedule update','Latest P6 XER/XML files','',W[1],'Issued',pl],
+    ['P03','Weekly progress report','Weekly progress reports','',W[0],'Issued',pl],['P03','Weekly progress report','Weekly progress reports','',W[1],'Issued',pl],['P04','Monthly progress report','Monthly progress reports','',M[1],'Issued',pl],
+    ['P05','3-week lookahead','2-week, 3-week and 4-week lookahead schedules','',W[0],'Issued',pl],
+    ['K01','Tender costing file','Original tender costing files','','','Approved',co],['K02','Rev 0 approved project budget','Rev 0 cost baseline','Rev 0','','Approved',co],['K02','Revised budget after approved CRF','Budget approval records','Rev 1','','Approved',co],
+    ['K03','Monthly budget file','Monthly budget allocation','',M[1],'Submitted',co],['K08','Interim payment application','Interim payment applications','IPC 05',M[1],'Certified',co],['K09','VO register','VO register','',M[1],'For information',co]];
+  let prev={};S.forEach((s,i)=>{const id='DS'+p.id+i,at=addDays(TODAY,-40+i*2)+'T09:00:00',k=s[0];
+    const sup=k==='K02'&&s[3]==='Rev 1'?prev.K02:null;
+    DB.docs.push({id,project_id:p.id,box_key:k,title:s[1],category:s[2],ref_no:null,revision:s[3]||null,period:s[4]||null,doc_date:at.slice(0,10),status:s[5],description:'Sample document (demo).',storage_path:`${p.id}/${k}/sample-${i}/${s[1].replace(/[^A-Za-z0-9]+/g,'_')}.pdf`,
+      file_name:s[1]+'.pdf',file_size:120000+i*5300,mime:'application/pdf',sha256:null,supersedes:sup,created_by:s[6].id,created_at:at,updated_by:s[6].id,updated_at:at,sample:true});
+    if(k==='K02'&&!prev.K02)prev.K02=id;
+    DB.docAudit.push({id:++an,doc_id:id,project_id:p.id,box_key:k,action:sup?'New revision uploaded':'Uploaded',note:null,detail:{file:s[1]+'.pdf'},by_user:s[6].id,by_name:s[6].name,by_role:s[6].role,at_time:at})});
+  DB.v34Seeded=true;save();
+}
+
 /* ---------- backup, restore and the move to the server ---------- */
 const backupName=k=>`protrack-${k}-${localISO()}.json`;
 async function downloadBrowserBackup(){
@@ -3404,7 +3797,7 @@ async function downloadServerBackup(){
   const out={format:'protrack-server-backup',version:1,app:APP_VERSION,exported_at:new Date().toISOString(),projects:[]};
   for(const id of ids){try{const x=await rpc('export_project',{p:id});
       for(const t of ['lifecycle_stages','lifecycle_audit','register_audit']){try{x[t]=await selAll(t,'*',q=>q.eq('project_id',id),t==='lifecycle_stages'?['stage_no']:['id'])}catch(e){}}   // lifecycle (v2.7) and register (v2.8) records, when installed
-      for(const [t,o] of [['report_releases',['period','id']],['release_audit',['id']],['co_log',['id']],['budget_supplements',['id']],['issues',['issue_no']],['issue_audit',['id']]]){try{x[t]=await selAll(t,'*',q=>q.eq('project_id',id),o)}catch(e){}}   // releases and logs (v3.0), issues (v3.1), when installed and readable
+      for(const [t,o] of [['report_releases',['period','id']],['release_audit',['id']],['co_log',['id']],['budget_supplements',['id']],['issues',['issue_no']],['issue_audit',['id']],['doc_boxes',['box_key']],['documents',['created_at','id']],['doc_audit',['id']]]){try{x[t]=await selAll(t,'*',q=>q.eq('project_id',id),o)}catch(e){}}   // releases and logs (v3.0), issues (v3.1), when installed and readable
       try{const ds=new Set((x.dprs||[]).map(d=>d.id));x.dpr_qty_just=(await selAll('dpr_qty_just','*',null,['id'])).filter(j=>ds.has(j.dpr_id))}catch(e){}   // quantity justifications (v3.2)
       out.projects.push(x)}catch(e){return toast(`Backup stopped at ${projById(id).short}: ${srvMsg(e)}`)}}
   await saveFile(backupName('server-backup'),new Blob([JSON.stringify(out)],{type:'application/json'}));
@@ -3612,12 +4005,12 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={
   xr:'<path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 4-5"/>',rel:'<path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/><path d="M9 12l2 2 4-4"/>',logs:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>',
-  tender:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 9h6M9 13h6M9 17h3"/>',iss:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',
+  tender:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 9h6M9 13h6M9 17h3"/>',iss:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',docs:'<path d="M3 20h18"/><rect x="4" y="5" width="4" height="15"/><rect x="9" y="3" width="4" height="17"/><rect x="14" y="6" width="5" height="14"/>',
   act:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',pdash:'<path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/>',cdash:'<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
   proj:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/>',
   mat:'<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>',
@@ -3644,13 +4037,13 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.3';
+const APP_VERSION='3.4';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'xr',label:'Executive report (released)'},{v:'exec',label:'Live summary (working data)'}]},
   {k:'projects',label:'Projects & Handover',ic:'proj',items:[
     {v:'proj',label:'Project overview'},{v:'act',label:'Actions and approvals'},
-    {v:'tender',label:'Tender register'},{v:'iss',label:'Issue register'},{plan:'Contract register'},{plan:'Handover checklist'}]},
+    {v:'tender',label:'Tender register'},{v:'iss',label:'Issue register'},{v:'docs',label:'Project document rack'},{plan:'Contract register'},{plan:'Handover checklist'}]},
   {k:'planning',label:'Planning & Scheduling',ic:'base',items:[
     {v:'pdash',label:'Planning dashboard'},{v:'rel',sec:'planning',label:'Progress releases'},{v:'base',sec:'p6',label:'Baselines and P6 import'},{v:'upd',label:'Weekly E&P update'},
     {v:'rep',rep:'basecmp',label:'Baseline comparison'},{v:'rep',rep:'p6upd',label:'P6 progress update'},
@@ -3866,7 +4259,7 @@ function renderProj(){
   $('#view').innerHTML=`<div class="crumb"><button type="button" class="linkbtn" data-projall="1">Projects</button> › ${esc(p.short)}</div>
     <div class="phead"><div><h2 class="ptitle">${esc(pcode(p))} · ${esc(p.name)} <span class="sev ${status[1]}">${status[0]}</span></h2>
       <div class="pmeta"><span>${esc(cityName(p))}, ${esc(regName(p))} Region</span><span>${esc(secById(p.sector)?.name||'')}${p.ptype?` · ${esc(p.ptype)}`:''}</span><span>${fmtDY(p.start)} to ${fmtDY(p.finish)} (${Math.round(diffDays(p.start,p.finish)/30.4)} months)</span><span>PM ${esc(p.pm||'—')} · Site engineer lead ${esc(p.eng||'—')}</span></div></div>
-      <div class="pbtns">${state.role==='sa'?`<button type="button" class="btn sm" data-go="admin" data-atab="projects">Edit project</button>`:''}<button type="button" class="btn sm" disabled title="Planned: document register not available yet">Documents <span class="pend sm">Planned</span></button>${ROLE_VIEWS[state.role]&&!ROLE_VIEWS[state.role].includes('rep')?'':`<button type="button" class="btn primary sm" data-go="rep">Project reports</button>`}</div></div>
+      <div class="pbtns">${state.role==='sa'?`<button type="button" class="btn sm" data-go="admin" data-atab="projects">Edit project</button>`:''}${canDocsView()?`<button type="button" class="btn sm" data-docsgo="${esc(p.id)}">Documents</button>`:''}${ROLE_VIEWS[state.role]&&!ROLE_VIEWS[state.role].includes('rep')?'':`<button type="button" class="btn primary sm" data-go="rep">Project reports</button>`}</div></div>
     ${strip}${tabHTML}
     <div class="pgrid2"><div class="pmain"><div class="kpis pkpis">${kpis}</div>${finHTML}</div>${rasa}</div>
     ${workflow}
@@ -3933,9 +4326,9 @@ document.addEventListener('click',e=>{
 
 /* ---------- shell ---------- */
 function renderNav(){
-  const L=T[state.lang];const views=['xr','exec','proj','tender','iss','act','rel','logs','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView()));
+  const L=T[state.lang];const views=['xr','exec','proj','tender','iss','docs','act','rel','logs','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView()));
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['proj','tender','iss','imp','pdash','cdash','act','rel','logs','xr'].includes(v)).map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','xr'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -3958,7 +4351,7 @@ let charts=[];const killCharts=()=>{charts.forEach(c=>c.destroy());charts=[]};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
-  ({xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -5461,7 +5854,7 @@ function checkDeepLink(){
 const SITE_ROLES=['eng','sm'];
 const COST_KPIS=['value','cpi','eac','invoiceable','invoiced','approved','collected','shortsub','shortappr','outstanding','advance'];
 const COST_COLS=['value','cpi','invoiceable','invoiced','approved','collected','shortsub','shortappr','outstanding'];
-const ROLE_VIEWS={foreman:['act','dpr','new','perf'],eng:['exec','proj','act','dash','dpr','new','rep','perf'],sm:['exec','proj','act','dash','dpr','rep','deck','perf']};
+const ROLE_VIEWS={foreman:['act','dpr','new','perf'],eng:['exec','proj','act','dash','dpr','new','rep','perf','docs'],sm:['exec','proj','act','dash','dpr','rep','deck','perf','docs']};
 const DEF_ROLECFG={
   reports:{eng:['actprog','projprog','prod','histo','warn'],sm:['actprog','projprog','regprog','prod','histo','recon','warn','timing']},
   exec:{eng:{kpis:['projects','complete','spi','prod','heads','crit'],group:'project',second:'',cols:['bar','spi','prod','crit']},
@@ -7602,7 +7995,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

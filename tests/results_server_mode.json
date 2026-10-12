@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-10 16:38",
- "app": "/home/claude/p11/app.html",
+ "run_at": "2026-10-13 00:57",
+ "app": "/home/claude/p12/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 158,
+  "PASS": 174,
   "FAIL": 0
  },
  "results": [
@@ -800,6 +800,96 @@
    "detail": ""
   },
   {
+   "area": "Documents",
+   "check": "before the v13 update the rack says the database update is needed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "the v13 update loads on top of a database in use",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "the setup check counts 3, and the private bucket exists",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "after the update the rack shows its three rows",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "the planning engineer uploads the baseline: the file is in the private bucket and the document is registered by the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "the planning engineer cannot put a file in the Cost row (storage refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "the costing engineer uploads the Rev 0 budget",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "a new revision is a new file and document; Rev 0 is unchanged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "the costing engineer downloads Rev 0 through a signed link",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "a site engineer receives the planning documents only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "a site engineer cannot download a Cost file (storage refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "a project manager cannot add files",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "a project manager reads every row",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "a foreman receives no documents",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Documents",
+   "check": "the Head adds a box to the Contract row on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
    "area": "Errors",
    "check": "a failed server load shows a warning with Try again",
    "result": "PASS",
@@ -868,6 +958,12 @@
   {
    "area": "Backup",
    "check": "server backup carries the Tender details, lifecycle stages and register history (v2.8)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Backup",
+   "check": "server backup also holds the document rack records (v3.4)",
    "result": "PASS",
    "detail": ""
   },

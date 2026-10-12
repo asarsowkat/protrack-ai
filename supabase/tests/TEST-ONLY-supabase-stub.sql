@@ -11,3 +11,16 @@ grant usage on schema public to authenticated, anon;
 alter default privileges in schema public grant all on tables to authenticated;
 alter default privileges in schema public grant all on sequences to authenticated;
 alter default privileges in schema public grant execute on functions to authenticated;
+-- Supabase Storage stand-in (test only): the two tables the v13 rules use
+create schema if not exists storage;
+create table if not exists storage.buckets (id text primary key, name text not null, owner uuid, public boolean default false,
+  file_size_limit bigint, allowed_mime_types text[], created_at timestamptz default now(), updated_at timestamptz default now());
+create table if not exists storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text references storage.buckets(id),
+  name text, owner uuid default auth.uid(), metadata jsonb, created_at timestamptz default now(), unique (bucket_id, name));
+alter table storage.objects enable row level security;
+grant usage on schema storage to authenticated, anon;
+grant select, insert, update, delete on storage.objects to authenticated;
+grant select on storage.buckets to authenticated;
+-- as on Supabase, signed-in requests may call auth.uid() (storage rules use it directly)
+grant usage on schema auth to authenticated, anon;
+grant execute on function auth.uid() to authenticated, anon;

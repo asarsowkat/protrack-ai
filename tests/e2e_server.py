@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""ProTrackAI v2.5+ (extended to v3.3) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
-from the real ProTrack schema (schema.sql + v2 ... v9, then v10, v11 and v12 applied mid-run as on a live database) through fake_supabase.py.
+"""ProTrackAI v2.5+ (extended to v3.4) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
+from the real ProTrack schema (schema.sql + v2 ... v9, then v10 to v13 applied mid-run as on a live database) through fake_supabase.py.
 Every allow/refuse decision in these tests is made by the database (row level security and the v4
 functions), exactly as on Supabase. What is NOT covered: Supabase's own sign-in service, its REST layer
 and the email function; those are replaced by the stand-in.
@@ -549,6 +549,61 @@ with sync_playwright() as p:
     r = pg.evaluate("SB.from('report_releases').select('kind').eq('kind','cost').then(x=>x.error?'err':x.data.length)")
     ck('Cost by WBS', 'a foreman still receives no cost report', r == 0, r)
 
+    # ---------------------------------------------------------------- v3.4 document rack through the server, with Storage
+    import tempfile as _tf
+    _td = _tf.mkdtemp()
+    def _mk(n, t):
+        pth = os.path.join(_td, n); open(pth, 'w').write(t); return pth
+    login(pg, 'pl')
+    pg.evaluate("state.scope='ALL';state.docPid='P1';go('docs')"); pg.wait_for_timeout(900)
+    ck('Documents', 'before the v13 update the rack says the database update is needed', 'v13 database update' in pg.inner_text('#view'), pg.inner_text('#view')[:200])
+    pv = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, 'schema-update-v13.sql')], capture_output=True, text=True)
+    ck('Documents', 'the v13 update loads on top of a database in use', pv.returncode == 0, pv.stderr[:300])
+    ck('Documents', 'the setup check counts 3, and the private bucket exists', sql("select count(*) from pg_proc where proname in ('doc_act','pt_doc_can','pt_doc_row')") == '3' and sql("select public::text from storage.buckets where id='project-docs'") == 'false')
+    pg.reload(); pg.wait_for_timeout(1500); login(pg, 'pl')
+    pg.evaluate("state.scope='ALL';state.docPid='P1';go('docs')"); pg.wait_for_timeout(900)
+    ck('Documents', 'after the update the rack shows its three rows', 'v13 database update' not in pg.inner_text('#view') and pg.locator('.docrow-planning [data-docbox]').count() == 12)
+    pg.evaluate("openDocBox('P01',{upload:true})"); pg.wait_for_timeout(600)
+    pg.set_input_files('#docFile', _mk('Baseline Rev01.xer', 'ERMHDR\t8.0\nbaseline'))
+    pg.fill('#docUpForm [name=title]', 'Approved baseline'); pg.fill('#docUpForm [name=revision]', 'Rev 01'); pg.select_option('#docUpForm [name=status]', 'Approved')
+    pg.click('[data-docupgo]'); pg.wait_for_timeout(2500)
+    ck('Documents', 'the planning engineer uploads the baseline: the file is in the private bucket and the document is registered by the server',
+       sql("select count(*) from storage.objects where bucket_id='project-docs' and name like 'P1/P01/%/Baseline Rev01.xer'") == '1'
+       and sql("select title||'/'||revision||'/'||status||'/'||file_size from documents where box_key='P01'") == 'Approved baseline/Rev 01/Approved/' + str(len('ERMHDR\t8.0\nbaseline'))
+       and sql("select count(*) from doc_audit where action='Uploaded'") == '1')
+    r = pg.evaluate("(async()=>{const f=new File(['x'],'nope.pdf');const {error}=await SB.storage.from('project-docs').upload('P1/K02/abc/nope.pdf',f,{upsert:false});return error?'refused':'stored'})()")
+    ck('Documents', 'the planning engineer cannot put a file in the Cost row (storage refuses)', r == 'refused', r)
+    login(pg, 'c1')
+    pg.evaluate("state.scope='ALL';state.docPid='P1';go('docs')"); pg.wait_for_timeout(900)
+    pg.evaluate("openDocBox('K02',{upload:true})"); pg.wait_for_timeout(600)
+    pg.set_input_files('#docFile', _mk('Rev0 budget.pdf', '%PDF-1.4 rev0'))
+    pg.fill('#docUpForm [name=title]', 'Rev 0 approved budget'); pg.fill('#docUpForm [name=revision]', 'Rev 0'); pg.select_option('#docUpForm [name=status]', 'Approved')
+    pg.click('[data-docupgo]'); pg.wait_for_timeout(2500)
+    ck('Documents', 'the costing engineer uploads the Rev 0 budget', sql("select count(*) from documents where box_key='K02' and revision='Rev 0'") == '1')
+    r0 = sql("select id from documents where box_key='K02'")
+    pg.evaluate(f"openDocItem('{r0}')"); pg.wait_for_timeout(500); pg.click(f'[data-docrev="{r0}"]'); pg.wait_for_timeout(500)
+    pg.set_input_files('#docFile', _mk('Rev1 budget.pdf', '%PDF-1.4 rev1')); pg.fill('#docUpForm [name=revision]', 'Rev 1'); pg.click('[data-docupgo]'); pg.wait_for_timeout(2500)
+    ck('Documents', 'a new revision is a new file and document; Rev 0 is unchanged', sql(f"select count(*) from documents where supersedes='{r0}'") == '1' and sql(f"select status from documents where id='{r0}'") == 'Approved' and sql("select count(*) from storage.objects where name like 'P1/K02/%'") == '2')
+    txt = pg.evaluate(f"docBlob(DB.docs.find(d=>d.id==='{r0}')).then(b=>b.text())")
+    ck('Documents', 'the costing engineer downloads Rev 0 through a signed link', txt == '%PDF-1.4 rev0', txt)
+    login(pg, 'e1')
+    n = pg.evaluate("SB.from('documents').select('box_key').then(x=>x.error?'err':x.data.map(r=>r.box_key).sort().join())")
+    ck('Documents', 'a site engineer receives the planning documents only', n == 'P01', n)
+    r = pg.evaluate(f"SB.storage.from('project-docs').createSignedUrl((()=>'')() || '{sql(f'select storage_path from documents where id=' + chr(39) + r0 + chr(39))}',600).then(x=>x.error?'refused':'signed')")
+    ck('Documents', 'a site engineer cannot download a Cost file (storage refuses)', r == 'refused', r)
+    login(pg, 'pm')
+    r = pg.evaluate("(async()=>{const f=new File(['x'],'pm.pdf');const {error}=await SB.storage.from('project-docs').upload('P1/C05/abc/pm.pdf',f,{upsert:false});return error?'refused':'stored'})()")
+    ck('Documents', 'a project manager cannot add files', r == 'refused', r)
+    n = pg.evaluate("SB.from('documents').select('id').then(x=>x.error?'err':x.data.length)")
+    ck('Documents', 'a project manager reads every row', n == 3, n)
+    login(pg, 'f1')
+    n = pg.evaluate("SB.from('documents').select('id').then(x=>x.error?'err':x.data.length)")
+    ck('Documents', 'a foreman receives no documents', n == 0, n)
+    login(pg, 'hd')
+    pg.evaluate("state.scope='ALL';state.docPid='P1';go('docs');state.docManage=true;render()"); pg.wait_for_timeout(900)
+    pg.click('.docrow-contract [data-docadd]'); pg.wait_for_timeout(400); pg.fill('#docAddForm [name=title]', 'Arbitration'); pg.click('[data-docaddgo]'); pg.wait_for_timeout(1800)
+    ck('Documents', 'the Head adds a box to the Contract row on the server', sql("select row_key||'/'||title from doc_boxes where title='Arbitration'") == 'contract/Arbitration')
+
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))
     pg.evaluate("cloudLoadAll(true).then(()=>render())"); pg.wait_for_timeout(1500)
@@ -597,6 +652,7 @@ with sync_playwright() as p:
     ck('Backup', 'server backup carries the Tender details, lifecycle stages and register history (v2.8)',
        (pe1.get('project') or {}).get('te_number') == 'TE2231' and len(pe1.get('lifecycle_stages', [])) >= 4 and len(pe1.get('register_audit', [])) >= 4 and len(pe1.get('lifecycle_audit', [])) >= 4,
        {k: (len(v) if isinstance(v, list) else '') for k, v in pe1.items()})
+    ck('Backup', 'server backup also holds the document rack records (v3.4)', len(pr.get('documents', [])) == 3 and len(pr.get('doc_audit', [])) >= 3 and len(pr.get('doc_boxes', [])) >= 1, {k: len(v) for k, v in pr.items() if isinstance(v, list)})
     ck('Backup', 'server backup also holds the releases, logs, issues and quantity justifications (v3.0 to v3.2)', len(pr.get('report_releases', [])) >= 3 and len(pr.get('co_log', [])) == 2 and len(pr.get('issues', [])) == 2 and len(pr.get('issue_audit', [])) >= 2 and len(pr.get('dpr_qty_just', [])) == 1,
        {k: len(v) for k, v in pr.items() if isinstance(v, list)})
     ck('Backup', 'server backup holds every report with lines and history', data.get('format') == 'protrack-server-backup' and len(pr.get('dprs', [])) == int(sql("select count(*) from dprs where project_id='P1'")) and len(pr.get('dpr_audit', [])) >= 8, {k: len(v) for k, v in pr.items() if isinstance(v, list)})
