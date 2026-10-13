@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-13 00:57",
- "app": "/home/claude/p12/app.html",
+ "run_at": "2026-10-13 17:33",
+ "app": "/home/claude/p13/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 174,
+  "PASS": 193,
   "FAIL": 0
  },
  "results": [
@@ -886,6 +886,120 @@
   {
    "area": "Documents",
    "check": "the Head adds a box to the Contract row on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "before the v14 update, Administration says regional approval needs the update",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the v14 update loads on top of a database in use",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the setup check counts 5",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "a super admin names the regional planning section manager on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the weekly progress release opens full screen on live",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "submitted on the server, which works out external SPI 0.75, manpower 29 of 35 (82.9%) and TCC 45 days late",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the server refuses an external % over 100",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "only a super admin changes the approval set-up (server refuses the planner)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the project manager cannot approve or reject while the review step is off (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the regional planning section manager finds it in Actions and approvals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "and approves it with management remarks on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the regional planning section manager cannot approve cost reports",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "a super admin switches on the project manager review on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "with the review on, the planning section manager cannot approve before the project manager reviews",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the project manager finds the review in Actions and approvals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the project manager marks it reviewed on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "then the planning section manager approves; the reviewer is kept",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the review on a released version cannot be changed, even from the database console",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Dashboard (v14)",
+   "check": "the executive report shows the released milestones, external progress and manpower",
    "result": "PASS",
    "detail": ""
   },

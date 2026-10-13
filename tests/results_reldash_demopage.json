@@ -1,0 +1,418 @@
+{
+ "run_at": "2026-10-13 15:58",
+ "app": "/home/claude/p13/demo.html",
+ "summary": {
+  "PASS": 68,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Demo data",
+   "check": "each region has a planning section manager, and Central projects go to the Central one",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo data",
+   "check": "the planning section managers are not the planning engineers who prepare the releases",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo data",
+   "check": "seeded released progress releases carry dashboard figures (milestones, external progress, manpower, energization)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo data",
+   "check": "project manager review is off to start with; regional approval only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Full screen",
+   "check": "a monthly progress release opens full screen, not as a half-width panel",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Full screen",
+   "check": "tabs: Overview, Milestones, Progress, Manpower, Energization, Release notes, Approval",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Full screen",
+   "check": "each tab shows its own section only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Project information",
+   "check": "data date, project number, sub project number, name, region, sector, contract value, project manager and planning engineer",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "KPIs",
+   "check": "the strip shows actual and planned progress, variance, SPI, forecast completion, manpower variance, TCC and PAC status and energization",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "KPIs",
+   "check": "trend icons compare with the last released month (\u25b2 \u25bc \u25a0)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "KPIs",
+   "check": "internal progress is the headline (P6 internal weightage); external is labelled client weightage",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Full screen",
+   "check": "the monthly cost report keeps its own layout (not the progress dashboard)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Full screen",
+   "check": "a weekly progress release opens the same full-screen dashboard, with a next week target",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Calculations",
+   "check": "delay = external forecast \u2212 original contractual date (TCC 10 days)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Calculations",
+   "check": "an approved revised date replaces the original (PAC on the revised date = 0 days)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Calculations",
+   "check": "FAC 90 days late",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Calculations",
+   "check": "internal TCC delay = internal forecast \u2212 internal target (15 days)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Calculations",
+   "check": "external variance = actual % \u2212 planned % (\u221215) and external SPI = actual \u00f7 planned (0.75)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Calculations",
+   "check": "internal variance \u22125 and internal amounts from the contract value (SAR 420M \u00d7 %)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Calculations",
+   "check": "manpower totals 170 planned / 140 actual, variance \u221230, utilization 82.4%",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Calculations",
+   "check": "a missing figure stays empty rather than becoming zero",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Traffic lights",
+   "check": "green on schedule (\u2264 0 days), amber at risk (1\u201330), red delayed (over 30), green once the certificate is received, and Data unavailable",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Validation",
+   "check": "external % over 100 is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Validation",
+   "check": "negative manpower is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Validation",
+   "check": "an unknown energization status is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Validation",
+   "check": "Energized needs the energization date",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Live figures",
+   "check": "typing external progress updates the SPI card at once (external 0.90)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Live figures",
+   "check": "manpower variance in the KPI strip updates (80 planned, 80 actual \u2192 0, utilization 100%)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Release notes",
+   "check": "management remarks cannot be typed by the planning engineer (approver only)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Save draft",
+   "check": "the draft keeps the dashboard fields and the worked-out figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Save draft",
+   "check": "summary, recovery actions and next target are saved",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "KPIs",
+   "check": "TCC 46 days late shows red, Delayed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "the approval tab names the regional planning section manager and the workflow",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "Submit for approval",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "the planning engineer cannot approve",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "the project manager cannot approve while the review step is off",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "and has no review step to do",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "another region's planning section manager cannot approve a Central project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "the Central planning section manager sees it in his action list",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "and on Progress releases (Waiting for you)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "the approver sees Approve and release and Reject (return to planner)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "rejecting needs a comment",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "the regional planning section manager approves and releases it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "management remarks are saved with the approval; reviewed by is filled",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "a released version cannot be edited",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow",
+   "check": "the planning section manager cannot approve cost reports (they stay with the Head)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "the project view shows milestones, external progress, energization and manpower as released",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "with recovery actions and management remarks",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Executive report",
+   "check": "a TCC more than 30 days late makes the project critical, with the reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "Administration shows who approves progress releases in each region and the project manager review switch",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "a super admin switches on the project manager review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "nobody else can change it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow (PM review)",
+   "check": "prepare and submit another Central project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow (PM review)",
+   "check": "the planning section manager cannot approve before the project manager reviews",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow (PM review)",
+   "check": "his screen says it is waiting for the project manager",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow (PM review)",
+   "check": "a project manager of another project cannot review it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow (PM review)",
+   "check": "the project manager sees a Release review action",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow (PM review)",
+   "check": "the project manager marks it reviewed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow (PM review)",
+   "check": "and cannot approve it himself",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Workflow (PM review)",
+   "check": "then the planning section manager approves",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval",
+   "check": "released by, reviewed by and approved by are all shown",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Filters",
+   "check": "Progress releases has Region and Sector filters and a Data date column",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Filters",
+   "check": "filtering by region lists that region's projects only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Filters",
+   "check": "and by sector",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "a super admin can name a second planning section manager for a region",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "and remove one",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "the dashboard fits a phone screen without sideways scrolling",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Errors",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

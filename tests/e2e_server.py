@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""ProTrackAI v2.5+ (extended to v3.4) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
-from the real ProTrack schema (schema.sql + v2 ... v9, then v10 to v13 applied mid-run as on a live database) through fake_supabase.py.
+"""ProTrackAI v2.5+ (extended to v3.5) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
+from the real ProTrack schema (schema.sql + v2 ... v9, then v10 to v14 applied mid-run as on a live database) through fake_supabase.py.
 Every allow/refuse decision in these tests is made by the database (row level security and the v4
 functions), exactly as on Supabase. What is NOT covered: Supabase's own sign-in service, its REST layer
 and the email function; those are replaced by the stand-in.
@@ -32,7 +32,7 @@ for f in ['TEST-ONLY-supabase-stub.sql', 'schema.sql', 'schema-update-v2.sql', '
     if p.returncode: raise SystemExit(f + ': ' + p.stderr)
 people = [('sa', 'Sara Admin', 'sa'), ('pm', 'Paul Manager', 'pm'), ('e1', 'Eng. Omar Engineer', 'eng'), ('e2', 'Eng. Hadi Other', 'eng'),
           ('s1', 'Samir SiteManager', 'sm'), ('f1', 'Faisal Foreman', 'foreman'), ('f2', 'Fahad Foreman', 'foreman'),
-          ('c1', 'Carla Costing', 'costing'), ('pl', 'Peter Planner', 'plan'), ('cc', 'Cora Coordinator', 'costing'), ('hd', 'Hana Head', 'plan')]
+          ('c1', 'Carla Costing', 'costing'), ('pl', 'Peter Planner', 'plan'), ('cc', 'Cora Coordinator', 'costing'), ('hd', 'Hana Head', 'plan'), ('rp', 'Rana RegionalPlanning', 'plan')]
 U = {k: f'10000000-0000-0000-0000-0000000000{i:02d}' for i, (k, _, _) in enumerate(people, 1)}
 sql("insert into auth.users (id, email) values " + ",".join(f"('{U[k]}', '{k}@test.local')" for k, _, _ in people))
 sql("insert into profiles (id, name, role) values " + ",".join(f"('{U[k]}', '{n}', '{r}')" for k, n, r in people))
@@ -81,6 +81,8 @@ with sync_playwright() as p:
         pg.goto(URL); pg.wait_for_timeout(900); return pg
 
     def login(pg, who, expect_ok=True):
+        try: pg.wait_for_function("(()=>{const a=document.querySelector('#app'),l=document.querySelector('#lgPw');return (a&&a.offsetParent!==null)||(l&&l.offsetParent!==null)})()", timeout=15000)
+        except Exception: pass  # after a reload the app may still be restoring the session
         if pg.locator('#app').is_visible():
             pg.evaluate("signOut()"); pg.wait_for_timeout(700)
         pg.fill('#lgId', f'{who}@test.local'); pg.fill('#lgPw', PW); pg.click('#lgBtn'); pg.wait_for_timeout(1200)
@@ -374,7 +376,7 @@ with sync_playwright() as p:
     login(pg, 'pl')
     pg.evaluate(f"state.scope='ALL';state.relTab='planning';state.relPt='month';state.relPer='{per}';go('rel')"); pg.wait_for_timeout(900)
     pg.click('[data-relopen="P1"]'); pg.wait_for_timeout(700)
-    pg.fill('#relForm [name=n_issues]', 'Raft pour delayed by pump breakdown')
+    pg.click('#sheet [data-rdtab="notes"]'); pg.fill('#relForm [name=n_issues]', 'Raft pour delayed by pump breakdown')  # v3.5: the dashboard has tabs
     pg.click('[data-reldo="submit"]'); pg.wait_for_timeout(2500)
     ck('Releases', 'the planning engineer prepares and submits the monthly progress release on the server', sql(f"select status||'/'||(narrative->>'issues') from report_releases where project_id='P1' and kind='planning' and period='{per}'") == 'Submitted/Raft pour delayed by pump breakdown')
     r = pg.evaluate(f"rpc('release_act',{{p:{{action:'approve',project_id:'P1',kind:'planning',period_type:'month',period:'{per}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
@@ -384,7 +386,7 @@ with sync_playwright() as p:
     ck('Releases', 'before approval, management sees no released report', 'No monthly report has been released' in pg.inner_text('#view'), pg.inner_text('#view')[:200])
     login(pg, 'hd')
     pg.evaluate("go('act');state.actF={who:'mine'};render()"); pg.wait_for_timeout(900)
-    ck('Releases', 'the Head finds it in Actions and approvals', 'Progress release' in pg.inner_text('#view') and 'approve or return' in pg.inner_text('#view'))
+    ck('Releases', 'the Head finds it in Actions and approvals', 'Progress release' in pg.inner_text('#view') and 'approve or reject' in pg.inner_text('#view'))  # v3.5 wording
     pg.evaluate(f"openRelease('P1','planning','month','{per}')"); pg.wait_for_timeout(700); pg.click('[data-reldo="approve"]'); pg.wait_for_timeout(2500)
     ck('Releases', 'the Head approves it on the server', sql(f"select status||'/'||(approved_by::text='{U['hd']}') from report_releases where project_id='P1' and kind='planning' and period='{per}'") == 'Released/true')
     r = pg.evaluate(f"rpc('release_act',{{p:{{action:'save',project_id:'P1',kind:'planning',period_type:'month',period:'{per}',figures:{{actual_pct:99}}}}}}).then(()=>'ran',e=>'refused: '+e.message)")
@@ -603,6 +605,71 @@ with sync_playwright() as p:
     pg.evaluate("state.scope='ALL';state.docPid='P1';go('docs');state.docManage=true;render()"); pg.wait_for_timeout(900)
     pg.click('.docrow-contract [data-docadd]'); pg.wait_for_timeout(400); pg.fill('#docAddForm [name=title]', 'Arbitration'); pg.click('[data-docaddgo]'); pg.wait_for_timeout(1800)
     ck('Documents', 'the Head adds a box to the Contract row on the server', sql("select row_key||'/'||title from doc_boxes where title='Arbitration'") == 'contract/Arbitration')
+
+
+    # ---------------------------------------------------------------- v3.5 progress release dashboard and regional approval through the server
+    sql(f"insert into project_access (user_id, project_id) values ('{U['rp']}','P1')")  # as Administration gives a planning user access
+    login(pg, 'sa')
+    pg.evaluate("go('admin');state.adminTab='matrix';render()"); pg.wait_for_timeout(900)
+    ck('Dashboard (v14)', 'before the v14 update, Administration says regional approval needs the update', 'v14 database update' in pg.inner_text('#view'), pg.inner_text('#view')[-300:])
+    pv = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, 'schema-update-v14.sql')], capture_output=True, text=True)
+    ck('Dashboard (v14)', 'the v14 update loads on top of a database in use', pv.returncode == 0, pv.stderr[:300])
+    ck('Dashboard (v14)', 'the setup check counts 5', sql("select (select count(*) from pg_proc where proname in ('release_setup','pt_rel_approver','pt_rel_plan_calc','pt_rel_decider')) + (select count(*) from release_settings)") == '5')
+    pg.evaluate("signOut()"); pg.wait_for_timeout(600); pg.reload(); pg.wait_for_timeout(2500); login(pg, 'sa')
+    pg.evaluate("go('admin');state.adminTab='matrix';render()"); pg.wait_for_timeout(900)
+    pg.select_option('[data-rapadd="R1"]', U['rp']); pg.wait_for_timeout(1800)
+    ck('Dashboard (v14)', 'a super admin names the regional planning section manager on the server', sql(f"select count(*) from release_approvers where region_id='R1' and user_id='{U['rp']}'") == '1')
+    wk = pg.evaluate("recentWeeks(3)[2]"); mo = pg.evaluate("recentMonths(3)[2]")
+    login(pg, 'pl')
+    pg.evaluate(f"state.scope='ALL';state.rdTab='prog';openRelease('P1','planning','week','{wk}')"); pg.wait_for_timeout(900)
+    ck('Dashboard (v14)', 'the weekly progress release opens full screen on live', pg.evaluate("document.querySelector('#sheet').classList.contains('full')"))
+    pg.fill('#sheet [name="d_ext_plan_pct"]', '40'); pg.fill('#sheet [name="d_ext_act_pct"]', '30')
+    pg.click('#sheet [data-rdtab="mp"]')
+    for k, v in [('dir_plan', 20), ('dir_act', 18), ('ind_plan', 5), ('ind_act', 5), ('sub_plan', 10), ('sub_act', 6)]: pg.fill(f'#sheet [name="d_mp_{k}"]', str(v))
+    pg.click('#sheet [data-rdtab="ms"]'); pg.fill('#sheet [name="d_tcc_orig_date"]', '2026-12-31'); pg.fill('#sheet [name="d_tcc_ext_fc_date"]', '2027-02-14')
+    pg.click('#sheet [data-rdtab="notes"]'); pg.fill('#sheet [name="n_recovery"]', 'Second crew for the raft')
+    pg.click('[data-reldo="submit"]'); pg.wait_for_timeout(2500)
+    row = sql(f"select status||'|'||((figures->>'ext_spi')::numeric)::float8||'|'||(figures->>'mp_tot_act')||'|'||(figures->>'mp_util_pct')||'|'||(figures->>'tcc_delay_days')||'|'||(narrative->>'recovery') from report_releases where project_id='P1' and kind='planning' and period='{wk}'")
+    ck('Dashboard (v14)', 'submitted on the server, which works out external SPI 0.75, manpower 29 of 35 (82.9%) and TCC 45 days late', row == 'Submitted|0.75|29|82.9|45|Second crew for the raft', row)
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'save',project_id:'P1',kind:'planning',period_type:'month',period:'{mo}',figures:{{actual_pct:10,ext_plan_pct:120}}}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Dashboard (v14)', 'the server refuses an external % over 100', r.startswith('refused') and '100' in r, r)
+    r = pg.evaluate("rpc('release_setup',{p:{action:'pm_review',on:true}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Dashboard (v14)', 'only a super admin changes the approval set-up (server refuses the planner)', r.startswith('refused'), r)
+    login(pg, 'pm')
+    r2 = pg.evaluate(f"rpc('release_act',{{p:{{action:'return',project_id:'P1',kind:'planning',period_type:'week',period:'{wk}',note:'x'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Dashboard (v14)', 'the project manager cannot approve or reject while the review step is off (server refuses)', r2.startswith('refused'), r2)
+    login(pg, 'rp')
+    if True:
+        pg.evaluate("go('act');state.actF={who:'mine'};render()"); pg.wait_for_timeout(900)
+        ck('Dashboard (v14)', 'the regional planning section manager finds it in Actions and approvals', 'Progress release' in pg.inner_text('#view') and 'approve or reject' in pg.inner_text('#view'))
+        pg.evaluate(f"state.rdTab='notes';openRelease('P1','planning','week','{wk}')"); pg.wait_for_timeout(800)
+        pg.fill('#relMgmt', 'Agree the recovery; report weekly'); pg.click('[data-reldo="approve"]'); pg.wait_for_timeout(2500)
+        ck('Dashboard (v14)', 'and approves it with management remarks on the server', sql(f"select status||'/'||(approved_by::text='{U['rp']}')||'/'||(reviewed_by::text='{U['rp']}')||'/'||(narrative->>'mgmt') from report_releases where project_id='P1' and kind='planning' and period='{wk}' and rev=0") == 'Released/true/true/Agree the recovery; report weekly')
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'approve',project_id:'P1',kind:'cost',period_type:'month',period:'{mo}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Dashboard (v14)', 'the regional planning section manager cannot approve cost reports', r.startswith('refused'), r)
+    login(pg, 'sa')
+    pg.evaluate("go('admin');state.adminTab='matrix';render()"); pg.wait_for_timeout(900)
+    pg.check('[data-relpmrev]'); pg.wait_for_timeout(1800)
+    ck('Dashboard (v14)', 'a super admin switches on the project manager review on the server', sql("select v::text from release_settings where k='pm_review'") == 'true')
+    login(pg, 'pl')
+    pg.evaluate(f"rpc('release_act',{{p:{{action:'save',project_id:'P1',kind:'planning',period_type:'month',period:'{mo}',figures:{{actual_pct:12,planned_pct:14}},narrative:{{}}}}}}).then(()=>rpc('release_act',{{p:{{action:'submit',project_id:'P1',kind:'planning',period_type:'month',period:'{mo}'}}}}))"); pg.wait_for_timeout(1200)
+    login(pg, 'rp')
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'approve',project_id:'P1',kind:'planning',period_type:'month',period:'{mo}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Dashboard (v14)', 'with the review on, the planning section manager cannot approve before the project manager reviews', r.startswith('refused') and 'review' in r.lower(), r)
+    login(pg, 'pm')
+    pg.evaluate("go('act');state.actF={who:'mine'};render()"); pg.wait_for_timeout(900)
+    ck('Dashboard (v14)', 'the project manager finds the review in Actions and approvals', 'review or reject' in pg.inner_text('#view'))
+    pg.evaluate(f"openRelease('P1','planning','month','{mo}')"); pg.wait_for_timeout(800); pg.click('[data-reldo="review"]'); pg.wait_for_timeout(2200)
+    ck('Dashboard (v14)', 'the project manager marks it reviewed on the server', sql(f"select (reviewed_by::text='{U['pm']}')::text||'/'||status from report_releases where project_id='P1' and kind='planning' and period='{mo}'") == 'true/Submitted')
+    login(pg, 'rp')
+    r = pg.evaluate(f"rpc('release_act',{{p:{{action:'approve',project_id:'P1',kind:'planning',period_type:'month',period:'{mo}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Dashboard (v14)', 'then the planning section manager approves; the reviewer is kept', r == 'ran' and sql(f"select status||'/'||(reviewed_by::text='{U['pm']}') from report_releases where project_id='P1' and kind='planning' and period='{mo}'") == 'Released/true', r)
+    p_ = subprocess.run(PG + ['-d', DBN, '-c', f"update report_releases set review_note='x' where project_id='P1' and kind='planning' and period='{mo}'"], capture_output=True, text=True)
+    ck('Dashboard (v14)', 'the review on a released version cannot be changed, even from the database console', p_.returncode != 0, p_.stderr[:200])
+    login(pg, 'pm')
+    pg.evaluate(f"state.scope='ALL';state.xrPt='week';state.xrPer='{wk}';state.xrTab='proj';state.xrPid='P1';go('xr')"); pg.wait_for_timeout(900); v = pg.inner_text('#view')
+    ck('Dashboard (v14)', 'the executive report shows the released milestones, external progress and manpower', 'Milestones, progress, energization and manpower' in v and '+45 days' in v and 'Second crew for the raft' in v, v[-600:])
+    sql("update release_settings set v='false' where k='pm_review'")
 
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))
