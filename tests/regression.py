@@ -126,7 +126,7 @@ with sync_playwright() as p:
     ck('Overview','every stage shows a status from the governed workflow (v2.7)',pg.evaluate("[...document.querySelectorAll('.lc-card .lc-st')].every(e=>/Not started|In progress|Awaiting approval|Complete|Not applicable/.test(e.textContent))"))
     ck('Overview','untracked figures show Planned, not numbers','Approved variations' in v and pg.locator('.fins .pend').count()>=2)
     ck('Overview','no NaN or undefined on the page',not any(x in v for x in ['NaN','undefined','Infinity']),[x for x in ['NaN','undefined','Infinity'] if x in v])
-    ck('Overview','SPI tile matches the executive figure',pg.inner_text('[data-kpi="spi"] .v')==pg.evaluate("evm(ACTS.filter(a=>a.p==='QOT'),ASOF).spi.toFixed(2)"))
+    ck('Overview','SPI tile matches the executive figure',pg.inner_text('[data-kpi="spi"] .v')==pg.evaluate("(typeof progOf==='function'&&progOf('QOT')?progOf('QOT').spi:evm(ACTS.filter(a=>a.p==='QOT'),ASOF).spi).toFixed(2)"))  # v3.6: internal weightage when an updated schedule is loaded
     ck('Overview','critical items listed',pg.locator('.acts li').count()>0)
     rc=pg.evaluate("(()=>{const r=projMonthly(PROJECTS.find(x=>x.id==='QOT'),projKPI(PROJECTS.find(x=>x.id==='QOT')));return [Math.round(r.filter(x=>x.cum!=null).at(-1).cum),Math.round(evm(ACTS.filter(a=>a.p==='QOT'),ASOF).ac)]})()")
     ck('Overview','cost chart ends at the actual-cost figure',abs(rc[0]-rc[1])<=1,rc)

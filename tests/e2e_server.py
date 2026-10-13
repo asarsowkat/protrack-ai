@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""ProTrackAI v2.5+ (extended to v3.5) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
-from the real ProTrack schema (schema.sql + v2 ... v9, then v10 to v14 applied mid-run as on a live database) through fake_supabase.py.
+"""ProTrackAI v2.5+ (extended to v3.6) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
+from the real ProTrack schema (schema.sql + v2 ... v9, then v10 to v15 applied mid-run as on a live database) through fake_supabase.py.
 Every allow/refuse decision in these tests is made by the database (row level security and the v4
 functions), exactly as on Supabase. What is NOT covered: Supabase's own sign-in service, its REST layer
 and the email function; those are replaced by the stand-in.
@@ -386,7 +386,7 @@ with sync_playwright() as p:
     ck('Releases', 'before approval, management sees no released report', 'No monthly report has been released' in pg.inner_text('#view'), pg.inner_text('#view')[:200])
     login(pg, 'hd')
     pg.evaluate("go('act');state.actF={who:'mine'};render()"); pg.wait_for_timeout(900)
-    ck('Releases', 'the Head finds it in Actions and approvals', 'Progress release' in pg.inner_text('#view') and 'approve or reject' in pg.inner_text('#view'))  # v3.5 wording
+    ck('Releases', 'the Head finds it in Actions and approvals', 'Internal report' in pg.inner_text('#view') and 'approve or reject' in pg.inner_text('#view'))  # v3.6 wording (was Progress release)
     pg.evaluate(f"openRelease('P1','planning','month','{per}')"); pg.wait_for_timeout(700); pg.click('[data-reldo="approve"]'); pg.wait_for_timeout(2500)
     ck('Releases', 'the Head approves it on the server', sql(f"select status||'/'||(approved_by::text='{U['hd']}') from report_releases where project_id='P1' and kind='planning' and period='{per}'") == 'Released/true')
     r = pg.evaluate(f"rpc('release_act',{{p:{{action:'save',project_id:'P1',kind:'planning',period_type:'month',period:'{per}',figures:{{actual_pct:99}}}}}}).then(()=>'ran',e=>'refused: '+e.message)")
@@ -641,7 +641,7 @@ with sync_playwright() as p:
     login(pg, 'rp')
     if True:
         pg.evaluate("go('act');state.actF={who:'mine'};render()"); pg.wait_for_timeout(900)
-        ck('Dashboard (v14)', 'the regional planning section manager finds it in Actions and approvals', 'Progress release' in pg.inner_text('#view') and 'approve or reject' in pg.inner_text('#view'))
+        ck('Dashboard (v14)', 'the regional planning section manager finds it in Actions and approvals', 'Internal report' in pg.inner_text('#view') and 'approve or reject' in pg.inner_text('#view'))
         pg.evaluate(f"state.rdTab='notes';openRelease('P1','planning','week','{wk}')"); pg.wait_for_timeout(800)
         pg.fill('#relMgmt', 'Agree the recovery; report weekly'); pg.click('[data-reldo="approve"]'); pg.wait_for_timeout(2500)
         ck('Dashboard (v14)', 'and approves it with management remarks on the server', sql(f"select status||'/'||(approved_by::text='{U['rp']}')||'/'||(reviewed_by::text='{U['rp']}')||'/'||(narrative->>'mgmt') from report_releases where project_id='P1' and kind='planning' and period='{wk}' and rev=0") == 'Released/true/true/Agree the recovery; report weekly')
@@ -670,6 +670,76 @@ with sync_playwright() as p:
     pg.evaluate(f"state.scope='ALL';state.xrPt='week';state.xrPer='{wk}';state.xrTab='proj';state.xrPid='P1';go('xr')"); pg.wait_for_timeout(900); v = pg.inner_text('#view')
     ck('Dashboard (v14)', 'the executive report shows the released milestones, external progress and manpower', 'Milestones, progress, energization and manpower' in v and '+45 days' in v and 'Second crew for the raft' in v, v[-600:])
     sql("update release_settings set v='false' where k='pm_review'")
+
+
+    # ---------------------------------------------------------------- v3.6 internal weightage, updated schedule, internal and client reports
+    import datetime as _dt, tempfile as _tf2
+    def _xer(rows, dd):
+        T = []
+        def tab(name, fields, recs):
+            T.append('%T\t' + name); T.append('%F\t' + '\t'.join(fields))
+            for r in recs: T.append('%R\t' + '\t'.join(str(r.get(f, '')) for f in fields))
+        tab('PROJECT', ['proj_id', 'proj_short_name', 'last_recalc_date'], [{'proj_id': 1, 'proj_short_name': 'TT', 'last_recalc_date': dd + ' 17:00'}])
+        tab('PROJWBS', ['wbs_id', 'proj_id', 'parent_wbs_id', 'proj_node_flag', 'wbs_name'], [dict(wbs_id=a, proj_id=1, parent_wbs_id=b, proj_node_flag=c, wbs_name=d) for a, b, c, d in
+            [('1', '', 'Y', 'TT'), ('2', '1', 'N', 'ENGINEERING & DESIGN'), ('3', '1', 'N', 'CONSTRUCTION'), ('4', '1', 'N', 'PROJECT CLOSE OUT')]])
+        tab('RSRC', ['rsrc_id', 'rsrc_name', 'rsrc_short_name', 'rsrc_type', 'unit_id'], [{'rsrc_id': 1, 'rsrc_name': 'Price weight', 'rsrc_short_name': 'PW', 'rsrc_type': 'RT_Mat', 'unit_id': ''}])
+        F = ['task_id', 'wbs_id', 'task_code', 'task_name', 'task_type', 'status_code', 'complete_pct_type', 'phys_complete_pct', 'target_start_date', 'target_end_date', 'early_end_date']
+        tab('TASK', F, [dict(task_id=i + 1, wbs_id=r[1], task_code=r[0], task_name=r[2], task_type=r[6] if len(r) > 6 else 'TT_Task', status_code='TK_Active', complete_pct_type='CP_Phys', phys_complete_pct=r[4],
+                             target_start_date=r[5][0] + ' 08:00', target_end_date=r[5][1] + ' 17:00', early_end_date=r[5][1] + ' 17:00') for i, r in enumerate(rows)])
+        tab('TASKRSRC', ['task_id', 'rsrc_id', 'target_qty'], [{'task_id': i + 1, 'rsrc_id': 1, 'target_qty': r[3]} for i, r in enumerate(rows) if r[3]])
+        return '\n'.join(T) + '\n%E\n'
+    login(pg, 'pl')
+    pg.evaluate("state.scope='ALL';state.impPid='P1';go('base')"); pg.wait_for_timeout(900)
+    ck('Schedule (v15)', 'before the v15 update, the Baselines page says the database update is needed', 'v15 database update' in pg.inner_text('#view'), pg.inner_text('#view')[:300])
+    pv = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, 'schema-update-v15.sql')], capture_output=True, text=True)
+    ck('Schedule (v15)', 'the v15 update loads on top of a database in use', pv.returncode == 0, pv.stderr[:300])
+    ck('Schedule (v15)', 'the setup check counts 7', sql("select (select count(*) from pg_proc where proname in ('phase_setup_save','schedule_update_commit','pt_rel_sched','pt_sched_summary')) + (select count(*) from information_schema.tables where table_schema='public' and table_name in ('project_phase_setup','schedule_updates','schedule_update_rows'))") == '7')
+    pg.evaluate("signOut()"); pg.wait_for_timeout(600); pg.reload(); pg.wait_for_timeout(2500); login(pg, 'pl')
+    pg.evaluate("state.scope='ALL';state.impPid='P1';go('base')"); pg.wait_for_timeout(900)
+    for k, v in {'DES': 20, 'CON': 80}.items(): pg.fill(f'[name="pw_{k}"]', str(v))
+    pg.click('[data-pwsave="P1"]'); pg.wait_for_timeout(1800)
+    ck('Schedule (v15)', 'the planning engineer saves the internal weightage on the server', sql("select (weights->>'DES')||'/'||(weights->>'CON') from project_phase_setup where project_id='P1'") == '20/80' and sql("select count(*) from phase_setup_audit") == '1')
+    dd = pg.evaluate("addDays(ASOF,-10)")   # the app's data date (demo date mode on the test server)
+    _rows = [('TT-E01', 2, 'Shop drawings', 20, 100, ('2026-08-01', '2026-09-30')), ('TT-100', 3, 'Raft concrete', 50, 60, ('2026-09-01', '2026-09-30')),
+             ('TT-110', 3, 'Column rebar', 30, 20, ('2026-09-01', '2026-10-31')), ('TT-MS1', 4, 'TCC - Taking over certificate', 0, 0, ('2026-12-20', '2026-12-20'), 'TT_FinMile')]
+    _d = _tf2.mkdtemp(); _fx = os.path.join(_d, 'TT_update.xer'); open(_fx, 'w').write(_xer(_rows, dd))
+    pg.set_input_files('#schedfile', _fx); pg.wait_for_timeout(1500)
+    pg.click('[data-schedgo]'); pg.wait_for_timeout(3000)
+    ck('Schedule (v15)', 'the updated schedule is saved on the server with its activities and the mapping', sql("select count(*) from schedule_updates where project_id='P1'") == '1' and sql("select count(*) from schedule_update_rows where project_id='P1'") == '4'
+       and sql("select wbs_map->>'CONSTRUCTION' from project_phase_setup where project_id='P1'") == 'CON', pg.inner_text('#schedBox')[:300] if pg.locator('#schedBox').count() else '')
+    srv_s = json.loads(sql("select summary::text from schedule_updates where project_id='P1'") or '{}')
+    app_s = pg.evaluate("(()=>{const u=schedUps('P1')[0];return u?schedSummary(DB.schedRows[u.id],u.data_date,u.weightage,u.weights):null})()")
+    ck('Schedule (v15)', 'the server works out the same client and internal figures as the app', app_s is not None and all(abs(float(srv_s.get(k) or 0) - float(app_s.get(k) or 0)) < 0.011 for k in ['client_plan', 'client_act', 'int_plan', 'int_act']) and srv_s.get('tcc_date') == '2026-12-20',
+       (srv_s.get('int_act'), app_s and app_s.get('int_act'), srv_s.get('client_plan'), app_s and app_s.get('client_plan')))
+    ck('Schedule (v15)', 'internal actual = 20% x 100% + 80% x (50x60% + 30x20%)/80', abs(float(srv_s.get('int_act') or 0) - round(20 * 1 + 80 * (50 * .6 + 30 * .2) / 80, 2)) < 0.011, srv_s.get('int_act'))
+    ck('Schedule (v15)', 'invoiceable reads the schedule % from the server', pg.evaluate("schedDone(ACTS.find(a=>a.id==='TT-100'),ASOF)") == 0.6)
+    login(pg, 'c1')
+    r = pg.evaluate("rpc('schedule_update_commit',{p:{project_id:'P1',data_date:'" + dd + "',weightage:'client',rows:[{id:'X',w:1,bs:'2026-09-01',bf:'2026-09-30',pct:5}]}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Schedule (v15)', 'a costing engineer cannot upload a schedule (server refuses)', r.startswith('refused'), r)
+    login(pg, 'pl')
+    wk = next(w for w in pg.evaluate("recentWeeks(4)") if sql(f"select count(*) from report_releases where project_id='P1' and kind='planning' and period='{w}'") == '0' and pg.evaluate(f"periodEnd('{w}','week')>='{dd}'")); mo = pg.evaluate("curMonth()")
+    pg.evaluate(f"state.scope='ALL';state.rdTab='prog';openRelease('P1','planning','week','{wk}')"); pg.wait_for_timeout(900)
+    pg.fill('#relForm [name=f_actual_pct]', '70'); pg.fill('#relForm [name=r_actual_pct]', 'Site count'); pg.click('#sheet [data-reldo="submit"]'); pg.wait_for_timeout(2500)
+    row = sql(f"select status||'|'||(figures->>'sched_diff_n')||'|'||coalesce(figures->>'sched_diff_text','') from report_releases where project_id='P1' and kind='planning' and period='{wk}'")
+    ck('Schedule (v15)', 'an internal report with a changed actual % is submitted and the server records the difference', row.startswith('Submitted|1|actual 70'), row)
+    login(pg, 'rp')
+    pg.evaluate(f"state.scope='ALL';openRelease('P1','planning','week','{wk}')"); pg.wait_for_timeout(900)
+    pg.click('#sheet [data-reldo="approve"]'); pg.wait_for_timeout(2000)
+    ck('Schedule (v15)', 'approving without validating is refused by the server', sql(f"select status from report_releases where project_id='P1' and kind='planning' and period='{wk}'") == 'Submitted' and 'Validate the differences' in pg.evaluate("relAct.err||''"), pg.evaluate("relAct.err"))
+    pg.evaluate(f"openRelease('P1','planning','week','{wk}')"); pg.wait_for_timeout(700)
+    pg.check('#relValChk'); pg.fill('#relValNote', 'Agreed with site'); pg.click('#sheet [data-reldo="approve"]'); pg.wait_for_timeout(2500)
+    ck('Schedule (v15)', 'with the validation the section manager approves it on the server', sql(f"select status||'/'||(sched_validated_by::text='{U['rp']}')||'/'||sched_validation_note from report_releases where project_id='P1' and kind='planning' and period='{wk}' and status='Released'") == 'Released/true/Agreed with site')
+    login(pg, 'pl')
+    pg.evaluate(f"state.scope='ALL';state.clTab='notes';openRelease('P1','client','month','{mo}')"); pg.wait_for_timeout(900)
+    pg.fill('#relForm [name=n_summary]', 'Raft complete'); pg.click('#sheet [data-reldo="submit"]'); pg.wait_for_timeout(2500)
+    row = sql(f"select status||'|'||(figures->>'sched_diff_n')||'|'||jsonb_array_length(figures->'phases')||'|'||(narrative->>'summary') from report_releases where project_id='P1' and kind='client' and period='{mo}'")
+    ck('Schedule (v15)', 'the client report is prepared from the schedule and submitted on the server', row == 'Submitted|0|2|Raft complete', row)
+    login(pg, 'rp')
+    pg.evaluate(f"state.scope='ALL';openRelease('P1','client','month','{mo}')"); pg.wait_for_timeout(900); pg.click('#sheet [data-reldo="approve"]'); pg.wait_for_timeout(2500)
+    ck('Schedule (v15)', 'the section manager approves the client report on the server', sql(f"select status||'/'||(approved_by::text='{U['rp']}') from report_releases where project_id='P1' and kind='client' and period='{mo}' and status='Released'") == 'Released/true')
+    login(pg, 'pm')
+    pg.evaluate("state.scope='P1';go('proj')"); pg.wait_for_timeout(900)
+    ck('Schedule (v15)', 'the project manager sees progress by internal weightage on the project overview', 'internal weightage, schedule of' in pg.inner_text('#view'), pg.inner_text('#view')[:300])
 
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))

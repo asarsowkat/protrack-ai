@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-13 17:33",
- "app": "/home/claude/p13/app.html",
+ "run_at": "2026-10-13 19:35",
+ "app": "/home/claude/p14/app.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 193,
+  "PASS": 208,
   "FAIL": 0
  },
  "results": [
@@ -1000,6 +1000,96 @@
   {
    "area": "Dashboard (v14)",
    "check": "the executive report shows the released milestones, external progress and manpower",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "before the v15 update, the Baselines page says the database update is needed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "the v15 update loads on top of a database in use",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "the setup check counts 7",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "the planning engineer saves the internal weightage on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "the updated schedule is saved on the server with its activities and the mapping",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "the server works out the same client and internal figures as the app",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "internal actual = 20% x 100% + 80% x (50x60% + 30x20%)/80",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "invoiceable reads the schedule % from the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "a costing engineer cannot upload a schedule (server refuses)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "an internal report with a changed actual % is submitted and the server records the difference",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "approving without validating is refused by the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "with the validation the section manager approves it on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "the client report is prepared from the schedule and submitted on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "the section manager approves the client report on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule (v15)",
+   "check": "the project manager sees progress by internal weightage on the project overview",
    "result": "PASS",
    "detail": ""
   },

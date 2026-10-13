@@ -148,7 +148,7 @@ with sync_playwright() as p:
     J("go('admin');state.adminTab='matrix';render()"); pg.wait_for_timeout(300)
     J("(()=>{const b=[...document.querySelectorAll('[data-admtab],[data-tab]')].find(x=>/matrix/i.test(x.dataset.admtab||x.dataset.tab||''));if(b)b.click()})()"); pg.wait_for_timeout(300)
     has = pg.locator('[data-relpmrev]').count() == 1
-    ck('Set-up', 'Administration shows who approves progress releases in each region and the project manager review switch', has and 'Progress release approval' in pg.inner_text('#view'))
+    ck('Set-up', 'Administration shows who approves progress releases in each region and the project manager review switch', has and 'Internal and client report approval' in pg.inner_text('#view'))  # v3.6 heading
     if has: pg.check('[data-relpmrev]'); pg.wait_for_timeout(400)
     else: J("relSetup({action:'pm_review',on:true})")
     ck('Set-up', 'a super admin switches on the project manager review', J("relSettings().pm_review") is True)
@@ -173,7 +173,7 @@ with sync_playwright() as p:
     ck('Workflow (PM review)', 'the project manager marks it reviewed', r2['reviewed_by'] == QPM and r2['status'] == 'Submitted')
     ck('Workflow (PM review)', 'and cannot approve it himself', 'regional planning section manager' in tryact({'action': 'approve', 'id': rid}))
     as_(PSM_C)
-    ck('Workflow (PM review)', 'then the planning section manager approves', tryact({'action': 'approve', 'id': rid}) == 'ok' and J(f"relReleased('{P2}','planning','week','{WK}').reviewed_by") == QPM)
+    ck('Workflow (PM review)', 'then the planning section manager approves', tryact({'action': 'approve', 'id': rid, 'validated': True, 'validation_note': 'Checked against the updated schedule'}) == 'ok' and J(f"relReleased('{P2}','planning','week','{WK}').reviewed_by") == QPM)  # v3.6: QOT has an updated schedule, so the differences are validated
     J(f"openRelease('{P2}','planning','week','{WK}');state.rdTab='appr'"); pg.wait_for_timeout(300)
     J(f"openRelease('{P2}','planning','week','{WK}')"); pg.wait_for_timeout(200)
     ap = pg.inner_text('#sheet [data-rdp="appr"]')

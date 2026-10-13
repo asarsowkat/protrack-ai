@@ -168,6 +168,14 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.6
+
+- Internal weightage by phase (general works, design, material, construction, installation, testing & commissioning, close out), set per project by the planning engineer, with history (`schema-update-v15.sql`)
+- Updated P6 schedule upload (XER): data date, % complete, milestones; phase from the main WBS or a P6 activity code; client and internal planned/actual % worked out on the server; updates kept for good
+- Every ProTrackAI progress figure uses the internal weightage of the latest updated schedule; invoiceable uses the client weightage with the schedule's % complete
+- Progress releases renamed Internal Reporting; new Client Reporting (weekly/monthly, Excel and print); differences from the updated schedule are validated by the regional planning section manager
+- See RELEASE-NOTES-v3.6.md and STAGE-12-SETUP.md
+
 ## Version 3.5
 
 - Progress release dashboard: weekly and monthly progress releases open full screen with tabs (Overview, Milestones, Progress, Manpower, Energization, Release notes, Approval), nine KPI cards with traffic lights and trends, contractual/revised/forecast TCC, PAC and FAC with worked-out delays, external progress beside the internal headline, manpower and energization (`schema-update-v14.sql`)

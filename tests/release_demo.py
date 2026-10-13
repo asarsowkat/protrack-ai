@@ -38,7 +38,7 @@ with sync_playwright() as p:
     # ---- demo seeds and menus
     ck('Demo data', 'sample releases, cost reports and logs are seeded for the demo projects', J("DB.releases.filter(r=>r.status==='Released').length") >= 30 and J("DB.coLog.length") > 0 and J("DB.suppLog.length") > 0)
     ck('Navigation', 'Home has the released executive report and the live summary', pg.locator('#nav [data-go="xr"]').count() == 1 and pg.locator('#nav [data-go="exec"]').count() == 1)
-    ck('Navigation', 'Progress releases, Monthly cost report, Budget supplements and the change order and claim log are live menu items', all(pg.locator(f'#nav .nav-item', has_text=t).count() >= 1 for t in ['Progress releases', 'Monthly cost report', 'Budget supplements', 'Change order and claim log']))
+    ck('Navigation', 'Internal Reporting (was Progress releases), Monthly cost report, Budget supplements and the change order and claim log are live menu items', all(pg.locator(f'#nav .nav-item', has_text=t).count() >= 1 for t in ['Internal Reporting', 'Monthly cost report', 'Budget supplements', 'Change order and claim log']))
     ck('Navigation', 'Variation register, Claims register and Budget revisions are no longer marked planned', all(pg.locator('#nav .planned', has_text=t).count() == 0 for t in ['Variation register', 'Claims register', 'Budget revisions']))
 
     # ---- executive report: released versions only
@@ -88,7 +88,7 @@ with sync_playwright() as p:
     ck('Releases', 'a project manager cannot approve', tryact({'action': 'approve', 'project_id': P0, 'kind': 'planning', 'period_type': 'month', 'period': MON[0]}).startswith('Only the Head'))
     as_(SA); J("go('act');state.actF={who:'mine'};render()"); pg.wait_for_timeout(300)
     lab0 = J(f"perLabel('month','{MON[0]}')")
-    ck('Actions', 'the Head sees the release waiting under Mine', f"Progress release, {lab0}: approve or reject" in pg.inner_text('#view'), pg.inner_text('#view')[:400])
+    ck('Actions', 'the Head sees the release waiting under Mine', f"Internal report, {lab0}: approve or reject" in pg.inner_text('#view'), pg.inner_text('#view')[:400])
     J(f"openRelease('{P0}','planning','month','{MON[0]}')"); pg.wait_for_timeout(300); pg.click('[data-reldo="return"]'); pg.wait_for_timeout(300)
     ck('Releases', 'returning needs a comment', J(f"relOpen('{P0}','planning','month','{MON[0]}').status") == 'Submitted')
     pg.fill('#relNote', 'Explain the SPI drop'); pg.click('[data-reldo="return"]'); pg.wait_for_timeout(400)

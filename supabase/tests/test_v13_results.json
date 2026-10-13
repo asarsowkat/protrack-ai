@@ -6,12 +6,12 @@
   {
    "check": "v13 loads (run 1)",
    "pass": true,
-   "detail": "psql:/home/claude/p13/sb/schema-update-v13.sql:51: NOTICE:  policy \"db_read\" for relation \"doc_boxes\" does not exist, skipping\npsql:/home/claude/p13/sb/schema-update-v13.sql:89: NOTICE:  trigger \"trg_doc_guard\" for relation \"documents\" does not exist, skipping\npsql:/home/claude/p13/sb/schema-update-"
+   "detail": "psql:/home/claude/p14/sb/schema-update-v13.sql:51: NOTICE:  policy \"db_read\" for relation \"doc_boxes\" does not exist, skipping\npsql:/home/claude/p14/sb/schema-update-v13.sql:89: NOTICE:  trigger \"trg_doc_guard\" for relation \"documents\" does not exist, skipping\npsql:/home/claude/p14/sb/schema-update-"
   },
   {
    "check": "v13 loads (run 2)",
    "pass": true,
-   "detail": "psql:/home/claude/p13/sb/schema-update-v13.sql:26: NOTICE:  relation \"doc_boxes\" already exists, skipping\npsql:/home/claude/p13/sb/schema-update-v13.sql:75: NOTICE:  relation \"documents\" already exists, skipping\npsql:/home/claude/p13/sb/schema-update-v13.sql:76: NOTICE:  relation \"documents_box\" alr"
+   "detail": "psql:/home/claude/p14/sb/schema-update-v13.sql:26: NOTICE:  relation \"doc_boxes\" already exists, skipping\npsql:/home/claude/p14/sb/schema-update-v13.sql:75: NOTICE:  relation \"documents\" already exists, skipping\npsql:/home/claude/p14/sb/schema-update-v13.sql:76: NOTICE:  relation \"documents_box\" alr"
   },
   {
    "check": "the setup check counts 3",
@@ -36,7 +36,7 @@
   {
    "check": "refused: the costing engineer cannot add to the Planning row",
    "pass": true,
-   "detail": "psql:/tmp/tmpziwmzajc.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmpi35304sa.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "allowed: the planning engineer adds to the Planning row",
@@ -46,12 +46,12 @@
   {
    "check": "refused: the planning engineer cannot add to the Cost row",
    "pass": true,
-   "detail": "psql:/tmp/tmpjqhdhp7s.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmp9heijtd_.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "refused: the planning engineer cannot add to the Contract row",
    "pass": true,
-   "detail": "psql:/tmp/tmpd55eas95.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmpd33d_sn6.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "allowed: the Head adds to any row",
@@ -61,42 +61,42 @@
   {
    "check": "refused: a project manager cannot add files",
    "pass": true,
-   "detail": "psql:/tmp/tmpv77i4t61.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmp0dmvn700.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "refused: a site engineer cannot add files",
    "pass": true,
-   "detail": "psql:/tmp/tmpaifo3ipv.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmpsmgavn12.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "refused: a foreman cannot add files",
    "pass": true,
-   "detail": "psql:/tmp/tmpui__c7j4.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmp3x4e28w4.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "refused: an executive cannot add files",
    "pass": true,
-   "detail": "psql:/tmp/tmp9ncnznlx.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmp1nkczysm.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "refused: a costing engineer without access to the project cannot add files",
    "pass": true,
-   "detail": "psql:/tmp/tmps_opwbc8.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmpev0kw1ne.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "refused: nobody adds to a box that does not exist",
    "pass": true,
-   "detail": "psql:/tmp/tmpfq91bo60.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmp27z84js5.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "refused: a file type that is not a document (.exe)",
    "pass": true,
-   "detail": "psql:/tmp/tmpulef7twx.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmpruq2jw4u.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "refused: a file outside the <project>/<box>/<id>/<name> folders",
    "pass": true,
-   "detail": "psql:/tmp/tmpsdp24uhu.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
+   "detail": "psql:/tmp/tmpfrzfm5q9.sql:4: ERROR:  new row violates row-level security policy for table \"objects\""
   },
   {
    "check": "allowed: the super admin adds anywhere, P6 XER files too",
@@ -106,37 +106,37 @@
   {
    "check": "registering needs the file in storage first",
    "pass": true,
-   "detail": "psql:/tmp/tmp7mcr6l_7.sql:4: ERROR:  The file was not found in storage; upload it again\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 54 at RAISE"
+   "detail": "psql:/tmp/tmp41kjuaq9.sql:4: ERROR:  The file was not found in storage; upload it again\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 54 at RAISE"
   },
   {
    "check": "the file must be in this box's folder",
    "pass": true,
-   "detail": "psql:/tmp/tmp0o2ovgiv.sql:4: ERROR:  The file is not in this box's folder\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 52 at RAISE"
+   "detail": "psql:/tmp/tmpzoabq7oe.sql:4: ERROR:  The file is not in this box's folder\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 52 at RAISE"
   },
   {
    "check": "a title is needed",
    "pass": true,
-   "detail": "psql:/tmp/tmpz4hbhnfi.sql:4: ERROR:  The title is needed (200 characters at most)\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 56 at RAISE"
+   "detail": "psql:/tmp/tmpcf_thd5i.sql:4: ERROR:  The title is needed (200 characters at most)\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 56 at RAISE"
   },
   {
    "check": "the period must be a month or a week",
    "pass": true,
-   "detail": "psql:/tmp/tmpdsegkygs.sql:4: ERROR:  The period must look like 2026-09 or 2026-W41\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 60 at RAISE"
+   "detail": "psql:/tmp/tmp36xdwiro.sql:4: ERROR:  The period must look like 2026-09 or 2026-W41\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 60 at RAISE"
   },
   {
    "check": "a planning engineer cannot register in the Cost row",
    "pass": true,
-   "detail": "psql:/tmp/tmpnybbh3c5.sql:4: ERROR:  Only the people who keep this row can add documents to it\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 49 at RAISE"
+   "detail": "psql:/tmp/tmpbl_3gisb.sql:4: ERROR:  Only the people who keep this row can add documents to it\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 49 at RAISE"
   },
   {
    "check": "the costing engineer registers the Rev 0 budget",
    "pass": true,
-   "detail": "{'id': '990a2c1d-574e-4694-8236-5db9c986a9ca', 'mime': 'application/pdf', 'title': 'Rev 0 approved project budget', 'period': '2025-05', 'ref_no': None, 'sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'status': 'Approved', 'box_key': 'K02', 'category': 'Rev 0 cost basel"
+   "detail": "{'id': '59963108-d51c-4697-8029-5587b06a4229', 'mime': 'application/pdf', 'title': 'Rev 0 approved project budget', 'period': '2025-05', 'ref_no': None, 'sha256': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'status': 'Approved', 'box_key': 'K02', 'category': 'Rev 0 cost basel"
   },
   {
    "check": "the same file cannot be registered twice",
    "pass": true,
-   "detail": "psql:/tmp/tmp_lsjgww3.sql:4: ERROR:  This file is already registered\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 55 at RAISE"
+   "detail": "psql:/tmp/tmpmoqt_x4m.sql:4: ERROR:  This file is already registered\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 55 at RAISE"
   },
   {
    "check": "the upload is in the history",
@@ -146,7 +146,7 @@
   {
    "check": "a new revision (Rev 1) is a new document pointing to Rev 0",
    "pass": true,
-   "detail": "{'id': 'e6e67262-2a9b-42b9-bae3-2a8c1f2e417e', 'mime': 'application/pdf', 'title': 'Rev 1 budget', 'period': None, 'ref_no': None, 'sha256': None, 'status': 'Submitted', 'box_key': 'K02', 'category': None, 'doc_date': None, 'revision': 'Rev 1', 'file_name': 'Rev1 budget.pdf', 'file_size': 1234, 'cre"
+   "detail": "{'id': '6ea66e27-5c84-415c-b46a-76e92aa017a6', 'mime': 'application/pdf', 'title': 'Rev 1 budget', 'period': None, 'ref_no': None, 'sha256': None, 'status': 'Submitted', 'box_key': 'K02', 'category': None, 'doc_date': None, 'revision': 'Rev 1', 'file_name': 'Rev1 budget.pdf', 'file_size': 1234, 'cre"
   },
   {
    "check": "Rev 0 stays as it was: same file, same status",
@@ -156,17 +156,17 @@
   {
    "check": "a new revision must be in the same box",
    "pass": true,
-   "detail": "psql:/tmp/tmphr7a73kv.sql:4: ERROR:  A new revision must be in the same box as the document it replaces\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 63 at RAISE"
+   "detail": "psql:/tmp/tmpa6jqhsrf.sql:4: ERROR:  A new revision must be in the same box as the document it replaces\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 63 at RAISE"
   },
   {
    "check": "the planning engineer registers the approved baseline",
    "pass": true,
-   "detail": "{'id': 'b9a2735d-e740-44b9-9a1d-ec8060aaf3b5', 'mime': 'application/pdf', 'title': 'Approved baseline', 'period': None, 'ref_no': None, 'sha256': None, 'status': 'Approved', 'box_key': 'P01', 'category': None, 'doc_date': None, 'revision': 'Rev 01', 'file_name': 'Baseline Rev01.xer', 'file_size': 12"
+   "detail": "{'id': '1da99ed6-9619-4353-85f7-84122a4d8acc', 'mime': 'application/pdf', 'title': 'Approved baseline', 'period': None, 'ref_no': None, 'sha256': None, 'status': 'Approved', 'box_key': 'P01', 'category': None, 'doc_date': None, 'revision': 'Rev 01', 'file_name': 'Baseline Rev01.xer', 'file_size': 12"
   },
   {
    "check": "a current P6 schedule goes in its own box, with its week",
    "pass": true,
-   "detail": "{'id': 'fed7d930-97d4-4316-9820-251ac14f00bb', 'mime': 'application/pdf', 'title': 'Current schedule', 'period': '2026-W41', 'ref_no': None, 'sha256': None, 'status': 'For information', 'box_key': 'P02', 'category': None, 'doc_date': None, 'revision': None, 'file_name': 'Update W41.xer', 'file_size'"
+   "detail": "{'id': '8aa8d35c-9221-443c-b646-bcae87b8a853', 'mime': 'application/pdf', 'title': 'Current schedule', 'period': '2026-W41', 'ref_no': None, 'sha256': None, 'status': 'For information', 'box_key': 'P02', 'category': None, 'doc_date': None, 'revision': None, 'file_name': 'Update W41.xer', 'file_size'"
   },
   {
    "check": "...and the approved baseline is untouched",
@@ -216,7 +216,7 @@
   {
    "check": "the costing engineer marks Rev 1 approved",
    "pass": true,
-   "detail": "{'id': 'e6e67262-2a9b-42b9-bae3-2a8c1f2e417e', 'mime': 'application/pdf', 'title': 'Rev 1 budget', 'period': None, 'ref_no': None, 'sha256': None, 'status': 'Approved', 'box_key': 'K02', 'category': None, 'doc_date': None, 'revision': 'Rev 1', 'file_name': 'Rev1 budget.pdf', 'file_size': 1234, 'crea"
+   "detail": "{'id': '6ea66e27-5c84-415c-b46a-76e92aa017a6', 'mime': 'application/pdf', 'title': 'Rev 1 budget', 'period': None, 'ref_no': None, 'sha256': None, 'status': 'Approved', 'box_key': 'K02', 'category': None, 'doc_date': None, 'revision': 'Rev 1', 'file_name': 'Rev1 budget.pdf', 'file_size': 1234, 'crea"
   },
   {
    "check": "the change is in the history, from and to",
@@ -226,27 +226,27 @@
   {
    "check": "rejecting needs a comment",
    "pass": true,
-   "detail": "psql:/tmp/tmpbi_8ov_7.sql:4: ERROR:  Add a comment saying why the document is rejected\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 17 at RAISE"
+   "detail": "psql:/tmp/tmp1jfoxptd.sql:4: ERROR:  Add a comment saying why the document is rejected\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 17 at RAISE"
   },
   {
    "check": "an unknown status is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpbejtwgwk.sql:4: ERROR:  Unknown status Lost\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 14 at RAISE"
+   "detail": "psql:/tmp/tmp9bolcinf.sql:4: ERROR:  Unknown status Lost\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 14 at RAISE"
   },
   {
    "check": "a project manager cannot change a status",
    "pass": true,
-   "detail": "psql:/tmp/tmp63z2fhhl.sql:4: ERROR:  You can see this document but not change it\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 11 at RAISE"
+   "detail": "psql:/tmp/tmpi6t2b4ka.sql:4: ERROR:  You can see this document but not change it\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 11 at RAISE"
   },
   {
    "check": "a site engineer cannot even see a Cost document",
    "pass": true,
-   "detail": "psql:/tmp/tmpfrizyh7o.sql:4: ERROR:  Unknown document\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 10 at RAISE"
+   "detail": "psql:/tmp/tmpq1ib1f0q.sql:4: ERROR:  Unknown document\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 10 at RAISE"
   },
   {
    "check": "details can be corrected; the changes are listed",
    "pass": true,
-   "detail": "{'id': 'e6e67262-2a9b-42b9-bae3-2a8c1f2e417e', 'mime': 'application/pdf', 'title': 'Rev 1 budget', 'period': None, 'ref_no': 'BUD-01', 'sha256': None, 'status': 'Approved', 'box_key': 'K02', 'category': None, 'doc_date': '2026-01-15', 'revision': 'Rev 1', 'file_name': 'Rev1 budget.pdf', 'file_size':"
+   "detail": "{'id': '6ea66e27-5c84-415c-b46a-76e92aa017a6', 'mime': 'application/pdf', 'title': 'Rev 1 budget', 'period': None, 'ref_no': 'BUD-01', 'sha256': None, 'status': 'Approved', 'box_key': 'K02', 'category': None, 'doc_date': '2026-01-15', 'revision': 'Rev 1', 'file_name': 'Rev1 budget.pdf', 'file_size':"
   },
   {
    "check": "...in the history",
@@ -286,12 +286,12 @@
   {
    "check": "the costing engineer adds a box to the Cost row",
    "pass": true,
-   "detail": "{'box_key': 'XEE5379'}"
+   "detail": "{'box_key': 'XD25DE7'}"
   },
   {
    "check": "a planning engineer cannot add a box to the Cost row",
    "pass": true,
-   "detail": "psql:/tmp/tmpbi8jscxr.sql:4: ERROR:  Only the people who keep this row can add boxes to it\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 82 at RAISE"
+   "detail": "psql:/tmp/tmpz684kxhs.sql:4: ERROR:  Only the people who keep this row can add boxes to it\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 82 at RAISE"
   },
   {
    "check": "files can be added to the new box",
@@ -331,12 +331,12 @@
   {
    "check": "a box cannot be put into another row by reordering",
    "pass": true,
-   "detail": "psql:/tmp/tmpitm43egj.sql:4: ERROR:  Box K01 is not in this row\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 114 at RAISE"
+   "detail": "psql:/tmp/tmppjv0d2ig.sql:4: ERROR:  Box K01 is not in this row\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 114 at RAISE"
   },
   {
    "check": "a project manager cannot change boxes",
    "pass": true,
-   "detail": "psql:/tmp/tmp78u0rwet.sql:4: ERROR:  Only the people who keep this row can change its boxes\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 92 at RAISE"
+   "detail": "psql:/tmp/tmpj89rk_u4.sql:4: ERROR:  Only the people who keep this row can change its boxes\nCONTEXT:  PL/pgSQL function doc_act(jsonb) line 92 at RAISE"
   },
   {
    "check": "box changes are in the history",
@@ -356,7 +356,7 @@
   {
    "check": "rollback runs (run 2)",
    "pass": true,
-   "detail": "psql:/home/claude/p13/sb/schema-rollback-v13.sql:4: NOTICE:  policy \"protrack_docs_add\" for relation \"storage.objects\" does not exist, skipping\npsql:/home/claude/p13/sb/schema-rollback-v13.sql:5: NOTICE:  function doc_act(jsonb) does not exist, skipping"
+   "detail": "psql:/home/claude/p14/sb/schema-rollback-v13.sql:4: NOTICE:  policy \"protrack_docs_add\" for relation \"storage.objects\" does not exist, skipping\npsql:/home/claude/p14/sb/schema-rollback-v13.sql:5: NOTICE:  function doc_act(jsonb) does not exist, skipping"
   },
   {
    "check": "rollback stops new files and documents",
@@ -376,7 +376,7 @@
   {
    "check": "v13 can be applied again after a rollback",
    "pass": true,
-   "detail": "psql:/home/claude/p13/sb/schema-update-v13.sql:26: NOTICE:  relation \"doc_boxes\" already exists, skipping\npsql:/home/claude/p13/sb/schema-update-v13.sql:75: NOTICE:  relation \"documents\" already exists, skipping\npsql:/home/claude/p13/sb/schema-update-v13.sql:76: NOTICE:  relation \"documents_box\" alr"
+   "detail": "psql:/home/claude/p14/sb/schema-update-v13.sql:26: NOTICE:  relation \"doc_boxes\" already exists, skipping\npsql:/home/claude/p14/sb/schema-update-v13.sql:75: NOTICE:  relation \"documents\" already exists, skipping\npsql:/home/claude/p14/sb/schema-update-v13.sql:76: NOTICE:  relation \"documents_box\" alr"
   }
  ]
 }

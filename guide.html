@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.5, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.6, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -203,7 +203,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#domains" class="sub">Finding your way: the domains</a>
   <a href="#overview" class="sub">Project overview</a>
   <a href="#releases">Released reporting</a>
-  <a href="#reldash" class="sub">Progress release dashboard</a>
+  <a href="#weightage" class="sub">Internal weightage and updated schedule</a>
+  <a href="#reldash" class="sub">Internal report dashboard</a>
   <a href="#issues" class="sub">Issue register</a>
   <a href="#docrack" class="sub">Project document rack</a>
   <a href="#tender">Tender register and PE numbers</a>
@@ -253,6 +254,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.6</b>
+    <b>Internal weightage by phase</b> (Baselines and P6 import): seven phases agreed with management, set once per project. ·
+    <b>Updated schedule</b>: upload the updated P6 file; ProTrackAI takes the data date, % complete and milestones, and works out client and internal progress by phase. Every progress report uses the internal weightage; invoiceable uses the client weightage. ·
+    <b>Internal Reporting</b> (was Progress releases) and new <b>Client Reporting</b>, both compared with the updated schedule; differences are validated by the regional planning section manager.</div>
   <div class="note"><b>New in version 3.5</b>
     <b>Progress release dashboard</b>: weekly and monthly progress releases open full screen with tabs (Overview, Milestones, Progress, Manpower, Energization, Release notes, Approval), nine KPI cards with traffic lights and trends, contractual, revised and forecast TCC, PAC and FAC with delays worked out, external progress beside the internal headline, manpower and energization. ·
     <b>Regional approval</b>: each region's planning section manager approves its progress releases; a super admin can add a project manager review first.</div>
@@ -456,6 +461,16 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>Press <b>Submit for approval</b>. A progress release goes to the region's <b>planning section manager</b> (after the project manager's review, if a super admin has switched it on); a cost report goes to the Head of Planning and Cost Control. They find it in <b>Actions and approvals</b> and press <b>Approve and release</b> or <b>Reject (return to planner)</b> with a comment. Nobody approves a version they submitted.</li>
     <li>A released version never changes. To correct one, press <b>Start a new revision</b> and give a reason. Management keeps seeing the released revision until the new one is approved; the old one is then kept as superseded.</li>
   </ol>
+  <h3 id="weightage">Internal weightage and the updated schedule</h3>
+  <p>Two weightages apply to every project. The <b>client weightage</b> is the weighting in the P6 schedule agreed with the client; it drives invoiceable value. The <b>internal weightage</b> is the % of seven phases agreed with management (general works, design, material, construction, installation, testing &amp; commissioning, project close out); it drives every ProTrackAI progress figure.</p>
+  <ol class="steps">
+    <li><b>Once per project:</b> Planning &amp; Scheduling → Baselines and P6 import → <b>Internal weightage by phase</b>: enter the seven % (total 100%) and save. A later change needs a reason and is kept in the history.</li>
+    <li><b>Each week or month:</b> in <b>Updated schedule</b>, tick the weightage the schedule is loaded with (normally client), choose the updated XER, check the data date, the weighting resource and the phase of each main WBS branch (or a P6 activity code such as "Phase"), then save.</li>
+    <li>ProTrackAI works out, at the data date: <i>phase % = Σ(weight × %) ÷ Σ weight within the phase; client % = the same over all activities; internal % = Σ(phase weightage × phase %) ÷ Σ phase weightage of the phases in the schedule</i>. Planned % follows the baseline dates (ProTrackAI's where the activity is in the baseline).</li>
+    <li>Every progress figure (project overview, dashboard, executive summary, reports, RASA, internal report) then uses the internal %. Invoiceable value uses the client price weighting × the schedule's % complete. Daily reports still drive productivity and manpower.</li>
+  </ol>
+  <h3>Internal and client reporting</h3>
+  <p><b>Internal Reporting</b> (the progress release dashboard below) and <b>Client Reporting</b> both start from the latest updated schedule. The client report shows client-weighted progress, progress by phase, milestones, the 30-day look-ahead and your notes, and exports to Excel or prints (save as PDF); it never shows internal weightage, management remarks or cost. If you change progress or a milestone date by hand, the report says <b>Differs from the updated schedule</b>; the regional planning section manager is notified and must tick "I have checked these differences" with a note before approving.</p>
   <h3 id="reldash">The progress release dashboard</h3>
   <p>A weekly or monthly progress release opens full screen. Across the top, nine KPI cards: actual and planned progress, progress variance, SPI, forecast completion, manpower variance, TCC status, PAC status and energization, each with ▲ improving, ▼ deteriorating or ■ stable against the last released period. Below them, seven tabs:</p>
   <table><thead><tr><th>Tab</th><th>What you fill in or read</th></tr></thead><tbody>
@@ -668,7 +683,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Tell costing the baseline is in.</b></li>
     <li><b>Every week until design and procurement are complete:</b> Weekly update → download template → fill milestones and dates → upload → preview → apply. Then export the P6 progress update from Reports.</li>
     <li><b>At a revision:</b> load a revised or recovery set; use Measure against to report on it. Wrong file? Undo this import.</li>
-    <li><b>Every week and month:</b> Progress releases → Open: check the figures, fill milestones, external progress, manpower and energization, write the release notes, and submit to your regional planning section manager.</li>
+    <li><b>Every week and month:</b> upload the updated schedule (Baselines and P6 import), then Internal Reporting → Open: check the figures, fill the rest, write the release notes and submit; then Client Reporting → Open: write the client notes and submit. Both go to your regional planning section manager.</li>
+    <li><b>At project start:</b> set the internal weightage by phase agreed with management.</li>
   </ol>
 
   <h3 id="s-cost">Costing engineer — at award, at each budget revision, every week</h3>
@@ -702,7 +718,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Milestones</b> with TCC, PAC, FAC, and the EOT claim.</li>
     <li><b>Payment terms:</b> per phase the progress cap and up to two milestone releases; separate retention only if the contract has one; advance and its recovery rate.</li>
     <li><b>Settings → Approval matrix:</b> for each project, choose the site engineer who reviews each foreman, and the site manager who approves each site engineer. Repeat whenever the site team changes.</li>
-    <li><b>Settings → Approval matrix → Progress release approval:</b> name each region's planning section manager (give them the region's projects in Users and access first). Tick the project manager review only if management wants it.</li>
+    <li><b>Settings → Approval matrix → Internal and client report approval:</b> name each region's planning section manager (give them the region's projects in Users and access first). Tick the project manager review only if management wants it.</li>
     <li><b>Settings → Email:</b> choose who receives the approval summary.</li>
     <li><b>Settings → System, once after installing version 2.5:</b> move anything people entered in their browsers to the server (see <a href="#move">Moving browser data to the server</a>), and download a server backup every week.</li>
     <li><b>Settings → System:</b> check the version, and choose the date basis: demo (fixed 22 Sept 2026) for demonstrations, live (today) for real work. Each keeps its own data in the browser. Once real data is on the server, set <code>DATE_MODE: 'live'</code> in config.js so nobody can switch it by mistake.</li>
