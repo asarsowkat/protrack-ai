@@ -6,12 +6,12 @@
   {
    "check": "v14 loads (run 1)",
    "pass": true,
-   "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v14.sql:16: NOTICE:  policy \"ra_read\" for relation \"release_approvers\" does not exist, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v14.sql:26: NOTICE:  policy \"rs_read\" for relation \"release_settings\" does not exist, skipping"
+   "detail": "psql:/home/claude/p14/sb/schema-update-v14.sql:16: NOTICE:  policy \"ra_read\" for relation \"release_approvers\" does not exist, skipping\npsql:/home/claude/p14/sb/schema-update-v14.sql:26: NOTICE:  policy \"rs_read\" for relation \"release_settings\" does not exist, skipping"
   },
   {
    "check": "v14 loads (run 2)",
    "pass": true,
-   "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v14.sql:14: NOTICE:  relation \"release_approvers\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v14.sql:23: NOTICE:  relation \"release_settings\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema"
+   "detail": "psql:/home/claude/p14/sb/schema-update-v14.sql:14: NOTICE:  relation \"release_approvers\" already exists, skipping\npsql:/home/claude/p14/sb/schema-update-v14.sql:23: NOTICE:  relation \"release_settings\" already exists, skipping\npsql:/home/claude/p14/sb/schema-update-v14.sql:30: NOTICE:  column \"revie"
   },
   {
    "check": "the setup check counts 5",
@@ -31,7 +31,7 @@
   {
    "check": "the planning engineer saves a progress release with the dashboard fields",
    "pass": true,
-   "detail": "{'id': '5f656b99-e250-4820-bdb8-0afb38f4ed24', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Draft', 'figures': {'mp_var': -25, 'ext_spi': 0.84, 'actual_pct': 40, 'energ_date': '2026-07-01', 'mp_dir_act': 90, 'mp_ind_act': 25, 'mp_sub_act': 60, 'mp_tot_act': 175, 'ext_act_amt': 42000"
+   "detail": "{'id': 'febbb699-43eb-4683-8037-ffdb947c3e6e', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Draft', 'figures': {'mp_var': -25, 'ext_spi': 0.84, 'actual_pct': 40, 'energ_date': '2026-07-01', 'mp_dir_act': 90, 'mp_ind_act': 25, 'mp_sub_act': 60, 'mp_tot_act': 175, 'ext_act_amt': 42000"
   },
   {
    "check": "TCC delay = external forecast \u2212 approved revised TCC (20 days; what the browser sent is ignored)",
@@ -71,37 +71,37 @@
   {
    "check": "refused: external % over 100",
    "pass": true,
-   "detail": "psql:/tmp/tmp71y_7qm2.sql:4: ERROR:  ext_act_pct must be between 0 and 100\nCONTEXT:  PL/pgSQL function pt_rel_plan_calc(text,jsonb) line 6 at RAISE\nPL/pgSQL function release_act(jsonb) line 64 at assignment"
+   "detail": "psql:/tmp/tmpux8bpp53.sql:4: ERROR:  ext_act_pct must be between 0 and 100\nCONTEXT:  PL/pgSQL function pt_rel_plan_calc(text,jsonb) line 6 at RAISE\nPL/pgSQL function release_act(jsonb) line 64 at assignment"
   },
   {
    "check": "refused: negative manpower",
    "pass": true,
-   "detail": "psql:/tmp/tmpmjh3m6of.sql:4: ERROR:  mp_sub_act cannot be negative\nCONTEXT:  PL/pgSQL function pt_rel_plan_calc(text,jsonb) line 9 at RAISE\nPL/pgSQL function release_act(jsonb) line 64 at assignment"
+   "detail": "psql:/tmp/tmphsh50cug.sql:4: ERROR:  mp_sub_act cannot be negative\nCONTEXT:  PL/pgSQL function pt_rel_plan_calc(text,jsonb) line 9 at RAISE\nPL/pgSQL function release_act(jsonb) line 64 at assignment"
   },
   {
    "check": "refused: an unknown energization status",
    "pass": true,
-   "detail": "psql:/tmp/tmpzp4zm0q3.sql:4: ERROR:  Energization status must be Not Started, Under Testing, Ready for Energization or Energized\nCONTEXT:  PL/pgSQL function pt_rel_plan_calc(text,jsonb) line 12 at RAISE\nPL/pgSQL function release_act(jsonb) line 64 at assignment"
+   "detail": "psql:/tmp/tmpxw9kxdge.sql:4: ERROR:  Energization status must be Not Started, Under Testing, Ready for Energization or Energized\nCONTEXT:  PL/pgSQL function pt_rel_plan_calc(text,jsonb) line 12 at RAISE\nPL/pgSQL function release_act(jsonb) line 64 at assignment"
   },
   {
    "check": "refused: Energized without its date",
    "pass": true,
-   "detail": "psql:/tmp/tmpjdr4gftp.sql:4: ERROR:  Give the energization date\nCONTEXT:  PL/pgSQL function pt_rel_plan_calc(text,jsonb) line 13 at RAISE\nPL/pgSQL function release_act(jsonb) line 64 at assignment"
+   "detail": "psql:/tmp/tmpn7oztulf.sql:4: ERROR:  Give the energization date\nCONTEXT:  PL/pgSQL function pt_rel_plan_calc(text,jsonb) line 13 at RAISE\nPL/pgSQL function release_act(jsonb) line 64 at assignment"
   },
   {
    "check": "refused: a date that is not a date",
    "pass": true,
-   "detail": "psql:/tmp/tmp633oek8s.sql:4: ERROR:  Figure tcc_ext_fc_date is not a valid date\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 52 at RAISE"
+   "detail": "psql:/tmp/tmpys6vv7ex.sql:4: ERROR:  Figure tcc_ext_fc_date is not a valid date\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 52 at RAISE"
   },
   {
    "check": "refused: remarks over 300 characters",
    "pass": true,
-   "detail": "psql:/tmp/tmp3x1lshv6.sql:4: ERROR:  Figure energ_remarks_text is too long\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 54 at RAISE"
+   "detail": "psql:/tmp/tmp0eoqypim.sql:4: ERROR:  Figure energ_remarks_text is too long\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 54 at RAISE"
   },
   {
    "check": "only a super admin names the regional planning section managers",
    "pass": true,
-   "detail": "psql:/tmp/tmpppd2t3ln.sql:4: ERROR:  Only a super admin changes who approves releases\nCONTEXT:  PL/pgSQL function release_setup(jsonb) line 4 at RAISE"
+   "detail": "psql:/tmp/tmpzr1e9t6v.sql:4: ERROR:  Only a super admin changes who approves releases\nCONTEXT:  PL/pgSQL function release_setup(jsonb) line 4 at RAISE"
   },
   {
    "check": "the super admin names RP for the Western region and RP2 for Central",
@@ -111,7 +111,7 @@
   {
    "check": "a foreman cannot be named",
    "pass": true,
-   "detail": "psql:/tmp/tmp405i8f3n.sql:4: ERROR:  A planning section manager must be a planning engineer, manager or super admin user\nCONTEXT:  PL/pgSQL function release_setup(jsonb) line 16 at RAISE"
+   "detail": "psql:/tmp/tmpm6yw1wvx.sql:4: ERROR:  A planning section manager must be a planning engineer, manager or super admin user\nCONTEXT:  PL/pgSQL function release_setup(jsonb) line 16 at RAISE"
   },
   {
    "check": "everyone signed in can see who approves where",
@@ -131,22 +131,22 @@
   {
    "check": "the project manager cannot review while the step is off",
    "pass": true,
-   "detail": "psql:/tmp/tmp9i26wzaw.sql:4: ERROR:  The project manager review step is not switched on\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 127 at RAISE"
+   "detail": "psql:/tmp/tmp7art21bo.sql:4: ERROR:  The project manager review step is not switched on\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 127 at RAISE"
   },
   {
    "check": "a project manager cannot approve",
    "pass": true,
-   "detail": "psql:/tmp/tmpkj8u5o1x.sql:4: ERROR:  Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can approve a progress release\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 136 at RAISE"
+   "detail": "psql:/tmp/tmpluw_mfd9.sql:4: ERROR:  Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can approve a progress release\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 136 at RAISE"
   },
   {
    "check": "the manager of another region cannot approve (no access to the project)",
    "pass": true,
-   "detail": "psql:/tmp/tmptewexkkb.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 16 at RAISE"
+   "detail": "psql:/tmp/tmp3_74mru6.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 16 at RAISE"
   },
   {
    "check": "the regional planning section manager approves, with management remarks",
    "pass": true,
-   "detail": "{'id': '5f656b99-e250-4820-bdb8-0afb38f4ed24', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Released', 'figures': {'mp_var': -25, 'ext_spi': 0.84, 'actual_pct': 40, 'energ_date': '2026-07-01', 'mp_dir_act': 90, 'mp_ind_act': 25, 'mp_sub_act': 60, 'mp_tot_act': 175, 'ext_act_amt': 42"
+   "detail": "{'id': 'febbb699-43eb-4683-8037-ffdb947c3e6e', 'rev': 0, 'kind': 'planning', 'period': '2026-09', 'status': 'Released', 'figures': {'mp_var': -25, 'ext_spi': 0.84, 'actual_pct': 40, 'energ_date': '2026-07-01', 'mp_dir_act': 90, 'mp_ind_act': 25, 'mp_sub_act': 60, 'mp_tot_act': 175, 'ext_act_amt': 42"
   },
   {
    "check": "approval fills reviewed and approved (by the same manager, no PM step) and keeps the remarks",
@@ -161,7 +161,7 @@
   {
    "check": "only a super admin switches the review step",
    "pass": true,
-   "detail": "psql:/tmp/tmpn2k47gw2.sql:4: ERROR:  Only a super admin changes who approves releases\nCONTEXT:  PL/pgSQL function release_setup(jsonb) line 4 at RAISE"
+   "detail": "psql:/tmp/tmp66_nqaao.sql:4: ERROR:  Only a super admin changes who approves releases\nCONTEXT:  PL/pgSQL function release_setup(jsonb) line 4 at RAISE"
   },
   {
    "check": "the super admin switches the project manager review on",
@@ -171,7 +171,7 @@
   {
    "check": "the regional manager cannot approve before the project manager reviews",
    "pass": true,
-   "detail": "psql:/tmp/tmpxeby55sm.sql:4: ERROR:  The project manager must review this progress release before it is approved\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 140 at RAISE"
+   "detail": "psql:/tmp/tmphkh0o8sm.sql:4: ERROR:  The project manager must review this progress release before it is approved\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 140 at RAISE"
   },
   {
    "check": "the project manager sees the submitted release",
@@ -181,37 +181,37 @@
   {
    "check": "a project manager without access to the project cannot review",
    "pass": true,
-   "detail": "psql:/tmp/tmp2t7vzh47.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 16 at RAISE"
+   "detail": "psql:/tmp/tmp7w4rz9ne.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 16 at RAISE"
   },
   {
    "check": "the project manager reviews",
    "pass": true,
-   "detail": "{'id': '510864e4-e1f6-4a64-a0f6-6e1cff5c4f2b', 'rev': 0, 'kind': 'planning', 'period': '2026-W40', 'status': 'Submitted', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 41, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 41000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_uti"
+   "detail": "{'id': 'ea498cf5-99bc-4635-a246-0db62ff3d162', 'rev': 0, 'kind': 'planning', 'period': '2026-W40', 'status': 'Submitted', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 41, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 41000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_uti"
   },
   {
    "check": "...only once",
    "pass": true,
-   "detail": "psql:/tmp/tmpox00e1vj.sql:4: ERROR:  This version is already reviewed\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 130 at RAISE"
+   "detail": "psql:/tmp/tmp60p4fg8q.sql:4: ERROR:  This version is already reviewed\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 130 at RAISE"
   },
   {
    "check": "a reviewed release cannot be returned by the project manager any more",
    "pass": true,
-   "detail": "psql:/tmp/tmp5746uhtb.sql:4: ERROR:  Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can return a progress release\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 155 at RAISE"
+   "detail": "psql:/tmp/tmpeyvzbgi1.sql:4: ERROR:  Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can return a progress release\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 155 at RAISE"
   },
   {
    "check": "the regional manager approves; the review stays the project manager's",
    "pass": true,
-   "detail": "{'id': '510864e4-e1f6-4a64-a0f6-6e1cff5c4f2b', 'rev': 0, 'kind': 'planning', 'period': '2026-W40', 'status': 'Released', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 41, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 41000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_util"
+   "detail": "{'id': 'ea498cf5-99bc-4635-a246-0db62ff3d162', 'rev': 0, 'kind': 'planning', 'period': '2026-W40', 'status': 'Released', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 41, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 41000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_util"
   },
   {
    "check": "rejecting needs a comment",
    "pass": true,
-   "detail": "psql:/tmp/tmpzcsmn4kl.sql:4: ERROR:  Add a comment saying what to fix\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 158 at RAISE"
+   "detail": "psql:/tmp/tmpi1g66354.sql:4: ERROR:  Add a comment saying what to fix\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 158 at RAISE"
   },
   {
    "check": "the project manager rejects (returns) it with a comment",
    "pass": true,
-   "detail": "{'id': 'f2dac938-9b0a-49f9-9315-d1c72ae16c30', 'rev': 0, 'kind': 'planning', 'period': '2026-W41', 'status': 'Draft', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 42, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 42000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_util_pc"
+   "detail": "{'id': 'd7b71cb9-85b0-43b6-b058-94109beb6cc2', 'rev': 0, 'kind': 'planning', 'period': '2026-W41', 'status': 'Draft', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 42, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 42000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_util_pc"
   },
   {
    "check": "history records the review and the rejection",
@@ -221,22 +221,22 @@
   {
    "check": "the Head still approves progress releases",
    "pass": true,
-   "detail": "{'id': 'f2dac938-9b0a-49f9-9315-d1c72ae16c30', 'rev': 0, 'kind': 'planning', 'period': '2026-W41', 'status': 'Released', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 42, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 42000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_util"
+   "detail": "{'id': 'd7b71cb9-85b0-43b6-b058-94109beb6cc2', 'rev': 0, 'kind': 'planning', 'period': '2026-W41', 'status': 'Released', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 42, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 42000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_util"
   },
   {
    "check": "cost reports are unchanged: the regional planning manager cannot approve them",
    "pass": true,
-   "detail": "psql:/tmp/tmpdoh7i8zs.sql:4: ERROR:  Only the Head of Planning and Cost Control or a super admin can approve a release\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 137 at RAISE"
+   "detail": "psql:/tmp/tmp9rxtvwf0.sql:4: ERROR:  Only the Head of Planning and Cost Control or a super admin can approve a release\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 137 at RAISE"
   },
   {
    "check": "...the Head approves them without any review step",
    "pass": true,
-   "detail": "{'id': 'e00b35fd-7e8f-42a4-9410-fbcb13d62123', 'rev': 0, 'kind': 'cost', 'period': '2026-09', 'status': 'Released', 'figures': {'eac': 9, 'ftc': 5, 'vac': 1, 'actual': 4, 'commitment': 1, 'budget_rev0': 10, 'budget_current': 10, 'supplements_approved': 0}, 'data_date': None, 'narrative': {}, 'overri"
+   "detail": "{'id': '827f5aaf-8b7a-4ee3-a71c-aec2968ec810', 'rev': 0, 'kind': 'cost', 'period': '2026-09', 'status': 'Released', 'figures': {'eac': 9, 'ftc': 5, 'vac': 1, 'actual': 4, 'commitment': 1, 'budget_rev0': 10, 'budget_current': 10, 'supplements_approved': 0}, 'data_date': None, 'narrative': {}, 'overri"
   },
   {
    "check": "switched off again, the regional manager approves directly",
    "pass": true,
-   "detail": "{'id': 'ee41bf18-5224-4a76-9fa5-fbc4fabfc5fe', 'rev': 0, 'kind': 'planning', 'period': '2026-W42', 'status': 'Released', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 43, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 43000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_util"
+   "detail": "{'id': 'ee27990a-6f89-4eec-9588-cd2fe11c13a4', 'rev': 0, 'kind': 'planning', 'period': '2026-W42', 'status': 'Released', 'figures': {'mp_var': None, 'ext_spi': None, 'actual_pct': 43, 'mp_tot_act': None, 'ext_var_pct': None, 'int_act_amt': 43000000, 'int_var_pct': None, 'mp_tot_plan': None, 'mp_util"
   },
   {
    "check": "approvers can be removed",
@@ -256,7 +256,7 @@
   {
    "check": "rollback runs (run 2)",
    "pass": true,
-   "detail": "psql:/home/claude/protrack-ai/supabase/schema-rollback-v14.sql:4: NOTICE:  function release_setup(jsonb) does not exist, skipping\npsql:/home/claude/protrack-ai/supabase/schema-rollback-v14.sql:160: NOTICE:  function pt_rel_plan_calc(text,jsonb) does not exist, skipping\npsql:/home/claude/protrack-ai/"
+   "detail": "psql:/home/claude/p14/sb/schema-rollback-v14.sql:4: NOTICE:  function release_setup(jsonb) does not exist, skipping\npsql:/home/claude/p14/sb/schema-rollback-v14.sql:160: NOTICE:  function pt_rel_plan_calc(text,jsonb) does not exist, skipping\npsql:/home/claude/p14/sb/schema-rollback-v14.sql:161: NOTI"
   },
   {
    "check": "rollback removes the new functions",
@@ -271,12 +271,12 @@
   {
    "check": "after rollback the Head approves as in v3.4",
    "pass": true,
-   "detail": "{'id': 'cfefdeb4-fcde-4760-ac4d-956fa0f84463', 'rev': 0, 'kind': 'planning', 'period': '2026-10', 'status': 'Released', 'figures': {'actual_pct': 50}, 'data_date': None, 'narrative': {}, 'overrides': [], 'project_id': 'P1', 'updated_at': '2026-10-13T15:52:34.181769+03:00', 'approved_at': '2026-10-13"
+   "detail": "{'id': '5d56098e-1e0a-4264-b45a-4725c4c4521c', 'rev': 0, 'kind': 'planning', 'period': '2026-10', 'status': 'Released', 'figures': {'actual_pct': 50}, 'data_date': None, 'narrative': {}, 'overrides': [], 'project_id': 'P1', 'updated_at': '2026-10-13T18:38:27.417269+03:00', 'approved_at': '2026-10-13"
   },
   {
    "check": "v14 can be applied again after a rollback",
    "pass": true,
-   "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v14.sql:14: NOTICE:  relation \"release_approvers\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v14.sql:23: NOTICE:  relation \"release_settings\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema"
+   "detail": "psql:/home/claude/p14/sb/schema-update-v14.sql:14: NOTICE:  relation \"release_approvers\" already exists, skipping\npsql:/home/claude/p14/sb/schema-update-v14.sql:23: NOTICE:  relation \"release_settings\" already exists, skipping\npsql:/home/claude/p14/sb/schema-update-v14.sql:30: NOTICE:  column \"revie"
   },
   {
    "check": "...the approvers and settings were kept",

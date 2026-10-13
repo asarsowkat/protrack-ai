@@ -1,9 +1,9 @@
-# ProTrackAI automated tests (v3.5)
+# ProTrackAI automated tests (v3.6)
 
 | Suite | Checks | What it covers | Needs |
 |---|---|---|---|
 | `test_v4.py` | 125 | The server rules (v4): attacks that must fail, approval chain, imports, migration, people, rollback | PostgreSQL 16 on `/tmp:5499`, the SQL files next to it |
-| `e2e_server.py` + `fake_supabase.py` | 193 | The app in server mode, end to end, against that database (up to v3.5: Tender register, releases, logs; v10 to v14 applied mid-run: issues, quantities, cost report by WBS head, document rack with Storage uploads and signed downloads, progress release dashboard with regional approval and the project manager review) | PostgreSQL, Playwright, Chromium |
+| `e2e_server.py` + `fake_supabase.py` | 208 | The app in server mode, end to end, against that database (up to v3.5: Tender register, releases, logs; v10 to v15 applied mid-run: issues, quantities, cost report by WBS head, document rack with Storage uploads and signed downloads, progress release dashboard with regional approval and the project manager review, internal weightage, updated schedule upload, validation of differences, client report) | PostgreSQL, Playwright, Chromium |
 | `test_v5.py` (in supabase/tests) | 64 | Controlled imports on the server: checks, reconciliation, failure, retry, concurrency, authorization, rollback | PostgreSQL 16 |
 | `test_v6.py` (in supabase/tests) | 53 | Lifecycle rules on the server: who may change, submit, approve, return, reopen; no self-approval; history | PostgreSQL 16 |
 | `test_v7.py` (in supabase/tests) | 104 | Tender register on the server: PE proposal, duplicates, release and reallocation, cancel and reinstate, stages 1 to 5 approver, 7-day handover, checklist update, rollback | PostgreSQL 16 |
@@ -14,6 +14,8 @@
 | `test_v12.py` (in supabase/tests) | 44 | Cost report by WBS head on the server: line and total formulas, previous version, header, validation, justification at submit, freezing, revisions, rollback | PostgreSQL 16 |
 | `test_v13.py` (in supabase/tests) | 75 | Document rack on the server: storage rules per row and role, registering, revisions, reads, status, files that cannot change, boxes, rollback | PostgreSQL 16 |
 | `test_v14.py` (in supabase/tests) | 56 | Progress release dashboard on the server: worked-out delays, variances, SPI and manpower, validation, regional planning section manager approval, project manager review step, set-up by super admin only, frozen review fields, rollback | PostgreSQL 16 |
+| `test_v15.py` (in supabase/tests) | 76 | Internal weightage and mapping, updated schedules and their formulas, append-only, reads, reports compared with the schedule, validation, client reports, rollback | PostgreSQL 16 |
+| `sched_demo.py` | 62 | Internal weightage, updated XER upload (synthetic file), phase mapping by WBS or activity code, internal progress in every report, invoiceable by client weightage, internal and client reports, validation, Excel and print, phone width, in demo mode | Playwright, Chromium |
 | `reldash_demo.py` | 68 | Progress release dashboard in demo mode: full screen, tabs, KPIs and trends, calculations and traffic lights, validation, regional approval, project manager review, executive report, filters, phone width | Playwright, Chromium |
 | `docs_demo.py` | 44 | Document rack in demo mode: rows, boxes, rights, upload, revisions, status, preview and download, arranging, separation from other data | Playwright, Chromium |
 | `cost_demo.py` | 28 | Cost report in the company format in demo mode: formulas, form, Excel fill and export, justification, totals-only drafts | Playwright, Chromium |
@@ -43,6 +45,7 @@ python3 tests/qty_demo.py live.html > results_qty_demo.json
 python3 tests/cost_demo.py live.html > results_cost_demo.json
 python3 tests/docs_demo.py live.html > results_docs_demo.json
 python3 tests/reldash_demo.py live.html > results_reldash_demo.json
+python3 tests/sched_demo.py live.html > results_sched_demo.json
 python3 test_v4.py                                    # run from the folder with the SQL files
 python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 ```

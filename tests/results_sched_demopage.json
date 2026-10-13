@@ -1,0 +1,382 @@
+{
+ "run_at": "2026-10-13 19:06",
+ "app": "/home/claude/p14/demo.html",
+ "summary": {
+  "PASS": 62,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Menus",
+   "check": "Planning & Scheduling has Internal Reporting and Client Reporting (Progress releases renamed)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo data",
+   "check": "two sample projects have phase weightage and an updated schedule",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo data",
+   "check": "the stored summary is what the formulas give from the activities",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weightage",
+   "check": "the Baselines page has Internal weightage by phase with the seven phases",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weightage",
+   "check": "the total updates as you type",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weightage",
+   "check": "a total other than 100% is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weightage",
+   "check": "the planning engineer saves the weightage; the history keeps it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weightage",
+   "check": "a costing engineer has no weightage or schedule upload panel",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weightage",
+   "check": "...and cannot save it (checked again when saving)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the preview reads the data date, the activities and the weighting resource",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "each main WBS branch is suggested a phase (sub-branches roll up to their main branch)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "% complete follows the P6 type: physical, duration and units; not started is 0; completed is 100",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "client planned and actual % = \u03a3(weight \u00d7 %) \u00f7 \u03a3 weight",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "internal % = \u03a3(phase weightage \u00d7 phase %) over the phases in the schedule; close out (no activities) is listed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the TCC forecast comes from the milestone",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the preview shows the client and internal figures and the phase table",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the phase can come from a P6 activity code instead (values suggested too)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "an unmapped weighted branch blocks saving while internal weightage is set",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "saving keeps the update with its summary and the mapping",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the matched activity keeps the ProTrackAI baseline dates",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the update is listed with client and internal figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the same file again changes nothing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weightage",
+   "check": "once a schedule is reported, changing the weightage needs a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "project progress is the internal weightage of the latest updated schedule",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "the project overview shows it, with its source",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "the internal report starts from it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "the progress-by-project report uses it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reports",
+   "check": "the dashboard notes where progress comes from",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoiceable",
+   "check": "invoiceable uses the schedule % complete with the client price weighting",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Invoiceable",
+   "check": "...changing earned value by price \u00d7 (schedule % \u2212 daily-report %) for the activities in the schedule",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "the list is called Internal reporting, with a Client reporting tab",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "the report says it follows the updated schedule (internal weightage)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "a draft started before the schedule can take its figures from it in one click",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "external progress (client weightage) is filled in from the schedule",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "saved as the schedule gives it, there is no difference to validate",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "a manual change of progress is recorded as a difference from the schedule",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "the report shows the difference in amber",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "submitting notifies that the section manager must validate the differences",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "the regional planning section manager sees it to approve and validate",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "he has the check box and note to validate",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "approving without validating is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "with the check and a note it is approved, and the validation is kept",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Internal report",
+   "check": "the released report shows who validated and why",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "Client reporting lists the projects, weekly or monthly",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "it opens full screen with tabs: overview, phases, milestones, look-ahead, notes, approval",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "planned and actual progress come from the schedule, client weightage",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "it shows no internal weightage figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "progress by phase lists the phases in the schedule",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "the look-ahead lists open activities of the next 30 days",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "saved with variance and SPI worked out, and no differences",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "it exports to Excel (marked DRAFT until approved)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "the planner cannot approve it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "the project manager cannot approve it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "the regional planning section manager approves it for issue",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "the approved report prints (save as PDF) with client figures, phases, milestones and notes, no DRAFT mark",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "the printed report has no internal figures or management remarks",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "a project with no client-weighted schedule says so",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Client report",
+   "check": "weekly client reports work the same way",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "a schedule loaded with internal weightage gives internal % directly; client figures stay with the last client-weighted schedule",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "the client report fits a phone screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "the Baselines page fits a phone screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Errors",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

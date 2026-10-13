@@ -46,7 +46,7 @@ with sync_playwright() as p:
           p.billing={v:2,adv:{pct:10,recover:10},ret:{pct:10,cap:5,tcc:50,fac:50},phases:{ENG:{cap:90,rel1:'TCC',pct1:10,rel2:'',pct2:0},PRC:{cap:90,rel1:'TCC',pct1:10,rel2:'',pct2:0},CON:{cap:80,rel1:'TCC',pct1:10,rel2:'FAC',pct2:10},TC:{cap:80,rel1:'TCC',pct1:10,rel2:'FAC',pct2:10}}};
           const r=billing(p,ASOF);const acts=ACTS.filter(a=>a.p===p.id);let contract=0,billable=0;
           PHASES.forEach(([k])=>{const g=acts.filter(a=>phaseOf(a)===k),price=g.reduce((x,a)=>x+priceOf(a),0);if(!price)return;contract+=price;
-            const earned=g.reduce((x,a)=>{const e=evm([a],ASOF);return x+priceOf(a)*(e.bac?Math.min(1,e.ev/e.bac):0)},0),c=p.billing.phases[k];
+            const earned=g.reduce((x,a)=>{const sd=typeof schedDone==='function'?schedDone(a,ASOF):null;if(sd!=null)return x+priceOf(a)*sd;const e=evm([a],ASOF);return x+priceOf(a)*(e.bac?Math.min(1,e.ev/e.bac):0)},0),c=p.billing.phases[k];  /* v3.6: the updated schedule's % complete where loaded */
             const done=m=>{const d=msDone(p,m);return !!(d&&d<=ASOF)};const rel=(c.rel1&&done(c.rel1)?price*c.pct1/100:0)+(c.rel2&&done(c.rel2)?price*c.pct2/100:0);
             billable+=Math.min(price,Math.min(earned,price*c.cap/100)+rel)});
           const held=Math.min(billable*.1,contract*.05),tcc=msDone(p,'TCC'),fac=msDone(p,'FAC'),released=held*((tcc&&tcc<=ASOF?50:0)+(fac&&fac<=ASOF?50:0))/100,rec=Math.min(contract*.1,billable*.1);

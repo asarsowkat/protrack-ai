@@ -421,6 +421,8 @@ label.btn{display:inline-block}
 .tldot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:5px;background:var(--line);vertical-align:baseline}.tldot.g{background:var(--green)}.tldot.a{background:var(--amber)}.tldot.r{background:var(--red)}
 .rdtabs{margin:12px 0 8px;position:sticky;top:0;background:var(--surface);z-index:2;padding:6px 0}
 .rdgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}.rdgrid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:12px}
+#sheet .rdcard{min-width:0;overflow-x:auto}
+.rdsched{border:1px solid var(--line);border-inline-start:4px solid var(--green);border-radius:10px;padding:10px 14px;margin:8px 0 4px;background:var(--surface)}.rdsched.warn{border-inline-start-color:var(--amber);background:color-mix(in srgb,var(--amber) 8%,var(--surface))}.rdsched .field{margin-top:6px}
 .rdcard{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface)}.rdcard h3{margin:0 0 8px;font-size:14px}
 .rdcard textarea{width:100%;box-sizing:border-box}.fields1{grid-template-columns:1fr}
 .rdcalcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:10px}
@@ -746,7 +748,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.5</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.6</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1306,7 +1308,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadIssues();await cloudLoadDocs();
+    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDocs();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -1853,7 +1855,7 @@ function actionItems(){
   relRows().filter(r=>relVisible(r)&&ids.has(r.project_id)&&(r.status==='Submitted'||relReturned(r))).forEach(r=>{
     const lab=`${REL_KIND[r.kind]}, ${perLabel(r.period_type,r.period)}`,since=String((r.status==='Submitted'?r.submitted_at:(relAuditOf(r.id).pop()||{}).at_time)||'').slice(0,10)||null,age=since?diffDays(since,TODAY):null;
     if(r.status==='Submitted'&&r.kind==='planning'&&relSettings().pm_review&&!r.reviewed_by)out.push({type:'Release review',what:`${lab}: review or reject`,pid:r.project_id,who:'Project manager',mine:relCanReview(r),since,age,late:age!=null&&age>2,open:{rel:[r.project_id,r.kind,r.period_type,r.period]}});
-    else if(r.status==='Submitted')out.push({type:'Release approval',what:`${lab}: approve or ${r.kind==='planning'?'reject':'return'}`,pid:r.project_id,who:relApproverText(r.project_id,r.kind),mine:relCanApprove(r.project_id,r.kind)&&r.submitted_by!==my.id,since,age,late:age!=null&&age>3,open:{rel:[r.project_id,r.kind,r.period_type,r.period]}});
+    else if(r.status==='Submitted')out.push({type:'Release approval',what:`${lab}: approve or ${r.kind!=='cost'?'reject':'return'}${+(r.figures||{}).sched_diff_n>0?' (validate the differences from the updated schedule)':''}`,pid:r.project_id,who:relApproverText(r.project_id,r.kind),mine:relCanApprove(r.project_id,r.kind)&&r.submitted_by!==my.id,since,age,late:age!=null&&age>3,open:{rel:[r.project_id,r.kind,r.period_type,r.period]}});
     else out.push({type:'Release returned',what:`${lab}: fix and resubmit`,pid:r.project_id,who:(userById(r.prepared_by)||{}).name||'Preparer',mine:canPrepRel(r.kind),since,age,late:true,open:{rel:[r.project_id,r.kind,r.period_type,r.period]}})});
   if(canImpView()){const all=impBatches();
     all.filter(b=>b.status==='failed'&&!all.some(x=>x.retry_of===b.id&&x.status==='committed')).forEach(b=>out.push({type:'Import failed',what:`${batchNo(b)}: ${b.file_name} (${b.error_message||'failed'})`,pid:b.project_id,who:batchBy(b),mine:b.by_user===my.id||b.by_name===my.name,since:String(b.at_time).slice(0,10),age:diffDays(String(b.at_time).slice(0,10),localISO()),late:true,open:{batch:b.id}}))}
@@ -1880,7 +1882,7 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('[data-actf],[data-actopen]');if(!t)return;
   if(t.dataset.actf){state.actF.who=t.dataset.actf;render();return}
   const x=(state.actList||[])[+t.dataset.actopen];if(!x)return;
-  if(x.open.dpr)openDpr(x.open.dpr);else if(x.open.rel){state.relTab=x.open.rel[1];if(x.open.rel[1]==='planning')state.relPt=x.open.rel[2];state.relPer=x.open.rel[3];go('rel');openRelease(...x.open.rel)}else if(x.open.stage)openStage(...x.open.stage);else if(x.open.batch){go('imp');setTimeout(()=>openBatch(x.open.batch),50)}
+  if(x.open.dpr)openDpr(x.open.dpr);else if(x.open.rel){state.relTab=x.open.rel[1];if(x.open.rel[1]!=='cost')state.relPt=x.open.rel[2];state.relPer=x.open.rel[3];go('rel');openRelease(...x.open.rel)}else if(x.open.stage)openStage(...x.open.stage);else if(x.open.batch){go('imp');setTimeout(()=>openBatch(x.open.batch),50)}
 });
 
 document.addEventListener('click',e=>{const t=e.target.closest('[data-projopen]');if(!t)return;state.scope=t.dataset.projopen;go('proj')});
@@ -1916,7 +1918,7 @@ function renderPdash(){
       <td>${esc(lcDef(r.cur.stage_no).name)}<span class="t2">${esc(r.cur.status)}${lcOverdue(r.cur)?', overdue':''}</span></td>
       <td>${r.acts.length?`${fmt(r.acts.length)} activities${r.lastBase?`<span class="t2">loaded ${esc(String(r.lastBase).slice(0,10))}</span>`:''}`:'<span class="muted">not loaded</span>'}<span class="t2">Stage 6: ${esc(r.s6.status)}</span></td>
       <td class="n">${r.dcS==null?'—':`<span class="${r.dcS>=80?'g-c':'a-c'}">${r.dcS}%</span>`}</td>
-      <td class="n">${r.k.e.pv?`<span class="${light(r.k.e.spi)}-c">${fmt(r.k.e.spi,2)}</span>`:'—'}</td><td class="n">${r.acts.length?pct(r.k.plan,0):'—'}</td><td class="n">${r.acts.length?pct(r.k.act,0):'—'}</td>
+      <td class="n">${r.k.e.pv||r.k.src?`<span class="${light(r.k.spi)}-c">${fmt(r.k.spi,2)}</span>`:'—'}</td><td class="n">${r.acts.length?pct(r.k.plan,0):'—'}</td><td class="n">${r.acts.length?pct(r.k.act,0):'—'}</td>
       <td>${nm?`${esc(nm.n)}<span class="t2">${fmtDY(nm.fc||nm.plan)}${slip>0?`, <span class="r-c">${slip} d late</span>`:''}</span>`:'<span class="muted">none set</span>'}</td>
       <td class="n">${r.overdue?`<span class="r-c">${r.overdue}</span>`:'0'}</td>
       <td>${!r.hasEP?'<span class="muted">no E&amp;P activities</span>':r.lastUpd?`${fmtDY(r.lastUpd)}${stale(r.lastUpd,8)?' <span class="sev Medium">stale</span>':''}`:'<span class="sev High">none loaded</span>'}</td>
@@ -2280,9 +2282,9 @@ function lcUpgrade28(){
    approves each release before anyone else sees it, and nobody approves their own. Management reports read only
    released versions, never live daily-report figures. A released version never changes; a correction is a new
    revision. On the server, release_act and log_import enforce the same rules (schema-update-v9.sql). */
-const REL_KIND={planning:'Progress release',cost:'Monthly cost report'};
+const REL_KIND={planning:'Internal report',cost:'Monthly cost report',client:'Client report'};
 const SUPP_CATS=['Project execution','Under estimate','External factor','Saudization','Finance','Claims','Change order'];
-const canPrepRel=k=>state.role==='sa'||(k==='planning'?state.role==='plan':(state.role==='costing'||isCoord()));
+const canPrepRel=k=>state.role==='sa'||(k==='planning'||k==='client'?state.role==='plan':(state.role==='costing'||isCoord()));
 const canApproveRel=()=>state.role==='sa'||isHead();
 const relStaff=k=>canPrepRel(k)||canApproveRel();
 const canRelView=()=>relStaff('planning')||relStaff('cost')||isRegionPlanner();
@@ -2299,7 +2301,7 @@ function recentWeeks(n){const out=[];for(let i=0;i<n;i++){const w=isoWeekOf(addD
 const periodOk=(p,t)=>t==='month'?/^\d{4}-(0[1-9]|1[0-2])$/.test(p||''):/^\d{4}-W(0[1-9]|[1-4]\d|5[0-3])$/.test(p||'');
 const perLabel=(t,p)=>!p?'':t==='month'?`${MON[+p.slice(5,7)-1]} ${p.slice(0,4)}`:`Week ${+p.slice(6)}, ${p.slice(0,4)}`;
 const relRows=()=>(DB.releases||[]);
-const relVisible=r=>accessIds().includes(r.project_id)&&(r.kind!=='cost'||rasaMoneyOk())&&(['Released','Superseded'].includes(r.status)||relStaff(r.kind)||(r.kind==='planning'&&r.status==='Submitted'&&(relCanApprove(r.project_id,'planning')||(relSettings().pm_review&&state.role==='pm'))));
+const relVisible=r=>accessIds().includes(r.project_id)&&(r.kind!=='cost'||rasaMoneyOk())&&(['Released','Superseded'].includes(r.status)||relStaff(r.kind)||(r.kind!=='cost'&&r.status==='Submitted'&&(relCanApprove(r.project_id,r.kind)||(r.kind==='planning'&&relSettings().pm_review&&state.role==='pm'))));
 const relReleased=(pid,k,t,p)=>relRows().find(r=>r.project_id===pid&&r.kind===k&&r.period_type===t&&r.period===p&&r.status==='Released');
 const relOpen=(pid,k,t,p)=>relRows().find(r=>r.project_id===pid&&r.kind===k&&r.period_type===t&&r.period===p&&['Draft','Submitted'].includes(r.status));
 const relAuditOf=id=>(DB.relAudit||[]).filter(a=>a.release_id===id).sort((a,b)=>(+a.id||0)-(+b.id||0));
@@ -2312,8 +2314,8 @@ function relPlanSnapshot(pid){
   withScope(pid,()=>{try{S=engProcStats()}catch(e){}g=agg(valid().filter(l=>l.date>=addDays(ASOF,-29)));
     const V=valid().filter(l=>l.date<=ASOF),last=V.map(l=>l.date).sort().pop();heads=last?V.filter(l=>l.date===last).reduce((t,l)=>t+headsOf(l),0):0});
   const nm=(p.milestones||[]).filter(m=>!m.act&&(m.fc||m.plan)).sort((a,b)=>String(a.fc||a.plan).localeCompare(String(b.fc||b.plan)))[0];
-  const r1=v=>v==null||!isFinite(v)?null:+(+v).toFixed(1);
-  return {planned_pct:r1(f.bac?f.pv/f.bac*100:0),actual_pct:r1(f.bac?f.ev/f.bac*100:0),spi:f.bac?+(+f.spi).toFixed(2):null,
+  const r1=v=>v==null||!isFinite(v)?null:+(+v).toFixed(1),P=progOf(pid);
+  return {planned_pct:P?r2(P.plan*100):r1(f.bac?f.pv/f.bac*100:0),actual_pct:P?r2(P.act*100):r1(f.bac?f.ev/f.bac*100:0),spi:P?+(+P.spi).toFixed(2):f.bac?+(+f.spi).toFixed(2):null,
     eng_pct:S&&S.rows.some(r=>r.cls==='ENG')?r1(S.ENG.pct*100):null,eng_plan_pct:S&&S.rows.some(r=>r.cls==='ENG')?r1(S.ENG.plan*100):null,
     prc_pct:S&&S.rows.some(r=>r.cls==='PRC')?r1(S.PRC.pct*100):null,prc_plan_pct:S&&S.rows.some(r=>r.cls==='PRC')?r1(S.PRC.plan*100):null,
     forecast_finish:f.slip>900||!f.fin?null:f.fin,baseline_finish:f.base||null,productivity_pct:g&&g.mh?r1(g.pi*100):null,workforce:heads,
@@ -2344,7 +2346,7 @@ function relActLocal(p){
   if(!['save','submit','review','approve','return','revise'].includes(a))fail('Unknown action '+a);
   if(!pid||!accessIds().includes(pid))fail('You do not have access to this project');
   if((projById(pid)||{}).status==='Cancelled')fail('This project was cancelled');
-  if(!['planning','cost'].includes(k))fail('Unknown release kind');
+  if(!['planning','cost','client'].includes(k))fail('Unknown release kind');
   if(k==='cost'&&pt!=='month')fail('Cost reports are monthly');
   if(!periodOk(per,pt))fail(`The period must look like ${pt==='week'?'2026-W38':'2026-09'}`);
   const log=(r,action,n,detail)=>{DB.relAudit=DB.relAudit||[];DB.relAudit.push({id:DB.relAudit.reduce((m,x)=>Math.max(m,+x.id||0),0)+1,release_id:r.id,project_id:r.project_id,action,note:n||null,detail:detail||null,by_user:meU.id,by_name:meU.name,by_role:state.role,at_time:new Date().toISOString()})};
@@ -2363,11 +2365,12 @@ function relActLocal(p){
     if(!rel)rel=DB.releases.find(r=>same(r)&&['Draft','Submitted'].includes(r.status));
     if(rel&&rel.status!=='Draft')fail(`This version is ${rel.status.toLowerCase()} and cannot be edited`);
     if(!rel&&DB.releases.some(r=>same(r)&&r.status==='Released'))fail('This period is already released; use Revise to issue a new revision');
-    let f=Object.assign({},p.figures||{});
+    let f=stripSched(p.figures||{});if(k==='client'){delete f.phases;delete f.milestones;delete f.lookahead}
     for(const [key,v] of Object.entries(f)){if(key==='wbs')continue;if(/(_date|finish)$/.test(key)){if(v&&!isoOk(v))fail(`Figure ${key} is not a valid date`)}else if(/_text$/.test(key)){if(String(v||'').length>300)fail(`Figure ${key} is too long`)}
       else if(v!=null&&v!==''&&!isFinite(+v))fail(`Figure ${key} must be a number`)}
     if(k==='planning'){['planned_pct','actual_pct','eng_pct','prc_pct','eng_plan_pct','prc_plan_pct'].forEach(key=>{const v=f[key];if(v!=null&&v!==''&&(+v<0||+v>100))fail(`${key} must be between 0 and 100`)});
-      if(f.actual_pct==null||f.actual_pct==='')fail('Enter the actual progress');f=relPlanCalc(pid,f)}
+      if(f.actual_pct==null||f.actual_pct==='')fail('Enter the actual progress');f=relSchedLocal(pid,k,pt,per,relPlanCalc(pid,f))}
+    else if(k==='client'){f=relSchedLocal(pid,k,pt,per,relClientCalc(pid,pt,per,f))}
     else if(isWbs(f)){INV_IN.forEach(([key])=>{const v=f[key];if(v==null||v==='')return;if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});f=crCompute(pid,per,f)}
     else{COST_IN.forEach(([key,l])=>{const v=f[key];if(v==null||v===''||!isFinite(+v))fail('Enter the '+l.toLowerCase());if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});
       INV_IN.forEach(([key])=>{const v=f[key];if(v==null||v==='')return;if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});f=costCompute(pid,per,f)}
@@ -2381,17 +2384,19 @@ function relActLocal(p){
   if(!rel)fail('Nothing is being prepared for this period');
   if(a==='submit'){if(!canPrepRel(k))fail('Only the people who prepare this report can submit it');if(rel.status!=='Draft')fail(`Only a draft can be submitted; this version is ${rel.status.toLowerCase()}`);
     if(rel.kind==='cost'&&isWbs(rel.figures)){const m=rel.figures.wbs.filter(l=>Math.abs(+l.var||0)>=1&&!String(l.justification||'').trim()).map(l=>l.code);if(m.length)fail('Give a justification for each WBS line with a supplement or saving before submitting: '+m.join(', '))}
-    rel.status='Submitted';rel.submitted_by=meU.id;rel.submitted_at=new Date().toISOString();rel.reviewed_by=null;rel.reviewed_at=null;rel.review_note=null;log(rel,'Submitted for approval',note)}
+    rel.status='Submitted';rel.submitted_by=meU.id;rel.submitted_at=new Date().toISOString();rel.reviewed_by=null;rel.reviewed_at=null;rel.review_note=null;rel.sched_validated_by=null;rel.sched_validated_at=null;rel.sched_validation_note=null;log(rel,'Submitted for approval',note,+(rel.figures||{}).sched_diff_n>0?{differs_from_schedule:rel.figures.sched_diff_text}:null)}
   else if(a==='review'){if(rel.kind!=='planning')fail('Only progress releases have a review step');if(!relSettings().pm_review)fail('The project manager review step is not switched on');
     if(!(state.role==='sa'||state.role==='pm'))fail('Only the project manager of this project reviews it');if(rel.status!=='Submitted')fail('Only a submitted version can be reviewed');if(rel.reviewed_by)fail('This version is already reviewed');
     if(rel.submitted_by===meU.id)fail('You submitted this version, so someone else must review it');rel.reviewed_by=meU.id;rel.reviewed_at=new Date().toISOString();rel.review_note=note||null;log(rel,'Reviewed by the project manager',note)}
-  else if(a==='approve'){if(rel.kind==='planning'?!relCanApprove(pid,'planning'):!canApproveRel())fail(rel.kind==='planning'?'Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can approve a progress release':'Only the Head of Planning and Cost Control or a super admin can approve a release');if(rel.status!=='Submitted')fail('Only a submitted version can be approved');
-    if(rel.submitted_by===meU.id)fail('You submitted this version, so someone else must approve it');if(rel.kind==='planning'&&relSettings().pm_review&&!rel.reviewed_by)fail('The project manager must review this progress release before it is approved');
+  else if(a==='approve'){if(rel.kind!=='cost'?!relCanApprove(pid,rel.kind):!canApproveRel())fail(rel.kind!=='cost'?'Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can approve this report':'Only the Head of Planning and Cost Control or a super admin can approve a release');if(rel.status!=='Submitted')fail('Only a submitted version can be approved');
+    if(rel.submitted_by===meU.id)fail('You submitted this version, so someone else must approve it');if(rel.kind==='planning'&&relSettings().pm_review&&!rel.reviewed_by)fail('The project manager must review this report before it is approved');
+    if(+(rel.figures||{}).sched_diff_n>0){const vn=String(p.validation_note||'').trim();if(p.validated!==true||!vn)fail(`This report differs from the updated schedule (${rel.figures.sched_diff_text}). Validate the differences with a note before approving`);
+      rel.sched_validated_by=meU.id;rel.sched_validated_at=new Date().toISOString();rel.sched_validation_note=vn.slice(0,1000);log(rel,'Differences from the updated schedule validated',vn,{differences:rel.figures.sched_diff_text})}
     if(rel.kind==='planning'&&String(p.mgmt||'').trim())rel.narrative=Object.assign({},rel.narrative,{mgmt:String(p.mgmt).trim().slice(0,2000)});
     if(rel.kind==='planning'&&!rel.reviewed_by){rel.reviewed_by=meU.id;rel.reviewed_at=new Date().toISOString()}
     DB.releases.filter(r=>same(r)&&r.status==='Released').forEach(r=>{r.status='Superseded'});
     rel.status='Released';rel.approved_by=meU.id;rel.approved_at=new Date().toISOString();if(rel.kind==='planning')rel.issues_snapshot=issSnapshot(rel.project_id);log(rel,'Approved and released',note,{rev:rel.rev})}
-  else if(a==='return'){if(rel.kind==='planning'?!relCanReturn(rel):!canApproveRel())fail(rel.kind==='planning'?'Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can return a progress release':'Only the Head of Planning and Cost Control or a super admin can return a release');if(rel.status!=='Submitted')fail('Only a submitted version can be returned');
+  else if(a==='return'){if(rel.kind!=='cost'?!relCanReturn(rel):!canApproveRel())fail(rel.kind!=='cost'?'Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can return this report':'Only the Head of Planning and Cost Control or a super admin can return a release');if(rel.status!=='Submitted')fail('Only a submitted version can be returned');
     if(!note)fail('Add a comment saying what to fix');rel.status='Draft';rel.submitted_by=null;rel.submitted_at=null;rel.reviewed_by=null;rel.reviewed_at=null;rel.review_note=null;log(rel,'Returned',note)}
   save();return rel;
 }
@@ -2418,26 +2423,27 @@ function relStatusCell(pid,k,t,per){
 }
 function renderRel(){
   if(!canRelView()){$('#view').innerHTML='<section class="panel"><p>Releases are prepared by planning and costing and approved by the Head of Planning and Cost Control. Released reports are in Home → Executive report.</p></section>';return}
-  if(['planning','cost'].includes(state.navSec)){state.relTab=state.navSec;state.navSec=null}
+  if(['planning','cost','client'].includes(state.navSec)){state.relTab=state.navSec;state.navSec=null}
   const k=state.relTab||(relStaff('planning')?'planning':'cost');if(!relStaff(k)){state.relTab=k==='planning'?'cost':'planning';return renderRel()}state.relTab=k;
   const t=k==='cost'?'month':(state.relPt||'month'),pers=t==='month'?recentMonths(12):recentWeeks(10);
   let per=state.relPer&&periodOk(state.relPer,t)?state.relPer:(t==='month'?curMonth():curWeek());if(!pers.includes(per))pers.unshift(per);
   const rf=state.relF||(state.relF={}),ps=scopeProjects().filter(p=>p.status!=='Cancelled'&&(!rf.rg||p.region===rf.rg)&&(!rf.sec||p.sector===rf.sec)),mineToApprove=relRows().filter(r=>relVisible(r)&&r.status==='Submitted'&&r.submitted_by!==me().id&&(relCanReview(r)||(relCanApprove(r.project_id,r.kind)&&!(r.kind==='planning'&&relSettings().pm_review&&!r.reviewed_by))));
   const tab=(v,l)=>relStaff(v)?`<button type="button" class="chip" data-reltab="${v}" aria-pressed="${k===v}">${l}</button>`:'';
   const fig=(pid)=>{const r=relOpen(pid,k,t,per)||relReleased(pid,k,t,per);if(!r)return '<span class="muted small">—</span>';const f=r.figures||{};
+    if(k==='client')return `Client actual ${fmt(+f.act_pct,1)}% of plan ${f.plan_pct!=null?fmt(+f.plan_pct,1)+'%':'—'}${+f.sched_diff_n>0?' <span class="st Reviewed">differs from schedule</span>':''}`;
     return k==='planning'?`Actual ${fmt(+f.actual_pct,1)}% of plan ${f.planned_pct!=null?fmt(+f.planned_pct,1)+'%':'—'}${f.spi!=null?`, SPI ${fmt(+f.spi,2)}`:''}`:`EAC ${sar(+f.eac)}, VAC <span class="${+f.vac<0?'r-c':'g-c'}">${sar(+f.vac)}</span>`};
   $('#view').innerHTML=`${crumb()}
   ${CLOUD_ME&&DB.relMissing?`<div class="warn-box" style="margin-bottom:14px">Releases need the v9 database update (see STAGE-6-SETUP). <span class="small">${esc(DB.relMissing)}</span></div>`:''}
   <div class="g g-kpi">${kpi('Waiting for you',fmt(mineToApprove.length),canApproveRel()||isRegionPlanner()?'To review or approve':'Approved by the regional planning section manager',mineToApprove.length?'a':'')}
     ${kpi('Drafts in scope',fmt(relRows().filter(r=>relVisible(r)&&r.status==='Draft'&&SCOPE.has(r.project_id)).length),'Not yet submitted')}
     ${kpi('Released this month',fmt(relRows().filter(r=>relVisible(r)&&r.status==='Released'&&String(r.approved_at||'').slice(0,7)===localISO().slice(0,7)).length),'Visible to management')}</div>
-  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>${k==='planning'?'Progress releases':'Monthly cost reports'}</h2>
-    <div class="chips" role="group" aria-label="Release kind">${tab('planning','Progress releases')}${tab('cost','Monthly cost reports')}</div></div>
-    <div class="fields" style="margin-bottom:8px">${k==='planning'?F('Period type',sel('relpt',[['month','Monthly'],['week','Weekly']],t,'data-relpt')):''}
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>${k==='planning'?'Internal reporting':k==='client'?'Client reporting':'Monthly cost reports'}</h2>
+    <div class="chips" role="group" aria-label="Release kind">${tab('planning','Internal reporting')}${tab('client','Client reporting')}${tab('cost','Monthly cost reports')}</div></div>
+    <div class="fields" style="margin-bottom:8px">${k!=='cost'?F('Period type',sel('relpt',[['month','Monthly'],['week','Weekly']],t,'data-relpt')):''}
       ${F(t==='month'?'Month':'Week',sel('relper',pers.map(x=>[x,perLabel(t,x)]),per,'data-relper'))}
       ${F('Region',`<select data-relf="rg"><option value="">All regions</option>${DB.master.regions.map(x=>`<option value="${esc(x.id)}" ${rf.rg===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`)}
       ${F('Sector',`<select data-relf="sec"><option value="">All sectors</option>${DB.master.sectors.map(x=>`<option value="${esc(x.id)}" ${rf.sec===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`)}</div>
-    <p class="small muted" style="margin:0 0 10px">${k==='planning'?'ProTrackAI computes each project\'s progress from daily reports, the baseline and the weekly engineering and procurement update. Review it, change a figure only with a reason, add your comments, and submit.':'Enter the Rev-0 budget, the actual cost to date and commitments (from SAP) and the forecast cost to complete, or upload them for several projects. ProTrackAI adds the approved budget supplements and works out EAC and VAC the same way every month.'} ${k==='planning'?(relSettings().pm_review?'The project manager reviews it, then the regional planning section manager approves it':'The regional planning section manager approves it')+' before management sees it.':'The Head of Planning and Cost Control approves before management sees it.'}</p>
+    <p class="small muted" style="margin:0 0 10px">${k==='client'?'The client report takes planned and actual progress (client weightage), progress by phase, milestones and the look-ahead from the latest updated schedule. Add your notes and submit; once approved, export it to Excel or print it for the client.':k==='planning'?'ProTrackAI takes progress (internal weightage) and milestone dates from the latest updated schedule, or from daily reports and the weekly engineering and procurement update until one is loaded. Review it, change a figure only with a reason, add your comments, and submit. Differences from the updated schedule are validated by the approver.':'Enter the Rev-0 budget, the actual cost to date and commitments (from SAP) and the forecast cost to complete, or upload them for several projects. ProTrackAI adds the approved budget supplements and works out EAC and VAC the same way every month.'} ${k!=='cost'?(relSettings().pm_review&&k==='planning'?'The project manager reviews it, then the regional planning section manager approves it':'The regional planning section manager approves it')+' before management sees it.':'The Head of Planning and Cost Control approves before management sees it.'}</p>
     <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Region and sector</th><th>${esc(perLabel(t,per))}</th><th>Data date</th><th>Figures</th><th></th></tr></thead><tbody>
     ${ps.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}</span></td><td class="small">${esc(regName(p)||'')}<span class="t2">${esc(secById(p.sector)?.name||'')}</span></td><td>${relStatusCell(p.id,k,t,per)}</td><td class="small">${(()=>{const r=relOpen(p.id,k,t,per)||relReleased(p.id,k,t,per);return r&&r.data_date?fmtDY(r.data_date):'—'})()}</td><td class="small">${fig(p.id)}</td>
       <td class="n"><button class="btn sm" type="button" data-relopen="${esc(p.id)}">${relOpen(p.id,k,t,per)||relReleased(p.id,k,t,per)?'Open':canPrepRel(k)?'Prepare':'Open'}</button></td></tr>`).join('')||'<tr><td colspan="6" class="muted">No live project in this scope.</td></tr>'}
@@ -2448,6 +2454,7 @@ function renderRel(){
 }
 function openRelease(pid,k,t,per){
   if(k==='planning')return openPlanRelease(pid,t,per);
+  if(k==='client')return openClientRelease(pid,t,per);
   $('#sheet').classList.remove('full');
   const p=projById(pid),open=relOpen(pid,k,t,per),released=relReleased(pid,k,t,per),r=open||released,editable=(!r||r.status==='Draft')&&canPrepRel(k)&&!(!open&&released);
   const u=id=>{const x=id&&userById(id);return x?x.name:'—'},H=r?relRows().filter(x=>x.project_id===pid&&x.kind===k&&x.period_type===t&&x.period===per).flatMap(x=>relAuditOf(x.id).map(a=>({...a,rev:x.rev}))).sort((a,b)=>String(b.at_time).localeCompare(String(a.at_time))):[];
@@ -2514,6 +2521,7 @@ function openRelease(pid,k,t,per){
 }
 function relFormPayload(){
   const f=$('#relForm'),k=f.dataset.k,figures={},overrides=[],nar={};
+  if(k==='client')return clientPayload(f);
   if(k==='planning'){const comp=relPlanSnapshot(f.dataset.pid);
     PLAN_FIELDS.forEach(([key,l,unit])=>{const el=f.elements['f_'+key];if(!el)return;const v=el.value.trim(),val=v===''?null:(unit==='date'?v:+v);figures[key]=val;
       const cv=comp[key],differs=unit==='date'?(val||null)!==(cv||null):(val==null?cv!=null:(cv==null||Math.abs(val-cv)>1e-9));
@@ -2548,10 +2556,11 @@ document.addEventListener('click',async e=>{
     const err=m=>{$('#relErr').textContent=m};t.disabled=true;let r;
     if(a==='save'||a==='submit'){if(f.querySelector('[name^="f_"],[name^="c_"],#crTable')){r=await relAct({action:'save',...base,...relFormPayload()});if(!r){t.disabled=false;err(relAct.err?'Not saved: '+relAct.err:'Not saved: see the message at the bottom of the screen.');return}}
       if(a==='submit')r=await relAct({action:'submit',...base,note})}
-    else r=await relAct({action:a,...base,note,...(a==='approve'&&$('#relMgmt')&&$('#relMgmt').value.trim()?{mgmt:$('#relMgmt').value.trim()}:{})});
+    else r=await relAct({action:a,...base,note,...(a==='approve'&&$('#relMgmt')&&$('#relMgmt').value.trim()?{mgmt:$('#relMgmt').value.trim()}:{}),...(a==='approve'&&$('#relValChk')?{validated:$('#relValChk').checked,validation_note:($('#relValNote')||{}).value||''}:{})});
     t.disabled=false;if(!r){err('Not done: see the message at the bottom of the screen.');return}
     const p=projById(base.project_id);
     if(a==='submit')notify(`${p.short}: ${REL_KIND[base.kind].toLowerCase()} for ${perLabel(base.period_type,base.period)} submitted by ${me().name}, waiting for ${base.kind==='planning'&&relSettings().pm_review?'the project manager\'s review':relApproverText(base.project_id,base.kind)}.`);
+    if(a==='submit'&&r&&+(r.figures||{}).sched_diff_n>0)notify(`${p.short}: ${REL_KIND[base.kind].toLowerCase()} for ${perLabel(base.period_type,base.period)} differs from the updated schedule (${r.figures.sched_diff_text}). ${relApproverText(base.project_id,base.kind)} must validate the differences before approving.`,true);
     if(a==='review')notify(`${p.short}: progress release for ${perLabel(base.period_type,base.period)} reviewed by ${me().name}, waiting for ${relApproverText(base.project_id,base.kind)}.`);
     if(a==='approve')notify(`${p.short}: ${REL_KIND[base.kind].toLowerCase()} for ${perLabel(base.period_type,base.period)} released by ${me().name}.`);
     if(a==='return')notify(`${p.short}: ${REL_KIND[base.kind].toLowerCase()} for ${perLabel(base.period_type,base.period)} returned by ${me().name}: ${note}`,true);
@@ -3097,7 +3106,7 @@ function xrProjectHTML(t,per){
   const pc=v=>v==null||v===''?'—':pct(+v/100,1);
   return `<section class="panel"><div class="fields">${F('Project',`<select data-xrpid>${ps.map(x=>`<option value="${esc(x.id)}" ${x.id===pid?'selected':''}>${esc(x.short)} (${esc(pcode(x))})</option>`).join('')}</select>`)}</div>
     <h2 class="ptitle" style="margin-top:6px">${esc(pcode(p))} · ${esc(p.name)}</h2><p class="small muted" style="margin:0">${esc(regName(p))} Region · ${esc(secById(p.sector)?.name||'')} · ${esc(cityName(p)||p.location||'')} · contract SAR ${fmt(+p.value||0)}M${p.client?' · '+esc(p.client):''}</p>
-    <p class="small" style="margin:6px 0 0">${pr?`Progress release ${esc(perLabel(t,per))}, rev ${pr.rev}, approved by ${esc(who(pr.approved_by))} ${esc(tStamp(pr.approved_at).slice(0,10))}`:`<span class="r-c">No progress release for ${esc(perLabel(t,per))}.</span>`}${money?(cr?` · cost report rev ${cr.rev}, approved by ${esc(who(cr.approved_by))}`:' · <span class="r-c">no cost report released</span>'):''}</p></section>
+    <p class="small" style="margin:6px 0 0">${pr?`Internal report ${esc(perLabel(t,per))}, rev ${pr.rev}, approved by ${esc(who(pr.approved_by))} ${esc(tStamp(pr.approved_at).slice(0,10))}`:`<span class="r-c">No internal report for ${esc(perLabel(t,per))}.</span>`}${money?(cr?` · cost report rev ${cr.rev}, approved by ${esc(who(cr.approved_by))}`:' · <span class="r-c">no cost report released</span>'):''}</p></section>
   ${pr?`<div class="g g-kpi">${kpi('Actual progress',pc(f.actual_pct),`plan ${pc(f.planned_pct)}`)}${kpi('SPI',f.spi!=null?fmt(+f.spi,2):'—','Released',f.spi!=null?light(+f.spi):'')}
     ${kpi('Design',pc(f.eng_pct),f.eng_plan_pct!=null?`plan ${pc(f.eng_plan_pct)}`:'')}${kpi('Procurement',pc(f.prc_pct),f.prc_plan_pct!=null?`plan ${pc(f.prc_plan_pct)}`:'')}
     ${kpi('Forecast finish',f.forecast_finish?fmtDY(f.forecast_finish):'—',f.baseline_finish?`baseline ${fmtDY(f.baseline_finish)}`:'',f.forecast_finish&&f.baseline_finish&&f.forecast_finish>f.baseline_finish?'a':'')}
@@ -3836,11 +3845,11 @@ const RD_IN=[...RD_MS.flatMap(g=>g[1].map(x=>x[0])),'sub_project_text','tcc_rece
 const relSettings=()=>DB.relSettings||{pm_review:false};
 const relApproversOf=rg=>(DB.relApprovers||[]).filter(a=>a.region_id===rg).map(a=>userById(a.user_id)).filter(Boolean);
 const isRegionPlanner=()=>(DB.relApprovers||[]).some(a=>a.user_id===me().id);
-function relCanApprove(pid,k){if(state.role==='sa'||isHead())return true;if(k!=='planning')return false;const p=projById(pid);
+function relCanApprove(pid,k){if(state.role==='sa'||isHead())return true;if(k!=='planning'&&k!=='client')return false;const p=projById(pid);
   return !!p&&accessIds().includes(pid)&&(DB.relApprovers||[]).some(a=>a.user_id===me().id&&a.region_id===p.region)}
 const relCanReview=r=>!!r&&r.kind==='planning'&&relSettings().pm_review&&r.status==='Submitted'&&!r.reviewed_by&&(state.role==='sa'||(state.role==='pm'&&accessIds().includes(r.project_id)))&&r.submitted_by!==me().id;
 const relCanReturn=r=>!!r&&r.status==='Submitted'&&(relCanApprove(r.project_id,r.kind)||(r.kind==='planning'&&relSettings().pm_review&&state.role==='pm'&&accessIds().includes(r.project_id)&&!r.reviewed_by));
-const relApproverText=(pid,k)=>{if(k!=='planning')return 'Head of Planning and Cost Control';const p=projById(pid)||{},A=relApproversOf(p.region);return A.length?A.map(u=>u.name).join(', ')+' (planning section manager)':'Head of Planning and Cost Control (no planning section manager named for '+(regName(p)||'the region')+')'};
+const relApproverText=(pid,k)=>{if(k==='cost')return 'Head of Planning and Cost Control';const p=projById(pid)||{},A=relApproversOf(p.region);return A.length?A.map(u=>u.name).join(', ')+' (planning section manager)':'Head of Planning and Cost Control (no planning section manager named for '+(regName(p)||'the region')+')'};
 /* the server's calculations, mirrored */
 function relPlanCalc(pid,f){
   const fail=t=>{throw new Error(t)},n=k=>f[k]==null||f[k]===''?null:+f[k],p=projById(pid)||{},cv=+p.value?+p.value*1e6:null,o={};
@@ -3872,6 +3881,10 @@ function relDashDefaults(pid){
   let own=null,sub=null;withScope(pid,()=>{const V=valid().filter(l=>l.date<=ASOF),d=V.map(l=>l.date).sort().pop();if(!d)return;const L=V.filter(l=>l.date===d);
     own=L.reduce((t,l)=>t+(l.labour||[]).reduce((s,x)=>s+(+x.count||0),0),0);sub=L.reduce((t,l)=>t+subFlat(l).reduce((s,u)=>s+(+u.count||0),0),0)});
   if(own!=null)out.mp_dir_act=own;if(sub!=null)out.mp_sub_act=sub;if(!out.energ_status_text)out.energ_status_text='Not Started';
+  /* v3.6: external progress (client weightage) and milestone forecasts from the latest updated schedule */
+  const uC=schedAt(pid,ASOF,'client'),uA=schedAt(pid,ASOF),cv=+p.value?+p.value*1e6:null;
+  if(uC){const s=uC.summary||{};if(s.client_plan!=null){out.ext_plan_pct=+s.client_plan;if(cv)out.ext_plan_amt=Math.round(cv*s.client_plan/100)}if(s.client_act!=null){out.ext_act_pct=+s.client_act;if(cv)out.ext_act_amt=Math.round(cv*s.client_act/100)}}
+  if(uA){const s=uA.summary||{};['tcc','pac','fac'].forEach(k=>{if(s[k+'_date'])out[k+'_ext_fc_date']=s[k+'_date']})}
   return out;
 }
 /* traffic lights: received / on schedule (≤ 0 days) / at risk (1–30 days) / delayed (over 30 days) */
@@ -3907,10 +3920,11 @@ function openPlanRelease(pid,t,per){
   const dl=(k)=>{const v=f[k];return v==null?'—':`${v>0?'+':''}${v} days`},lt=(k,rk)=>msLight(f[k],rk&&f[rk]);
   const TABS=[['overview','Overview'],['ms','Milestones'],['prog','Progress'],['mp','Manpower'],['en','Energization'],['notes','Release notes'],['appr','Approval']];
   const show=k=>tab===k?'':'hidden';
-  $('#sheet').innerHTML=`<div class="rdhead"><div><h2 style="margin:0">Progress release · ${esc(perLabel(t,per))}</h2><span class="small muted">${esc(pcode(p))} · ${esc(p.name)} · data date ${fmtDY((r&&r.data_date)||ASOF)}</span></div>
+  $('#sheet').innerHTML=`<div class="rdhead"><div><h2 style="margin:0">Internal report · ${esc(perLabel(t,per))}</h2><span class="small muted">${esc(pcode(p))} · ${esc(p.name)} · data date ${fmtDY((r&&r.data_date)||ASOF)}</span></div>
       ${r?`<span class="st ${r.status==='Released'?'Approved':r.status==='Submitted'?'Reviewed':'Draft'}">${esc(r.status==='Submitted'?(needRev?'Awaiting PM review':'Awaiting approval'):relReturned(r)?'Returned':r.status)} · rev ${r.rev}</span>`:'<span class="st Draft">New</span>'}
       <button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
     ${relKpiHTML(f,prev)}
+    ${schedBoxHTML(pid,'planning',t,per,f,r,canDecide)}
     <div class="chips rdtabs" role="tablist">${TABS.map(([k,l])=>`<button type="button" role="tab" class="chip" data-rdtab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
     <form id="relForm" data-pid="${esc(pid)}" data-k="planning" data-t="${t}" data-per="${per}" data-id="${esc(open?open.id:'')}" novalidate>
     <section class="rdpanel" data-rdp="overview" ${show('overview')}>
@@ -4009,7 +4023,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-rdtab]');i
 /* super admin: planning section managers by region, and the project manager review step */
 function relSetupHTML(){
   const S=relSettings(),cand=DB.master.users.filter(u=>u.active!==false&&['sa','plan','pm','rm','pf','exec'].includes(u.role));
-  return `<h3>Progress release approval</h3>${DB.relSetupMissing?'<p class="warn-box small">Regional approval needs the v14 database update (STAGE-11-SETUP). Until it runs, the Head of Planning and Cost Control approves every progress release.</p>':''}<p class="small muted" style="margin:0 0 8px">Each region's planning section manager reviews and approves its weekly and monthly progress releases. The Head of Planning and Cost Control and super admins can always approve. Cost reports stay with the Head.</p>
+  return `<h3>Internal and client report approval</h3>${DB.relSetupMissing?'<p class="warn-box small">Regional approval needs the v14 database update (STAGE-11-SETUP). Until it runs, the Head of Planning and Cost Control approves every progress release.</p>':''}<p class="small muted" style="margin:0 0 8px">Each region's planning section manager reviews and approves its weekly and monthly progress releases. The Head of Planning and Cost Control and super admins can always approve. Cost reports stay with the Head.</p>
     <table class="tbl"><thead><tr><th>Region</th><th>Planning section manager(s)</th><th>Add</th></tr></thead><tbody>
     ${DB.master.regions.map(rg=>`<tr><td><b>${esc(rg.name)}</b></td><td>${relApproversOf(rg.id).map(x=>`<span class="docbadge">${esc(x.name)} <button class="link" type="button" data-rapdel="${esc(rg.id)}|${esc(x.id)}" aria-label="Remove ${esc(x.name)}">✕</button></span>`).join(' ')||'<span class="muted small">None: the Head approves</span>'}</td>
       <td><select data-rapadd="${esc(rg.id)}"><option value="">Add…</option>${cand.filter(x=>!relApproversOf(rg.id).some(y=>y.id===x.id)).map(x=>`<option value="${esc(x.id)}">${esc(x.name)} (${esc(ROLES[x.role]||x.role)})</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>
@@ -4065,6 +4079,414 @@ function seedV35(){
   DB.v35Seeded=true;save();
 }
 
+/* ---------- v3.6: internal weightage by phase, updated schedules, internal and client reporting ----------
+   The planning engineer sets, per project, the internal weightage of seven phases agreed with management, and maps
+   the schedule's main WBS branches (or a P6 activity code) to those phases. Each updated P6 schedule uploaded gives,
+   at its data date, planned and actual % by client weightage (the schedule's own weighting) and by internal weightage
+   (phase weights x phase %), and the milestone dates. Every ProTrackAI progress figure uses the internal weightage;
+   invoiceable value uses the client weightage with the schedule's actual %. Progress releases become Internal
+   reporting; Client reporting is the weekly or monthly report for the client. A report whose progress or milestone
+   dates differ from the updated schedule must be validated by the regional planning section manager.
+   The server (schema-update-v15.sql: phase_setup_save, schedule_update_commit, release_act) applies the same rules. */
+const RPH=[['GEN','General works'],['DES','Design'],['MAT','Material'],['CON','Construction'],['INS','Installation'],['TC','Testing & commissioning'],['CLO','Project close out']];
+const RPH_N=Object.fromEntries(RPH);
+function phaseSuggest(name){const s=String(name||'');
+  return /close.?out|handover|demobili/i.test(s)?'CLO':/test|commission|energi[sz]/i.test(s)?'TC':/install|erect/i.test(s)?'INS':/design|engineer/i.test(s)?'DES'
+    :/material|procure|supply|purchas|equipment/i.test(s)?'MAT':/construct|civil|structur/i.test(s)?'CON':/general|prelim|prepar|mobili|site establish|management|common/i.test(s)?'GEN':''}
+const phaseSetupOf=pid=>((DB.phaseSetup||{})[pid])||{weights:{},wbs_map:{},code_type:null,code_map:{}};
+const phaseWSum=w=>Object.values(w||{}).reduce((t,v)=>t+(+v||0),0);
+const hasPhaseW=pid=>phaseWSum(phaseSetupOf(pid).weights)>0;
+const schedUps=pid=>(DB.schedUpdates||[]).filter(u=>u.project_id===pid).sort((a,b)=>String(b.data_date).localeCompare(String(a.data_date))||String(b.uploaded_at).localeCompare(String(a.uploaded_at)));
+const schedAt=(pid,t,wt)=>schedUps(pid).find(u=>String(u.data_date)<=(t||ASOF)&&(!wt||u.weightage===wt))||null;
+const schedRowsOf=u=>u?(((DB.schedRows||{})[u.id])||null):null;
+const r2=x=>Math.round(x*100)/100;
+function planFrac(bs,bf,dd){if(!bs||!bf)return 0;if(dd>=bf)return 1;if(dd<=bs)return 0;if(bf<=bs)return dd>=bf?1:0;return Math.round(diffDays(bs,dd)/diffDays(bs,bf)*1e6)/1e6}
+function isoWeekMonday(per){const y=+per.slice(0,4),w=+per.slice(6),j=new Date(Date.UTC(y,0,4)),d=(j.getUTCDay()+6)%7;j.setUTCDate(j.getUTCDate()-d+(w-1)*7);return iso(j)}
+const periodEnd=(per,t)=>t==='month'?iso(new Date(Date.UTC(+per.slice(0,4),+per.slice(5,7),0))):addDays(isoWeekMonday(per),6);
+const TCC_RE=/(^|[^a-z])tcc([^a-z]|$)|taking[ -]?over|completion certificate/i,PAC_RE=/(^|[^a-z])pac([^a-z]|$)|provisional acceptance/i,FAC_RE=/(^|[^a-z])fac([^a-z]|$)|final acceptance/i;
+
+/* the summary of an updated schedule, worked out exactly as the server does (pt_sched_summary) */
+function schedSummary(rows,dd,wt,weights){
+  const W=rows.filter(r=>+r.w>0),tot=rows.reduce((t,r)=>t+(+r.w||0),0);
+  const cp=tot>0?r2(rows.reduce((t,r)=>t+(+r.w||0)*planFrac(r.bs,r.bf,dd),0)/tot*100):null,ca=tot>0?r2(rows.reduce((t,r)=>t+(+r.w||0)*(+r.pct||0)/100,0)/tot*100):null;
+  const hasw=phaseWSum(weights)>0;let ip=0,ia=0,iw=0;const miss=[];
+  const phases=RPH.map(([k])=>{const g=rows.filter(r=>r.phase===k),w=g.reduce((t,r)=>t+(+r.w||0),0),iwk=+((weights||{})[k])||0;
+    const plan=w>0?g.reduce((t,r)=>t+(+r.w||0)*planFrac(r.bs,r.bf,dd),0)/w:null,act=w>0?g.reduce((t,r)=>t+(+r.w||0)*(+r.pct||0)/100,0)/w:null;
+    if(iwk>0&&w>0){ip+=iwk*plan;ia+=iwk*act;iw+=iwk}else if(iwk>0)miss.push(k);
+    return {phase:k,w,n:g.length,plan_pct:r2((plan||0)*100),act_pct:r2((act||0)*100),iw:iwk,present:w>0}});
+  const dOf=r=>r.af||r.ef||r.bf||'';
+  const MS=rows.filter(r=>r.ms).sort((a,b)=>dOf(a).localeCompare(dOf(b))||String(a.id).localeCompare(String(b.id)));
+  const find=re=>{const m=MS.find(r=>re.test(r.name||''));return m?{date:dOf(m)||null,actual:!!m.af}:null};
+  const tcc=find(TCC_RE),pac=find(PAC_RE),fac=find(FAC_RE);
+  const la=rows.filter(r=>!r.ms&&(+r.pct||0)<100&&(r.bs||r.ef)&&(r.bs||r.ef)<=addDays(dd,30)&&(r.ef||r.bf)&&(r.ef||r.bf)>=dd).sort((a,b)=>String(a.bs).localeCompare(String(b.bs))||String(a.id).localeCompare(String(b.id))).slice(0,25);
+  return {data_date:dd,weightage:wt,n:rows.length,n_unmapped:rows.filter(r=>!r.phase).length,w_unmapped:rows.filter(r=>!r.phase).reduce((t,r)=>t+(+r.w||0),0),w_total:tot,phases,
+    client_plan:wt==='client'?cp:null,client_act:wt==='client'?ca:null,
+    int_plan:wt==='internal'?cp:hasw&&iw>0?r2(ip/iw*100):null,int_act:wt==='internal'?ca:hasw&&iw>0?r2(ia/iw*100):null,
+    int_basis:wt==='internal'?'schedule loaded with internal weightage':hasw&&iw>0?'phase weights':'none',missing_phases:miss,
+    tcc_date:tcc?tcc.date:null,tcc_actual:!!(tcc&&tcc.actual),pac_date:pac?pac.date:null,pac_actual:!!(pac&&pac.actual),fac_date:fac?fac.date:null,fac_actual:!!(fac&&fac.actual),
+    milestones:MS.slice(0,80).map(r=>({id:r.id,name:r.name,phase:r.phase||null,plan_date:r.bf||null,date:dOf(r)||null,actual:!!r.af})),
+    lookahead:la.map(r=>({id:r.id,name:r.name,phase:r.phase||null,bs:r.bs||null,bf:r.bf||null,ef:r.ef||null,pct:+r.pct||0}))};
+}
+
+/* ---------- progress for every ProTrackAI report: internal weightage from the latest updated schedule ---------- */
+function progOf(pid,t){const u=schedAt(pid,t);if(!u)return null;const s=u.summary||{};
+  let plan=s.int_plan,act=s.int_act,basis='internal';if(plan==null||act==null){plan=s.client_plan;act=s.client_act;basis='client'}
+  if(plan==null||act==null)return null;
+  return {plan:+plan/100,act:+act/100,spi:+plan>0?+act/+plan:0,basis,dd:u.data_date,u}}
+/* several projects: weighted by contract value (as the released executive report) once any of them has an updated schedule */
+function progIds(ids,e,t){const L=ids.map(id=>({id,P:progOf(id,t)}));
+  if(!L.some(x=>x.P))return {plan:e&&e.bac?e.pv/e.bac:0,act:e&&e.bac?e.ev/e.bac:0,spi:e?e.spi:0,sched:false};
+  let W=0,pl=0,ac=0;L.forEach(({id,P})=>{const p=projById(id)||{},w=+p.value||1;let a,b;if(P){a=P.plan;b=P.act}else{const x=projEvm([id],t||ASOF);if(!x.bac)return;a=x.pv/x.bac;b=x.ev/x.bac}W+=w;pl+=w*a;ac+=w*b});
+  const plan=W?pl/W:0,act=W?ac/W:0;return {plan,act,spi:plan?act/plan:0,sched:true}}
+const progNote=P=>P&&P.basis?(P.basis==='internal'?`internal weightage, schedule of ${fmtDY(P.dd)}`:`client weightage (no internal weightage set), schedule of ${fmtDY(P.dd)}`):'';
+/* invoiceable: an activity's earned share from the latest updated schedule (client weightage), else as before */
+function schedDone(a,dt){const u=schedAt(a.p,dt);if(!u)return null;const R=schedRowsOf(u);if(!R)return null;
+  const m=R._m||(R._m=Object.fromEntries(R.map(r=>[r.id,r])));const r=m[a.id];return r?Math.min(1,(+r.pct||0)/100):null}
+
+/* ---------- reading the updated XER ---------- */
+function parseSchedXER(text){
+  const lines=text.split(/\r?\n/),T={};let cur=null,fields=[];
+  for(const ln of lines){if(ln.startsWith('%T')){cur=ln.split('\t')[1];T[cur]=[];fields=[]}else if(ln.startsWith('%F'))fields=ln.split('\t').slice(1);
+    else if(ln.startsWith('%R')&&cur){const v=ln.split('\t').slice(1),o={};fields.forEach((f,i)=>o[f]=v[i]);T[cur].push(o)}}
+  if(!T.TASK||!T.TASK.length)throw new Error('No activities (TASK table) found in this XER file.');
+  const P=(T.PROJECT||[])[0]||{},W={};(T.PROJWBS||[]).forEach(w=>W[w.wbs_id]=w);
+  const mainOf=id=>{let w=W[id],g=0,last=null;while(w&&g++<40){if(w.proj_node_flag==='Y')return last?String(last.wbs_name||'').trim():null;last=w;w=W[w.parent_wbs_id]}return last?String(last.wbs_name||'').trim():null};
+  const CT={};(T.ACTVTYPE||[]).forEach(t=>CT[t.actv_code_type_id]=String(t.actv_code_type||'').trim());
+  const CV={};(T.ACTVCODE||[]).forEach(c=>CV[c.actv_code_id]=String(c.actv_code_name||c.short_name||'').trim());
+  const codes={};(T.TASKACTV||[]).forEach(x=>{const t=CT[x.actv_code_type_id];if(t)(codes[x.task_id]=codes[x.task_id]||{})[t]=CV[x.actv_code_id]||''});
+  const um={};(T.UMEASURE||[]).forEach(u=>um[u.unit_id]=(u.unit_abbrev||u.unit_name||'').trim());
+  const R={};(T.RSRC||[]).forEach(r=>R[r.rsrc_id]={name:(r.rsrc_short_name||r.rsrc_name||'').trim(),type:r.rsrc_type||'RT_Labor',unit:um[r.unit_id]||''});
+  const wts={},wtot={},lab={};
+  (T.TASKRSRC||[]).forEach(a=>{const r=R[a.rsrc_id]||{type:'RT_Labor',name:'Resource',unit:''},q=parseFloat(a.target_qty)||0;if(!q)return;
+    if(r.type==='RT_Labor')lab[a.task_id]=(lab[a.task_id]||0)+q;else if(!r.unit){(wts[a.task_id]=wts[a.task_id]||{})[r.name]=(wts[a.task_id][r.name]||0)+q;wtot[r.name]=(wtot[r.name]||0)+q}});
+  const n=v=>parseFloat(v)||0;
+  const rows=T.TASK.map(t=>{const ty=t.complete_pct_type||'',st=t.status_code||'';let pc;
+    if(st==='TK_Complete')pc=100;else if(ty==='CP_Drtn'){const td=n(t.target_drtn_hr_cnt);pc=td>0?(1-n(t.remain_drtn_hr_cnt)/td)*100:(st==='TK_NotStart'?0:n(t.phys_complete_pct))}
+    else if(ty==='CP_Units'){const a=n(t.act_work_qty),r=n(t.remain_work_qty);pc=a+r>0?a/(a+r)*100:n(t.phys_complete_pct)}else pc=n(t.phys_complete_pct);
+    if(st==='TK_NotStart'&&ty!=='CP_Phys')pc=0;
+    return {id:String(t.task_code||t.task_id||'').trim(),name:String(t.task_name||'').trim(),wbs:mainOf(t.wbs_id),codes:codes[t.task_id]||{},wts:wts[t.task_id]||{},
+      bh:n(t.target_work_qty)||lab[t.task_id]||0,dur:n(t.target_drtn_hr_cnt),ms:t.task_type==='TT_Mile'||t.task_type==='TT_FinMile',
+      bs:dOnly(t.target_start_date)||null,bf:dOnly(t.target_end_date)||null,es:dOnly(t.early_start_date)||null,ef:dOnly(t.early_end_date)||null,
+      as:dOnly(t.act_start_date)||null,af:dOnly(t.act_end_date)||null,pct:Math.round(clamp(pc||0,0,100)*100)/100}}).filter(r=>r.id);
+  return {projName:(P.proj_short_name||P.proj_name||'P6 project').trim(),dataDate:dOnly(P.last_recalc_date||P.next_data_date)||null,rows,
+    weightRes:Object.entries(wtot).sort((a,b)=>b[1]-a[1]).map(([name,total])=>({name,total})),codeTypes:[...new Set(Object.values(CT))].filter(Boolean)};
+}
+/* the rows as sent to the server: weight by the chosen resource, phase from the mapping, ProTrackAI baseline dates where matched */
+function schedRowsFor(S){const st=S.map,ct=S.ctype;
+  return S.parsed.rows.map(r=>{const code=ct?(r.codes[ct]||''):'',w=S.wres==='__lab'?r.bh:S.wres==='__dur'?r.dur:(+(r.wts||{})[S.wres]||0);
+    const a=ACTS.find(x=>x.p===S.pid&&x.id===r.id);
+    return {id:r.id,name:r.name,wbs:r.wbs||'',code,w:r.ms?0:Math.max(0,w),bs:(a&&a.bs)||r.bs,bf:(a&&a.bf)||r.bf,pct:r.pct,ms:r.ms,as:r.as,af:r.af,ef:r.ef,
+      phase:(code&&st.code_map[code])||(r.wbs&&st.wbs_map[r.wbs])||null}})}
+
+/* ---------- saving: phase weightage and mapping, updated schedules ---------- */
+function phaseSetupLocal(p){
+  const fail=t=>{throw new Error(t)},pid=p.project_id;if(!pid||!accessIds().includes(pid))fail('You do not have access to this project');
+  if(!canBaseline())fail('Only a planning engineer of this project or a super admin sets the internal weightage');
+  const nw={};let s=0;Object.entries(p.weights||{}).forEach(([k,v])=>{if(!RPH_N[k])fail('Unknown phase '+k);if(v!==''&&v!=null&&!isFinite(+v))fail(`The weightage of ${k} must be a number`);const x=+v||0;if(x<0||x>100)fail(`The weightage of ${k} must be between 0 and 100`);s+=x;nw[k]=x});
+  if(s>0&&Math.abs(s-100)>0.01)fail(`The internal weightage must add up to 100% (now ${r2(s)}%)`);
+  [p.wbs_map||{},p.code_map||{}].forEach(m=>Object.entries(m).forEach(([k,v])=>{if(v&&!RPH_N[v])fail(`Unknown phase ${v} for ${k}`)}));
+  const old=(DB.phaseSetup||{})[pid],note=String(p.note||'').trim();
+  if(old&&phaseWSum(old.weights)>0&&JSON.stringify(old.weights)!==JSON.stringify(nw)&&schedUps(pid).length&&!note)fail('Give a reason for changing the internal weightage: updated schedules were already reported with it');
+  DB.phaseSetup=DB.phaseSetup||{};DB.phaseAudit=DB.phaseAudit||[];
+  const after={weights:nw,wbs_map:p.wbs_map||{},code_type:(p.code_type||'').trim()||null,code_map:p.code_map||{}};
+  DB.phaseAudit.push({id:DB.phaseAudit.length+1,project_id:pid,before:old?{weights:old.weights,wbs_map:old.wbs_map,code_type:old.code_type,code_map:old.code_map}:null,after,note:note||null,by_user:me().id,by_name:me().name,at_time:new Date().toISOString()});
+  DB.phaseSetup[pid]={project_id:pid,...after,updated_by:me().id,updated_at:new Date().toISOString()};save();return DB.phaseSetup[pid];
+}
+async function phaseSetupSave(p){phaseSetupSave.err='';
+  if(CLOUD_ME){try{const r=await rpc('phase_setup_save',{p});await cloudLoadSched();save();return r}catch(e){phaseSetupSave.err=srvMsg(e)+(/function .*does not exist|phase_setup_save/i.test(srvMsg(e))?' (the server needs the v15 database update, see STAGE-12-SETUP)':'');return null}}
+  try{return phaseSetupLocal(p)}catch(e){phaseSetupSave.err=e.message;return null}}
+function schedCommitLocal(p){
+  const fail=t=>{throw new Error(t)},pid=p.project_id;if(!pid||!accessIds().includes(pid))fail('You do not have access to this project');
+  if(!canBaseline())fail('Only a planning engineer of this project or a super admin uploads updated schedules');
+  if(!['client','internal'].includes(p.weightage))fail('Say whether the schedule is loaded with client or internal weightage');
+  if(!isoOk(p.data_date||''))fail('The schedule needs a valid data date');
+  if(p.data_date>addDays(localISO(),31))fail('The data date is more than a month in the future');
+  const rows=p.rows||[];if(!rows.length)fail('The schedule has no activities');if(rows.length>30000)fail('The schedule has more than 30,000 activities');
+  const ex=(DB.schedUpdates||[]).find(u=>u.project_id===pid&&p.file_hash&&u.file_hash===p.file_hash);if(ex)return {...ex,duplicate:true};
+  const st=phaseSetupOf(pid),seen=new Set(),R=[];
+  rows.forEach(x=>{const id=String(x.id||'').trim();if(!id||id.length>60)fail('Every activity needs an ID of up to 60 characters');if(seen.has(id))return;seen.add(id);
+    if(+x.w<0||!isFinite(+x.w||0))fail(`Activity ${id}: the weight must be a number, not negative`);const v=+x.pct||0;if(v<0||v>100)fail(`Activity ${id}: % complete must be between 0 and 100`);
+    const a=ACTS.find(z=>z.p===pid&&z.id===id),bs=(a&&a.bs)||x.bs||null,bf=(a&&a.bf)||x.bf||null;if(+x.w>0&&(!bs||!bf))fail(`Activity ${id}: planned start and finish are needed`);
+    R.push({id,name:String(x.name||'').slice(0,300),wbs:x.wbs||'',code:x.code||'',phase:(x.code&&st.code_map[x.code])||(x.wbs&&st.wbs_map[x.wbs])||null,w:+x.w||0,bs,bf,pct:v,ms:!!x.ms,as:x.as||null,af:x.af||null,ef:x.ef||null})});
+  const nu=R.filter(r=>!r.phase&&r.w>0).length;if(nu&&p.weightage==='client'&&hasPhaseW(pid))fail(`${nu} weighted activities have no phase. Map every main WBS branch (or activity code value) to a phase first`);
+  if(!R.some(r=>r.w>0))fail('No activity in the schedule carries a weight');
+  const u={id:'SU'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),project_id:pid,data_date:p.data_date,weightage:p.weightage,file_name:p.file_name||null,file_hash:p.file_hash||null,
+    weight_basis:p.weight_basis||null,weights:{...(st.weights||{})},summary:schedSummary(R,p.data_date,p.weightage,st.weights||{}),uploaded_by:me().id,uploaded_name:me().name,uploaded_at:new Date().toISOString()};
+  DB.schedUpdates=DB.schedUpdates||[];DB.schedRows=DB.schedRows||{};DB.schedUpdates.push(u);DB.schedRows[u.id]=R;
+  const keep=new Set(schedUps(pid).slice(0,2).map(x=>x.id));Object.keys(DB.schedRows).forEach(k=>{const x=DB.schedUpdates.find(y=>y.id===k);if(x&&x.project_id===pid&&!keep.has(k))delete DB.schedRows[k]});
+  logChange(`Updated schedule ${p.file_name||''} loaded into ${projById(pid).short}, data date ${p.data_date} (${p.weightage} weightage)`);save();return u;
+}
+async function schedCommit(p){schedCommit.err='';
+  if(CLOUD_ME){try{const r=await rpc('schedule_update_commit',{p});await cloudLoadSched();save();return r}catch(e){schedCommit.err=srvMsg(e)+(/function .*does not exist|schedule_update_commit/i.test(srvMsg(e))?' (the server needs the v15 database update, see STAGE-12-SETUP)':'');return null}}
+  try{return schedCommitLocal(p)}catch(e){schedCommit.err=e.message;return null}}
+async function cloudLoadSched(){
+  try{const [st,ups,aud]=await Promise.all([selAll('project_phase_setup','*',null,['project_id']),selAll('schedule_updates','*',null,['uploaded_at','id']),selAll('phase_setup_audit','*',null,['id'])]);
+    DB.phaseSetup=Object.fromEntries(st.map(x=>[x.project_id,x]));DB.schedUpdates=ups;DB.phaseAudit=aud;
+    const latest=[...new Set(ups.map(u=>u.project_id))].map(pid=>schedAt(pid,'9999-12-31')).filter(Boolean).map(u=>u.id);DB.schedRows={};
+    if(latest.length){const rows=await selAll('schedule_update_rows','update_id,act_id,name,phase,w,bs,bf,pct,ms,af,ef',q=>q.in('update_id',latest),['update_id','act_id']);
+      rows.forEach(r=>{(DB.schedRows[r.update_id]=DB.schedRows[r.update_id]||[]).push({id:r.act_id,name:r.name,phase:r.phase,w:+r.w,bs:r.bs,bf:r.bf,pct:+r.pct,ms:r.ms,af:r.af,ef:r.ef})})}
+    DB.schedMissing=false}
+  catch(e){DB.phaseSetup=DB.phaseSetup||{};DB.schedUpdates=DB.schedUpdates||[];DB.schedRows=DB.schedRows||{};DB.phaseAudit=DB.phaseAudit||[];DB.schedMissing=srvMsg(e)}}
+
+/* ---------- Baselines page: internal weightage, mapping and updated schedules ---------- */
+function phasePanelHTML(pid){
+  const st=phaseSetupOf(pid),w=st.weights||{},ed=canBaseline(),ups=schedUps(pid),sum=phaseWSum(w),aud=(DB.phaseAudit||[]).filter(a=>a.project_id===pid).slice(-4).reverse();
+  const mapped=k=>[...Object.entries(st.wbs_map||{}).filter(([,v])=>v===k).map(([n])=>n),...Object.entries(st.code_map||{}).filter(([,v])=>v===k).map(([n])=>n)];
+  return `<section class="panel" id="phasePanel"><div class="card-head" style="flex-wrap:wrap"><h2>Internal weightage by phase</h2><span class="small muted">Agreed with management · every ProTrackAI progress report uses it</span></div>
+    ${CLOUD_ME&&DB.schedMissing?`<div class="warn-box" style="margin-bottom:10px">Internal weightage and updated schedules need the v15 database update (see STAGE-12-SETUP). <span class="small">${esc(DB.schedMissing)}</span></div>`:''}
+    <p class="small muted" style="margin:0 0 10px">Set once at the start of the project. The updated schedule carries the client weightage; ProTrackAI works out internal progress as Σ (phase weightage × phase progress). Invoiceable value always uses the client weightage.</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Phase</th><th class="n">Internal weightage %</th><th>Mapped from the schedule</th></tr></thead><tbody>
+      ${RPH.map(([k,l])=>`<tr><td><b>${esc(l)}</b></td><td class="n">${ed?`<input name="pw_${k}" type="number" min="0" max="100" step="0.01" inputmode="decimal" value="${esc(w[k]??'')}" style="max-width:110px" data-pwin>`:(w[k]!=null?fmt(+w[k],2)+'%':'—')}</td>
+        <td class="small">${mapped(k).map(n=>esc(n)).join(', ')||'<span class="muted">Not mapped yet (set when you load an updated schedule)</span>'}</td></tr>`).join('')}
+      <tr class="rdtot"><td><b>Total</b></td><td class="n"><b id="pwTot" class="${sum&&Math.abs(sum-100)>0.01?'r-c':''}">${fmt(sum,2)}%</b></td><td class="small muted">${st.code_type?`Phase from the P6 activity code “${esc(st.code_type)}”, else the main WBS`:'Phase from the main WBS branch'}</td></tr></tbody></table></div>
+    ${ed?`<div class="actions" style="margin-top:8px">${ups.length&&sum>0?`<label class="field" style="flex:1;min-width:240px">Reason for a change (needed once schedules are reported)<input id="pwNote" maxlength="300"></label>`:''}<button class="btn primary" type="button" data-pwsave="${esc(pid)}">Save weightage</button></div><p class="err" id="pwErr"></p>`:''}
+    ${aud.length?`<h3>History</h3><ul class="audit">${aud.map(a=>`<li><b>${a.before?'Changed':'Set'}</b> by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}<span class="t2">${RPH.map(([k])=>`${k} ${fmt(+((a.after||{}).weights||{})[k]||0,1)}%`).join(' · ')}</span></li>`).join('')}</ul>`:''}
+  </section>`;
+}
+function schedPanelHTML(pid){
+  const ups=schedUps(pid),S=state.sched&&state.sched.pid===pid?state.sched:null,wt=(S&&S.wt)||state.schedWt||'client';
+  return `<section class="panel" id="schedPanel"><div class="card-head" style="flex-wrap:wrap"><h2>Updated schedule</h2><span class="small muted">Planned and actual progress and milestone dates from P6</span></div>
+    <p class="small muted" style="margin:0 0 10px">Upload the updated P6 schedule (XER) each week or month. ProTrackAI takes the data date, the % complete of every activity and the milestone dates, and works out planned and actual progress by phase, by client and by internal weightage. Daily reports still drive productivity and manpower.</p>
+    ${canBaseline()?`<div class="fields"><div class="field">This schedule is loaded with<div class="chips" role="radiogroup" aria-label="Weightage in the schedule" style="margin-top:4px">
+        <label class="chk"><input type="radio" name="schedwt" value="client" ${wt==='client'?'checked':''} data-schedwt><span>Client weightage</span></label>
+        <label class="chk"><input type="radio" name="schedwt" value="internal" ${wt==='internal'?'checked':''} data-schedwt><span>Internal weightage</span></label></div></div>
+      <div class="field">File<div class="actions" style="margin:0"><label class="btn" for="schedfile">Choose updated XER</label><input id="schedfile" type="file" accept=".xer" hidden></div></div></div>`:''}
+    <div id="schedBox">${S?schedPreviewHTML(S):''}</div>
+    <h3>Updates loaded</h3><div class="scroll"><table class="tbl"><thead><tr><th>Data date</th><th>File</th><th>Weightage</th><th class="n">Client plan / actual</th><th class="n">Internal plan / actual</th><th>Milestones</th><th>Loaded by</th></tr></thead><tbody>
+      ${ups.map(u=>{const s=u.summary||{},pc=v=>v==null?'—':fmt(+v,1)+'%';return `<tr><td><b>${fmtDY(u.data_date)}</b></td><td class="small">${esc(u.file_name||'')}</td><td class="small">${u.weightage==='client'?'Client':'Internal'}</td>
+        <td class="n">${pc(s.client_plan)} / ${pc(s.client_act)}</td><td class="n">${pc(s.int_plan)} / ${pc(s.int_act)}${s.int_basis==='none'?'<span class="t2">no internal weightage</span>':''}</td>
+        <td class="small">${['tcc','pac','fac'].filter(k=>s[k+'_date']).map(k=>`${k.toUpperCase()} ${fmtDY(s[k+'_date'])}${s[k+'_actual']?' (achieved)':''}`).join(' · ')||'—'}</td><td class="small">${esc(u.uploaded_name||'')}<span class="t2">${esc(tStamp(u.uploaded_at))}</span></td></tr>`}).join('')||'<tr><td colspan="7" class="muted">No updated schedule loaded yet. Until then ProTrackAI works progress out from daily reports and the weekly engineering and procurement update.</td></tr>'}
+    </tbody></table></div></section>`;
+}
+function schedPreviewHTML(S){
+  const P=S.parsed,rows=schedRowsFor(S),dd=S.dd||'',st=S.map,keys=S.ctype?'code':'wbs';
+  const groups={};rows.forEach(r=>{const k=keys==='code'?r.code:r.wbs;if(!k)return;const g=groups[k]||(groups[k]={n:0,w:0});g.n++;g.w+=r.w});
+  const tot=rows.reduce((t,r)=>t+r.w,0),sm=dd&&isoOk(dd)?schedSummary(rows,dd,S.wt,phaseSetupOf(S.pid).weights||{}):null,nu=rows.filter(r=>!r.phase&&r.w>0).length;
+  const block=!sm||!tot||(nu&&S.wt==='client'&&hasPhaseW(S.pid));
+  const pc=v=>v==null?'—':fmt(+v,1)+'%';
+  return `<div class="rdcard" style="margin-top:10px"><h3>${esc(S.file)} <span class="muted small">${esc(P.projName)} · ${fmt(P.rows.length)} activities</span></h3>
+    <div class="fields">${F('Data date',`<input type="date" value="${esc(dd)}" data-schedd>`)}
+      ${F('Client weighting taken from',`<select data-schedwres>${P.weightRes.map(x=>`<option value="${esc(x.name)}" ${S.wres===x.name?'selected':''}>${esc(x.name)} (resource)</option>`).join('')}<option value="__lab" ${S.wres==='__lab'?'selected':''}>Planned labour units</option><option value="__dur" ${S.wres==='__dur'?'selected':''}>Planned duration</option></select>`)}
+      ${F('Phase taken from',`<select data-schedctype><option value="">Main WBS branch</option>${P.codeTypes.map(c=>`<option value="${esc(c)}" ${S.ctype===c?'selected':''}>Activity code: ${esc(c)}</option>`).join('')}</select>`)}</div>
+    ${!dd?'<p class="err">The file has no data date. Enter it above.</p>':''}
+    <h4>${keys==='code'?'Activity code values':'Main WBS branches'} and their phase</h4>
+    <div class="scroll"><table class="tbl"><thead><tr><th>${keys==='code'?'Code value':'Main WBS'}</th><th class="n">Activities</th><th class="n">Client weight</th><th>Phase</th></tr></thead><tbody>
+      ${Object.entries(groups).sort((a,b)=>b[1].w-a[1].w).map(([k,g])=>{const m=(keys==='code'?st.code_map:st.wbs_map)[k]||'';return `<tr><td>${esc(k)}</td><td class="n">${fmt(g.n)}</td><td class="n">${tot?fmt(g.w/tot*100,1)+'%':'—'}</td>
+        <td><select data-schedmap="${esc(k)}" aria-label="Phase for ${esc(k)}"><option value="">— Not mapped —</option>${RPH.map(([p,l])=>`<option value="${p}" ${m===p?'selected':''}>${esc(l)}</option>`).join('')}</select></td></tr>`}).join('')||'<tr><td colspan="4" class="muted">Nothing to map.</td></tr>'}</tbody></table></div>
+    ${nu?`<p class="${S.wt==='client'&&hasPhaseW(S.pid)?'err':'small muted'}">${fmt(nu)} weighted activit${nu===1?'y has':'ies have'} no phase. ${S.wt==='client'&&hasPhaseW(S.pid)?'Map every branch before saving.':''}</p>`:''}
+    ${!tot?'<p class="err">No activity carries a weight with this weighting. Choose another.</p>':''}
+    ${sm?`<div class="rdcalcs" style="margin-top:8px">
+        <div class="rcalc"><span class="l">Client planned / actual</span><b>${pc(sm.client_plan)} / ${pc(sm.client_act)}</b><span class="t2">${S.wt==='client'?'the schedule\'s own weighting':'not given by an internal-weighted schedule'}</span></div>
+        <div class="rcalc"><span class="l">Internal planned / actual</span><b>${pc(sm.int_plan)} / ${pc(sm.int_act)}</b><span class="t2">${sm.int_basis==='none'?'set the internal weightage first':esc(sm.int_basis)}</span></div>
+        <div class="rcalc"><span class="l">Milestones</span><b>${['tcc','pac','fac'].filter(k=>sm[k+'_date']).map(k=>`${k.toUpperCase()} ${fmtDY(sm[k+'_date'])}`).join(' · ')||'None found'}</b><span class="t2">forecast, or actual where achieved</span></div></div>
+      <div class="scroll"><table class="tbl" style="margin-top:8px"><thead><tr><th>Phase</th><th class="n">Internal weightage</th><th class="n">Activities</th><th class="n">Planned</th><th class="n">Actual</th></tr></thead><tbody>
+        ${sm.phases.map(x=>`<tr><td>${esc(RPH_N[x.phase])}</td><td class="n">${x.iw?fmt(x.iw,1)+'%':'—'}</td><td class="n">${fmt(x.n)}</td><td class="n">${x.present?fmt(x.plan_pct,1)+'%':'—'}</td><td class="n">${x.present?fmt(x.act_pct,1)+'%':'—'}</td></tr>`).join('')}</tbody></table></div>
+      ${sm.missing_phases.length?`<p class="small muted">Phases with weightage but no activities in this schedule (left out, the others scaled up): ${sm.missing_phases.map(k=>esc(RPH_N[k])).join(', ')}.</p>`:''}`:''}
+    <div class="actions"><button class="btn primary" type="button" data-schedgo ${block?'disabled':''}>Save updated schedule</button><button class="btn" type="button" data-schedcancel>Cancel</button></div><p class="err" id="schedErr"></p></div>`;
+}
+async function handleSchedFile(file){
+  const pid=state.impPid;if(!pid)return toast('Choose a project first.');
+  if(!/\.xer$/i.test(file.name))return toast('Choose a P6 XER file.');
+  if(file.size>40*1024*1024)return toast('The file is larger than 40 MB.');
+  let text;try{text=await file.text()}catch(e){return toast('The file could not be read.')}
+  let P;try{P=parseSchedXER(text)}catch(e){return toast(e.message)}
+  const st=phaseSetupOf(pid),map={wbs_map:{...(st.wbs_map||{})},code_map:{...(st.code_map||{})}};
+  const ctype=st.code_type&&P.codeTypes.includes(st.code_type)?st.code_type:(P.codeTypes.find(c=>/phase/i.test(c))||'');
+  P.rows.forEach(r=>{if(r.wbs&&!(r.wbs in map.wbs_map)){const s=phaseSuggest(r.wbs);if(s)map.wbs_map[r.wbs]=s}Object.values(r.codes).forEach(v=>{if(v&&!(v in map.code_map)){const s=phaseSuggest(v);if(s)map.code_map[v]=s}})});
+  const pw=ACTS.find(a=>a.p===pid&&a.pwRes)?.pwRes;
+  state.sched={pid,file:file.name,hash:await sha256Hex(text),parsed:P,wt:state.schedWt||'client',dd:P.dataDate||'',wres:P.weightRes.length?(P.weightRes.find(x=>x.name===pw)||P.weightRes[0]).name:'__lab',ctype,map};
+  render();setTimeout(()=>{const el=$('#schedPanel');if(el&&el.scrollIntoView)el.scrollIntoView({block:'start'})},50);
+}
+async function schedGo(btn){
+  const S=state.sched;if(!S)return;const err=m=>{const e=$('#schedErr');if(e)e.textContent=m};btn.disabled=true;
+  const st=phaseSetupOf(S.pid),changed=JSON.stringify(st.wbs_map||{})!==JSON.stringify(S.map.wbs_map)||JSON.stringify(st.code_map||{})!==JSON.stringify(S.map.code_map)||(st.code_type||'')!==(S.ctype||'');
+  if(changed){const r=await phaseSetupSave({project_id:S.pid,weights:st.weights||{},wbs_map:S.map.wbs_map,code_type:S.ctype||null,code_map:S.map.code_map});if(!r){btn.disabled=false;return err('The mapping was not saved: '+phaseSetupSave.err)}}
+  const rows=schedRowsFor(S).map(({phase,...x})=>x);
+  const r=await schedCommit({project_id:S.pid,data_date:S.dd,weightage:S.wt,file_name:S.file,file_hash:S.hash,weight_basis:S.wres==='__lab'?'Planned labour units':S.wres==='__dur'?'Planned duration':S.wres,rows});
+  if(!r){btn.disabled=false;return err('Not saved: '+schedCommit.err)}
+  state.sched=null;toast(r.duplicate?'This file was already loaded; nothing changed':`Updated schedule saved, data date ${fmtDY(r.data_date)}`);render();
+}
+document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
+  if(t.id==='schedfile'&&t.files[0]){handleSchedFile(t.files[0]);t.value='';return}
+  if(t.matches('[data-schedwt]')){state.schedWt=t.value;if(state.sched)state.sched.wt=t.value;render();return}
+  const S=state.sched;if(!S)return;
+  if(t.matches('[data-schedd]')){S.dd=t.value;render();return}
+  if(t.matches('[data-schedwres]')){S.wres=t.value;render();return}
+  if(t.matches('[data-schedctype]')){S.ctype=t.value;render();return}
+  if(t.matches('[data-schedmap]')){(S.ctype?S.map.code_map:S.map.wbs_map)[t.dataset.schedmap]=t.value;render();return}});
+document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('[data-pwin]')){const s=RPH.reduce((t,[k])=>t+(+($(`[name="pw_${k}"]`)||{}).value||0),0),el=$('#pwTot');if(el){el.textContent=fmt(s,2)+'%';el.className=Math.abs(s-100)>0.01?'r-c':''}}});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-pwsave],[data-schedgo],[data-schedcancel]');if(!t)return;
+  if(t.matches('[data-schedcancel]')){state.sched=null;render();return}
+  if(t.matches('[data-schedgo]')){schedGo(t);return}
+  const pid=t.dataset.pwsave,st=phaseSetupOf(pid),w={};RPH.forEach(([k])=>{const el=$(`[name="pw_${k}"]`);if(el&&el.value.trim()!=='')w[k]=+el.value});
+  t.disabled=true;const r=await phaseSetupSave({project_id:pid,weights:w,wbs_map:st.wbs_map||{},code_type:st.code_type||null,code_map:st.code_map||{},note:($('#pwNote')||{}).value||''});t.disabled=false;
+  if(!r){const el=$('#pwErr');if(el)el.textContent='Not saved: '+phaseSetupSave.err;return}
+  logChange(`Internal weightage of ${projById(pid).short} saved: ${RPH.map(([k])=>`${k} ${w[k]||0}%`).join(', ')}`);toast('Internal weightage saved');render()});
+
+/* ---------- the reports against the updated schedule (the server's pt_rel_sched, mirrored) ---------- */
+function relSchedLocal(pid,k,pt,per,f){
+  const u=schedAt(pid,periodEnd(per,pt),k==='client'?'client':null);if(!u)return f;const s=u.summary||{},d=[];
+  const sp=k==='client'?s.client_plan:s.int_plan,sa=k==='client'?s.client_act:s.int_act,num=v=>v==null||v===''?null:+v;
+  let mine=num(f[k==='client'?'plan_pct':'planned_pct']);if(sp!=null&&mine!=null&&Math.abs(mine-sp)>0.05)d.push(`planned ${fmt(mine,1)}% (schedule ${fmt(+sp,1)}%)`);
+  mine=num(f[k==='client'?'act_pct':'actual_pct']);if(sa!=null&&mine!=null&&Math.abs(mine-sa)>0.05)d.push(`actual ${fmt(mine,1)}% (schedule ${fmt(+sa,1)}%)`);
+  ['tcc','pac','fac'].forEach(m=>{const fk=k==='client'?m+'_fc_date':m+'_ext_fc_date';if(s[m+'_date']&&f[fk]&&f[fk]!==s[m+'_date'])d.push(`${m.toUpperCase()} forecast ${f[fk]} (schedule ${s[m+'_date']})`)});
+  return Object.assign({},f,{sched_update_text:u.id,sched_data_date:u.data_date,sched_plan_pct:sp??null,sched_act_pct:sa??null,sched_tcc_date:s.tcc_date||null,sched_pac_date:s.pac_date||null,sched_fac_date:s.fac_date||null,
+    sched_basis_text:k==='client'?'client weightage':(s.int_basis||'none'),sched_diff_n:d.length,sched_diff_text:d.join('; ').slice(0,300)});
+}
+function relClientCalc(pid,pt,per,f){
+  const fail=t=>{throw new Error(t)},num=v=>v==null||v===''?null:+v;
+  ['plan_pct','act_pct'].forEach(k=>{const v=num(f[k]);if(v!=null&&(v<0||v>100))fail(`${k} must be between 0 and 100`)});
+  if(num(f.act_pct)==null)fail('Enter the actual progress');
+  ['mp_plan','mp_act'].forEach(k=>{const v=num(f[k]);if(v!=null&&v<0)fail(`${k} cannot be negative`)});
+  const g=Object.assign({},f);delete g.phases;delete g.milestones;delete g.lookahead;
+  const u=schedAt(pid,periodEnd(per,pt),'client'),s=(u&&u.summary)||{};
+  return Object.assign(g,{var_pct:num(g.plan_pct)!=null?r2(+g.act_pct-+g.plan_pct):null,spi:num(g.plan_pct)>0?Math.round(+g.act_pct/+g.plan_pct*1000)/1000:null,
+    phases:(s.phases||[]).filter(x=>x.present).map(x=>({phase:x.phase,plan_pct:x.plan_pct,act_pct:x.act_pct})),milestones:s.milestones||[],lookahead:s.lookahead||[]});
+}
+const stripSched=f=>{const g={};Object.entries(f||{}).forEach(([k,v])=>{if(!/^sched_/.test(k))g[k]=v});return g};
+/* the box on internal and client reports: where progress comes from, and the differences the approver validates */
+function schedBoxHTML(pid,k,t,per,f,r,canDecide){
+  const u=schedAt(pid,periodEnd(per,t),k==='client'?'client':null),g=r&&r.status!=='Draft'?f:relSchedLocal(pid,k,t,per,f||{});
+  if(!u)return `<p class="small muted" style="margin:6px 0 0">No updated schedule up to ${fmtDY(periodEnd(per,t))}${k==='client'?' with client weightage':''}: ${k==='client'?'load one in Baselines and P6 import to fill the client figures':'progress is worked out from daily reports and the weekly engineering and procurement update'}.</p>`;
+  if(r&&r.status!=='Draft'&&!(f||{}).sched_update_text)return `<p class="small muted" style="margin:6px 0 0">This version was saved before it was compared with the updated schedule of ${fmtDY(u.data_date)}. A new draft or revision is compared automatically.</p>`;
+  const n=+g.sched_diff_n||0,val=r&&r.sched_validated_by;
+  return `<div class="rdsched ${n?'warn':''}"><div><b>${k==='client'?'Client weightage':'Internal weightage'} · updated schedule of ${fmtDY(u.data_date)}</b> <span class="small muted">${esc(u.file_name||'')}${k!=='client'&&g.sched_basis_text&&g.sched_basis_text!=='phase weights'?' · '+esc(g.sched_basis_text):''}</span></div>
+    ${n?`<p style="margin:4px 0 0"><b>Differs from the updated schedule:</b> ${esc(g.sched_diff_text||'')}. ${val?'':`The regional planning section manager validates this before approving.`}</p>`:'<p class="small" style="margin:4px 0 0">Progress and milestone dates match the updated schedule.</p>'}
+    ${val?`<p class="small" style="margin:4px 0 0">Validated by ${esc((userById(r.sched_validated_by)||{}).name||'')} ${esc(tStamp(r.sched_validated_at))}: ${esc(r.sched_validation_note||'')}</p>`:''}
+    ${(!r||r.status==='Draft')&&canPrepRel(k)&&r&&(f||{}).sched_update_text!==u.id?`<p class="small" style="margin:6px 0 0">This draft was started before the updated schedule of ${fmtDY(u.data_date)}. <button class="btn sm" type="button" data-schedfill>Take progress and milestone dates from the updated schedule</button></p>`:''}
+    ${n&&canDecide&&!val?`<label class="chk" style="margin-top:6px"><input type="checkbox" id="relValChk"><span>I have checked these differences against the updated schedule</span></label><label class="field">Validation note (needed)<input id="relValNote" maxlength="1000"></label>`:''}</div>`;
+}
+
+/* ---------- client reporting: the weekly or monthly report for the client, by client weightage ---------- */
+function relClientDefaults(pid,t,per){
+  const u=schedAt(pid,periodEnd(per,t),'client'),s=(u&&u.summary)||{},last=relRows().filter(r=>r.project_id===pid&&r.kind==='planning'&&r.figures).sort((a,b)=>String(b.period).localeCompare(String(a.period)))[0];
+  return relClientCalc(pid,t,per,{plan_pct:s.client_plan??null,act_pct:s.client_act??0,tcc_fc_date:s.tcc_date||null,pac_fc_date:s.pac_date||null,fac_fc_date:s.fac_date||null,
+    mp_plan:last&&last.figures.mp_tot_plan!=null?last.figures.mp_tot_plan:null,mp_act:last&&last.figures.mp_tot_act!=null?last.figures.mp_tot_act:null});
+}
+const CL_NOTES=[['summary','Progress summary'],['achieved','Achievements this period'],['next','Planned for the next period'],['issues','Issues and support required from the client'],['remarks','Remarks']];
+function openClientRelease(pid,t,per){
+  const p=projById(pid),open=relOpen(pid,'client',t,per),released=relReleased(pid,'client',t,per),r=open||released,editable=(!r||r.status==='Draft')&&canPrepRel('client')&&!(!open&&released);
+  const u=id=>{const x=id&&userById(id);return x?x.name:'—'},H=r?relRows().filter(x=>x.project_id===pid&&x.kind==='client'&&x.period_type===t&&x.period===per).flatMap(x=>relAuditOf(x.id).map(a=>({...a,rev:x.rev}))).sort((a,b)=>String(b.at_time).localeCompare(String(a.at_time))):[];
+  const comp=relClientDefaults(pid,t,per),f=r?r.figures:comp,nar=(r&&r.narrative)||{},ov=(r&&r.overrides)||[],tab=state.clTab||'overview',dis=editable?'':'disabled';
+  const canDecide=open&&open.status==='Submitted'&&relCanApprove(pid,'client')&&open.submitted_by!==me().id,pc=v=>v==null||v===''?'—':fmt(+v,1)+'%';
+  const TABS=[['overview','Overview'],['phases','Progress by phase'],['ms','Milestones'],['look','Look-ahead'],['notes','Report notes'],['appr','Approval']],show=k=>tab===k?'':'hidden';
+  const ph=(r?f.phases:comp.phases)||[],ms=(r?f.milestones:comp.milestones)||[],la=(r?f.lookahead:comp.lookahead)||[];
+  const k=(l,v,s,cls)=>`<div class="rkpi ${cls||''}"><span class="l">${l}</span><b>${v}</b><span class="t2">${s||''}</span></div>`;
+  $('#sheet').innerHTML=`<div class="rdhead"><div><h2 style="margin:0">Client report · ${esc(perLabel(t,per))}</h2><span class="small muted">${esc(pcode(p))} · ${esc(p.name)} · client weightage</span></div>
+      ${r?`<span class="st ${r.status==='Released'?'Approved':r.status==='Submitted'?'Reviewed':'Draft'}">${esc(r.status==='Submitted'?'Awaiting approval':relReturned(r)?'Returned':r.status==='Released'?'Approved for issue':r.status)} · rev ${r.rev}</span>`:'<span class="st Draft">New</span>'}
+      <button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <div class="rkpis">${k('Planned progress',pc(f.plan_pct),'client weightage')}${k('Actual progress',pc(f.act_pct),'client weightage',f.plan_pct!=null?light(+f.plan_pct?(+f.act_pct||0)/+f.plan_pct:1):'')}
+      ${k('Variance',f.var_pct==null?'—':(f.var_pct>0?'+':'')+fmt(+f.var_pct,1)+'%','actual − planned',f.var_pct==null?'':f.var_pct>=0?'g':f.var_pct>=-5?'a':'r')}${k('SPI',f.spi!=null?fmt(+f.spi,2):'—','actual ÷ planned',f.spi!=null?light(+f.spi):'')}
+      ${k('TCC forecast',f.tcc_fc_date?fmtDY(f.tcc_fc_date):'—','')}${k('PAC forecast',f.pac_fc_date?fmtDY(f.pac_fc_date):'—','')}${k('Manpower',f.mp_act!=null?fmt(+f.mp_act):'—',f.mp_plan!=null?`planned ${fmt(+f.mp_plan)}`:'')}</div>
+    ${schedBoxHTML(pid,'client',t,per,f,r,canDecide)}
+    <div class="chips rdtabs" role="tablist">${TABS.map(([x,l])=>`<button type="button" role="tab" class="chip" data-cltab="${x}" aria-pressed="${tab===x}">${l}</button>`).join('')}</div>
+    <form id="relForm" data-pid="${esc(pid)}" data-k="client" data-t="${t}" data-per="${per}" data-id="${esc(open?open.id:'')}" novalidate>
+    <section class="rdpanel" data-clp="overview" ${show('overview')}><div class="rdgrid">
+      <div class="rdcard"><h3>Project</h3><table class="tbl kv"><tbody><tr><td>Project</td><td>${esc(pcode(p))} · ${esc(p.name)}</td></tr><tr><td>Client</td><td>${esc(p.client||'—')}</td></tr>
+        <tr><td>Reporting period</td><td>${esc(perLabel(t,per))}</td></tr><tr><td>Schedule data date</td><td>${f.sched_data_date?fmtDY(f.sched_data_date):(schedAt(pid,periodEnd(per,t),'client')?fmtDY(schedAt(pid,periodEnd(per,t),'client').data_date):'—')}</td></tr></tbody></table></div>
+      <div class="rdcard"><h3>Overall progress <span class="muted small">client weightage</span></h3><table class="tbl"><thead><tr><th>Figure</th><th class="n">Updated schedule</th><th class="n">In this report</th><th>Reason if different</th></tr></thead><tbody>
+        ${[['plan_pct','Planned progress'],['act_pct','Actual progress']].map(([x,l])=>{const o=ov.find(y=>y.field===x);return `<tr><td>${l}</td><td class="n">${pc(comp[x])}</td><td class="n">${editable?`<input name="c_${x}" type="number" min="0" max="100" step="0.01" value="${esc(f[x]??'')}" style="max-width:120px">`:pc(f[x])}</td>
+          <td>${editable?`<input name="cr_${x}" value="${esc(o?o.reason:'')}" placeholder="Needed only if you change it">`:o?esc(o.reason):''}</td></tr>`}).join('')}
+        <tr><td>Manpower, planned and actual</td><td class="n">—</td><td class="n">${editable?`<input name="c_mp_plan" type="number" min="0" step="1" value="${esc(f.mp_plan??'')}" style="max-width:80px"> <input name="c_mp_act" type="number" min="0" step="1" value="${esc(f.mp_act??'')}" style="max-width:80px">`:`${f.mp_plan??'—'} / ${f.mp_act??'—'}`}</td><td class="small muted">from the last internal report</td></tr></tbody></table></div></div>
+    </section>
+    <section class="rdpanel" data-clp="phases" ${show('phases')}><div class="rdcard"><h3>Progress by phase</h3><table class="tbl"><thead><tr><th>Phase</th><th class="n">Planned</th><th class="n">Actual</th><th class="n">Variance</th></tr></thead><tbody>
+      ${ph.map(x=>`<tr><td>${esc(RPH_N[x.phase]||x.phase)}</td><td class="n">${pc(x.plan_pct)}</td><td class="n">${pc(x.act_pct)}</td><td class="n ${+x.act_pct-+x.plan_pct>=0?'g-c':'r-c'}">${fmt(+x.act_pct-+x.plan_pct,1)}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">No updated schedule with client weightage yet.</td></tr>'}</tbody></table></div></section>
+    <section class="rdpanel" data-clp="ms" ${show('ms')}><div class="rdgrid">
+      <div class="rdcard"><h3>Contract milestones, forecast</h3><div class="fields fields1">${['tcc','pac','fac'].map(x=>F(`${x.toUpperCase()} forecast`,`<input name="d_${x}_fc_date" type="date" value="${esc(f[x+'_fc_date']||'')}" ${dis}>`)).join('')}</div>
+        <p class="small muted">Filled in from the updated schedule. A change is a difference the approver validates.</p></div>
+      <div class="rdcard"><h3>Milestones in the schedule</h3><table class="tbl"><thead><tr><th>Milestone</th><th>Planned</th><th>Forecast / actual</th></tr></thead><tbody>
+        ${ms.map(m=>`<tr><td class="small">${esc(m.name)}</td><td class="small">${m.plan_date?fmtDY(m.plan_date):'—'}</td><td class="small">${m.date?fmtDY(m.date):'—'}${m.actual?' <span class="st Approved">Achieved</span>':''}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">No milestones.</td></tr>'}</tbody></table></div></div></section>
+    <section class="rdpanel" data-clp="look" ${show('look')}><div class="rdcard"><h3>Look-ahead: open activities, next 30 days</h3><table class="tbl"><thead><tr><th>Activity</th><th>Phase</th><th>Planned start</th><th>Forecast finish</th><th class="n">% complete</th></tr></thead><tbody>
+      ${la.map(a=>`<tr><td class="small">${esc(a.id)}<span class="t2">${esc(a.name||'')}</span></td><td class="small">${esc(RPH_N[a.phase]||'—')}</td><td class="small">${a.bs?fmtDY(a.bs):'—'}</td><td class="small">${a.ef||a.bf?fmtDY(a.ef||a.bf):'—'}</td><td class="n">${fmt(+a.pct||0,0)}%</td></tr>`).join('')||'<tr><td colspan="5" class="muted">Nothing in the next 30 days.</td></tr>'}</tbody></table></div></section>
+    <section class="rdpanel" data-clp="notes" ${show('notes')}><div class="rdgrid">${CL_NOTES.map(([x,l])=>`<div class="rdcard"><h3>${l}</h3><textarea name="n_${x}" rows="4" ${dis}>${esc(nar[x]||'')}</textarea></div>`).join('')}</div>
+      <p class="small muted">The client report shows client-weighted figures only. Internal weightage, management remarks and cost are never in it.</p></section>
+    <section class="rdpanel" data-clp="appr" ${show('appr')}><div class="rdgrid">
+      <div class="rdcard"><h3>Approval</h3><table class="tbl kv"><tbody><tr><td>Current revision</td><td>${r?'rev '+r.rev:'New'}</td></tr><tr><td>Reason for revision</td><td>${esc(r&&r.revise_reason||'—')}</td></tr>
+        <tr><td>Prepared and submitted by</td><td>${esc(u(r&&r.submitted_by))}${r&&r.submitted_at?`<span class="t2">${esc(tStamp(r.submitted_at))}</span>`:''}</td></tr>
+        <tr><td>Approved for issue by</td><td>${esc(u(r&&r.approved_by))}${r&&r.approved_at?`<span class="t2">${esc(tStamp(r.approved_at))}</span>`:''}</td></tr>
+        <tr><td>Approver for this project</td><td>${esc(relApproverText(pid,'client'))}</td></tr></tbody></table></div>
+      <div class="rdcard"><h3>History</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.action)}</b> (rev ${a.rev}) by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}</li>`).join('')||'<li class="muted">Not prepared yet.</li>'}</ul></div></div></section>
+    <div class="rdfoot">
+      ${canDecide||relCanReturn(open)?`<label class="field" style="flex:1;min-width:220px">Comment (needed to reject)<input id="relNote" maxlength="500"></label>`:''}
+      ${released&&!open&&canPrepRel('client')?`<label class="field" style="flex:1;min-width:220px">Reason for a new revision<input id="relNote" maxlength="500"></label>`:''}
+      <div class="actions" style="margin:0">
+        ${editable?'<button class="btn" type="button" data-reldo="save">Save draft</button>':''}
+        ${(open&&open.status==='Draft'&&canPrepRel('client'))||(editable&&!open)?'<button class="btn primary" type="button" data-reldo="submit">Submit for approval</button>':''}
+        ${canDecide?'<button class="btn primary" type="button" data-reldo="approve">Approve for issue</button>':''}
+        ${relCanReturn(open)?'<button class="btn danger" type="button" data-reldo="return">Reject (return to planner)</button>':''}
+        ${open&&open.status==='Submitted'&&relCanApprove(pid,'client')&&open.submitted_by===me().id?'<span class="small muted">You submitted this version, so someone else approves it.</span>':''}
+        ${released&&!open&&canPrepRel('client')?'<button class="btn" type="button" data-reldo="revise">Start a new revision</button>':''}
+        <button class="btn" type="button" data-clexp="xlsx">Export to Excel</button><button class="btn" type="button" data-clexp="print">Print or save as PDF</button>
+      </div><p class="err" id="relErr" style="flex-basis:100%;margin:0"></p></div>
+    </form>`;
+  $('#sheet').classList.remove('wide');$('#sheet').classList.add('full');$('#drawer').hidden=false;
+}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-cltab]');if(!t)return;state.clTab=t.dataset.cltab;
+  document.querySelectorAll('#sheet [data-cltab]').forEach(b=>b.setAttribute('aria-pressed',b===t?'true':'false'));document.querySelectorAll('#sheet [data-clp]').forEach(s=>{s.hidden=s.dataset.clp!==state.clTab})});
+function clientPayload(f){
+  const figures={},overrides=[],nar={},S=relClientDefaults(f.dataset.pid,f.dataset.t,f.dataset.per);
+  [['plan_pct','Planned progress'],['act_pct','Actual progress']].forEach(([x,l])=>{const el=f.elements['c_'+x];if(!el)return;const v=el.value.trim()===''?null:+el.value;figures[x]=v;
+    if(S[x]!=null&&(v==null||Math.abs(v-S[x])>1e-9))overrides.push({field:x,label:l,computed:S[x],value:v,reason:(f.elements['cr_'+x]?.value||'').trim()})});
+  ['mp_plan','mp_act'].forEach(x=>{const el=f.elements['c_'+x];if(el)figures[x]=el.value.trim()===''?null:+el.value});
+  ['tcc','pac','fac'].forEach(x=>{const el=f.elements['d_'+x+'_fc_date'];if(el)figures[x+'_fc_date']=el.value||null});
+  CL_NOTES.forEach(([x])=>{const el=f.elements['n_'+x];if(el)nar[x]=el.value.trim()});
+  return {figures,overrides,narrative:nar,data_date:ASOF};
+}
+/* the client report as a file: Excel, or a printable page (save as PDF from the print dialog) */
+function clientReportData(pid,t,per){const r=relOpen(pid,'client',t,per)||relReleased(pid,'client',t,per);if(!r)return null;const p=projById(pid);return {r,p,f:r.figures||{},nar:r.narrative||{}}}
+async function clientExport(kind,pid,t,per){
+  const D=clientReportData(pid,t,per);if(!D)return toast('Save the report first.');const {r,p,f,nar}=D,pc=v=>v==null?'':+v;
+  const draft=r.status!=='Released'?' (DRAFT, not yet approved)':'';
+  if(kind==='xlsx'){try{await loadLib(LIBS.xlsx);
+    const wb=XLSX.utils.book_new(),A=(n,a)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),n);
+    A('Summary',[[`${p.name} (${pcode(p)}), client progress report, ${perLabel(t,per)}${draft}`],[],['Figure','Value'],['Planned progress %',pc(f.plan_pct)],['Actual progress %',pc(f.act_pct)],['Variance %',pc(f.var_pct)],['SPI',pc(f.spi)],
+      ['TCC forecast',f.tcc_fc_date||''],['PAC forecast',f.pac_fc_date||''],['FAC forecast',f.fac_fc_date||''],['Manpower planned',pc(f.mp_plan)],['Manpower actual',pc(f.mp_act)],['Schedule data date',f.sched_data_date||''],[],
+      ...CL_NOTES.map(([x,l])=>[l,nar[x]||''])]);
+    A('Phases',[['Phase','Planned %','Actual %'],...(f.phases||[]).map(x=>[RPH_N[x.phase]||x.phase,+x.plan_pct,+x.act_pct])]);
+    A('Milestones',[['Milestone','Planned','Forecast / actual','Achieved'],...(f.milestones||[]).map(m=>[m.name,m.plan_date||'',m.date||'',m.actual?'Yes':''])]);
+    A('Look-ahead',[['Activity ID','Activity','Phase','Planned start','Forecast finish','% complete'],...(f.lookahead||[]).map(a=>[a.id,a.name,RPH_N[a.phase]||'',a.bs||'',a.ef||a.bf||'',+a.pct||0])]);
+    await saveFile(`Client_report_${pcode(p)}_${per}${draft?'_DRAFT':''}.xlsx`,new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  }catch(e){toast('The Excel file could not be built: '+(e.message||''))}return}
+  const w=window.open('','_blank');if(!w)return toast('Allow pop-ups to print the report.');
+  const pcs=v=>v==null||v===''?'—':fmt(+v,1)+'%',row=(a,b)=>`<tr><td>${esc(a)}</td><td>${b}</td></tr>`;
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Client report ${esc(pcode(p))} ${esc(per)}</title><style>body{font:13px Arial,sans-serif;color:#111;margin:28px}h1{font-size:20px;margin:0}h2{font-size:15px;margin:18px 0 6px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:5px 7px;text-align:left;vertical-align:top}th{background:#f2f4f7}.draft{color:#b03a2b;font-weight:bold}</style></head><body>
+    <h1>${esc(p.name)} (${esc(pcode(p))})</h1><p>Client progress report · ${esc(perLabel(t,per))} · rev ${r.rev}${draft?` <span class="draft">${esc(draft)}</span>`:''}</p>
+    <table>${row('Planned progress',pcs(f.plan_pct))}${row('Actual progress',pcs(f.act_pct))}${row('Variance',f.var_pct==null?'—':fmt(+f.var_pct,1)+'%')}${row('SPI',f.spi!=null?fmt(+f.spi,2):'—')}
+      ${row('TCC forecast',f.tcc_fc_date?fmtDY(f.tcc_fc_date):'—')}${row('PAC forecast',f.pac_fc_date?fmtDY(f.pac_fc_date):'—')}${row('FAC forecast',f.fac_fc_date?fmtDY(f.fac_fc_date):'—')}${row('Schedule data date',f.sched_data_date?fmtDY(f.sched_data_date):'—')}</table>
+    <h2>Progress by phase</h2><table><tr><th>Phase</th><th>Planned</th><th>Actual</th></tr>${(f.phases||[]).map(x=>`<tr><td>${esc(RPH_N[x.phase]||x.phase)}</td><td>${pcs(x.plan_pct)}</td><td>${pcs(x.act_pct)}</td></tr>`).join('')}</table>
+    <h2>Milestones</h2><table><tr><th>Milestone</th><th>Planned</th><th>Forecast / actual</th></tr>${(f.milestones||[]).map(m=>`<tr><td>${esc(m.name)}</td><td>${m.plan_date?fmtDY(m.plan_date):'—'}</td><td>${m.date?fmtDY(m.date):'—'}${m.actual?' (achieved)':''}</td></tr>`).join('')}</table>
+    <h2>Look-ahead, next 30 days</h2><table><tr><th>Activity</th><th>Planned start</th><th>Forecast finish</th><th>%</th></tr>${(f.lookahead||[]).map(a=>`<tr><td>${esc(a.id)} ${esc(a.name||'')}</td><td>${a.bs?fmtDY(a.bs):'—'}</td><td>${a.ef||a.bf?fmtDY(a.ef||a.bf):'—'}</td><td>${fmt(+a.pct||0,0)}%</td></tr>`).join('')}</table>
+    ${CL_NOTES.filter(([x])=>nar[x]).map(([x,l])=>`<h2>${esc(l)}</h2><p>${esc(nar[x])}</p>`).join('')}
+    <script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();
+}
+/* fill a draft from the latest updated schedule */
+document.addEventListener('click',e=>{const t=e.target.closest('[data-schedfill]');if(!t)return;const f=$('#relForm');if(!f)return;const pid=f.dataset.pid,k=f.dataset.k,set=(n,v)=>{const el=f.elements[n];if(el&&v!=null&&v!==''){el.value=v}};
+  if(k==='client'){const c=relClientDefaults(pid,f.dataset.t,f.dataset.per);set('c_plan_pct',c.plan_pct);set('c_act_pct',c.act_pct);['tcc','pac','fac'].forEach(x=>set(`d_${x}_fc_date`,c[x+'_fc_date']))}
+  else{const s=relPlanSnapshot(pid),d=relDashDefaults(pid);['planned_pct','actual_pct','spi'].forEach(x=>set('f_'+x,s[x]));['ext_plan_pct','ext_act_pct','ext_plan_amt','ext_act_amt','tcc_ext_fc_date','pac_ext_fc_date','fac_ext_fc_date'].forEach(x=>set('d_'+x,d[x]));if(typeof rdPaint==='function')rdPaint()}
+  toast('Filled in from the updated schedule; save the draft to keep it')});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-clexp]');if(!t)return;const f=$('#relForm');if(!f)return;clientExport(t.dataset.clexp,f.dataset.pid,f.dataset.t,f.dataset.per)});
+
+/* ---------- demo: phase weightage and an updated schedule for two sample projects ---------- */
+const DEMO_WBS={GEN:'PROJECT PREPARATION',DES:'ENGINEERING & DESIGN',MAT:'EQUIPMENT & MATERIAL',CON:'CONSTRUCTION',INS:'INSTALLATION',TC:'TESTING & COMMISSIONING',CLO:'PROJECT CLOSE OUT'};
+function seedV36(){
+  if(CLOUD||DB.v36Seeded)return;DB.phaseSetup=DB.phaseSetup||{};DB.phaseAudit=DB.phaseAudit||[];DB.schedUpdates=DB.schedUpdates||[];DB.schedRows=DB.schedRows||{};
+  const W={GEN:5,DES:10,MAT:30,CON:30,INS:15,TC:7,CLO:3},wm=Object.fromEntries(Object.entries(DEMO_WBS).map(([k,v])=>[v,k]));
+  ['QOT','JBS'].forEach(pid=>{const p=projById(pid);if(!p)return;const acts=ACTS.filter(a=>a.p===pid);if(!acts.length)return;
+    DB.phaseSetup[pid]={project_id:pid,weights:{...W},wbs_map:{...wm},code_type:null,code_map:{},updated_by:null,updated_at:addDays(TODAY,-60)+'T09:00:00'};
+    DB.phaseAudit.push({id:DB.phaseAudit.length+1,project_id:pid,before:null,after:{weights:{...W},wbs_map:{...wm},code_type:null,code_map:{}},note:'Agreed with management at project start',by_user:null,by_name:(teamOf(pid,'plan')[0]||{}).name||'Planning engineer',at_time:addDays(TODAY,-60)+'T09:00:00'});
+    const ph=a=>{const c=clsOf(a),s=`${a.name} ${a.wbs} ${a.area}`;return c==='ENG'?'DES':c==='PRC'?'MAT':/test|commission|energi/i.test(s)?'TC':/install|erect|string|cable|equip/i.test(s)?'INS':'CON'};
+    const R=acts.map(a=>{const e=evm([a],ASOF),k=ph(a);return {id:a.id,name:a.name,wbs:DEMO_WBS[k],code:'',phase:k,w:Math.round(priceOf(a)||bacOf(a)),bs:a.bs,bf:a.bf,pct:Math.round((e.bac?Math.min(1,e.ev/e.bac):0)*1000)/10,ms:false,as:null,af:null,ef:a.bf}});
+    const tot=R.reduce((t,r)=>t+r.w,0),st=p.start||ACTS.filter(a=>a.p===pid).map(a=>a.bs).sort()[0],fi=p.finish||ACTS.filter(a=>a.p===pid).map(a=>a.bf).sort().pop();
+    R.push({id:pid+'-GEN-01',name:'Site establishment and general works',wbs:DEMO_WBS.GEN,code:'',phase:'GEN',w:Math.round(tot*0.03),bs:st,bf:addDays(st,60),pct:ASOF>=addDays(st,60)?100:50,ms:false,as:st,af:ASOF>=addDays(st,60)?addDays(st,62):null,ef:addDays(st,60)});
+    R.push({id:pid+'-CLO-01',name:'As-built documents and close out',wbs:DEMO_WBS.CLO,code:'',phase:'CLO',w:Math.round(tot*0.02),bs:addDays(fi,-60),bf:fi,pct:0,ms:false,as:null,af:null,ef:fi});
+    (p.milestones||[]).forEach((m,i)=>R.push({id:`${pid}-MS${String(i+1).padStart(2,'0')}`,name:m.n,wbs:DEMO_WBS.CON,code:'',phase:'CON',w:0,bs:m.plan,bf:m.plan,pct:m.act?100:0,ms:true,as:null,af:m.act||null,ef:m.act||m.fc||m.plan}));
+    const dd=addDays(ASOF,-1),u={id:'SU-'+pid,project_id:pid,data_date:dd,weightage:'client',file_name:`${pid}_updated_schedule_${dd}.xer`,file_hash:'demo-'+pid,weight_basis:'Price weight',weights:{...W},
+      summary:schedSummary(R,dd,'client',W),uploaded_by:(teamOf(pid,'plan')[0]||{}).id||null,uploaded_name:(teamOf(pid,'plan')[0]||{}).name||'Planning engineer',uploaded_at:dd+'T16:00:00'};
+    DB.schedUpdates.push(u);DB.schedRows[u.id]=R;
+    relRows().filter(r=>r.project_id===pid&&r.kind==='planning'&&['Draft','Submitted'].includes(r.status)&&r.figures).forEach(r=>{r.figures=relSchedLocal(pid,'planning',r.period_type,r.period,stripSched(r.figures))})});
+  DB.v36Seeded=true;save();
+}
+
 /* ---------- backup, restore and the move to the server ---------- */
 const backupName=k=>`protrack-${k}-${localISO()}.json`;
 async function downloadBrowserBackup(){
@@ -4077,7 +4499,7 @@ async function downloadServerBackup(){
   const out={format:'protrack-server-backup',version:1,app:APP_VERSION,exported_at:new Date().toISOString(),projects:[]};
   for(const id of ids){try{const x=await rpc('export_project',{p:id});
       for(const t of ['lifecycle_stages','lifecycle_audit','register_audit']){try{x[t]=await selAll(t,'*',q=>q.eq('project_id',id),t==='lifecycle_stages'?['stage_no']:['id'])}catch(e){}}   // lifecycle (v2.7) and register (v2.8) records, when installed
-      for(const [t,o] of [['report_releases',['period','id']],['release_audit',['id']],['co_log',['id']],['budget_supplements',['id']],['issues',['issue_no']],['issue_audit',['id']],['doc_boxes',['box_key']],['documents',['created_at','id']],['doc_audit',['id']]]){try{x[t]=await selAll(t,'*',q=>q.eq('project_id',id),o)}catch(e){}}   // releases and logs (v3.0), issues (v3.1), when installed and readable
+      for(const [t,o] of [['report_releases',['period','id']],['release_audit',['id']],['co_log',['id']],['budget_supplements',['id']],['issues',['issue_no']],['issue_audit',['id']],['doc_boxes',['box_key']],['documents',['created_at','id']],['doc_audit',['id']],['project_phase_setup',['project_id']],['phase_setup_audit',['id']],['schedule_updates',['uploaded_at','id']],['schedule_update_rows',['update_id','act_id']]]){try{x[t]=await selAll(t,'*',q=>q.eq('project_id',id),o)}catch(e){}}   // releases and logs (v3.0), issues (v3.1), when installed and readable
       try{const ds=new Set((x.dprs||[]).map(d=>d.id));x.dpr_qty_just=(await selAll('dpr_qty_just','*',null,['id'])).filter(j=>ds.has(j.dpr_id))}catch(e){}   // quantity justifications (v3.2)
       out.projects.push(x)}catch(e){return toast(`Backup stopped at ${projById(id).short}: ${srvMsg(e)}`)}}
   await saveFile(backupName('server-backup'),new Blob([JSON.stringify(out)],{type:'application/json'}));
@@ -4317,7 +4739,7 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.5';
+const APP_VERSION='3.6';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'xr',label:'Executive report (released)'},{v:'exec',label:'Live summary (working data)'}]},
@@ -4325,7 +4747,7 @@ const DOMAINS=[
     {v:'proj',label:'Project overview'},{v:'act',label:'Actions and approvals'},
     {v:'tender',label:'Tender register'},{v:'iss',label:'Issue register'},{v:'docs',label:'Project document rack'},{plan:'Contract register'},{plan:'Handover checklist'}]},
   {k:'planning',label:'Planning & Scheduling',ic:'base',items:[
-    {v:'pdash',label:'Planning dashboard'},{v:'rel',sec:'planning',label:'Progress releases'},{v:'base',sec:'p6',label:'Baselines and P6 import'},{v:'upd',label:'Weekly E&P update'},
+    {v:'pdash',label:'Planning dashboard'},{v:'rel',sec:'planning',label:'Internal Reporting'},{v:'rel',sec:'client',label:'Client Reporting'},{v:'base',sec:'p6',label:'Baselines and P6 import'},{v:'upd',label:'Weekly E&P update'},
     {v:'rep',rep:'basecmp',label:'Baseline comparison'},{v:'rep',rep:'p6upd',label:'P6 progress update'},
     {plan:'Governed baseline register'},{plan:'Look-ahead and alerts'}]},
   {k:'cost',label:'Cost Control',ic:'eva',items:[
@@ -4507,9 +4929,9 @@ function renderProj(){
   const kpi=(key,label,val,sub,spark,cls)=>`<div class="panel kpi pk" data-kpi="${key}"><div class="l">${label}</div><div class="v ${cls||''}">${val}</div><div class="s">${sub}</div>${spark||''}</div>`;
   const prog=e=>e.bac?e.ev/e.bac:0;
   const heads=(()=>{const V=valid().filter(l=>l.p===p.id&&l.date>=addDays(ASOF,-6));const last=V.map(l=>l.date).sort().pop();return last?V.filter(l=>l.date===last).reduce((t,l)=>t+headsOf(l),0):0})();
-  const kpis=[kpi('spi','Schedule performance (SPI)',fmt(k.e.spi,2),delta(last.spi,prev.spi),sparkline(ser(e=>e.spi)),light(k.e.spi)+'-c'),
+  const kpis=[kpi('spi','Schedule performance (SPI)',fmt(k.spi,2),k.src?esc(progNote(progOf(p.id))):delta(last.spi,prev.spi),sparkline(ser(e=>e.spi)),light(k.spi)+'-c'),
     site?kpi('prod','Productivity, 30 days',k.pi?pct(k.pi,0):'—','earned over spent manhours',''):kpi('cpi','Cost performance (CPI)',fmt(k.e.cpi,2),delta(last.cpi,prev.cpi),sparkline(ser(e=>e.cpi)),light(k.e.cpi)+'-c'),
-    kpi('complete','Physical progress',pct(k.act,0),`plan ${pct(k.plan,0)} · ${delta(prog(last),prog(prev),1,true)}`,sparkline(ser(prog))),
+    kpi('complete','Physical progress',pct(k.act,0),`plan ${pct(k.plan,0)} · ${k.src?esc(progNote(progOf(p.id))):delta(prog(last),prog(prev),1,true)}`,sparkline(ser(prog))),
     site?kpi('heads','Workforce, last reported day',fmt(heads),'own and subcontract',''):kpi('eac','Forecast cost, measured scope',sar(k.x.eac1),`budget ${sar(k.e.bac)} · <span class="${k.x.vac<0?'dn':'up'}">${k.x.vac<0?'over':'under'} by ${sar(Math.abs(k.x.vac))}</span>`,sparkline(ser(e=>e.cpi?e.bac/e.cpi:null)))].join('');
   const t=invTotals(p.id),bp=billPosition(p);
   const poRows=[];SUBS.forEach(sb=>posOf(sb,p.id).forEach(o=>poRows.push({sb,o})));
@@ -4720,7 +5142,7 @@ function renderDash(){
     <div class="panel kpi" data-kpi="prod"><div class="l">Manhours, 30 days</div><div class="v">${fmt(p30.mh)}</div><div class="s">Earned ${fmt(p30.earned)} (${pct(p30.pi)}), overtime ${pct(p30.mh?p30.ot/p30.mh:0,0)}</div>${sparkline(series.map(o=>o.mh),{color:'var(--bar)',fillOp:.35})}</div>
     <div class="panel kpi" data-kpi="spi"><div class="l">Schedule (SPI)</div><div class="gaugerow">${gauge(e.spi,'SPI')}<div class="s">EV ${sar(e.ev)}<br>PV ${sar(e.pv)}<br>${e.sv>=0?'Ahead':'Behind'} by ${sar(Math.abs(e.sv))}</div></div></div>
     ${SITE_ROLES.includes(state.role)?'':`<div class="panel kpi" data-kpi="cpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(e.cpi,'CPI')}<div class="s">EV ${sar(e.ev)}<br>AC ${sar(e.ac)}<br>${e.cv>=0?'Under':'Over'} by ${sar(Math.abs(e.cv))}</div></div></div>`}
-    <div class="panel kpi" data-kpi="complete"><div class="l">Portfolio complete</div><div class="gaugerow">${donut(e.bac?e.ev/e.bac:0,'Portfolio complete')}<div class="s">Plan ${pct(e.bac?e.pv/e.bac:0,0)} by today<br>${fmt(acts.length)} activities<br>${fmt(scopeProjects().length)} project${scopeProjects().length===1?'':'s'}</div></div></div>
+    <div class="panel kpi" data-kpi="complete"><div class="l">Portfolio complete</div><div class="gaugerow">${(()=>{const P=progIds([...SCOPE],e);return `${donut(P.act,'Portfolio complete')}<div class="s">Plan ${pct(P.plan,0)} ${P.sched?'(internal weightage)':'by today'}<br>`})()}${fmt(acts.length)} activities<br>${fmt(scopeProjects().length)} project${scopeProjects().length===1?'':'s'}</div></div></div>
     <div class="panel kpi warncard ${state.role==='foreman'?'':'click'}" ${state.role==='foreman'?'':'data-go="rep" data-rep="warn"'}><div class="l">Early warnings</div>
       <div class="sevs">${['High','Medium','Low'].map(k=>`<span class="sev ${k}">${warn.filter(w=>w.sev===k).length} ${k.toLowerCase()}</span>`).join('')}</div>
       <ul class="warnlist">${warn.slice(0,3).map(w=>`<li><span class="dot ${w.sev}"></span><b>${esc(w.proj)}</b> ${esc(w.ind.toLowerCase())}, ${esc(w.val)}</li>`).join('')||'<li class="muted">Nothing above threshold.</li>'}</ul></div>
@@ -4729,8 +5151,8 @@ function renderDash(){
   <section class="g g-2">
     <div class="panel"><h2>Daily productivity and manhours</h2><div class="chart"><canvas id="trend" aria-label="Daily productivity index and manhours chart"></canvas></div></div>
     <div class="panel"><h2>Project health and forecast</h2><div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Progress, planned vs actual</th><th class="n">SPI</th><th class="n">CPI</th><th class="n">Forecast finish</th><th class="n">Risk</th></tr></thead><tbody>
-      ${fcs.map(({p,f})=>`<tr class="click" data-scope="${p.id}"><td>${esc(p.short)}<span class="t2">${esc(secById(p.sector)?.name||'')}, ${esc(cityName(p))}</span></td><td>${f.bac?pbar(f.pv/f.bac,f.ev/f.bac)+`<span class="t2">${pct(f.ev/f.bac,0)} done, plan ${pct(f.pv/f.bac,0)}</span>`:'<span class="muted small">No baseline</span>'}</td><td class="n ${light(f.spi)}-c">${f.spi.toFixed(2)}</td><td class="n ${light(f.cpi)}-c">${f.cpi.toFixed(2)}</td><td class="n">${f.slip>900?'—':fmtDY(f.fin)}<span class="t2">${f.slip>900?'':f.slip>0?f.slip+(f.slip===1?' day late':' days late'):f.slip===0?'On baseline':Math.abs(f.slip)+(f.slip===-1?' day early':' days early')}</span></td><td class="n">${f.conf?`<b class="${f.risk>=60?'r':f.risk>=35?'a':'g'}-c">${f.risk}</b><span class="t2">${f.conf}% confidence</span>`:'<span class="muted small">No baseline</span>'}</td></tr>`).join('')}
-    </tbody></table></div><p class="small muted">Forecast extends the last 14 days of earned value to the remaining budget. Risk blends SPI, CPI and the 7-day productivity index.</p></div>
+      ${fcs.map(({p,f})=>{const P=progOf(p.id);return `<tr class="click" data-scope="${p.id}"><td>${esc(p.short)}<span class="t2">${esc(secById(p.sector)?.name||'')}, ${esc(cityName(p))}</span></td><td>${P?pbar(P.plan,P.act)+`<span class="t2">${pct(P.act,0)} done, plan ${pct(P.plan,0)}, ${esc(progNote(P))}</span>`:f.bac?pbar(f.pv/f.bac,f.ev/f.bac)+`<span class="t2">${pct(f.ev/f.bac,0)} done, plan ${pct(f.pv/f.bac,0)}</span>`:'<span class="muted small">No baseline</span>'}</td><td class="n ${light(P?P.spi:f.spi)}-c">${(P?P.spi:f.spi).toFixed(2)}</td><td class="n ${light(f.cpi)}-c">${f.cpi.toFixed(2)}</td><td class="n">${f.slip>900?'—':fmtDY(f.fin)}<span class="t2">${f.slip>900?'':f.slip>0?f.slip+(f.slip===1?' day late':' days late'):f.slip===0?'On baseline':Math.abs(f.slip)+(f.slip===-1?' day early':' days early')}</span></td><td class="n">${f.conf?`<b class="${f.risk>=60?'r':f.risk>=35?'a':'g'}-c">${f.risk}</b><span class="t2">${f.conf}% confidence</span>`:'<span class="muted small">No baseline</span>'}</td></tr>`}).join('')}
+    </tbody></table></div><p class="small muted">Progress and SPI use the internal weightage of the latest updated schedule where one is loaded. Forecast extends the last 14 days of earned value to the remaining budget. Risk blends SPI, CPI and the 7-day productivity index.</p></div>
   </section>
   <section class="g g-2">
     <div class="panel"><h2>Activity performance, 30 days</h2><div class="scroll"><table class="tbl"><thead><tr><th>Activity</th><th>Complete</th><th class="n">Planned rate</th><th class="n">Actual rate</th><th class="n">Variance</th><th class="n">Index</th><th class="n">Complete</th></tr></thead><tbody>
@@ -5505,8 +5927,9 @@ function rasaQAList(){
 function rasaQAHTML(){return rasaQAList().map(([k,ic,l])=>`<button type="button" class="rasa-qa" data-rasaqa="${k}"><span aria-hidden="true">${ic}</span>${l}</button>`).join('')}
 function rasaPortfolio(){
   const acts=scopeActs(),e=evm(acts,ASOF),w30=agg(valid().filter(d=>d.date>=addDays(TODAY,-30)));
-  return {e,pi:w30.pi,complete:e.bac?e.ev/e.bac:0,plan:e.bac?e.pv/e.bac:0};
+  const P=progIds([...SCOPE],e);return {e,pi:w30.pi,complete:P.act,plan:P.plan,spi:P.spi};
 }
+const spiOf=(p,f)=>{const P=progOf(p.id);return P?P.spi:f.spi};
 function rasaQA(k){
   const lab=(RASA_QA.find(x=>x[0]===k)||[])[2]||k;
   if(k==='ask'){RasaState.set('LISTENING',{caption:'Go ahead, ask me anything about your projects.',hold:6000,next:'IDLE'});$('#aiQ').focus();return}
@@ -5515,15 +5938,15 @@ function rasaQA(k){
   if(['health','schedule','progress','cost','critical','manpower'].includes(k)&&!scopeActs().length){rasaTurn(lab,NOEV(`No baseline in ${sc}, so there are no progress, schedule or cost figures to report.`,'Load the P6 baseline first.'),{final:'IMPORTANT_INSIGHT'});return}
   if(k==='health'){
     const P=scopeProjects().filter(p=>ACTS.some(a=>a.p===p.id)).map(rasaProj),att=P.filter(x=>x.f.spi<0.95||(!site&&x.f.cpi<0.95)||x.f.risk>60);
-    h=`<p>I checked ${esc(sc)}. Overall progress is <b>${pct(X.complete,0)}</b> against a plan of ${pct(X.plan,0)}, schedule performance <b>SPI ${fmt(X.e.spi,2)}</b>${site?'':`, cost performance <b>CPI ${fmt(X.e.cpi,2)}</b>`}, and productivity over 30 days is <b>${pct(X.pi,0)}</b>.</p>
-      ${att.length?`<p>${att.length} project${att.length>1?'s need':' needs'} attention:</p><ul>${att.slice(0,4).map(x=>`<li><b>${esc(x.p.short)}</b>: SPI ${fmt(x.f.spi,2)}${site?'':`, CPI ${fmt(x.f.cpi,2)}`}, risk ${x.f.risk}%</li>`).join('')}</ul><p>Would you like me to show the activities behind it?</p>`:'<p>Every project is within tolerance.</p>'}`;
-    meta={point:X.e.spi<0.95?'spi':'complete',label:`SPI ${fmt(X.e.spi,2)}`,final:att.length?'WARNING':'SUCCESS'};
+    h=`<p>I checked ${esc(sc)}. Overall progress is <b>${pct(X.complete,0)}</b> against a plan of ${pct(X.plan,0)}, schedule performance <b>SPI ${fmt(X.spi,2)}</b>${site?'':`, cost performance <b>CPI ${fmt(X.e.cpi,2)}</b>`}, and productivity over 30 days is <b>${pct(X.pi,0)}</b>.</p>
+      ${att.length?`<p>${att.length} project${att.length>1?'s need':' needs'} attention:</p><ul>${att.slice(0,4).map(x=>`<li><b>${esc(x.p.short)}</b>: SPI ${fmt(spiOf(x.p,x.f),2)}${site?'':`, CPI ${fmt(x.f.cpi,2)}`}, risk ${x.f.risk}%</li>`).join('')}</ul><p>Would you like me to show the activities behind it?</p>`:'<p>Every project is within tolerance.</p>'}`;
+    meta={point:X.spi<0.95?'spi':'complete',label:`SPI ${fmt(X.spi,2)}`,final:att.length?'WARNING':'SUCCESS'};
   }else if(k==='schedule'){
-    const P=scopeProjects().filter(p=>ACTS.some(a=>a.p===p.id)).map(rasaProj).sort((a,b)=>a.f.spi-b.f.spi);
-    h=`<p>I checked the latest schedule data. Your SPI is <b>${fmt(X.e.spi,2)}</b>, which means the work is ${X.e.spi>=1?'at or ahead of':'behind'} the planned schedule.</p>
-      <ul>${P.slice(0,5).map(x=>`<li><b>${esc(x.p.short)}</b>: SPI ${fmt(x.f.spi,2)}${x.f.fin&&x.f.slip<900?`, forecast finish ${fmtD(x.f.fin)}${x.f.slip>0?`, <span class="r-c">${x.f.slip} days late</span>`:''}`:''}</li>`).join('')}</ul>
+    const P=scopeProjects().filter(p=>ACTS.some(a=>a.p===p.id)).map(rasaProj).sort((a,b)=>spiOf(a.p,a.f)-spiOf(b.p,b.f));
+    h=`<p>I checked the latest schedule data. Your SPI is <b>${fmt(X.spi,2)}</b>, which means the work is ${X.spi>=1?'at or ahead of':'behind'} the planned schedule.</p>
+      <ul>${P.slice(0,5).map(x=>`<li><b>${esc(x.p.short)}</b>: SPI ${fmt(spiOf(x.p,x.f),2)}${x.f.fin&&x.f.slip<900?`, forecast finish ${fmtD(x.f.fin)}${x.f.slip>0?`, <span class="r-c">${x.f.slip} days late</span>`:''}`:''}</li>`).join('')}</ul>
       <p>Would you like me to identify the activities contributing most to the delay?</p>`;
-    meta={point:'spi',label:`SPI ${fmt(X.e.spi,2)}`,final:X.e.spi<0.95?'WARNING':'SUCCESS'};
+    meta={point:'spi',label:`SPI ${fmt(X.spi,2)}`,final:X.spi<0.95?'WARNING':'SUCCESS'};
   }else if(k==='cost'){
     h=`<p>I reviewed cost against earned value. Portfolio CPI is <b>${fmt(X.e.cpi,2)}</b>: ${X.e.cpi>=1?'the work is costing less than it earns.':'every riyal of work earned is costing more than planned.'}</p>${answer('eac forecast')}`;
     meta={point:'cpi',label:`CPI ${fmt(X.e.cpi,2)}`,final:X.e.cpi<0.95?'WARNING':'SUCCESS'};
@@ -5532,7 +5955,7 @@ function rasaQA(k){
   else if(k==='manpower'){h=`<p>I compared the workforce on site with what the remaining plan needs.</p>${answer('manpower forecast')}`;meta={point:'heads',label:'Workforce',final:'IMPORTANT_INSIGHT'}}
   else if(k==='procurement'){h=`<p>I checked engineering and procurement against the milestones.</p>${answer('design and procurement')}`;meta={final:/days after the baseline/.test(h)?'WARNING':'SUCCESS'}}
   else if(k==='progress'){h=`<p>Progress is <b>${pct(X.complete,0)}</b> complete against <b>${pct(X.plan,0)}</b> planned by today.</p>${answer("today's productivity")}`;meta={point:'complete',label:`${pct(X.complete,0)} complete`,final:X.complete+0.02<X.plan?'WARNING':'SUCCESS'}}
-  else if(k==='exec'){go('exec');h=`<p>I've opened the executive summary for ${esc(sc)}: ${pct(X.complete,0)} complete, SPI ${fmt(X.e.spi,2)}${site?'':`, CPI ${fmt(X.e.cpi,2)}`}. Tap any row to focus everything on that project.</p>`;meta={final:'SUCCESS'}}
+  else if(k==='exec'){go('exec');h=`<p>I've opened the executive summary for ${esc(sc)}: ${pct(X.complete,0)} complete, SPI ${fmt(X.spi,2)}${site?'':`, CPI ${fmt(X.e.cpi,2)}`}. Tap any row to focus everything on that project.</p>`;meta={final:'SUCCESS'}}
   if(['health','schedule','exec'].includes(k))h+=rasaEv(['dpr','baseline','evm']);
   meta.navigate=true;
   rasaTurn(lab,h,meta);
@@ -6195,8 +6618,8 @@ function timingRows(){
 const KPI_DEFS=[
   ['projects','Projects',g=>({v:String(g.ks.length),s:`${new Set(g.ks.map(k=>k.p.region)).size} regions, ${new Set(g.ks.map(k=>k.p.sector)).size} sectors`})],
   ['value','Contract value',g=>({v:`SAR ${fmt(g.ks.reduce((t,k)=>t+(+k.p.value||0),0))}M`,s:'Signed value in scope'})],
-  ['complete','Portfolio complete',g=>({v:pct(g.e.bac?g.e.ev/g.e.bac:0,0),s:`Plan ${pct(g.e.bac?g.e.pv/g.e.bac:0,0)} by today`})],
-  ['spi','Schedule, SPI',g=>({v:g.e.spi.toFixed(2),s:`${g.e.sv>=0?'Ahead':'Behind'} by ${sar(Math.abs(g.e.sv))}`,c:light(g.e.spi)})],
+  ['complete','Portfolio complete',g=>{const P=progIds(g.ks.map(k=>k.p.id),g.e);return {v:pct(P.act,0),s:`Plan ${pct(P.plan,0)} ${P.sched?'(internal weightage)':'by today'}`}}],
+  ['spi','Schedule, SPI',g=>{const P=progIds(g.ks.map(k=>k.p.id),g.e);return P.sched?{v:P.spi.toFixed(2),s:'Internal weightage, updated schedules',c:light(P.spi)}:{v:g.e.spi.toFixed(2),s:`${g.e.sv>=0?'Ahead':'Behind'} by ${sar(Math.abs(g.e.sv))}`,c:light(g.e.spi)}}],
   ['cpi','Cost, CPI',g=>({v:g.e.cpi.toFixed(2),s:`${g.e.cv>=0?'Under':'Over'} by ${sar(Math.abs(g.e.cv))}`,c:light(g.e.cpi)})],
   ['prod','Productivity, 30 days',g=>({v:g.pi?pct(g.pi,0):'—',s:'Earned over spent manhours',c:g.pi?light(g.pi):''})],
   ['heads','Workforce',g=>({v:fmt(agg(valid().filter(d=>d.date===ASOF)).heads),s:'On the last reported day'})],
@@ -6216,8 +6639,8 @@ const KPI_DEFS=[
 const COL_DEFS=[
   ['n','Projects','n',r=>r.ks.length],
   ['value','Value','sar0',r=>r.ks.reduce((t,k)=>t+(+k.p.value||0),0)*1e6],
-  ['bar','Progress','bar',r=>({plan:r.e.bac?r.e.pv/r.e.bac:0,act:r.e.bac?r.e.ev/r.e.bac:0})],
-  ['spi','SPI','idx',r=>r.e.spi],['cpi','CPI','idx',r=>r.e.cpi],
+  ['bar','Progress','bar',r=>{const P=progIds(r.ks.map(k=>k.p.id),r.e);return {plan:P.plan,act:P.act}}],
+  ['spi','SPI','idx',r=>progIds(r.ks.map(k=>k.p.id),r.e).spi],['cpi','CPI','idx',r=>r.e.cpi],
   ['prod','Productivity','pct',r=>r.pi],
   ['crit','Critical','n',r=>r.ks.filter(k=>k.crit).length],
   ['invoiceable','Invoiceable','sar',r=>r.b.inv],['invoiced','Invoiced','sar',r=>r.b.sub],
@@ -6285,10 +6708,10 @@ function execCustomHTML(){
 const canExec=()=>['sa','exec','rm','pf','plan','costing','pm','sm','eng'].includes(state.role);
 function projKPI(p){
   const acts=ACTS.filter(a=>a.p===p.id),e=evm(acts,ASOF),f=forecast(p),x=eacOf(f);
-  const plan=e.bac?e.pv/e.bac:0,act=e.bac?e.ev/e.bac:0;
+  const P=progOf(p.id),plan=P?P.plan:e.bac?e.pv/e.bac:0,act=P?P.act:e.bac?e.ev/e.bac:0,spi=P?P.spi:e.spi;
   const pi=agg(lines().filter(l=>l.p===p.id&&VALID.has(l.status)&&l.date>=addDays(TODAY,-30))).pi;
   const crit=(f.spi<0.95?1:0)+(f.cpi<0.95?1:0)+(pi&&pi<0.9?1:0)+(f.slip>14&&f.slip<900?1:0);
-  return {p,acts,e,f,x,plan,act,va:act-plan,pi,crit,score:(1-f.spi)+(1-f.cpi)+(pi?1-pi:0)+clamp((f.slip>900?0:f.slip)/120,0,1)};
+  return {p,acts,e,f,x,plan,act,spi,src:P?P.basis:null,sdd:P?P.dd:null,va:act-plan,pi,crit,score:(1-f.spi)+(1-f.cpi)+(pi?1-pi:0)+clamp((f.slip>900?0:f.slip)/120,0,1)};
 }
 function bottlenecks(p){
   const out=warnings().filter(w=>w.proj===p.short&&w.sev!=='Low').slice(0,5).map(w=>({t:w.sev,h:`${w.item}: ${w.ind} at ${w.val}`,d:w.act}));
@@ -6423,7 +6846,7 @@ function billing(p,t){
   const rows=PHASES.map(([k,name])=>{
     const g=acts.filter(a=>phaseOf(a)===k),price=g.reduce((x,a)=>x+priceOf(a),0);
     if(!price)return {k,name,price:0,pct:0,gross:0,cap:0,capped:0,rel:0,billable:0,none:true};
-    const earned=g.reduce((x,a)=>{const e=evm([a],dt);return x+priceOf(a)*(e.bac?Math.min(1,e.ev/e.bac):0)},0);
+    const earned=g.reduce((x,a)=>{const sd=schedDone(a,dt);if(sd!=null)return x+priceOf(a)*sd;const e=evm([a],dt);return x+priceOf(a)*(e.bac?Math.min(1,e.ev/e.bac):0)},0);
     const cfg=fixPhase(B.phases[k]);
     const capAmt=price*(+cfg.cap)/100,capped=Math.min(earned,capAmt);
     const rels=[[cfg.rel1,cfg.pct1],[cfg.rel2,cfg.pct2]].filter(([m,q])=>m&&q>0).map(([m,q])=>{
@@ -7074,6 +7497,7 @@ function renderBaseline(){
     </div>
     <p class="small muted" style="margin:10px 0 0">Accepts a P6 XER export, P6 XML (PMXML) or the Excel template. The file is read in your browser and never uploaded. ${set==='ORG'?'Importing the original baseline replaces the activities it matches and keeps everything else.':'A revised or recovery baseline is stored as dates only, against the existing activities.'}</p>
     <div id="impBox"></div></section>
+  ${pid&&canBaseline()?phasePanelHTML(pid)+schedPanelHTML(pid):''}
   <section class="g g-kpi" ${canBaseline()?'':'hidden'}>
     ${['ORG','REV','REC'].map(k=>{const b=k==='ORG'?null:bsetOf(pid,k);
       const loaded=k==='ORG'?(acts.length?`${fmt(acts.length)} activities`:'Not loaded'):(b?`${fmt(Object.keys(b.rows).length)} activities`:'Not loaded');
@@ -7420,12 +7844,12 @@ const REPORTS={
       chart:pal=>({type:'bar',data:{labels:rows.map(r=>r.id),datasets:[{label:'Planned %',data:rows.map(r=>+(r.pp*100).toFixed(1)),backgroundColor:pal.bar},{label:'Actual %',data:rows.map(r=>+(r.ap*100).toFixed(1)),backgroundColor:pal.accent}]},options:{indexAxis:rows.length>8?'y':'x',scales:{[rows.length>8?'x':'y']:{min:0,max:100,title:{display:true,text:'% complete'}}}}}),
       notes:'Planned % follows the baseline dates. Actual % is earned quantity including progress before the reporting window.'}}},
   projprog:{sheet:'Progress by project',title:'Planned vs actual progress, project-wise',desc:'Progress, SPI and CPI for each project',build(){
-    const rows=scopeProjects().map(p=>{const e=projEvm([p.id]);return{proj:p.short,code:p.id,sector:secById(p.sector)?.name,region:regName(p),bac:e.bac,pp:e.bac?e.pv/e.bac:0,ap:e.bac?e.ev/e.bac:0,vp:e.bac?(e.ev-e.pv)/e.bac:0,spi:e.spi,cpi:e.cpi,pi:piWin(d=>d.p===p.id,WS,ASOF)}});
+    const rows=scopeProjects().map(p=>{const e=projEvm([p.id]),P=progIds([p.id],e);return{proj:p.short,code:p.id,sector:secById(p.sector)?.name,region:regName(p),bac:e.bac,pp:P.plan,ap:P.act,vp:P.act-P.plan,spi:P.spi,cpi:e.cpi,pi:piWin(d=>d.p===p.id,WS,ASOF)}});
     return {cols:[C('Project','proj'),C('Code','code'),C('Sector','sector'),C('Region','region'),C('Labour budget (BAC)','bac','sar'),C('Progress','ap','bar'),C('Planned %','pp','pct'),C('Actual %','ap','pct'),C('Variance','vp','pctv'),C('SPI','spi','idx2'),C('CPI','cpi','idx2'),C('Productivity, 30 days','pi','pcti')],rows,
       chart:pal=>({type:'bar',data:{labels:rows.map(r=>r.proj),datasets:[{label:'Planned %',data:rows.map(r=>+(r.pp*100).toFixed(1)),backgroundColor:pal.bar},{label:'Actual %',data:rows.map(r=>+(r.ap*100).toFixed(1)),backgroundColor:pal.accent}]},options:{scales:{y:{min:0,max:100,title:{display:true,text:'% complete'}}}}}),
-      notes:'Progress is weighted by budgeted labour cost (baseline manhours at the blended rate).'}}},
+      notes:'Progress uses the internal weightage of the latest updated schedule where one is loaded; otherwise it is weighted by budgeted labour cost (baseline manhours at the blended rate). CPI is always cost-weighted.'}}},
   regprog:{sheet:'Progress by region',title:'Planned vs actual progress, region-wise',desc:'Portfolio roll-up for each region',build(){
-    const ids=[...SCOPE];const rows=DB.master.regions.map(r=>{const x=ids.filter(id=>projById(id).region===r.id);if(!x.length)return null;const e=projEvm(x),s=new Set(x);return{region:r.name,rm:userById(r.manager)?.name||'Not assigned',n:x.length,value:x.reduce((t,id)=>t+(+projById(id).value||0),0),pp:e.bac?e.pv/e.bac:0,ap:e.bac?e.ev/e.bac:0,vp:e.bac?(e.ev-e.pv)/e.bac:0,spi:e.spi,cpi:e.cpi,pi:piWin(d=>s.has(d.p),addDays(TODAY,-7),ASOF)}}).filter(Boolean);
+    const ids=[...SCOPE];const rows=DB.master.regions.map(r=>{const x=ids.filter(id=>projById(id).region===r.id);if(!x.length)return null;const e=projEvm(x),s=new Set(x),P=progIds(x,e);return{region:r.name,rm:userById(r.manager)?.name||'Not assigned',n:x.length,value:x.reduce((t,id)=>t+(+projById(id).value||0),0),pp:P.plan,ap:P.act,vp:P.act-P.plan,spi:P.spi,cpi:e.cpi,pi:piWin(d=>s.has(d.p),addDays(TODAY,-7),ASOF)}}).filter(Boolean);
     return {cols:[C('Region','region'),C('Regional manager','rm'),C('Projects','n','int'),C('Contract value (SAR M)','value','int'),C('Planned %','pp','pct'),C('Actual %','ap','pct'),C('Variance','vp','pctv'),C('SPI','spi','idx2'),C('CPI','cpi','idx2'),C('Productivity, 7 days','pi','pcti')],rows,
       chart:pal=>({type:'bar',data:{labels:rows.map(r=>r.region),datasets:[{label:'Planned %',data:rows.map(r=>+(r.pp*100).toFixed(1)),backgroundColor:pal.bar},{label:'Actual %',data:rows.map(r=>+(r.ap*100).toFixed(1)),backgroundColor:pal.accent}]},options:{scales:{y:{min:0,max:100,title:{display:true,text:'% complete'}}}}}),
       notes:'Regions include only the projects in your current scope and sector filter.'}}},
@@ -7734,7 +8158,7 @@ async function exportRep(kind){
 /* ---------- portfolio ---------- */
 function pstats(ids){
   const set=new Set(ids),L=lines().filter(d=>set.has(d.p)&&VALID.has(d.status)),last=L.map(d=>d.date).sort().pop();
-  return {heads:agg(L.filter(d=>d.date===last)).heads,pi:agg(L.filter(d=>d.date>=addDays(TODAY,-7))).pi,e:evm(ACTS.filter(a=>set.has(a.p)),TODAY),value:ids.reduce((x,id)=>x+(+projById(id).value||0),0)};
+  const e=evm(ACTS.filter(a=>set.has(a.p)),TODAY);return {heads:agg(L.filter(d=>d.date===last)).heads,pi:agg(L.filter(d=>d.date>=addDays(TODAY,-7))).pi,e,P:progIds(ids,e),value:ids.reduce((x,id)=>x+(+projById(id).value||0),0)};
 }
 function portfolioHTML(){
   if(SCOPE.size<2)return '';
@@ -7744,10 +8168,10 @@ function portfolioHTML(){
   const secs=DB.master.sectors.map(sc=>{const x=ids.filter(id=>projById(id).sector===sc.id);return x.length?{sc,x,...pstats(x)}:null}).filter(Boolean);
   return `<section class="g g-2e">
     <div class="panel"><h2>Portfolio by region</h2><div class="scroll"><table class="tbl"><thead><tr><th>Region</th><th>Progress</th><th class="n">Projects</th><th class="n">Workforce</th><th class="n">Index</th><th class="n">SPI</th><th class="n">CPI</th></tr></thead><tbody>
-      ${rows.map(o=>`<tr ${canR?`class="click" data-scope="R:${o.r.id}"`:''}><td><b>${esc(o.r.name)}</b><span class="t2">${esc(userById(o.r.manager)?.name||'No regional manager')}, SAR ${fmt(o.value)}M</span></td><td>${o.e.bac?pbar(o.e.pv/o.e.bac,o.e.ev/o.e.bac)+`<span class="t2">${pct(o.e.ev/o.e.bac,0)} of plan ${pct(o.e.pv/o.e.bac,0)}</span>`:'—'}</td><td class="n">${o.x.length}</td><td class="n">${fmt(o.heads)}</td>${cell(o.pi,1)}${cell(o.e.spi)}${cell(o.e.cpi)}</tr>`).join('')}
+      ${rows.map(o=>`<tr ${canR?`class="click" data-scope="R:${o.r.id}"`:''}><td><b>${esc(o.r.name)}</b><span class="t2">${esc(userById(o.r.manager)?.name||'No regional manager')}, SAR ${fmt(o.value)}M</span></td><td>${o.e.bac||o.P.sched?pbar(o.P.plan,o.P.act)+`<span class="t2">${pct(o.P.act,0)} of plan ${pct(o.P.plan,0)}</span>`:'—'}</td><td class="n">${o.x.length}</td><td class="n">${fmt(o.heads)}</td>${cell(o.pi,1)}${cell(o.P.spi)}${cell(o.e.cpi)}</tr>`).join('')}
     </tbody></table></div></div>
     <div class="panel"><h2>Portfolio by sector</h2><div class="scroll"><table class="tbl"><thead><tr><th>Sector</th><th>Progress</th><th class="n">Projects</th><th class="n">Workforce</th><th class="n">Index</th><th class="n">SPI</th><th class="n">CPI</th></tr></thead><tbody>
-      ${secs.map(o=>`<tr class="click" data-sector="${o.sc.id}"><td><b>${esc(o.sc.name)}</b><span class="t2">${o.x.map(id=>esc(projById(id).short)).join(', ')}</span></td><td>${o.e.bac?pbar(o.e.pv/o.e.bac,o.e.ev/o.e.bac)+`<span class="t2">${pct(o.e.ev/o.e.bac,0)} of plan ${pct(o.e.pv/o.e.bac,0)}</span>`:'—'}</td><td class="n">${o.x.length}</td><td class="n">${fmt(o.heads)}</td>${cell(o.pi,1)}${cell(o.e.spi)}${cell(o.e.cpi)}</tr>`).join('')}
+      ${secs.map(o=>`<tr class="click" data-sector="${o.sc.id}"><td><b>${esc(o.sc.name)}</b><span class="t2">${o.x.map(id=>esc(projById(id).short)).join(', ')}</span></td><td>${o.e.bac||o.P.sched?pbar(o.P.plan,o.P.act)+`<span class="t2">${pct(o.P.act,0)} of plan ${pct(o.P.plan,0)}</span>`:'—'}</td><td class="n">${o.x.length}</td><td class="n">${fmt(o.heads)}</td>${cell(o.pi,1)}${cell(o.P.spi)}${cell(o.e.cpi)}</tr>`).join('')}
     </tbody></table></div><p class="small muted">Tap a row to filter the whole site to that region or sector.</p></div>
   </section>`;
 }
@@ -8275,7 +8699,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

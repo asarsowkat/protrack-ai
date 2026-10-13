@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-13 15:43",
- "app": "/home/claude/p13/demo.html",
+ "run_at": "2026-10-13 19:04",
+ "app": "/home/claude/p14/demo.html",
  "summary": {
   "PASS": 53,
   "FAIL": 0
@@ -20,7 +20,7 @@
   },
   {
    "area": "Navigation",
-   "check": "Progress releases, Monthly cost report, Budget supplements and the change order and claim log are live menu items",
+   "check": "Internal Reporting (was Progress releases), Monthly cost report, Budget supplements and the change order and claim log are live menu items",
    "result": "PASS",
    "detail": ""
   },
