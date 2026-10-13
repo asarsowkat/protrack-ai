@@ -1,0 +1,274 @@
+{
+ "run_at": "2026-10-13 01:02",
+ "app": "/home/claude/p12/demo.html",
+ "summary": {
+  "PASS": 44,
+  "FAIL": 0
+ },
+ "results": [
+  {
+   "area": "Rack",
+   "check": "three rows in order: Contract & Commercial, Planning & Scheduling, Cost Control & Costing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rack",
+   "check": "the default box files: 10 contract, 12 planning, 14 cost",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rack",
+   "check": "big labels on the boxes (BASELINE, CURRENT P6, WEEKLY REPORTS, MONTHLY REPORTS, TENDER, REV 0, MONTHLY BUDGET, EAC, CASH FLOW, INVOICES, VO, CHANGE ORDERS)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rack",
+   "check": "every box has an icon and text, not colour alone",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rack",
+   "check": "reporting-period and revision badges on boxes with documents (Week, Rev 0 kept, Baseline kept)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rack",
+   "check": "the Planning row shows planned and actual progress, SPI, next milestone and the last released progress",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rack",
+   "check": "the Cost row shows tender, Rev 0, latest approved budget, actual, commitments, approved change orders, pending variations and EAC as separate figures",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Project overview \u2192 Documents opens the rack for that project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "...it opens",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a site engineer sees rows: planning",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a project manager sees rows: contract, planning, cost",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "an executive sees rows: contract, planning, cost",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a foreman has no document rack",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a project manager reads a box but has no Upload button",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a project manager cannot add a document (rule checked, not just the button)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "the planning engineer cannot add to the Cost row",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Baseline",
+   "check": "the baseline box says new working schedules never replace it and that storing a P6 file does not import it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the file is uploaded and registered in the baseline box",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "with its size, SHA-256 fingerprint and an Uploaded history entry",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "the file itself is kept in this browser and can be read back",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Separation",
+   "check": "the earlier baseline documents are untouched",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upload",
+   "check": "a file type that is not a document is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Separation",
+   "check": "a working schedule goes into Current P6 with its week; the baseline box does not change",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Separation",
+   "check": "nothing in the schedule was imported",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Revisions",
+   "check": "a new revision form says the earlier file is kept",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Revisions",
+   "check": "Rev 2 is a new document pointing to Rev 0",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Revisions",
+   "check": "Rev 0 stays exactly as it was",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Revisions",
+   "check": "the Rev 0 box lists every revision, Rev 0 marked as the original approved budget",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Status",
+   "check": "rejecting needs a comment",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Status",
+   "check": "the status changes and the history shows from and to",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Details",
+   "check": "details are corrected and the change is listed in the history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Preview",
+   "check": "a PDF opens in the preview",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Download",
+   "check": "the file downloads with its own name",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Boxes",
+   "check": "Arrange shows move buttons and Add a box file on the rows you keep only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Boxes",
+   "check": "a new box is added to the Cost row, with the row's rules",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Boxes",
+   "check": "a box is moved one place to the right",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Boxes",
+   "check": "a box is renamed and hidden; its documents and rules are unchanged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Boxes",
+   "check": "a hidden box is not on the rack until \"Show hidden boxes\" is ticked",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Boxes",
+   "check": "...then it is shown, marked hidden",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Boxes",
+   "check": "box changes are in the history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Boxes",
+   "check": "a planning engineer cannot change a cost box",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Separation",
+   "check": "no release, schedule, change order log or import changed through the rack",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "documents, boxes and history survive a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "General",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

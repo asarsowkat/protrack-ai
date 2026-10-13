@@ -1,4 +1,4 @@
-# ProTrack Supabase updates (current: v3.3)
+# ProTrack Supabase updates (current: v3.4)
 
 | File | Run it? |
 |---|---|
@@ -11,6 +11,8 @@
 | `schema-update-v10.sql` | **Yes, on your live project, after v9.** Step 1 of STAGE-7-SETUP.md |
 | `schema-update-v11.sql` | **Yes, on your live project, after v10.** Step 1 of STAGE-8-SETUP.md |
 | `schema-update-v12.sql` | **Yes, on your live project, after v11.** Step 1 of STAGE-9-SETUP.md |
+| `schema-update-v13.sql` | **Yes, on your live project, after v12.** Step 1 of STAGE-10-SETUP.md. Creates the private `project-docs` storage bucket |
+| `schema-rollback-v13.sql` | Only to undo v13. Keeps all data and files |
 | `schema-rollback-v12.sql` | Only to undo v12. Keeps all data |
 | `schema-rollback-v11.sql` | Only to undo v11. Keeps all data |
 | `schema-rollback-v10.sql` | Only to undo v10. Keeps all data |

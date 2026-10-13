@@ -168,6 +168,11 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.4
+
+- Project document rack: three rows of box files per project (Contract & Commercial, Planning & Scheduling, Cost Control & Costing), files in a private Supabase Storage bucket, revisions that never overwrite, statuses, history, previews, live figures, custom boxes (`schema-update-v13.sql`)
+- See RELEASE-NOTES-v3.4.md and STAGE-10-SETUP.md
+
 ## Version 3.3
 
 - Monthly cost report in the company format: one row per WBS head with tender, Rev-0, revised Rev-0, previous version, current budget, actual, commitment, balance, ETC, EAC, supplement/saving and justification; TCC, POC, contract value and gross margin (`schema-update-v12.sql`)

@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.3, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.4, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -204,6 +204,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#overview" class="sub">Project overview</a>
   <a href="#releases">Released reporting</a>
   <a href="#issues" class="sub">Issue register</a>
+  <a href="#docrack" class="sub">Project document rack</a>
   <a href="#tender">Tender register and PE numbers</a>
   <a href="#lifecycle">Project lifecycle, actions and dashboards</a>
   <a href="#imports">Import centre and controlled uploads</a>
@@ -251,6 +252,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.4</b>
+    <b>Project document rack</b> (Projects &amp; Handover, or Project overview → Documents): three rows of box files per project, Contract &amp; Commercial, Planning &amp; Scheduling and Cost Control &amp; Costing, for the source documents and records, with revisions that never overwrite, statuses, history, previews and live figures.</div>
   <div class="note"><b>New in version 3.3</b>
     <b>Monthly cost report in the company format</b>: one row per WBS head with tender, Rev-0, revised Rev-0, previous version, current budget, actual, commitment, balance, ETC, EAC, supplement or saving and justification; planned and forecast TCC, POC, contract value and gross margin. Fill it from your Excel sheet, export it to Excel.</div>
   <div class="note"><b>New in version 3.2</b>
@@ -491,6 +494,22 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Upload</b> your issue log as it is, or the template. Rows are matched to existing issues by project and description, so they are updated, not duplicated. Rows for another engineer's project, an unknown project, a missing description or a wrong impact are refused and listed; tick the box to save the rest. Text such as "NA" in a date or priority column is kept in Remarks.</li>
     <li><b>Released with progress:</b> when the Head approves a progress release, the project's open issues are saved with it and never change afterwards. The executive report shows them. The cost impact is not saved with the release.</li>
   </ol>
+  <h2 id="docrack">Project document rack</h2>
+  <p><b>Projects &amp; Handover → Project document rack</b> (or <b>Project overview → Documents</b>) holds each project's source documents in three rows of box files. Choose the project at the top.</p>
+  <table><thead><tr><th>Row</th><th>Kept by</th><th>Seen by</th></tr></thead><tbody>
+    <tr><td>1 Contract &amp; Commercial (navy and steel blue)</td><td>Costing engineers</td><td>Office staff with access to the project</td></tr>
+    <tr><td>2 Planning &amp; Scheduling (teal, blue, blue-grey)</td><td>Planning engineers</td><td>Everyone with access except foremen</td></tr>
+    <tr><td>3 Cost Control &amp; Costing (charcoal, deep blue, muted gold)</td><td>Costing engineers</td><td>Office staff with access to the project</td></tr>
+  </tbody></table>
+  <p>The Head of Planning and Cost Control and super admins keep all three rows. Each box shows a big label, an icon, its code and name, the number of documents and badges for the latest period, revision and status.</p>
+  <ol class="steps">
+    <li><b>Open a box</b> to see what it should hold (with a tick against what is filed), its documents, and figures from ProTrackAI's own records where it has them; otherwise it says <i>Data unavailable</i>.</li>
+    <li><b>Upload document</b>: choose the file (up to 50 MB), give a title, the contents, reference, revision, period and status.</li>
+    <li><b>Open a document</b> to preview it (PDF, images, text), download it, change its status, correct its details or <b>Upload new revision</b>. A new revision never replaces the earlier file; the Rev 0 and baseline boxes always list every revision.</li>
+    <li><b>Weekly and monthly report boxes</b> compare two reporting periods side by side, from the released progress.</li>
+    <li><b>Arrange boxes</b> (people who keep a row): move boxes, add a box file, and in <b>Box settings</b> rename or hide a box. Every change is in the history.</li>
+  </ol>
+  <div class="tip"><b>Records only</b>Storing a P6 file does not import it, storing a costing file does not change a budget, and storing a VO does not approve it. Use Baselines and P6 import, the monthly cost report and the change order log for those.</div>
 </section>
 
 <section id="tender">
