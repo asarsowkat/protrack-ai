@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.4, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.5, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -203,6 +203,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#domains" class="sub">Finding your way: the domains</a>
   <a href="#overview" class="sub">Project overview</a>
   <a href="#releases">Released reporting</a>
+  <a href="#reldash" class="sub">Progress release dashboard</a>
   <a href="#issues" class="sub">Issue register</a>
   <a href="#docrack" class="sub">Project document rack</a>
   <a href="#tender">Tender register and PE numbers</a>
@@ -252,6 +253,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.5</b>
+    <b>Progress release dashboard</b>: weekly and monthly progress releases open full screen with tabs (Overview, Milestones, Progress, Manpower, Energization, Release notes, Approval), nine KPI cards with traffic lights and trends, contractual, revised and forecast TCC, PAC and FAC with delays worked out, external progress beside the internal headline, manpower and energization. ·
+    <b>Regional approval</b>: each region's planning section manager approves its progress releases; a super admin can add a project manager review first.</div>
   <div class="note"><b>New in version 3.4</b>
     <b>Project document rack</b> (Projects &amp; Handover, or Project overview → Documents): three rows of box files per project, Contract &amp; Commercial, Planning &amp; Scheduling and Cost Control &amp; Costing, for the source documents and records, with revisions that never overwrite, statuses, history, previews and live figures.</div>
   <div class="note"><b>New in version 3.3</b>
@@ -439,9 +443,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 
 <section id="releases">
   <h2>Released reporting</h2>
-  <p>Daily reports are how the site reports progress. They are an input. What management reads is the version that planning and costing have reviewed and released, and the Head of Planning and Cost Control has approved.</p>
+  <p>Daily reports are how the site reports progress. They are an input. What management reads is the version that planning and costing have reviewed and released, and that has been approved: progress releases by the region's planning section manager (or the Head of Planning and Cost Control), cost reports by the Head.</p>
   <table><thead><tr><th>Release</th><th>Prepared by</th><th>How often</th><th>Holds</th></tr></thead><tbody>
-    <tr><td>Progress release</td><td>Planning engineer</td><td>Weekly and monthly</td><td>Planned and actual progress, SPI, design and procurement progress against plan, forecast finish, productivity, workforce, and comments: summary, key issues (site, design, procurement), next actions</td></tr>
+    <tr><td>Progress release</td><td>Planning engineer</td><td>Weekly and monthly</td><td>Internal planned and actual progress (the headline, from the P6 internal weightage agreed with management), SPI, design and procurement progress, forecast finish, productivity; external progress (client weightage); contractual, revised and forecast TCC, PAC and FAC with delays; energization; manpower; and comments: summary, key issues, recovery actions, next target, management remarks</td></tr>
     <tr><td>Monthly cost report</td><td>Costing engineer or costing coordinator</td><td>Monthly</td><td>The company format, one row per WBS head (see below), with planned and forecast TCC, POC and the contract value</td></tr>
   </tbody></table>
   <h3>Preparing and releasing</h3>
@@ -449,9 +453,21 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>Open <b>Planning &amp; Scheduling → Progress releases</b> or <b>Cost Control → Monthly cost report</b>, choose the week or month, and press <b>Prepare</b> beside the project.</li>
     <li><b>Progress:</b> ProTrackAI fills in what it computes now from daily reports, the baseline and the weekly engineering and procurement update. You can change any figure, but a change needs a reason; the computed value and your reason are kept. Add your comments.</li>
     <li><b>Cost:</b> type the Rev-0 budget, actual cost to date, commitments and forecast cost to complete, or upload them for several projects with the template. ProTrackAI adds the approved supplements from the latest budget supplement log and works out the rest: <i>approved budget = Rev-0 + approved supplements; EAC = actual + forecast to complete; VAC = approved budget − EAC</i>. The server applies the same formulas, so every cost report uses them.</li>
-    <li>Press <b>Submit for approval</b>. The Head of Planning and Cost Control sees it in <b>Actions and approvals</b>, then presses <b>Approve and release</b> or <b>Return with comment</b>. Nobody approves a version they submitted.</li>
+    <li>Press <b>Submit for approval</b>. A progress release goes to the region's <b>planning section manager</b> (after the project manager's review, if a super admin has switched it on); a cost report goes to the Head of Planning and Cost Control. They find it in <b>Actions and approvals</b> and press <b>Approve and release</b> or <b>Reject (return to planner)</b> with a comment. Nobody approves a version they submitted.</li>
     <li>A released version never changes. To correct one, press <b>Start a new revision</b> and give a reason. Management keeps seeing the released revision until the new one is approved; the old one is then kept as superseded.</li>
   </ol>
+  <h3 id="reldash">The progress release dashboard</h3>
+  <p>A weekly or monthly progress release opens full screen. Across the top, nine KPI cards: actual and planned progress, progress variance, SPI, forecast completion, manpower variance, TCC status, PAC status and energization, each with ▲ improving, ▼ deteriorating or ■ stable against the last released period. Below them, seven tabs:</p>
+  <table><thead><tr><th>Tab</th><th>What you fill in or read</th></tr></thead><tbody>
+    <tr><td>Overview</td><td>Project information (data date, project and sub project number, name, region, sector, contract value, project manager, planning engineer), milestones at a glance, internal against external progress</td></tr>
+    <tr><td>Milestones</td><td>Contractual commencement and site handover; original contractual, approved revised and external forecast TCC, PAC and FAC; internal TCC target and internal forecast. Delays are worked out</td></tr>
+    <tr><td>Progress</td><td>External planned and actual amount and % (client weightage), with variance and SPI; the internal figures ProTrackAI computes, which you change only with a reason</td></tr>
+    <tr><td>Manpower</td><td>Alfanar direct, indirect and subcontractor, planned and actual; totals, variance, utilization and productivity index</td></tr>
+    <tr><td>Energization</td><td>TCC, PAC and FAC receipt dates; status (Not Started, Under Testing, Ready for Energization, Energized), date and remarks</td></tr>
+    <tr><td>Release notes</td><td>Progress summary, key issues and risks, recovery actions, next week or month target; management remarks from the approver</td></tr>
+    <tr><td>Approval</td><td>Revision and reason, released, reviewed and approved by with dates, who approves this project, history</td></tr>
+  </tbody></table>
+  <p><b>Delay</b> = external forecast − approved revised date (or the original contractual date if there is no revision); the internal TCC delay uses the internal forecast against the internal target. <b>Green</b> on schedule (0 days or earlier, or the certificate received), <b>amber</b> at risk (1–30 days), <b>red</b> delayed (over 30 days). External variance = actual % − planned %; external SPI = actual % ÷ planned %; manpower utilization = total actual ÷ total planned. Dates, external progress and planned manpower start from the last release; actual Alfanar and subcontractor manpower start from the last daily reports. A missing figure shows as "—", never as zero.</p>
   <h3>The monthly cost report, company format</h3>
   <p>One row per WBS head: SM Site Management, DE Design, TEC Testing, electrical, mechanical and civil material, manpower and installation, SAD Saudization, FNE Financing, PC items, provisional sum, CONT Contingency and MGT.RES Management Reserve. The Overall row adds them up.</p>
   <table><thead><tr><th>Column</th><th>What it is</th></tr></thead><tbody>
@@ -469,8 +485,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h3>Executive report</h3>
   <p><b>Home → Executive report (released)</b>: choose Monthly or Weekly and the period, then <b>Summary</b> or <b>Project view</b>.</p>
   <ul>
-    <li><b>Summary</b>: projects released, progress and SPI weighted by contract value, EAC and VAC, invoiced and collected; tables <b>by region</b> and <b>by sector</b>; <b>critical projects</b> (released SPI under 0.95, a negative VAC, a forecast finish more than 30 days after baseline, or an extremely high open issue), each with the reason and its main issue; <b>billing and collection</b> as saved in the cost reports; and <b>change order and claim status</b> by client status.</li>
-    <li><b>Project view</b>: one project's released progress, the planning engineer's comments, the issues saved with the release, cost and billing, change orders, claims and supplements, and its release history.</li>
+    <li><b>Summary</b>: projects released, progress and SPI weighted by contract value, EAC and VAC, invoiced and collected; tables <b>by region</b> and <b>by sector</b>; <b>critical projects</b> (released SPI under 0.95, a negative VAC, a forecast finish or TCC more than 30 days late, or an extremely high open issue), each with the reason and its main issue; <b>billing and collection</b> as saved in the cost reports; and <b>change order and claim status</b> by client status.</li>
+    <li><b>Project view</b>: one project's released progress, the planning engineer's comments with recovery actions and management remarks, the released milestones, external progress, energization and manpower, the issues saved with the release, cost and billing, change orders, claims and supplements, and its release history.</li>
   </ul>
   <p>Below the summary, it shows per project the released progress with key issues. For a month it also shows the released cost (approved budget, actual, commitments, EAC, VAC), change orders and claims, and budget supplements by category. A project without a release for that period shows <i>Not released</i>; live figures are never filled in. Weekly reports carry progress only. Foremen, site engineers and site managers see no cost figures. <b>Live summary (working data)</b> is the previous executive summary, for the people preparing the releases.</p>
   <h3>Change order and claim log, budget supplement log</h3>
@@ -652,6 +668,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Tell costing the baseline is in.</b></li>
     <li><b>Every week until design and procurement are complete:</b> Weekly update → download template → fill milestones and dates → upload → preview → apply. Then export the P6 progress update from Reports.</li>
     <li><b>At a revision:</b> load a revised or recovery set; use Measure against to report on it. Wrong file? Undo this import.</li>
+    <li><b>Every week and month:</b> Progress releases → Open: check the figures, fill milestones, external progress, manpower and energization, write the release notes, and submit to your regional planning section manager.</li>
   </ol>
 
   <h3 id="s-cost">Costing engineer — at award, at each budget revision, every week</h3>
@@ -685,6 +702,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Milestones</b> with TCC, PAC, FAC, and the EOT claim.</li>
     <li><b>Payment terms:</b> per phase the progress cap and up to two milestone releases; separate retention only if the contract has one; advance and its recovery rate.</li>
     <li><b>Settings → Approval matrix:</b> for each project, choose the site engineer who reviews each foreman, and the site manager who approves each site engineer. Repeat whenever the site team changes.</li>
+    <li><b>Settings → Approval matrix → Progress release approval:</b> name each region's planning section manager (give them the region's projects in Users and access first). Tick the project manager review only if management wants it.</li>
     <li><b>Settings → Email:</b> choose who receives the approval summary.</li>
     <li><b>Settings → System, once after installing version 2.5:</b> move anything people entered in their browsers to the server (see <a href="#move">Moving browser data to the server</a>), and download a server backup every week.</li>
     <li><b>Settings → System:</b> check the version, and choose the date basis: demo (fixed 22 Sept 2026) for demonstrations, live (today) for real work. Each keeps its own data in the browser. Once real data is on the server, set <code>DATE_MODE: 'live'</code> in config.js so nobody can switch it by mistake.</li>

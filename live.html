@@ -412,6 +412,22 @@ label.btn{display:inline-block}
 .docitems{columns:2;margin:6px 0;padding-inline-start:18px;list-style:none}.docform{background:var(--surface-2)}
 :root{--shelf:#A3ABB8}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--shelf:#4B5563}}:root[data-theme="dark"]{--shelf:#4B5563}
 @media (max-width:640px){.boxfile{width:118px;height:228px}.docitems{columns:1}}
+.sheet.full{width:100%;max-width:none;padding-bottom:0}
+.rdhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}.rdhead>div{flex:1;min-width:240px}
+.rkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px}
+.rkpi{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface);display:flex;flex-direction:column;gap:1px;border-top:4px solid var(--line)}
+.rkpi .l{font-size:11.5px;color:var(--ink-2)}.rkpi b{font-size:18px}.rkpi.g{border-top-color:var(--green)}.rkpi.a{border-top-color:var(--amber)}.rkpi.r{border-top-color:var(--red)}
+.trend{font-size:11px;font-weight:600}.trend.up{color:var(--green)}.trend.dn{color:var(--red)}.trend.st0{color:var(--ink-2)}
+.tldot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:5px;background:var(--line);vertical-align:baseline}.tldot.g{background:var(--green)}.tldot.a{background:var(--amber)}.tldot.r{background:var(--red)}
+.rdtabs{margin:12px 0 8px;position:sticky;top:0;background:var(--surface);z-index:2;padding:6px 0}
+.rdgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}.rdgrid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:12px}
+.rdcard{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface)}.rdcard h3{margin:0 0 8px;font-size:14px}
+.rdcard textarea{width:100%;box-sizing:border-box}.fields1{grid-template-columns:1fr}
+.rdcalcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:10px}
+.rcalc{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;display:flex;flex-direction:column;border-inline-start:4px solid var(--line)}
+.rcalc .l{font-size:11.5px;color:var(--ink-2)}.rcalc.g{border-inline-start-color:var(--green)}.rcalc.a{border-inline-start-color:var(--amber)}.rcalc.r{border-inline-start-color:var(--red)}
+.rdmp input{width:100px;text-align:end}.rdtot td{background:var(--surface-2)}
+.rdfoot{position:sticky;bottom:0;z-index:3;background:var(--surface);border-top:1px solid var(--line);margin:14px -22px 0;padding:10px 22px calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .sheet.wide{width:min(1560px,100%)}
 .crtbl{font-size:12.5px}.crtbl th,.crtbl td{padding:5px 6px;white-space:nowrap}.crtbl th .t2{font-weight:400}.crtbl input{width:112px;padding:4px 6px;font-size:12.5px;text-align:end}
 .crtbl input.crj{width:240px;text-align:start}.crtbl .crtot td{background:var(--accent-soft)}.crtbl .crfoot td{background:var(--surface-2);font-size:12px}.crtbl .crg{text-align:center;border-bottom:1px solid var(--line)}
@@ -730,7 +746,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.4</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.5</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -871,6 +887,8 @@ function seedMaster(){
       U('U29','Abhijit Suvarna','sa','Planning Manager, Head Office',{email:'abhijit@company.com'}),
       U('U30','Nabil Haddad','plan','Planning Engineer',P(['RMX','JDC','QOT'])),
       U('U31','Deepak Menon','plan','Planning Engineer',P(['JBS','RTT','JWP'])),
+      U('U48','Faris Al-Zahrani','plan','Planning Section Manager, Central and Western',P(['RMX','QOT','JDC'])),
+      U('U49','Ravi Shankar','plan','Planning Section Manager, Eastern and Southern',P(['JBS','RTT','JWP'])),
       U('U32','Saud Al-Rashed','exec','Executive Director, Operations'),
       U('U35','Khalid Al Solami','exec','Executive Manager',{email:'khalid.alsolami@company.com'}),
       U('U36','Bandar Al-Juhani','pm','Project Manager',P(['QOT'])),
@@ -914,7 +932,7 @@ function seedMaster(){
       U('U26','Joseph Thomas','foreman','Foreman, Civil',P(['JWP'])),
       U('U27','Lina Saleh','ro','Finance, Head Office',{regions:['C','E','W','S']})
     ],
-    trades:seedTrades(),subs:seedSubs(),acts:[],nextUser:48,
+    trades:seedTrades(),subs:seedSubs(),acts:[],nextUser:50,
     log:[{t:`${addDays(TODAY,-40)} 09:00`,who:'Asarudeen Sowkath Ali',text:'Imported projects, users and baselines from Primavera P6.'}]
   };
 }
@@ -1288,7 +1306,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadIssues();await cloudLoadDocs();
+    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadIssues();await cloudLoadDocs();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -1834,7 +1852,8 @@ function actionItems(){
     else if(!LC_DONE.has(s.status)&&s.status!=='Not started'&&own&&own.id===my.id)out.push({type:'Lifecycle stage',what:`Stage ${S.n}, ${S.name}${s.next_action?': '+s.next_action:''}`,pid,who:own.name,mine:true,since:s.due_date,age:null,late:false,open:{stage:[pid,S.n]}})}));
   relRows().filter(r=>relVisible(r)&&ids.has(r.project_id)&&(r.status==='Submitted'||relReturned(r))).forEach(r=>{
     const lab=`${REL_KIND[r.kind]}, ${perLabel(r.period_type,r.period)}`,since=String((r.status==='Submitted'?r.submitted_at:(relAuditOf(r.id).pop()||{}).at_time)||'').slice(0,10)||null,age=since?diffDays(since,TODAY):null;
-    if(r.status==='Submitted')out.push({type:'Release approval',what:`${lab}: approve or return`,pid:r.project_id,who:'Head of Planning and Cost Control',mine:canApproveRel()&&r.submitted_by!==my.id,since,age,late:age!=null&&age>3,open:{rel:[r.project_id,r.kind,r.period_type,r.period]}});
+    if(r.status==='Submitted'&&r.kind==='planning'&&relSettings().pm_review&&!r.reviewed_by)out.push({type:'Release review',what:`${lab}: review or reject`,pid:r.project_id,who:'Project manager',mine:relCanReview(r),since,age,late:age!=null&&age>2,open:{rel:[r.project_id,r.kind,r.period_type,r.period]}});
+    else if(r.status==='Submitted')out.push({type:'Release approval',what:`${lab}: approve or ${r.kind==='planning'?'reject':'return'}`,pid:r.project_id,who:relApproverText(r.project_id,r.kind),mine:relCanApprove(r.project_id,r.kind)&&r.submitted_by!==my.id,since,age,late:age!=null&&age>3,open:{rel:[r.project_id,r.kind,r.period_type,r.period]}});
     else out.push({type:'Release returned',what:`${lab}: fix and resubmit`,pid:r.project_id,who:(userById(r.prepared_by)||{}).name||'Preparer',mine:canPrepRel(r.kind),since,age,late:true,open:{rel:[r.project_id,r.kind,r.period_type,r.period]}})});
   if(canImpView()){const all=impBatches();
     all.filter(b=>b.status==='failed'&&!all.some(x=>x.retry_of===b.id&&x.status==='committed')).forEach(b=>out.push({type:'Import failed',what:`${batchNo(b)}: ${b.file_name} (${b.error_message||'failed'})`,pid:b.project_id,who:batchBy(b),mine:b.by_user===my.id||b.by_name===my.name,since:String(b.at_time).slice(0,10),age:diffDays(String(b.at_time).slice(0,10),localISO()),late:true,open:{batch:b.id}}))}
@@ -2266,7 +2285,7 @@ const SUPP_CATS=['Project execution','Under estimate','External factor','Saudiza
 const canPrepRel=k=>state.role==='sa'||(k==='planning'?state.role==='plan':(state.role==='costing'||isCoord()));
 const canApproveRel=()=>state.role==='sa'||isHead();
 const relStaff=k=>canPrepRel(k)||canApproveRel();
-const canRelView=()=>relStaff('planning')||relStaff('cost');
+const canRelView=()=>relStaff('planning')||relStaff('cost')||isRegionPlanner();
 const canXr=()=>canExec()||canRelView();
 const canLogsView=()=>rasaMoneyOk()&&!['foreman'].includes(state.role);
 const canLogUpload=()=>state.role==='sa'||state.role==='costing'||isCoord();
@@ -2280,7 +2299,7 @@ function recentWeeks(n){const out=[];for(let i=0;i<n;i++){const w=isoWeekOf(addD
 const periodOk=(p,t)=>t==='month'?/^\d{4}-(0[1-9]|1[0-2])$/.test(p||''):/^\d{4}-W(0[1-9]|[1-4]\d|5[0-3])$/.test(p||'');
 const perLabel=(t,p)=>!p?'':t==='month'?`${MON[+p.slice(5,7)-1]} ${p.slice(0,4)}`:`Week ${+p.slice(6)}, ${p.slice(0,4)}`;
 const relRows=()=>(DB.releases||[]);
-const relVisible=r=>accessIds().includes(r.project_id)&&(r.kind!=='cost'||rasaMoneyOk())&&(['Released','Superseded'].includes(r.status)||relStaff(r.kind));
+const relVisible=r=>accessIds().includes(r.project_id)&&(r.kind!=='cost'||rasaMoneyOk())&&(['Released','Superseded'].includes(r.status)||relStaff(r.kind)||(r.kind==='planning'&&r.status==='Submitted'&&(relCanApprove(r.project_id,'planning')||(relSettings().pm_review&&state.role==='pm'))));
 const relReleased=(pid,k,t,p)=>relRows().find(r=>r.project_id===pid&&r.kind===k&&r.period_type===t&&r.period===p&&r.status==='Released');
 const relOpen=(pid,k,t,p)=>relRows().find(r=>r.project_id===pid&&r.kind===k&&r.period_type===t&&r.period===p&&['Draft','Submitted'].includes(r.status));
 const relAuditOf=id=>(DB.relAudit||[]).filter(a=>a.release_id===id).sort((a,b)=>(+a.id||0)-(+b.id||0));
@@ -2322,7 +2341,7 @@ function relActLocal(p){
   const a=p.action,meU=me(),fail=t=>{throw new Error(t)},note=String(p.note||'').trim();
   let rel=p.id?relRows().find(r=>r.id===p.id):null;if(p.id&&!rel)fail('Unknown release');
   const pid=rel?rel.project_id:p.project_id,k=rel?rel.kind:p.kind,pt=rel?rel.period_type:(p.period_type||'month'),per=rel?rel.period:p.period;
-  if(!['save','submit','approve','return','revise'].includes(a))fail('Unknown action '+a);
+  if(!['save','submit','review','approve','return','revise'].includes(a))fail('Unknown action '+a);
   if(!pid||!accessIds().includes(pid))fail('You do not have access to this project');
   if((projById(pid)||{}).status==='Cancelled')fail('This project was cancelled');
   if(!['planning','cost'].includes(k))fail('Unknown release kind');
@@ -2348,7 +2367,7 @@ function relActLocal(p){
     for(const [key,v] of Object.entries(f)){if(key==='wbs')continue;if(/(_date|finish)$/.test(key)){if(v&&!isoOk(v))fail(`Figure ${key} is not a valid date`)}else if(/_text$/.test(key)){if(String(v||'').length>300)fail(`Figure ${key} is too long`)}
       else if(v!=null&&v!==''&&!isFinite(+v))fail(`Figure ${key} must be a number`)}
     if(k==='planning'){['planned_pct','actual_pct','eng_pct','prc_pct','eng_plan_pct','prc_plan_pct'].forEach(key=>{const v=f[key];if(v!=null&&v!==''&&(+v<0||+v>100))fail(`${key} must be between 0 and 100`)});
-      if(f.actual_pct==null||f.actual_pct==='')fail('Enter the actual progress')}
+      if(f.actual_pct==null||f.actual_pct==='')fail('Enter the actual progress');f=relPlanCalc(pid,f)}
     else if(isWbs(f)){INV_IN.forEach(([key])=>{const v=f[key];if(v==null||v==='')return;if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});f=crCompute(pid,per,f)}
     else{COST_IN.forEach(([key,l])=>{const v=f[key];if(v==null||v===''||!isFinite(+v))fail('Enter the '+l.toLowerCase());if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});
       INV_IN.forEach(([key])=>{const v=f[key];if(v==null||v==='')return;if(+v<0)fail(`${key} cannot be negative`);f[key]=+v});f=costCompute(pid,per,f)}
@@ -2362,13 +2381,18 @@ function relActLocal(p){
   if(!rel)fail('Nothing is being prepared for this period');
   if(a==='submit'){if(!canPrepRel(k))fail('Only the people who prepare this report can submit it');if(rel.status!=='Draft')fail(`Only a draft can be submitted; this version is ${rel.status.toLowerCase()}`);
     if(rel.kind==='cost'&&isWbs(rel.figures)){const m=rel.figures.wbs.filter(l=>Math.abs(+l.var||0)>=1&&!String(l.justification||'').trim()).map(l=>l.code);if(m.length)fail('Give a justification for each WBS line with a supplement or saving before submitting: '+m.join(', '))}
-    rel.status='Submitted';rel.submitted_by=meU.id;rel.submitted_at=new Date().toISOString();log(rel,'Submitted for approval',note)}
-  else if(a==='approve'){if(!canApproveRel())fail('Only the Head of Planning and Cost Control or a super admin can approve a release');if(rel.status!=='Submitted')fail('Only a submitted version can be approved');
-    if(rel.submitted_by===meU.id)fail('You submitted this version, so someone else must approve it');
+    rel.status='Submitted';rel.submitted_by=meU.id;rel.submitted_at=new Date().toISOString();rel.reviewed_by=null;rel.reviewed_at=null;rel.review_note=null;log(rel,'Submitted for approval',note)}
+  else if(a==='review'){if(rel.kind!=='planning')fail('Only progress releases have a review step');if(!relSettings().pm_review)fail('The project manager review step is not switched on');
+    if(!(state.role==='sa'||state.role==='pm'))fail('Only the project manager of this project reviews it');if(rel.status!=='Submitted')fail('Only a submitted version can be reviewed');if(rel.reviewed_by)fail('This version is already reviewed');
+    if(rel.submitted_by===meU.id)fail('You submitted this version, so someone else must review it');rel.reviewed_by=meU.id;rel.reviewed_at=new Date().toISOString();rel.review_note=note||null;log(rel,'Reviewed by the project manager',note)}
+  else if(a==='approve'){if(rel.kind==='planning'?!relCanApprove(pid,'planning'):!canApproveRel())fail(rel.kind==='planning'?'Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can approve a progress release':'Only the Head of Planning and Cost Control or a super admin can approve a release');if(rel.status!=='Submitted')fail('Only a submitted version can be approved');
+    if(rel.submitted_by===meU.id)fail('You submitted this version, so someone else must approve it');if(rel.kind==='planning'&&relSettings().pm_review&&!rel.reviewed_by)fail('The project manager must review this progress release before it is approved');
+    if(rel.kind==='planning'&&String(p.mgmt||'').trim())rel.narrative=Object.assign({},rel.narrative,{mgmt:String(p.mgmt).trim().slice(0,2000)});
+    if(rel.kind==='planning'&&!rel.reviewed_by){rel.reviewed_by=meU.id;rel.reviewed_at=new Date().toISOString()}
     DB.releases.filter(r=>same(r)&&r.status==='Released').forEach(r=>{r.status='Superseded'});
     rel.status='Released';rel.approved_by=meU.id;rel.approved_at=new Date().toISOString();if(rel.kind==='planning')rel.issues_snapshot=issSnapshot(rel.project_id);log(rel,'Approved and released',note,{rev:rel.rev})}
-  else if(a==='return'){if(!canApproveRel())fail('Only the Head of Planning and Cost Control or a super admin can return a release');if(rel.status!=='Submitted')fail('Only a submitted version can be returned');
-    if(!note)fail('Add a comment saying what to fix');rel.status='Draft';rel.submitted_by=null;rel.submitted_at=null;log(rel,'Returned',note)}
+  else if(a==='return'){if(rel.kind==='planning'?!relCanReturn(rel):!canApproveRel())fail(rel.kind==='planning'?'Only the Head of Planning and Cost Control, the regional planning section manager or a super admin can return a progress release':'Only the Head of Planning and Cost Control or a super admin can return a release');if(rel.status!=='Submitted')fail('Only a submitted version can be returned');
+    if(!note)fail('Add a comment saying what to fix');rel.status='Draft';rel.submitted_by=null;rel.submitted_at=null;rel.reviewed_by=null;rel.reviewed_at=null;rel.review_note=null;log(rel,'Returned',note)}
   save();return rel;
 }
 async function cloudLoadReleases(){
@@ -2379,7 +2403,7 @@ async function cloudLoadReleases(){
 }
 async function relAct(p){
   relAct.err='';
-  if(CLOUD_ME){let r;try{r=await rpc('release_act',{p})}catch(e){const m=srvMsg(e);relAct.err='the server refused this: '+m+(/figure wbs/i.test(m)?' (the server needs the v12 database update, see STAGE-9-SETUP)':'');toast(relAct.err);return null}
+  if(CLOUD_ME){let r;try{r=await rpc('release_act',{p})}catch(e){const m=srvMsg(e);relAct.err='the server refused this: '+m+(/figure wbs/i.test(m)?' (the server needs the v12 database update, see STAGE-9-SETUP)':/unknown action review/i.test(m)?' (the server needs the v14 database update, see STAGE-11-SETUP)':'');toast(relAct.err);return null}
     try{await cloudLoadReleases()}catch(e){}save();return r}
   try{return relActLocal(p)}catch(e){relAct.err=e.message;toast(e.message);return null}
 }
@@ -2398,29 +2422,33 @@ function renderRel(){
   const k=state.relTab||(relStaff('planning')?'planning':'cost');if(!relStaff(k)){state.relTab=k==='planning'?'cost':'planning';return renderRel()}state.relTab=k;
   const t=k==='cost'?'month':(state.relPt||'month'),pers=t==='month'?recentMonths(12):recentWeeks(10);
   let per=state.relPer&&periodOk(state.relPer,t)?state.relPer:(t==='month'?curMonth():curWeek());if(!pers.includes(per))pers.unshift(per);
-  const ps=scopeProjects().filter(p=>p.status!=='Cancelled'),mineToApprove=relRows().filter(r=>relVisible(r)&&r.status==='Submitted'&&canApproveRel()&&r.submitted_by!==me().id);
+  const rf=state.relF||(state.relF={}),ps=scopeProjects().filter(p=>p.status!=='Cancelled'&&(!rf.rg||p.region===rf.rg)&&(!rf.sec||p.sector===rf.sec)),mineToApprove=relRows().filter(r=>relVisible(r)&&r.status==='Submitted'&&r.submitted_by!==me().id&&(relCanReview(r)||(relCanApprove(r.project_id,r.kind)&&!(r.kind==='planning'&&relSettings().pm_review&&!r.reviewed_by))));
   const tab=(v,l)=>relStaff(v)?`<button type="button" class="chip" data-reltab="${v}" aria-pressed="${k===v}">${l}</button>`:'';
   const fig=(pid)=>{const r=relOpen(pid,k,t,per)||relReleased(pid,k,t,per);if(!r)return '<span class="muted small">—</span>';const f=r.figures||{};
     return k==='planning'?`Actual ${fmt(+f.actual_pct,1)}% of plan ${f.planned_pct!=null?fmt(+f.planned_pct,1)+'%':'—'}${f.spi!=null?`, SPI ${fmt(+f.spi,2)}`:''}`:`EAC ${sar(+f.eac)}, VAC <span class="${+f.vac<0?'r-c':'g-c'}">${sar(+f.vac)}</span>`};
   $('#view').innerHTML=`${crumb()}
   ${CLOUD_ME&&DB.relMissing?`<div class="warn-box" style="margin-bottom:14px">Releases need the v9 database update (see STAGE-6-SETUP). <span class="small">${esc(DB.relMissing)}</span></div>`:''}
-  <div class="g g-kpi">${kpi('Waiting for your approval',fmt(mineToApprove.length),canApproveRel()?'Submitted by planning and costing':'Approved by the Head of Planning and Cost Control',mineToApprove.length?'a':'')}
+  <div class="g g-kpi">${kpi('Waiting for you',fmt(mineToApprove.length),canApproveRel()||isRegionPlanner()?'To review or approve':'Approved by the regional planning section manager',mineToApprove.length?'a':'')}
     ${kpi('Drafts in scope',fmt(relRows().filter(r=>relVisible(r)&&r.status==='Draft'&&SCOPE.has(r.project_id)).length),'Not yet submitted')}
     ${kpi('Released this month',fmt(relRows().filter(r=>relVisible(r)&&r.status==='Released'&&String(r.approved_at||'').slice(0,7)===localISO().slice(0,7)).length),'Visible to management')}</div>
   <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>${k==='planning'?'Progress releases':'Monthly cost reports'}</h2>
     <div class="chips" role="group" aria-label="Release kind">${tab('planning','Progress releases')}${tab('cost','Monthly cost reports')}</div></div>
     <div class="fields" style="margin-bottom:8px">${k==='planning'?F('Period type',sel('relpt',[['month','Monthly'],['week','Weekly']],t,'data-relpt')):''}
-      ${F(t==='month'?'Month':'Week',sel('relper',pers.map(x=>[x,perLabel(t,x)]),per,'data-relper'))}</div>
-    <p class="small muted" style="margin:0 0 10px">${k==='planning'?'ProTrackAI computes each project\'s progress from daily reports, the baseline and the weekly engineering and procurement update. Review it, change a figure only with a reason, add your comments, and submit.':'Enter the Rev-0 budget, the actual cost to date and commitments (from SAP) and the forecast cost to complete, or upload them for several projects. ProTrackAI adds the approved budget supplements and works out EAC and VAC the same way every month.'} The Head of Planning and Cost Control approves before management sees it.</p>
-    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>${esc(perLabel(t,per))}</th><th>Figures</th><th></th></tr></thead><tbody>
-    ${ps.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}</span></td><td>${relStatusCell(p.id,k,t,per)}</td><td class="small">${fig(p.id)}</td>
-      <td class="n"><button class="btn sm" type="button" data-relopen="${esc(p.id)}">${relOpen(p.id,k,t,per)||relReleased(p.id,k,t,per)?'Open':canPrepRel(k)?'Prepare':'Open'}</button></td></tr>`).join('')||'<tr><td colspan="4" class="muted">No live project in this scope.</td></tr>'}
+      ${F(t==='month'?'Month':'Week',sel('relper',pers.map(x=>[x,perLabel(t,x)]),per,'data-relper'))}
+      ${F('Region',`<select data-relf="rg"><option value="">All regions</option>${DB.master.regions.map(x=>`<option value="${esc(x.id)}" ${rf.rg===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`)}
+      ${F('Sector',`<select data-relf="sec"><option value="">All sectors</option>${DB.master.sectors.map(x=>`<option value="${esc(x.id)}" ${rf.sec===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`)}</div>
+    <p class="small muted" style="margin:0 0 10px">${k==='planning'?'ProTrackAI computes each project\'s progress from daily reports, the baseline and the weekly engineering and procurement update. Review it, change a figure only with a reason, add your comments, and submit.':'Enter the Rev-0 budget, the actual cost to date and commitments (from SAP) and the forecast cost to complete, or upload them for several projects. ProTrackAI adds the approved budget supplements and works out EAC and VAC the same way every month.'} ${k==='planning'?(relSettings().pm_review?'The project manager reviews it, then the regional planning section manager approves it':'The regional planning section manager approves it')+' before management sees it.':'The Head of Planning and Cost Control approves before management sees it.'}</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Region and sector</th><th>${esc(perLabel(t,per))}</th><th>Data date</th><th>Figures</th><th></th></tr></thead><tbody>
+    ${ps.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}</span></td><td class="small">${esc(regName(p)||'')}<span class="t2">${esc(secById(p.sector)?.name||'')}</span></td><td>${relStatusCell(p.id,k,t,per)}</td><td class="small">${(()=>{const r=relOpen(p.id,k,t,per)||relReleased(p.id,k,t,per);return r&&r.data_date?fmtDY(r.data_date):'—'})()}</td><td class="small">${fig(p.id)}</td>
+      <td class="n"><button class="btn sm" type="button" data-relopen="${esc(p.id)}">${relOpen(p.id,k,t,per)||relReleased(p.id,k,t,per)?'Open':canPrepRel(k)?'Prepare':'Open'}</button></td></tr>`).join('')||'<tr><td colspan="6" class="muted">No live project in this scope.</td></tr>'}
     </tbody></table></div></section>
   ${k==='cost'&&canPrepRel('cost')?`<section class="panel"><div class="card-head"><h2>Upload monthly cost figures</h2><span class="small muted">Several projects at once; each row becomes that project's draft</span></div>
     <div class="actions" style="margin:0"><button class="btn" type="button" data-reltpl>Download template</button><label class="btn primary" for="relfile">Upload figures</label><input id="relfile" type="file" accept=".xlsx,.xls,.csv" hidden></div>
     <div id="relUpBox" style="margin-top:10px"></div></section>`:''}`;
 }
 function openRelease(pid,k,t,per){
+  if(k==='planning')return openPlanRelease(pid,t,per);
+  $('#sheet').classList.remove('full');
   const p=projById(pid),open=relOpen(pid,k,t,per),released=relReleased(pid,k,t,per),r=open||released,editable=(!r||r.status==='Draft')&&canPrepRel(k)&&!(!open&&released);
   const u=id=>{const x=id&&userById(id);return x?x.name:'—'},H=r?relRows().filter(x=>x.project_id===pid&&x.kind===k&&x.period_type===t&&x.period===per).flatMap(x=>relAuditOf(x.id).map(a=>({...a,rev:x.rev}))).sort((a,b)=>String(b.at_time).localeCompare(String(a.at_time))):[];
   const comp=k==='planning'?relPlanSnapshot(pid):null,f=r?r.figures:(k==='planning'?comp:relCostDefaults(pid,per)),nar=(r&&r.narrative)||{},ov=(r&&r.overrides)||[];
@@ -2491,7 +2519,8 @@ function relFormPayload(){
       const cv=comp[key],differs=unit==='date'?(val||null)!==(cv||null):(val==null?cv!=null:(cv==null||Math.abs(val-cv)>1e-9));
       if(differs)overrides.push({field:key,label:l,computed:cv==null?null:cv,value:val,reason:(f.elements['r_'+key]?.value||'').trim()})});
     ['next_ms_text','next_ms_date','baseline_finish'].forEach(x=>{figures[x]=comp[x]});
-    ['summary','issues','next'].forEach(x=>{const el=f.elements['n_'+x];if(el)nar[x]=el.value.trim()})}
+    ['summary','issues','recovery','next'].forEach(x=>{const el=f.elements['n_'+x];if(el)nar[x]=el.value.trim()});
+    RD_IN.forEach(x=>{const el=f.elements['d_'+x];if(!el)return;const v=el.value.trim();figures[x]=v===''?null:RD_NUM.includes(x)?+v:v})}
   else{if(f.querySelector('#crTable'))Object.assign(figures,crFormRead(f));[...(f.querySelector('#crTable')?[]:COST_IN),...INV_IN].forEach(([key])=>{const el=f.elements['c_'+key];if(el)figures[key]=el.value.trim()===''?null:+el.value});const el=f.elements.n_summary;if(el)nar.summary=el.value.trim()}
   return {figures,overrides,narrative:nar,data_date:ASOF};
 }
@@ -2509,6 +2538,7 @@ document.addEventListener('change',e=>{
   if(e.target.matches&&e.target.matches('[data-xrper]')){state.xrPer=e.target.value;render()}
   if(e.target.matches&&e.target.matches('[data-logproj]')){state.logPid=e.target.value;state.logPer=null;state.logUp=null;render()}
   if(e.target.matches&&e.target.matches('[data-logper]')){state.logPer=e.target.value;render()}
+  if(e.target.matches&&e.target.matches('[data-relf]')){state.relF=state.relF||{};state.relF[e.target.dataset.relf]=e.target.value;render()}
 });
 document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-reltab],[data-relopen],[data-reldo],[data-reltpl],[data-relupgo],[data-logtab],[data-logtpl],[data-loggo],[data-logcancel]');if(!t)return;const d=t.dataset;
@@ -2518,13 +2548,14 @@ document.addEventListener('click',async e=>{
     const err=m=>{$('#relErr').textContent=m};t.disabled=true;let r;
     if(a==='save'||a==='submit'){if(f.querySelector('[name^="f_"],[name^="c_"],#crTable')){r=await relAct({action:'save',...base,...relFormPayload()});if(!r){t.disabled=false;err(relAct.err?'Not saved: '+relAct.err:'Not saved: see the message at the bottom of the screen.');return}}
       if(a==='submit')r=await relAct({action:'submit',...base,note})}
-    else r=await relAct({action:a,...base,note});
+    else r=await relAct({action:a,...base,note,...(a==='approve'&&$('#relMgmt')&&$('#relMgmt').value.trim()?{mgmt:$('#relMgmt').value.trim()}:{})});
     t.disabled=false;if(!r){err('Not done: see the message at the bottom of the screen.');return}
     const p=projById(base.project_id);
-    if(a==='submit')notify(`${p.short}: ${REL_KIND[base.kind].toLowerCase()} for ${perLabel(base.period_type,base.period)} submitted by ${me().name}, waiting for the Head of Planning and Cost Control.`);
+    if(a==='submit')notify(`${p.short}: ${REL_KIND[base.kind].toLowerCase()} for ${perLabel(base.period_type,base.period)} submitted by ${me().name}, waiting for ${base.kind==='planning'&&relSettings().pm_review?'the project manager\'s review':relApproverText(base.project_id,base.kind)}.`);
+    if(a==='review')notify(`${p.short}: progress release for ${perLabel(base.period_type,base.period)} reviewed by ${me().name}, waiting for ${relApproverText(base.project_id,base.kind)}.`);
     if(a==='approve')notify(`${p.short}: ${REL_KIND[base.kind].toLowerCase()} for ${perLabel(base.period_type,base.period)} released by ${me().name}.`);
     if(a==='return')notify(`${p.short}: ${REL_KIND[base.kind].toLowerCase()} for ${perLabel(base.period_type,base.period)} returned by ${me().name}: ${note}`,true);
-    toast({save:'Draft saved',submit:'Submitted for approval',approve:'Released',return:'Returned',revise:'Revision started'}[a]);openRelease(base.project_id,base.kind,base.period_type,base.period);render();return}
+    toast({save:'Draft saved',submit:'Submitted for approval',review:'Marked reviewed',approve:'Released',return:'Returned to the planner',revise:'Revision started'}[a]);openRelease(base.project_id,base.kind,base.period_type,base.period);render();return}
   if('reltpl' in d){relTemplate();return}
   if('relupgo' in d){relUploadGo(t);return}
   if(d.logtab){state.logTab=d.logtab;state.logUp=null;render();return}
@@ -3003,7 +3034,7 @@ function xrRows(t,per){
   const money=t==='month'&&rasaMoneyOk();
   return scopeProjects().filter(p=>p.status!=='Cancelled').map(p=>{const pr=relReleased(p.id,'planning',t,per),cr=money?relReleased(p.id,'cost','month',per):null,f=pr?pr.figures:{},c=cr?cr.figures:null;
     const slip=f.forecast_finish&&f.baseline_finish?diffDays(f.baseline_finish,f.forecast_finish):null,iss=pr?(pr.issues_snapshot||[]):[];
-    const why=[];if(pr&&f.spi!=null&&+f.spi<0.95)why.push(`SPI ${fmt(+f.spi,2)}`);if(c&&+c.vac<0)why.push(`VAC ${sar(+c.vac)}`);if(slip!=null&&slip>30)why.push(`finish ${slip} days after baseline`);
+    const why=[];if(pr&&f.spi!=null&&+f.spi<0.95)why.push(`SPI ${fmt(+f.spi,2)}`);if(c&&+c.vac<0)why.push(`VAC ${sar(+c.vac)}`);if(slip!=null&&slip>30)why.push(`finish ${slip} days after baseline`);if(pr&&f.tcc_delay_days!=null&&+f.tcc_delay_days>30&&!f.tcc_receipt_date&&!(slip!=null&&slip>30))why.push(`TCC ${f.tcc_delay_days} days late`);
     if(iss.some(x=>x.impact==='Extremely High'))why.push(`${iss.filter(x=>x.impact==='Extremely High').length} extremely high issue${iss.filter(x=>x.impact==='Extremely High').length>1?'s':''}`);
     return {p,pr,cr,f,c,slip,iss,why,w:+p.value||1}});
 }
@@ -3071,8 +3102,8 @@ function xrProjectHTML(t,per){
     ${kpi('Design',pc(f.eng_pct),f.eng_plan_pct!=null?`plan ${pc(f.eng_plan_pct)}`:'')}${kpi('Procurement',pc(f.prc_pct),f.prc_plan_pct!=null?`plan ${pc(f.prc_plan_pct)}`:'')}
     ${kpi('Forecast finish',f.forecast_finish?fmtDY(f.forecast_finish):'—',f.baseline_finish?`baseline ${fmtDY(f.baseline_finish)}`:'',f.forecast_finish&&f.baseline_finish&&f.forecast_finish>f.baseline_finish?'a':'')}
     ${kpi('Workforce',f.workforce!=null?fmt(+f.workforce):'—',f.productivity_pct!=null?`productivity ${pc(f.productivity_pct)}`:'')}</div>
-  <section class="panel"><h2>Planning engineer's comments</h2><p><b>Summary.</b> ${esc(nar.summary||'—')}</p><p><b>Key issues.</b> ${esc(nar.issues||'—')}</p><p><b>Next period.</b> ${esc(nar.next||'—')}</p>
-    ${(pr.overrides||[]).length?`<p class="small muted">Figures changed by the planning engineer: ${(pr.overrides||[]).map(o=>`${esc(o.label||o.field)} ${esc(String(o.computed??'—'))} → ${esc(String(o.value??'—'))} (${esc(o.reason)})`).join('; ')}.</p>`:''}</section>`:''}
+  <section class="panel"><h2>Planning engineer's comments</h2><p><b>Summary.</b> ${esc(nar.summary||'—')}</p><p><b>Key issues.</b> ${esc(nar.issues||'—')}</p>${nar.recovery?`<p><b>Recovery actions.</b> ${esc(nar.recovery)}</p>`:''}<p><b>Next period.</b> ${esc(nar.next||'—')}</p>${nar.mgmt?`<p><b>Management remarks.</b> ${esc(nar.mgmt)}</p>`:''}
+    ${(pr.overrides||[]).length?`<p class="small muted">Figures changed by the planning engineer: ${(pr.overrides||[]).map(o=>`${esc(o.label||o.field)} ${esc(String(o.computed??'—'))} → ${esc(String(o.value??'—'))} (${esc(o.reason)})`).join('; ')}.</p>`:''}</section>${xrDashHTML(f)}`:''}
   <section class="panel"><div class="card-head"><h2>Issues and bottlenecks</h2><span class="small muted">${pr?`Open issues saved with the release (${iss.length})`:'Released with the progress release'}</span></div>
     ${pr?(iss.length?`<div class="scroll"><table class="tbl"><thead><tr><th>No</th><th>Type</th><th>Owner</th><th>Issue</th><th>Impact</th><th>Priority</th><th>Action by</th><th>Target</th><th>Schedule impact</th></tr></thead><tbody>
       ${iss.map(x=>`<tr><td><b>${esc(x.no)}</b></td><td class="small">${esc(x.type||'—')}</td><td class="small">${esc(x.owner||'—')}${x.sub_owner?`<span class="t2">${esc(x.sub_owner)}</span>`:''}</td><td class="small" style="min-width:220px">${esc(x.description)}${x.action_required?`<span class="t2">Required: ${esc(x.action_required)}</span>`:''}</td>
@@ -3785,6 +3816,255 @@ function seedV34(){
   DB.v34Seeded=true;save();
 }
 
+/* ---------- v3.5: the progress release dashboard and regional approval ----------
+   A progress release (weekly or monthly) opens full screen with tabs: Overview, Milestones, Progress, Manpower,
+   Energization, Release notes, Approval. Internal progress (ProTrackAI, P6 internal weightage agreed with management)
+   stays the headline everywhere; external progress (client weightage) is entered beside it. Each region's planning
+   section manager reviews and approves its progress releases; a super admin can switch on a project manager review
+   first. The server (schema-update-v14.sql: pt_rel_plan_calc, release_act, release_setup) works out the same figures. */
+const ENERG=['Not Started','Under Testing','Ready for Energization','Energized'];
+const ENERG_CLS={'Not Started':'Draft','Under Testing':'Reviewed','Ready for Energization':'Submitted','Energized':'Approved'};
+const RD_MS=[['Contractual dates',[['commence_date','Contractual commencement'],['site_handover_date','Site handover'],['tcc_orig_date','Original contractual TCC'],['pac_orig_date','Original contractual PAC'],['fac_orig_date','Original contractual FAC']]],
+  ['Internal target',[['tcc_int_target_date','Internal TCC target (if required)']]],
+  ['Approved revised dates',[['tcc_rev_date','Approved revised TCC'],['pac_rev_date','Approved revised PAC'],['fac_rev_date','Approved revised FAC']]],
+  ['Forecast dates',[['tcc_int_fc_date','Internal forecast TCC'],['tcc_ext_fc_date','External forecasted TCC'],['pac_ext_fc_date','External forecasted PAC'],['fac_ext_fc_date','External forecasted FAC']]]];
+const RD_CARRY=['sub_project_text','commence_date','site_handover_date','tcc_orig_date','pac_orig_date','fac_orig_date','tcc_int_target_date','tcc_rev_date','pac_rev_date','fac_rev_date','tcc_int_fc_date','tcc_ext_fc_date','pac_ext_fc_date','fac_ext_fc_date',
+  'tcc_receipt_date','pac_receipt_date','fac_receipt_date','energ_status_text','energ_date','energ_remarks_text','ext_plan_amt','ext_act_amt','ext_plan_pct','ext_act_pct','mp_dir_plan','mp_ind_plan','mp_sub_plan','mp_ind_act'];
+const RD_NUM=['ext_plan_amt','ext_act_amt','ext_plan_pct','ext_act_pct','mp_dir_plan','mp_dir_act','mp_ind_plan','mp_ind_act','mp_sub_plan','mp_sub_act'];
+const RD_IN=[...RD_MS.flatMap(g=>g[1].map(x=>x[0])),'sub_project_text','tcc_receipt_date','pac_receipt_date','fac_receipt_date','energ_status_text','energ_date','energ_remarks_text',...RD_NUM];
+/* who approves and reviews progress releases */
+const relSettings=()=>DB.relSettings||{pm_review:false};
+const relApproversOf=rg=>(DB.relApprovers||[]).filter(a=>a.region_id===rg).map(a=>userById(a.user_id)).filter(Boolean);
+const isRegionPlanner=()=>(DB.relApprovers||[]).some(a=>a.user_id===me().id);
+function relCanApprove(pid,k){if(state.role==='sa'||isHead())return true;if(k!=='planning')return false;const p=projById(pid);
+  return !!p&&accessIds().includes(pid)&&(DB.relApprovers||[]).some(a=>a.user_id===me().id&&a.region_id===p.region)}
+const relCanReview=r=>!!r&&r.kind==='planning'&&relSettings().pm_review&&r.status==='Submitted'&&!r.reviewed_by&&(state.role==='sa'||(state.role==='pm'&&accessIds().includes(r.project_id)))&&r.submitted_by!==me().id;
+const relCanReturn=r=>!!r&&r.status==='Submitted'&&(relCanApprove(r.project_id,r.kind)||(r.kind==='planning'&&relSettings().pm_review&&state.role==='pm'&&accessIds().includes(r.project_id)&&!r.reviewed_by));
+const relApproverText=(pid,k)=>{if(k!=='planning')return 'Head of Planning and Cost Control';const p=projById(pid)||{},A=relApproversOf(p.region);return A.length?A.map(u=>u.name).join(', ')+' (planning section manager)':'Head of Planning and Cost Control (no planning section manager named for '+(regName(p)||'the region')+')'};
+/* the server's calculations, mirrored */
+function relPlanCalc(pid,f){
+  const fail=t=>{throw new Error(t)},n=k=>f[k]==null||f[k]===''?null:+f[k],p=projById(pid)||{},cv=+p.value?+p.value*1e6:null,o={};
+  ['ext_plan_pct','ext_act_pct'].forEach(k=>{const v=n(k);if(v!=null&&(v<0||v>100))fail(`${k} must be between 0 and 100`)});
+  RD_NUM.filter(k=>!/pct$/.test(k)).forEach(k=>{const v=n(k);if(v!=null&&v<0)fail(`${k} cannot be negative`)});
+  if(f.energ_status_text&&!ENERG.includes(f.energ_status_text))fail('Energization status must be Not Started, Under Testing, Ready for Energization or Energized');
+  if(f.energ_status_text==='Energized'&&!f.energ_date)fail('Give the energization date');
+  const dd=(a,b)=>a&&b?diffDays(b,a):null;
+  ['tcc','pac','fac'].forEach(k=>{o[k+'_delay_days']=dd(f[k+'_ext_fc_date'],f[k+'_rev_date']||f[k+'_orig_date'])});
+  o.tcc_int_delay_days=dd(f.tcc_int_fc_date,f.tcc_int_target_date||f.tcc_rev_date||f.tcc_orig_date);
+  const r2=v=>Math.round(v*100)/100;
+  o.ext_var_pct=n('ext_act_pct')!=null&&n('ext_plan_pct')!=null?r2(n('ext_act_pct')-n('ext_plan_pct')):null;
+  o.ext_spi=n('ext_plan_pct')>0&&n('ext_act_pct')!=null?Math.round(n('ext_act_pct')/n('ext_plan_pct')*1000)/1000:null;
+  o.int_var_pct=n('actual_pct')!=null&&n('planned_pct')!=null?r2(n('actual_pct')-n('planned_pct')):null;
+  o.int_plan_amt=cv&&n('planned_pct')!=null?Math.round(cv*n('planned_pct')/100):null;o.int_act_amt=cv&&n('actual_pct')!=null?Math.round(cv*n('actual_pct')/100):null;
+  let tp=0,ta=0,np=0,na=0;['dir','ind','sub'].forEach(k=>{const a=n('mp_'+k+'_plan'),b=n('mp_'+k+'_act');if(a!=null){tp+=a;np++}if(b!=null){ta+=b;na++}});
+  Object.assign(o,{mp_tot_plan:np?tp:null,mp_tot_act:na?ta:null,mp_var:np&&na?ta-tp:null,mp_util_pct:np&&na&&tp>0?Math.round(ta/tp*1000)/10:null});
+  return Object.assign({},f,o);
+}
+/* where a new draft starts: computed progress now, last release's dates and plans, today's manpower from daily reports */
+function relDashDefaults(pid){
+  const p=projById(pid)||{},last=relRows().filter(r=>r.project_id===pid&&r.kind==='planning'&&r.figures).sort((a,b)=>String(b.updated_at||b.approved_at||b.prepared_at||'').localeCompare(String(a.updated_at||a.approved_at||a.prepared_at||''))||String(b.period).localeCompare(String(a.period)))[0],F=last?last.figures:{},out={};
+  RD_CARRY.forEach(k=>{if(F[k]!=null&&F[k]!=='')out[k]=F[k]});
+  const ms=re=>(p.milestones||[]).find(m=>re.test(m.n||''));
+  if(!out.commence_date&&p.start)out.commence_date=p.start;
+  [['tcc',/\bTCC\b|taking.?over|completion/i],['pac',/\bPAC\b|provisional acceptance/i],['fac',/\bFAC\b|final acceptance/i]].forEach(([k,re])=>{const m=ms(re);if(!m)return;
+    if(!out[k+'_orig_date']&&m.plan)out[k+'_orig_date']=m.plan;if(!out[k+'_ext_fc_date']&&(m.fc||m.plan))out[k+'_ext_fc_date']=m.fc||m.plan;if(!out[k+'_receipt_date']&&m.act)out[k+'_receipt_date']=m.act});
+  if(!out.tcc_orig_date&&p.finish)out.tcc_orig_date=p.finish;
+  let own=null,sub=null;withScope(pid,()=>{const V=valid().filter(l=>l.date<=ASOF),d=V.map(l=>l.date).sort().pop();if(!d)return;const L=V.filter(l=>l.date===d);
+    own=L.reduce((t,l)=>t+(l.labour||[]).reduce((s,x)=>s+(+x.count||0),0),0);sub=L.reduce((t,l)=>t+subFlat(l).reduce((s,u)=>s+(+u.count||0),0),0)});
+  if(own!=null)out.mp_dir_act=own;if(sub!=null)out.mp_sub_act=sub;if(!out.energ_status_text)out.energ_status_text='Not Started';
+  return out;
+}
+/* traffic lights: received / on schedule (≤ 0 days) / at risk (1–30 days) / delayed (over 30 days) */
+function msLight(delay,receipt){if(receipt)return {k:'g',t:'Received'};if(delay==null||delay==='')return {k:'n',t:'Data unavailable'};return +delay<=0?{k:'g',t:'On schedule'}:+delay<=30?{k:'a',t:'At risk'}:{k:'r',t:'Delayed'}}
+const tlDot=k=>`<span class="tldot ${k}" aria-hidden="true"></span>`;
+function trendOf(cur,prev,better){if(cur==null||prev==null||cur===''||prev==='')return '';const d=+cur-+prev,eps=Math.abs(+prev)*0.005+1e-9;
+  if(Math.abs(d)<=eps)return '<span class="trend st0" title="Stable since the last release">■ Stable</span>';
+  const up=better==='up'?d>0:d<0;return up?'<span class="trend up" title="Better than the last release">▲ Improving</span>':'<span class="trend dn" title="Worse than the last release">▼ Deteriorating</span>'}
+function relPrevOf(pid,t,per){return relRows().filter(r=>r.project_id===pid&&r.kind==='planning'&&r.period_type===t&&r.status==='Released'&&String(r.period)<per).sort((a,b)=>String(b.period).localeCompare(String(a.period)))[0]||null}
+function relKpiHTML(f,prev){
+  const P=prev?prev.figures:{},pc=v=>v==null||v===''?'—':fmt(+v,1)+'%',tcc=msLight(f.tcc_delay_days,f.tcc_receipt_date),pac=msLight(f.pac_delay_days,f.pac_receipt_date),var_=f.int_var_pct;
+  const k=(l,v,s,cls,tr)=>`<div class="rkpi ${cls||''}"><span class="l">${l}</span><b>${v}</b><span class="t2">${s||''}</span>${tr||''}</div>`;
+  return `<div class="rkpis">${k('Actual progress',pc(f.actual_pct),'internal weightage',light(f.planned_pct?(+f.actual_pct||0)/(+f.planned_pct||1):1),trendOf(f.actual_pct,P.actual_pct,'up'))}
+    ${k('Planned progress',pc(f.planned_pct),'internal weightage','')}
+    ${k('Progress variance',var_==null?'—':(var_>0?'+':'')+fmt(+var_,1)+'%','actual − planned',var_==null?'':var_>=0?'g':var_>=-5?'a':'r',trendOf(var_,P.int_var_pct,'up'))}
+    ${k('SPI',f.spi!=null&&f.spi!==''?fmt(+f.spi,2):'—',f.ext_spi!=null?`external ${fmt(+f.ext_spi,2)}`:'internal',f.spi!=null?light(+f.spi):'',trendOf(f.spi,P.spi,'up'))}
+    ${k('Forecast completion',f.forecast_finish?fmtDY(f.forecast_finish):'—',f.baseline_finish?'baseline '+fmtDY(f.baseline_finish):'',f.forecast_finish&&f.baseline_finish&&f.forecast_finish>f.baseline_finish?'a':'')}
+    ${k('Manpower variance',f.mp_var==null?'—':(f.mp_var>0?'+':'')+fmt(+f.mp_var),f.mp_util_pct!=null?`utilization ${fmt(+f.mp_util_pct,1)}%`:'actual − planned',f.mp_var==null?'':f.mp_var>=0?'g':(f.mp_util_pct||0)>=90?'a':'r',trendOf(f.mp_var,P.mp_var,'up'))}
+    ${k('TCC status',`${tlDot(tcc.k)}${tcc.t}`,f.tcc_delay_days!=null&&!f.tcc_receipt_date?`${f.tcc_delay_days>0?'+':''}${f.tcc_delay_days} days`:f.tcc_receipt_date?fmtDY(f.tcc_receipt_date):'',tcc.k,trendOf(f.tcc_delay_days,P.tcc_delay_days,'down'))}
+    ${k('PAC status',`${tlDot(pac.k)}${pac.t}`,f.pac_delay_days!=null&&!f.pac_receipt_date?`${f.pac_delay_days>0?'+':''}${f.pac_delay_days} days`:f.pac_receipt_date?fmtDY(f.pac_receipt_date):'',pac.k,trendOf(f.pac_delay_days,P.pac_delay_days,'down'))}
+    ${k('Energization',`<span class="st ${ENERG_CLS[f.energ_status_text]||'Draft'}">${esc(f.energ_status_text||'Not Started')}</span>`,f.energ_date?fmtDY(f.energ_date):'','')}</div>
+    ${prev?`<p class="small muted" style="margin:4px 0 0">Trends compare with the released ${esc(perLabel(prev.period_type,prev.period))} release. Traffic lights: on schedule (no delay), at risk (1–30 days), delayed (over 30 days).</p>`:''}`;
+}
+/* the full-screen dashboard */
+function openPlanRelease(pid,t,per){
+  const p=projById(pid),open=relOpen(pid,'planning',t,per),released=relReleased(pid,'planning',t,per),r=open||released,editable=(!r||r.status==='Draft')&&canPrepRel('planning')&&!(!open&&released);
+  const u=id=>{const x=id&&userById(id);return x?x.name:'—'},H=r?relRows().filter(x=>x.project_id===pid&&x.kind==='planning'&&x.period_type===t&&x.period===per).flatMap(x=>relAuditOf(x.id).map(a=>({...a,rev:x.rev}))).sort((a,b)=>String(b.at_time).localeCompare(String(a.at_time))):[];
+  const comp=relPlanSnapshot(pid),base=r?r.figures:Object.assign({},comp,relDashDefaults(pid));let f;try{f=relPlanCalc(pid,base)}catch(e){f=base}
+  const nar=(r&&r.narrative)||{},ov=(r&&r.overrides)||[],prev=relPrevOf(pid,t,per),tab=state.rdTab||'overview',dis=editable?'':'disabled';
+  const pm=teamOf(pid,'pm')[0],pl=teamOf(pid,'plan')[0],canDecide=open&&open.status==='Submitted'&&relCanApprove(pid,'planning')&&open.submitted_by!==me().id,needRev=open&&open.status==='Submitted'&&relSettings().pm_review&&!open.reviewed_by;
+  const di=(k,l,type,extra)=>F(l,`<input name="d_${k}" ${type==='date'?'type="date"':type==='num'?'type="number" min="0" step="any" inputmode="decimal"':''} value="${esc(f[k]??'')}" ${dis} ${extra||''} data-rdin>`);
+  const calc=(l,v,s,cls)=>`<div class="rcalc ${cls||''}"><span class="l">${l}</span><b data-rdc>${v}</b>${s?`<span class="t2">${s}</span>`:''}</div>`;
+  const dl=(k)=>{const v=f[k];return v==null?'—':`${v>0?'+':''}${v} days`},lt=(k,rk)=>msLight(f[k],rk&&f[rk]);
+  const TABS=[['overview','Overview'],['ms','Milestones'],['prog','Progress'],['mp','Manpower'],['en','Energization'],['notes','Release notes'],['appr','Approval']];
+  const show=k=>tab===k?'':'hidden';
+  $('#sheet').innerHTML=`<div class="rdhead"><div><h2 style="margin:0">Progress release · ${esc(perLabel(t,per))}</h2><span class="small muted">${esc(pcode(p))} · ${esc(p.name)} · data date ${fmtDY((r&&r.data_date)||ASOF)}</span></div>
+      ${r?`<span class="st ${r.status==='Released'?'Approved':r.status==='Submitted'?'Reviewed':'Draft'}">${esc(r.status==='Submitted'?(needRev?'Awaiting PM review':'Awaiting approval'):relReturned(r)?'Returned':r.status)} · rev ${r.rev}</span>`:'<span class="st Draft">New</span>'}
+      <button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    ${relKpiHTML(f,prev)}
+    <div class="chips rdtabs" role="tablist">${TABS.map(([k,l])=>`<button type="button" role="tab" class="chip" data-rdtab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
+    <form id="relForm" data-pid="${esc(pid)}" data-k="planning" data-t="${t}" data-per="${per}" data-id="${esc(open?open.id:'')}" novalidate>
+    <section class="rdpanel" data-rdp="overview" ${show('overview')}>
+      <div class="rdgrid">
+        <div class="rdcard"><h3>Project information</h3><table class="tbl kv"><tbody>
+          <tr><td>Data date</td><td>${fmtDY((r&&r.data_date)||ASOF)}</td></tr><tr><td>Project number</td><td>${esc(pcode(p))}</td></tr>
+          <tr><td>Sub project number</td><td>${editable?`<input name="d_sub_project_text" value="${esc(f.sub_project_text||'')}" maxlength="60" data-rdin>`:esc(f.sub_project_text||'—')}</td></tr>
+          <tr><td>Project name</td><td>${esc(p.name)}</td></tr><tr><td>Region</td><td>${esc(regName(p)||'—')}</td></tr><tr><td>Sector</td><td>${esc(secById(p.sector)?.name||'—')}</td></tr>
+          <tr><td>Contract value</td><td>${+p.value?'SAR '+fmt(+p.value,1)+'M':'Data unavailable'}</td></tr><tr><td>Project manager</td><td>${esc(pm?pm.name:p.pm||'—')}</td></tr><tr><td>Planning engineer</td><td>${esc(pl?pl.name:'—')}</td></tr></tbody></table></div>
+        <div class="rdcard"><h3>Milestones at a glance</h3><div class="scroll"><table class="tbl"><thead><tr><th></th><th>Baseline</th><th>External forecast</th><th class="n">Delay</th><th>Status</th></tr></thead><tbody>
+          ${['tcc','pac','fac'].map(k=>{const L=lt(k+'_delay_days',k+'_receipt_date');return `<tr><td><b>${k.toUpperCase()}</b></td><td class="small">${f[k+'_rev_date']?fmtDY(f[k+'_rev_date'])+' (revised)':f[k+'_orig_date']?fmtDY(f[k+'_orig_date']):'—'}</td><td class="small">${f[k+'_ext_fc_date']?fmtDY(f[k+'_ext_fc_date']):'—'}</td><td class="n ${L.k}-c">${dl(k+'_delay_days')}</td><td class="small">${tlDot(L.k)}${L.t}</td></tr>`}).join('')}</tbody></table></div>
+          <h3>Progress, internal and external</h3><div class="scroll"><table class="tbl"><thead><tr><th></th><th class="n">Planned</th><th class="n">Actual</th><th class="n">Variance</th><th class="n">SPI</th></tr></thead><tbody>
+          <tr><td><b>Internal</b><span class="t2">P6 internal weightage (headline)</span></td><td class="n">${f.planned_pct!=null?fmt(+f.planned_pct,1)+'%':'—'}</td><td class="n">${f.actual_pct!=null?fmt(+f.actual_pct,1)+'%':'—'}</td><td class="n">${f.int_var_pct!=null?fmt(+f.int_var_pct,1):'—'}</td><td class="n">${f.spi!=null?fmt(+f.spi,2):'—'}</td></tr>
+          <tr><td><b>External</b><span class="t2">client weightage</span></td><td class="n">${f.ext_plan_pct!=null&&f.ext_plan_pct!==''?fmt(+f.ext_plan_pct,1)+'%':'—'}</td><td class="n">${f.ext_act_pct!=null&&f.ext_act_pct!==''?fmt(+f.ext_act_pct,1)+'%':'—'}</td><td class="n">${f.ext_var_pct!=null?fmt(+f.ext_var_pct,1):'—'}</td><td class="n">${f.ext_spi!=null?fmt(+f.ext_spi,2):'—'}</td></tr></tbody></table></div></div>
+      </div>
+      ${nar.summary?`<p><b>Summary.</b> ${esc(nar.summary)}</p>`:''}${nar.mgmt?`<p><b>Management remarks.</b> ${esc(nar.mgmt)}</p>`:''}
+    </section>
+    <section class="rdpanel" data-rdp="ms" ${show('ms')}><div class="rdgrid4">
+      ${RD_MS.map(([g,L])=>`<div class="rdcard"><h3>${g}</h3><div class="fields fields1">${L.map(([k,l])=>di(k,l,'date')).join('')}</div></div>`).join('')}</div>
+      <div class="rdcard"><h3>Delays (worked out)</h3><div class="rdcalcs">
+        ${['tcc','pac','fac'].map(k=>{const L=lt(k+'_delay_days',k+'_receipt_date');return calc(`${k.toUpperCase()} delay`,`${tlDot(L.k)}${dl(k+'_delay_days')}`,`external forecast − ${f[k+'_rev_date']?'approved revised':'original contractual'} ${k.toUpperCase()} · ${L.t}`,L.k)}).join('')}
+        ${(()=>{const L=msLight(f.tcc_int_delay_days);return calc('Internal TCC delay',`${tlDot(L.k)}${dl('tcc_int_delay_days')}`,`internal forecast − ${f.tcc_int_target_date?'internal target':'TCC baseline'} · ${L.t}`,L.k)})()}</div>
+        <p class="small muted" style="margin:6px 0 0">Green: on schedule (no delay). Amber: at risk (1–30 days). Red: delayed (over 30 days). A milestone with its certificate received is green.</p></div>
+    </section>
+    <section class="rdpanel" data-rdp="prog" ${show('prog')}><div class="rdgrid">
+      <div class="rdcard"><h3>External progress <span class="muted small">client weightage</span></h3><div class="fields">
+        ${di('ext_plan_amt','External overall planned amount (SAR)','num')}${di('ext_act_amt','External overall actual amount (SAR)','num')}
+        ${di('ext_plan_pct','External overall planned %','num','max="100"')}${di('ext_act_pct','External overall actual %','num','max="100"')}</div>
+        <div class="rdcalcs">${calc('External variance',f.ext_var_pct!=null?fmt(+f.ext_var_pct,2)+'%':'—','actual % − planned %',f.ext_var_pct==null?'':f.ext_var_pct>=0?'g':f.ext_var_pct>=-5?'a':'r')}
+          ${calc('Schedule performance (external)',f.ext_spi!=null?fmt(+f.ext_spi,2):'—','actual % ÷ planned %',f.ext_spi!=null?light(+f.ext_spi):'')}</div></div>
+      <div class="rdcard"><h3>Internal progress <span class="muted small">P6 internal weightage agreed with management · headline</span></h3>
+        <div class="scroll"><table class="tbl"><thead><tr><th>Figure</th><th class="n">ProTrackAI now</th><th class="n">In this release</th><th>Reason if different</th></tr></thead><tbody>
+        ${PLAN_FIELDS.map(([key,l,unit])=>{const cv=comp[key],v=f[key],o=ov.find(x=>x.field===key),show=x=>x==null||x===''?'—':unit==='date'?fmtDY(x):fmt(+x,unit==='%'?1:key==='spi'?2:0)+(unit==='%'?'%':'');
+          return `<tr><td>${esc(l)}</td><td class="n">${show(cv)}</td><td class="n">${editable?`<input name="f_${key}" ${unit==='date'?'type="date"':'type="number" step="0.01"'} value="${esc(v==null?'':v)}" data-comp="${esc(cv==null?'':cv)}" style="max-width:140px" data-rdin>`:show(v)}</td>
+            <td>${editable?`<input name="r_${key}" value="${esc(o?o.reason:'')}" placeholder="Needed only if you change it">`:o?esc(o.reason):''}</td></tr>`}).join('')}</tbody></table></div>
+        <div class="rdcalcs">${calc('Internal planned amount',f.int_plan_amt!=null?sar(+f.int_plan_amt):'Data unavailable','contract value × planned %')}${calc('Internal actual amount',f.int_act_amt!=null?sar(+f.int_act_amt):'Data unavailable','contract value × actual %')}
+          ${calc('Internal variance',f.int_var_pct!=null?fmt(+f.int_var_pct,2)+'%':'—','actual % − planned %',f.int_var_pct==null?'':f.int_var_pct>=0?'g':f.int_var_pct>=-5?'a':'r')}</div></div></div>
+    </section>
+    <section class="rdpanel" data-rdp="mp" ${show('mp')}><div class="rdcard"><h3>Manpower</h3>
+      <table class="tbl rdmp"><thead><tr><th></th><th class="n">Planned</th><th class="n">Actual</th><th class="n">Variance</th></tr></thead><tbody>
+        ${[['dir','Alfanar manpower (direct)'],['ind','Indirect manpower'],['sub','Subcontractor manpower']].map(([k,l])=>{const a=f['mp_'+k+'_plan'],b=f['mp_'+k+'_act'],v=a!=null&&a!==''&&b!=null&&b!==''?(+b)-(+a):null;
+          return `<tr><td><b>${l}</b></td><td class="n">${editable?`<input name="d_mp_${k}_plan" type="number" min="0" step="1" value="${esc(a??'')}" data-rdin>`:a??'—'}</td><td class="n">${editable?`<input name="d_mp_${k}_act" type="number" min="0" step="1" value="${esc(b??'')}" data-rdin>`:b??'—'}</td><td class="n ${v==null?'':v>=0?'g-c':'r-c'}">${v==null?'—':(v>0?'+':'')+fmt(v)}</td></tr>`}).join('')}
+        <tr class="rdtot"><td><b>Total</b></td><td class="n"><b>${f.mp_tot_plan??'—'}</b></td><td class="n"><b>${f.mp_tot_act??'—'}</b></td><td class="n ${f.mp_var==null?'':f.mp_var>=0?'g-c':'r-c'}"><b>${f.mp_var==null?'—':(f.mp_var>0?'+':'')+fmt(+f.mp_var)}</b></td></tr></tbody></table>
+      <div class="rdcalcs">${calc('Manpower variance',f.mp_var==null?'—':(f.mp_var>0?'+':'')+fmt(+f.mp_var),'total actual − total planned',f.mp_var==null?'':f.mp_var>=0?'g':'a')}
+        ${calc('Utilization',f.mp_util_pct!=null?fmt(+f.mp_util_pct,1)+'%':'—','total actual ÷ total planned',f.mp_util_pct==null?'':f.mp_util_pct>=95?'g':f.mp_util_pct>=85?'a':'r')}
+        ${calc('Productivity index',f.productivity_pct!=null?fmt(+f.productivity_pct,1)+'%':'Data unavailable','earned ÷ spent manhours, last 30 days (ProTrackAI)',f.productivity_pct!=null?light(+f.productivity_pct/100):'')}</div>
+      <p class="small muted">Actual Alfanar and subcontractor manpower are filled in from the daily reports of the last reported day; change them if your count differs. Planned figures come from the P6 resource loading.</p></div>
+    </section>
+    <section class="rdpanel" data-rdp="en" ${show('en')}><div class="rdgrid">
+      <div class="rdcard"><h3>Certificates received</h3><div class="fields fields1">${di('tcc_receipt_date','TCC receipt','date')}${di('pac_receipt_date','PAC receipt','date')}${di('fac_receipt_date','FAC receipt','date')}</div></div>
+      <div class="rdcard"><h3>Energization <span class="st ${ENERG_CLS[f.energ_status_text]||'Draft'}" style="margin-inline-start:6px">${esc(f.energ_status_text||'Not Started')}</span></h3><div class="fields fields1">
+        ${F('Energization status',`<select name="d_energ_status_text" ${dis} data-rdin>${ENERG.map(x=>`<option ${x===(f.energ_status_text||'Not Started')?'selected':''}>${x}</option>`).join('')}</select>`)}
+        ${di('energ_date','Forecast / actual energization date','date')}
+        ${F('Remarks for energization',`<input name="d_energ_remarks_text" maxlength="300" value="${esc(f.energ_remarks_text||'')}" ${dis} data-rdin>`)}</div></div></div>
+    </section>
+    <section class="rdpanel" data-rdp="notes" ${show('notes')}><div class="rdgrid">
+      ${[['summary','Progress summary'],['issues','Key issues / risks'],['recovery','Recovery actions'],['next',t==='week'?'Next week target':'Next month target']].map(([k,l])=>`<div class="rdcard"><h3>${l}</h3><textarea name="n_${k}" rows="4" ${dis}>${esc(nar[k]||'')}</textarea></div>`).join('')}
+      <div class="rdcard"><h3>Management remarks</h3>${canDecide||relCanReview(open)?`<textarea id="relMgmt" rows="3" placeholder="Added by the approver with the approval">${esc(nar.mgmt||'')}</textarea>`:`<p class="small">${esc(nar.mgmt||'Added by the approver when the release is approved.')}</p>`}</div></div>
+      ${comp.next_ms_text?`<p class="small muted">Next milestone: ${esc(comp.next_ms_text)}${comp.next_ms_date?', '+fmtDY(comp.next_ms_date):''}.</p>`:''}
+    </section>
+    <section class="rdpanel" data-rdp="appr" ${show('appr')}><div class="rdgrid">
+      <div class="rdcard"><h3>Approval</h3><table class="tbl kv"><tbody>
+        <tr><td>Current revision</td><td>${r?'rev '+r.rev:'New'}</td></tr><tr><td>Reason for revision</td><td>${esc(r&&r.revise_reason||'—')}</td></tr>
+        <tr><td>Released by (submitted)</td><td>${esc(u(r&&r.submitted_by))}${r&&r.submitted_at?`<span class="t2">${esc(tStamp(r.submitted_at))}</span>`:''}</td></tr>
+        <tr><td>Reviewed by</td><td>${esc(u(r&&r.reviewed_by))}${r&&r.reviewed_at?`<span class="t2">${esc(tStamp(r.reviewed_at))}</span>`:''}${r&&r.review_note?`<span class="t2">${esc(r.review_note)}</span>`:''}</td></tr>
+        <tr><td>Approved by</td><td>${esc(u(r&&r.approved_by))}${r&&r.approved_at?`<span class="t2">${esc(tStamp(r.approved_at))}</span>`:''}</td></tr>
+        <tr><td>Approver for this project</td><td>${esc(relApproverText(pid,'planning'))}</td></tr>
+        <tr><td>Workflow</td><td class="small">Planning engineer submits → ${relSettings().pm_review?'project manager reviews → ':''}regional planning section manager approves (or rejects with a comment)</td></tr></tbody></table></div>
+      <div class="rdcard"><h3>History</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.action)}</b> (rev ${a.rev}) by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}</li>`).join('')||'<li class="muted">Not prepared yet.</li>'}</ul></div></div>
+    </section>
+    <div class="rdfoot">
+      ${canDecide||relCanReview(open)||relCanReturn(open)?`<label class="field" style="flex:1;min-width:220px">Comment (needed to reject)<input id="relNote" maxlength="500"></label>`:''}
+      ${released&&!open&&canPrepRel('planning')?`<label class="field" style="flex:1;min-width:220px">Reason for a new revision<input id="relNote" maxlength="500"></label>`:''}
+      <div class="actions" style="margin:0">
+        ${editable?'<button class="btn" type="button" data-reldo="save">Save draft</button>':''}
+        ${(open&&open.status==='Draft'&&canPrepRel('planning'))||(editable&&!open)?'<button class="btn primary" type="button" data-reldo="submit">Submit for approval</button>':''}
+        ${relCanReview(open)?'<button class="btn primary" type="button" data-reldo="review">Mark reviewed</button>':''}
+        ${canDecide&&!needRev?'<button class="btn primary" type="button" data-reldo="approve">Approve and release</button>':''}
+        ${canDecide&&needRev?'<span class="small muted">Waiting for the project manager\'s review.</span>':''}
+        ${relCanReturn(open)?'<button class="btn danger" type="button" data-reldo="return">Reject (return to planner)</button>':''}
+        ${open&&open.status==='Submitted'&&relCanApprove(pid,'planning')&&open.submitted_by===me().id?'<span class="small muted">You submitted this version, so someone else approves it.</span>':''}
+        ${released&&!open&&canPrepRel('planning')?'<button class="btn" type="button" data-reldo="revise">Start a new revision</button>':''}
+      </div><p class="err" id="relErr" style="flex-basis:100%;margin:0"></p></div>
+    </form>`;
+  $('#sheet').classList.remove('wide');$('#sheet').classList.add('full');$('#drawer').hidden=false;
+}
+/* recompute the worked-out figures as people type, without redrawing (keeps the cursor) */
+function rdPaint(){const f=$('#relForm');if(!f||f.dataset.k!=='planning'||!f.querySelector('[data-rdp]'))return;clearTimeout(rdPaint.h);rdPaint.h=setTimeout(()=>{
+  const tab=state.rdTab,x=relFormPayload(),pid=f.dataset.pid,t=f.dataset.t,per=f.dataset.per;let c;try{c=relPlanCalc(pid,x.figures)}catch(e){$('#relErr').textContent=e.message;return}$('#relErr').textContent='';
+  const prev=relPrevOf(pid,t,per),k=document.querySelector('#sheet .rkpis');if(k){const tmp=document.createElement('div');tmp.innerHTML=relKpiHTML(c,prev);k.replaceWith(tmp.querySelector('.rkpis'))}
+  state.rdTab=tab},250)}
+document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('[data-rdin]'))rdPaint()});
+document.addEventListener('change',e=>{if(e.target.matches&&e.target.matches('[data-rdin]'))rdPaint()});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-rdtab]');if(!t)return;state.rdTab=t.dataset.rdtab;
+  document.querySelectorAll('#sheet [data-rdtab]').forEach(b=>b.setAttribute('aria-pressed',b===t?'true':'false'));document.querySelectorAll('#sheet [data-rdp]').forEach(s=>{s.hidden=s.dataset.rdp!==state.rdTab})});
+/* super admin: planning section managers by region, and the project manager review step */
+function relSetupHTML(){
+  const S=relSettings(),cand=DB.master.users.filter(u=>u.active!==false&&['sa','plan','pm','rm','pf','exec'].includes(u.role));
+  return `<h3>Progress release approval</h3>${DB.relSetupMissing?'<p class="warn-box small">Regional approval needs the v14 database update (STAGE-11-SETUP). Until it runs, the Head of Planning and Cost Control approves every progress release.</p>':''}<p class="small muted" style="margin:0 0 8px">Each region's planning section manager reviews and approves its weekly and monthly progress releases. The Head of Planning and Cost Control and super admins can always approve. Cost reports stay with the Head.</p>
+    <table class="tbl"><thead><tr><th>Region</th><th>Planning section manager(s)</th><th>Add</th></tr></thead><tbody>
+    ${DB.master.regions.map(rg=>`<tr><td><b>${esc(rg.name)}</b></td><td>${relApproversOf(rg.id).map(x=>`<span class="docbadge">${esc(x.name)} <button class="link" type="button" data-rapdel="${esc(rg.id)}|${esc(x.id)}" aria-label="Remove ${esc(x.name)}">✕</button></span>`).join(' ')||'<span class="muted small">None: the Head approves</span>'}</td>
+      <td><select data-rapadd="${esc(rg.id)}"><option value="">Add…</option>${cand.filter(x=>!relApproversOf(rg.id).some(y=>y.id===x.id)).map(x=>`<option value="${esc(x.id)}">${esc(x.name)} (${esc(ROLES[x.role]||x.role)})</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>
+    <p style="margin-top:10px"><label class="chk"><input type="checkbox" data-relpmrev ${S.pm_review?'checked':''}><span>The project manager reviews each progress release before the planning section manager approves it</span></label></p>`;
+}
+async function relSetup(p){
+  if(CLOUD_ME){try{await rpc('release_setup',{p});await cloudLoadRelSetup()}catch(e){toast('The server refused this: '+srvMsg(e));return false}save();return true}
+  if(state.role!=='sa'){toast('Only a super admin can change who approves progress releases');return false}
+  DB.relApprovers=DB.relApprovers||[];DB.relSettings=DB.relSettings||{pm_review:false};
+  if(p.action==='pm_review'){DB.relSettings.pm_review=!!p.on;logChange(`Project manager review of progress releases ${p.on?'switched on':'switched off'}`)}
+  else if(p.action==='approver_add'){if(!DB.relApprovers.some(a=>a.region_id===p.region_id&&a.user_id===p.user_id))DB.relApprovers.push({region_id:p.region_id,user_id:p.user_id});logChange(`${(userById(p.user_id)||{}).name} named planning section manager for ${(regById(p.region_id)||{}).name}`)}
+  else if(p.action==='approver_remove'){DB.relApprovers=DB.relApprovers.filter(a=>!(a.region_id===p.region_id&&a.user_id===p.user_id));logChange(`${(userById(p.user_id)||{}).name} removed as planning section manager for ${(regById(p.region_id)||{}).name}`)}
+  save();return true;
+}
+async function cloudLoadRelSetup(){try{const [a,s]=await Promise.all([selAll('release_approvers','*',null,['region_id','user_id']),selAll('release_settings','*',null,['k'])]);DB.relApprovers=a;
+  DB.relSettings={pm_review:(s.find(x=>x.k==='pm_review')||{}).v===true};DB.relSetupMissing=false}catch(e){DB.relApprovers=DB.relApprovers||[];DB.relSettings=DB.relSettings||{pm_review:false};DB.relSetupMissing=srvMsg(e)}}
+document.addEventListener('change',async e=>{const t=e.target;if(!t.matches)return;
+  if(t.matches('[data-rapadd]')&&t.value){const ok=await relSetup({action:'approver_add',region_id:t.dataset.rapadd,user_id:t.value});if(ok)toast('Planning section manager added');render();return}
+  if(t.matches('[data-relpmrev]')){const ok=await relSetup({action:'pm_review',on:t.checked});if(ok)toast(t.checked?'Project manager review switched on':'Project manager review switched off');render()}});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-rapdel]');if(!t)return;const [rg,u]=t.dataset.rapdel.split('|');const ok=await relSetup({action:'approver_remove',region_id:rg,user_id:u});if(ok)toast('Removed');render()});
+/* executive report, project view: the released dashboard figures (milestones, external progress, energization, manpower) */
+function xrDashHTML(f){
+  if(!f||!['tcc_orig_date','tcc_ext_fc_date','ext_plan_pct','mp_tot_plan','mp_tot_act','energ_date'].some(k=>f[k]!=null&&f[k]!==''))return '';
+  const d=k=>f[k]?fmtDY(f[k]):'—',num=(v,dp)=>v==null||v===''?'—':fmt(+v,dp||0),dl=k=>f[k]==null||f[k]===''?'—':(+f[k]>0?'+':'')+f[k]+' days';
+  const ms=['tcc','pac','fac'].map(k=>{const L=msLight(f[k+'_delay_days'],f[k+'_receipt_date']);return `<tr><td><b>${k.toUpperCase()}</b></td><td class="small">${d(k+'_orig_date')}</td><td class="small">${d(k+'_rev_date')}</td><td class="small">${d(k+'_ext_fc_date')}</td><td class="small">${d(k+'_receipt_date')}</td><td class="n ${L.k}-c">${dl(k+'_delay_days')}</td><td class="small">${tlDot(L.k)}${L.t}</td></tr>`}).join('');
+  const iL=msLight(f.tcc_int_delay_days,f.tcc_receipt_date);
+  const mp=[['dir','Alfanar manpower (direct)'],['ind','Indirect manpower'],['sub','Subcontractor manpower']].map(([k,l])=>{const a=f['mp_'+k+'_plan'],b=f['mp_'+k+'_act'];return `<tr><td>${l}</td><td class="n">${num(a)}</td><td class="n">${num(b)}</td><td class="n">${a!=null&&a!==''&&b!=null&&b!==''?(+b-+a>0?'+':'')+fmt(+b-+a):'—'}</td></tr>`}).join('');
+  return `<section class="panel"><div class="card-head"><h2>Milestones, progress, energization and manpower</h2><span class="small muted">As released</span></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th></th><th>Original contractual</th><th>Approved revised</th><th>External forecast</th><th>Received</th><th class="n">Delay</th><th>Status</th></tr></thead><tbody>${ms}
+      <tr><td><b>TCC (internal)</b></td><td class="small" colspan="2">Internal target ${d('tcc_int_target_date')}</td><td class="small">${d('tcc_int_fc_date')} <span class="t2">internal forecast</span></td><td class="small">—</td><td class="n ${iL.k}-c">${dl('tcc_int_delay_days')}</td><td class="small">${tlDot(iL.k)}${iL.t}</td></tr></tbody></table></div>
+    <p class="small muted" style="margin:4px 0 8px">Commencement ${d('commence_date')} · site handover ${d('site_handover_date')}. Delay = external forecast − approved revised date (or the original contractual date when there is no revision). On schedule ≤ 0 days, at risk 1–30, delayed over 30.</p>
+    <div class="g g-kpi">${kpi('External progress',f.ext_act_pct!=null&&f.ext_act_pct!==''?fmt(+f.ext_act_pct,1)+'%':'—',`plan ${f.ext_plan_pct!=null&&f.ext_plan_pct!==''?fmt(+f.ext_plan_pct,1)+'%':'—'} · client weightage`)}
+      ${kpi('External SPI',f.ext_spi!=null?fmt(+f.ext_spi,2):'—',f.ext_var_pct!=null?`variance ${fmt(+f.ext_var_pct,1)}%`:'',f.ext_spi!=null?light(+f.ext_spi):'')}
+      ${kpi('Energization',esc(f.energ_status_text||'Not Started'),(f.energ_date?fmtDY(f.energ_date):'')+(f.energ_remarks_text?' · '+esc(f.energ_remarks_text):''))}
+      ${kpi('Manpower',num(f.mp_tot_act),`planned ${num(f.mp_tot_plan)}${f.mp_util_pct!=null?` · utilization ${fmt(+f.mp_util_pct,1)}%`:''}`,f.mp_var==null?'':+f.mp_var>=0?'g':(+f.mp_util_pct||0)>=90?'a':'r')}</div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Manpower</th><th class="n">Planned</th><th class="n">Actual</th><th class="n">Variance</th></tr></thead><tbody>${mp}
+      <tr><td><b>Total</b></td><td class="n"><b>${num(f.mp_tot_plan)}</b></td><td class="n"><b>${num(f.mp_tot_act)}</b></td><td class="n"><b>${f.mp_var!=null?(+f.mp_var>0?'+':'')+fmt(+f.mp_var):'—'}</b></td></tr></tbody></table></div></section>`;
+}
+/* demo: a planning section manager for each region, and dashboard figures in the seeded releases */
+function seedV35(){
+  if(CLOUD||DB.v35Seeded)return;DB.relApprovers=DB.relApprovers||[];DB.relSettings=DB.relSettings||{pm_review:false};
+  const PSM=[{id:'U48',regions:['C','W']},{id:'U49',regions:['E','S']}];
+  DB.master.regions.forEach(rg=>{const u=PSM.find(x=>x.regions.includes(rg.id));if(u&&userById(u.id)&&!DB.relApprovers.some(a=>a.region_id===rg.id))DB.relApprovers.push({region_id:rg.id,user_id:u.id})});
+  relRows().filter(r=>String(r.id).startsWith('RS')&&r.kind==='planning'&&r.figures).sort((a,b)=>String(a.period).localeCompare(String(b.period))).forEach((r,i)=>{const p=projById(r.project_id)||{},f=r.figures,ff=f.forecast_finish||p.finish;
+    const ad=(d,n)=>d?addDays(d,n):null,pp=+f.planned_pct||0,ap=+f.actual_pct||0;
+    Object.assign(f,{sub_project_text:pcode(p)+'-01',commence_date:p.start||null,site_handover_date:ad(p.start,30),tcc_orig_date:f.baseline_finish||p.finish||null,pac_orig_date:ad(f.baseline_finish||p.finish,90),fac_orig_date:ad(f.baseline_finish||p.finish,455),
+      tcc_int_target_date:ad(f.baseline_finish||p.finish,-30),tcc_int_fc_date:ad(ff,-15),tcc_ext_fc_date:ff||null,pac_ext_fc_date:ad(ff,90),fac_ext_fc_date:ad(ff,455),
+      energ_status_text:ap>85?'Ready for Energization':ap>60?'Under Testing':'Not Started',energ_date:ad(ff,-20),energ_remarks_text:'Sample figures',
+      ext_plan_pct:Math.min(100,Math.round(pp*1.04*10)/10),ext_act_pct:Math.min(100,Math.round(ap*0.98*10)/10),ext_plan_amt:+p.value?Math.round(+p.value*1e6*pp*1.04/100):null,ext_act_amt:+p.value?Math.round(+p.value*1e6*ap*0.98/100):null,
+      mp_dir_plan:Math.round((+f.workforce||40)*0.6),mp_dir_act:Math.round((+f.workforce||40)*0.55),mp_ind_plan:12,mp_ind_act:11,mp_sub_plan:Math.round((+f.workforce||40)*0.5),mp_sub_act:Math.round((+f.workforce||40)*0.45)});
+    try{Object.assign(f,relPlanCalc(r.project_id,f))}catch(e){}
+    if(r.status==='Released'&&!r.reviewed_by){r.reviewed_by=r.approved_by;r.reviewed_at=r.approved_at}});
+  DB.v35Seeded=true;save();
+}
+
 /* ---------- backup, restore and the move to the server ---------- */
 const backupName=k=>`protrack-${k}-${localISO()}.json`;
 async function downloadBrowserBackup(){
@@ -4037,7 +4317,7 @@ const canCreate=()=>state.role==='eng'||state.role==='foreman';
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.4';
+const APP_VERSION='3.5';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'xr',label:'Executive report (released)'},{v:'exec',label:'Live summary (working data)'}]},
@@ -4582,7 +4862,7 @@ function confirmBox(msg,okText){
     setTimeout(()=>{const ok=w.querySelector('[data-cfm="1"]');ok&&ok.focus()},30);
   });
 }
-function closeDrawer(){if(TIMER.kind==='review'||TIMER.kind==='approve')timerStop(true);$('#drawer').hidden=true;state.open=null;$('#sheet').classList.remove('wide')}
+function closeDrawer(){if(TIMER.kind==='review'||TIMER.kind==='approve')timerStop(true);$('#drawer').hidden=true;state.open=null;$('#sheet').classList.remove('wide','full')}
 function notifyOver(d){const O=qtyOverOf(d);if(O.length)notify(`${d.id}: ${O.map(o=>o.a.name).join(', ')} beyond the scope quantity. The site engineer justifies the variation when reviewing.`,true)}
 function notifyLow(d){d.lines.filter(l=>lpi(l)<0.9).forEach(l=>notify(`Productivity below target: ${actById(l.act).name} reported at ${pct(lpi(l))} in ${d.id}.`,true))}
 function doAction(k){
@@ -7493,7 +7773,7 @@ function renderAdmin(){
   if(t==='cities'){count=m.cities.length;body=`<table class="tbl"><thead><tr><th>City</th><th>Region</th><th class="n">Projects</th><th></th></tr></thead><tbody>${m.cities.slice().sort((a,b)=>a.region.localeCompare(b.region)||a.name.localeCompare(b.name)).map(c=>`<tr><td><b>${esc(c.name)}</b><span class="t2">Code ${c.id}</span></td><td>${esc(regById(c.region)?.name||'—')}</td><td class="n">${usedBy('cities',c.id)}</td>${edit('cities',c.id,usedBy('cities',c.id))}</tr>`).join('')}</tbody></table>`}
   if(t==='sectors'){count=m.sectors.length;body=`<table class="tbl"><thead><tr><th>Sector</th><th class="n">Projects</th><th class="n">Contract value</th><th></th></tr></thead><tbody>${m.sectors.map(x=>`<tr><td><b>${esc(x.name)}</b><span class="t2">Code ${x.id}</span></td><td class="n">${usedBy('sectors',x.id)}</td><td class="n">SAR ${fmt(PROJECTS.filter(p=>p.sector===x.id).reduce((a,p)=>a+(+p.value||0),0))}M</td>${edit('sectors',x.id,usedBy('sectors',x.id))}</tr>`).join('')}</tbody></table>`}
   if(t==='roles'){count=SITE_ROLES.length;body=roleAccessHTML()}
-  if(t==='matrix'){count=scopeProjects().length;body=matrixHTML()}
+  if(t==='matrix'){count=scopeProjects().length;body=matrixHTML()+relSetupHTML()}
   if(t==='mail'){count=(DB.outbox||[]).length;body=mailAdminHTML()}
   if(t==='system'){count='';body=systemHTML()}
   if(t==='log'){count=m.log.length;body=`<ul class="audit">${m.log.map(x=>`<li><b>${esc(x.text)}</b><br><span class="muted small">${esc(x.who)}, ${esc(x.t)}</span></li>`).join('')}</ul>`}
@@ -7995,7 +8275,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

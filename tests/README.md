@@ -1,9 +1,9 @@
-# ProTrackAI automated tests (v3.4)
+# ProTrackAI automated tests (v3.5)
 
 | Suite | Checks | What it covers | Needs |
 |---|---|---|---|
 | `test_v4.py` | 125 | The server rules (v4): attacks that must fail, approval chain, imports, migration, people, rollback | PostgreSQL 16 on `/tmp:5499`, the SQL files next to it |
-| `e2e_server.py` + `fake_supabase.py` | 174 | The app in server mode, end to end, against that database (up to v3.4: Tender register, releases, logs; v10 to v13 applied mid-run: issues, quantities, cost report by WBS head, document rack with Storage uploads and signed downloads) | PostgreSQL, Playwright, Chromium |
+| `e2e_server.py` + `fake_supabase.py` | 193 | The app in server mode, end to end, against that database (up to v3.5: Tender register, releases, logs; v10 to v14 applied mid-run: issues, quantities, cost report by WBS head, document rack with Storage uploads and signed downloads, progress release dashboard with regional approval and the project manager review) | PostgreSQL, Playwright, Chromium |
 | `test_v5.py` (in supabase/tests) | 64 | Controlled imports on the server: checks, reconciliation, failure, retry, concurrency, authorization, rollback | PostgreSQL 16 |
 | `test_v6.py` (in supabase/tests) | 53 | Lifecycle rules on the server: who may change, submit, approve, return, reopen; no self-approval; history | PostgreSQL 16 |
 | `test_v7.py` (in supabase/tests) | 104 | Tender register on the server: PE proposal, duplicates, release and reallocation, cancel and reinstate, stages 1 to 5 approver, 7-day handover, checklist update, rollback | PostgreSQL 16 |
@@ -13,11 +13,13 @@
 | `test_v11.py` (in supabase/tests) | 46 | Quantities beyond the scope on the server: justification at review, kept and frozen, approval refused when unjustified, same-day and draft rules, reads, rollback | PostgreSQL 16 |
 | `test_v12.py` (in supabase/tests) | 44 | Cost report by WBS head on the server: line and total formulas, previous version, header, validation, justification at submit, freezing, revisions, rollback | PostgreSQL 16 |
 | `test_v13.py` (in supabase/tests) | 75 | Document rack on the server: storage rules per row and role, registering, revisions, reads, status, files that cannot change, boxes, rollback | PostgreSQL 16 |
+| `test_v14.py` (in supabase/tests) | 56 | Progress release dashboard on the server: worked-out delays, variances, SPI and manpower, validation, regional planning section manager approval, project manager review step, set-up by super admin only, frozen review fields, rollback | PostgreSQL 16 |
+| `reldash_demo.py` | 68 | Progress release dashboard in demo mode: full screen, tabs, KPIs and trends, calculations and traffic lights, validation, regional approval, project manager review, executive report, filters, phone width | Playwright, Chromium |
 | `docs_demo.py` | 44 | Document rack in demo mode: rows, boxes, rights, upload, revisions, status, preview and download, arranging, separation from other data | Playwright, Chromium |
 | `cost_demo.py` | 28 | Cost report in the company format in demo mode: formulas, form, Excel fill and export, justification, totals-only drafts | Playwright, Chromium |
 | `qty_demo.py` | 28 | Scope, executed to yesterday, balance, plan for today, beyond-scope warning, justification at review and approval, in demo mode | Playwright, Chromium |
 | `issues_demo.py` | 60 | Issue register, Excel upload, snapshot at approval, billing in the cost report, executive Summary and Project view, RASA, in demo mode | Playwright, Chromium |
-| `release_demo.py` | 53 | Progress releases, cost reports, executive report, logs and RASA in demo mode | Playwright, Chromium |
+| `release_demo.py` | 53 | Progress releases, cost reports, executive report, logs and RASA in demo mode (v3.5: fills the dashboard tabs) | Playwright, Chromium |
 | `rasa_demo.py` | 32 | Governed RASA answers: sources and data date, no-evidence replies, role and access limits, language-model labelling | Playwright, Chromium |
 | `tender_demo.py` | 62 | Tender register, PE numbers, designations and stages 1 to 5 in demo mode | Playwright, Chromium |
 | `lifecycle_demo.py` | 36 | Lifecycle, actions and approvals, dashboards in demo mode | Playwright, Chromium |
@@ -40,6 +42,7 @@ python3 tests/issues_demo.py live.html > results_issues_demo.json
 python3 tests/qty_demo.py live.html > results_qty_demo.json
 python3 tests/cost_demo.py live.html > results_cost_demo.json
 python3 tests/docs_demo.py live.html > results_docs_demo.json
+python3 tests/reldash_demo.py live.html > results_reldash_demo.json
 python3 test_v4.py                                    # run from the folder with the SQL files
 python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 ```

@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-13 01:05",
- "app": "/home/claude/p12/app.html?date=live",
+ "run_at": "2026-10-13 15:39",
+ "app": "/home/claude/p13/app.html?date=live",
  "results": [
   {
    "area": "Auth",
@@ -160,7 +160,7 @@
   },
   {
    "area": "Reports",
-   "check": "report invoice builds (0.01 s)",
+   "check": "report invoice builds (0.0 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -178,13 +178,13 @@
   },
   {
    "area": "Reports",
-   "check": "report mhrec builds (0.0 s)",
+   "check": "report mhrec builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report p6upd builds (0.03 s)",
+   "check": "report p6upd builds (0.06 s)",
    "result": "PASS",
    "detail": ""
   },

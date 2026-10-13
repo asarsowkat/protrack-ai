@@ -168,6 +168,13 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.5
+
+- Progress release dashboard: weekly and monthly progress releases open full screen with tabs (Overview, Milestones, Progress, Manpower, Energization, Release notes, Approval), nine KPI cards with traffic lights and trends, contractual/revised/forecast TCC, PAC and FAC with worked-out delays, external progress beside the internal headline, manpower and energization (`schema-update-v14.sql`)
+- Each region's planning section manager approves its progress releases; a super admin can add a project manager review step; cost reports stay with the Head
+- Executive report project view shows the released dashboard figures; a TCC more than 30 days late marks a project critical
+- See RELEASE-NOTES-v3.5.md and STAGE-11-SETUP.md
+
 ## Version 3.4
 
 - Project document rack: three rows of box files per project (Contract & Commercial, Planning & Scheduling, Cost Control & Costing), files in a private Supabase Storage bucket, revisions that never overwrite, statuses, history, previews, live figures, custom boxes (`schema-update-v13.sql`)

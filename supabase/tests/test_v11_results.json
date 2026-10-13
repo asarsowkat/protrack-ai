@@ -6,12 +6,12 @@
   {
    "check": "v11 loads (run 1)",
    "pass": true,
-   "detail": "psql:/home/claude/p10/sb/schema-update-v11.sql:20: NOTICE:  policy \"dqj_read\" for relation \"dpr_qty_just\" does not exist, skipping\npsql:/home/claude/p10/sb/schema-update-v11.sql:22: NOTICE:  trigger \"trg_dqj_append\" for relation \"dpr_qty_just\" does not exist, skipping\npsql:/home/claude/p10/sb/schema"
+   "detail": "psql:/home/claude/p13/sb/schema-update-v11.sql:20: NOTICE:  policy \"dqj_read\" for relation \"dpr_qty_just\" does not exist, skipping\npsql:/home/claude/p13/sb/schema-update-v11.sql:22: NOTICE:  trigger \"trg_dqj_append\" for relation \"dpr_qty_just\" does not exist, skipping\npsql:/home/claude/p13/sb/schema"
   },
   {
    "check": "v11 loads (run 2)",
    "pass": true,
-   "detail": "psql:/home/claude/p10/sb/schema-update-v11.sql:17: NOTICE:  relation \"dpr_qty_just\" already exists, skipping\npsql:/home/claude/p10/sb/schema-update-v11.sql:18: NOTICE:  relation \"dpr_qty_just_dpr\" already exists, skipping\npsql:/home/claude/p10/sb/schema-update-v11.sql:46: NOTICE:  function dpr_act(t"
+   "detail": "psql:/home/claude/p13/sb/schema-update-v11.sql:17: NOTICE:  relation \"dpr_qty_just\" already exists, skipping\npsql:/home/claude/p13/sb/schema-update-v11.sql:18: NOTICE:  relation \"dpr_qty_just_dpr\" already exists, skipping\npsql:/home/claude/p13/sb/schema-update-v11.sql:46: NOTICE:  function dpr_act(t"
   },
   {
    "check": "the setup check counts the new function signature and helper",
@@ -61,22 +61,22 @@
   {
    "check": "reviewing it without a justification is refused, naming the activity",
    "pass": true,
-   "detail": "psql:/tmp/tmpvz749yay.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A1\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
+   "detail": "psql:/tmp/tmpoq1gwsme.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A1\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
   },
   {
    "check": "a justification of a word or two is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp9ia3ow2i.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A1\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
+   "detail": "psql:/tmp/tmp_wq0i2zn.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A1\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
   },
   {
    "check": "a justification for another activity does not count",
    "pass": true,
-   "detail": "psql:/tmp/tmpp9eluti6.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A1\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
+   "detail": "psql:/tmp/tmp0agpznvw.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A1\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
   },
   {
    "check": "justifications must be given per activity",
    "pass": true,
-   "detail": "psql:/tmp/tmpi6x5qswb.sql:4: ERROR:  Justifications must be given per activity\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 42 at RAISE"
+   "detail": "psql:/tmp/tmpov_m0xyq.sql:4: ERROR:  Justifications must be given per activity\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 42 at RAISE"
   },
   {
    "check": "...nothing was recorded by the refused attempts",
@@ -126,7 +126,7 @@
   {
    "check": "the site manager cannot approve a quantity that was not justified",
    "pass": true,
-   "detail": "psql:/tmp/tmp90hyibin.sql:4: ERROR:  The quantity beyond the scope of A1 has not been justified by the reviewer; return the report so the site engineer can justify it\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 57 at RAISE"
+   "detail": "psql:/tmp/tmpzx809wzs.sql:4: ERROR:  The quantity beyond the scope of A1 has not been justified by the reviewer; return the report so the site engineer can justify it\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 57 at RAISE"
   },
   {
    "check": "the site manager returns it with a comment (no justification needed to return)",
@@ -161,7 +161,7 @@
   {
    "check": "the project manager reviewing must justify too",
    "pass": true,
-   "detail": "psql:/tmp/tmpkwyceh2i.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A2\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
+   "detail": "psql:/tmp/tmpu6q5jzwi.sql:4: ERROR:  Justify the quantity variation (at least a few words) for the activities beyond their scope quantity: A2\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 46 at RAISE"
   },
   {
    "check": "the project manager reviews with a justification",
@@ -201,7 +201,7 @@
   {
    "check": "the helper is not callable from the browser",
    "pass": true,
-   "detail": "psql:/tmp/tmpzjvvh0y0.sql:4: ERROR:  permission denied for function pt_dpr_over"
+   "detail": "psql:/tmp/tmpr58m1xq8.sql:4: ERROR:  permission denied for function pt_dpr_over"
   },
   {
    "check": "rollback runs (run 1)",
@@ -211,7 +211,7 @@
   {
    "check": "rollback runs (run 2)",
    "pass": true,
-   "detail": "psql:/home/claude/p10/sb/schema-rollback-v11.sql:3: NOTICE:  function dpr_act(text,text,text,pg_catalog.int4,jsonb) does not exist, skipping\npsql:/home/claude/p10/sb/schema-rollback-v11.sql:4: NOTICE:  function pt_dpr_over(text) does not exist, skipping"
+   "detail": "psql:/home/claude/p13/sb/schema-rollback-v11.sql:3: NOTICE:  function dpr_act(text,text,text,pg_catalog.int4,jsonb) does not exist, skipping\npsql:/home/claude/p13/sb/schema-rollback-v11.sql:4: NOTICE:  function pt_dpr_over(text) does not exist, skipping"
   },
   {
    "check": "rollback restores the four-argument function",
@@ -231,7 +231,7 @@
   {
    "check": "v11 can be applied again after a rollback",
    "pass": true,
-   "detail": "psql:/home/claude/p10/sb/schema-update-v11.sql:17: NOTICE:  relation \"dpr_qty_just\" already exists, skipping\npsql:/home/claude/p10/sb/schema-update-v11.sql:18: NOTICE:  relation \"dpr_qty_just_dpr\" already exists, skipping"
+   "detail": "psql:/home/claude/p13/sb/schema-update-v11.sql:17: NOTICE:  relation \"dpr_qty_just\" already exists, skipping\npsql:/home/claude/p13/sb/schema-update-v11.sql:18: NOTICE:  relation \"dpr_qty_just_dpr\" already exists, skipping"
   }
  ]
 }
