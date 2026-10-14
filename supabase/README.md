@@ -1,4 +1,4 @@
-# ProTrack Supabase updates (current: v3.4)
+# ProTrack Supabase updates (current: v3.7)
 
 | File | Run it? |
 |---|---|
@@ -14,6 +14,8 @@
 | `schema-update-v13.sql` | **Yes, on your live project, after v12.** Step 1 of STAGE-10-SETUP.md. Creates the private `project-docs` storage bucket |
 | `schema-update-v14.sql` | **Yes, on your live project, after v13.** Step 1 of STAGE-11-SETUP.md. Regional approval of progress releases and the dashboard figures |
 | `schema-update-v15.sql` | **Yes, on your live project, after v14.** Step 1 of STAGE-12-SETUP.md. Internal weightage, updated schedules, client reports, validation of differences |
+| `schema-update-v16.sql` | **Yes, on your live project, after v15.** Step 1 of STAGE-13-SETUP.md. Roles and rights set by the super admin, custom roles, All projects, every check reading the rights |
+| `schema-rollback-v16.sql` | Only to undo v16. Back to the v3.6 rules; keeps every setting and the history |
 | `schema-rollback-v15.sql` | Only to undo v15. Back to the v3.5 rules; keeps all data |
 | `schema-rollback-v14.sql` | Only to undo v14. The Head approves progress releases again; keeps all data |
 | `schema-rollback-v13.sql` | Only to undo v13. Keeps all data and files |

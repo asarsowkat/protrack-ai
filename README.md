@@ -168,6 +168,15 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.7
+
+- **Roles and rights** (Settings, super admin only): 17 rights in four groups given or removed per role, 21 menu screens shown or hidden per role, custom roles made from a built-in role, people with their own exceptions, and a history that cannot be changed (`schema-update-v16.sql`)
+- **Access for any role**: whole regions, chosen projects or All projects (which includes projects added later), for every role except super admin and executive manager
+- **Rights for one person**: As the role, Allow or Remove, per right; the person's choice wins over the role
+- Every permission check on the server reads the same rights (`pt_right`); super admins always keep every right, foremen never see cost and billing figures
+- Nothing changes until the super admin changes something: checked person by person for all 48 demo people against v3.6
+- See RELEASE-NOTES-v3.7.md and STAGE-13-SETUP.md
+
 ## Version 3.6
 
 - Internal weightage by phase (general works, design, material, construction, installation, testing & commissioning, close out), set per project by the planning engineer, with history (`schema-update-v15.sql`)

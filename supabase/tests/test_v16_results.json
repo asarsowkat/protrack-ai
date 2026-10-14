@@ -1,0 +1,572 @@
+[
+ {
+  "check": "the v3.6 answers were collected for every test person",
+  "pass": true,
+  "detail": "[]"
+ },
+ {
+  "check": "v16 loads (run 1)",
+  "pass": true,
+  "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v16.sql:86: NOTICE:  policy \"ar_read\" for relation \"app_roles\" does not exist, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v16.sql:88: NOTICE:  policy \"rr2_read\" for relation \"role_rights\" does not exist, skipping\npsql:/home/clau"
+ },
+ {
+  "check": "v16 loads (run 2)",
+  "pass": true,
+  "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v16.sql:56: NOTICE:  relation \"app_roles\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v16.sql:57: NOTICE:  relation \"app_roles_name\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v1"
+ },
+ {
+  "check": "the setup check counts 8",
+  "pass": true,
+  "detail": "8"
+ },
+ {
+  "check": "nothing changes until a right is changed: every helper gives the v3.6 answer, for every test person (17 people x 89 answers)",
+  "pass": true,
+  "detail": "[]"
+ },
+ {
+  "check": "seventeen rights and twenty-one screens are known",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "pm: only a super admin changes rights",
+  "pass": true,
+  "detail": "psql:/tmp/tmp5kvk3xs1.sql:4: ERROR:  Only a super admin changes roles, rights and screens\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 6 at RAISE"
+ },
+ {
+  "check": "hd: only a super admin changes rights",
+  "pass": true,
+  "detail": "psql:/tmp/tmpce4e08tn.sql:4: ERROR:  Only a super admin changes roles, rights and screens\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 6 at RAISE"
+ },
+ {
+  "check": "ex: only a super admin changes rights",
+  "pass": true,
+  "detail": "psql:/tmp/tmpq6fgjsme.sql:4: ERROR:  Only a super admin changes roles, rights and screens\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 6 at RAISE"
+ },
+ {
+  "check": "pl: only a super admin changes rights",
+  "pass": true,
+  "detail": "psql:/tmp/tmpu2rwmzih.sql:4: ERROR:  Only a super admin changes roles, rights and screens\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 6 at RAISE"
+ },
+ {
+  "check": "the anonymous visitor cannot call it",
+  "pass": true,
+  "detail": "ERROR:  permission denied for function rights_save\n"
+ },
+ {
+  "check": "a super admin cannot be limited (role)",
+  "pass": true,
+  "detail": "psql:/tmp/tmp6w220zwh.sql:4: ERROR:  A super admin always has every right and screen\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 10 at RAISE"
+ },
+ {
+  "check": "a super admin cannot be limited (person)",
+  "pass": true,
+  "detail": "psql:/tmp/tmp90h2_9oy.sql:4: ERROR:  A super admin always has every right\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 32 at RAISE"
+ },
+ {
+  "check": "foremen never see cost and billing figures (role)",
+  "pass": true,
+  "detail": "psql:/tmp/tmpxf3zot94.sql:4: ERROR:  Foremen never see cost and billing figures\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 22 at RAISE"
+ },
+ {
+  "check": "foremen never see cost and billing figures (person)",
+  "pass": true,
+  "detail": "psql:/tmp/tmpvoix9_fq.sql:4: ERROR:  Foremen never see cost and billing figures\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 33 at RAISE"
+ },
+ {
+  "check": "...even a row written from the database console does not give it",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "an unknown right is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmphbpl32gq.sql:4: ERROR:  Unknown right money.steal\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 16 at RAISE"
+ },
+ {
+  "check": "an unknown role is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmpu_z3j6hu.sql:4: ERROR:  Unknown role boss\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 13 at RAISE"
+ },
+ {
+  "check": "an unknown screen is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmpk8rmlfp7.sql:4: ERROR:  Unknown screen nope\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 42 at RAISE"
+ },
+ {
+  "check": "Administration cannot be given to other roles",
+  "pass": true,
+  "detail": "psql:/tmp/tmp1fg42dhf.sql:4: ERROR:  Unknown screen admin\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 42 at RAISE"
+ },
+ {
+  "check": "allow must be true, false or empty",
+  "pass": true,
+  "detail": "psql:/tmp/tmp3zgmxvg3.sql:4: ERROR:  Allow must be true, false or empty\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 17 at RAISE"
+ },
+ {
+  "check": "...and nothing was kept from refused changes",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "rights cannot be written around rights_save, even by a super admin",
+  "pass": true,
+  "detail": "psql:/tmp/tmp5afbk00t.sql:4: ERROR:  new row violates row-level security policy for table \"role_rights\""
+ },
+ {
+  "check": "a role right is removed: costing engineers no longer prepare cost reports",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...the costing engineer is refused by the server",
+  "pass": true,
+  "detail": "psql:/tmp/tmpr1vzmyj6.sql:4: ERROR:  Only a costing engineer, the costing coordinator or a super admin prepares cost reports\nCONTEXT:  PL/pgSQL function release_act(jsonb) line 26 at RAISE"
+ },
+ {
+  "check": "...the costing coordinator keeps it through the position",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a person exception gives it back to one costing engineer",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...who can prepare again",
+  "pass": true,
+  "detail": "{'id': 'e7fa84f1-b370-4bb8-9fa0-52f2ee72fe28', 'rev': 0, 'kind': 'cost', 'period': '2026-08', 'status': 'Draft', 'figures': {'eac': 10300000, 'ftc': 6100000, 'vac': -300000, 'actual': 4200000, 'commitment': 1500000, 'budget_rev0': 10000000, 'budget_current': 10000000, 'supplements_approved': 0}, 'da"
+ },
+ {
+  "check": "a role right is given: project managers may load baselines",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...can_plan is true for the project manager on his project only",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...and he may set the internal weightage",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a person exception removes it from one person, and wins over the role",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...can_plan is false again for him",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "setting the exception back to \"as the role\" removes it",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...and the role right applies again",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a role right back to the default removes the setting",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...can_plan follows today's rule again",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "cost figures given to site engineers",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...a site engineer now reads invoices and the cost logs (the read rules follow the right)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...and the Contract row of the document rack",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...a site manager still does not",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "cost figures removed from executive managers",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...an executive manager no longer sees them",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "daily reports removed from one foreman",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...he cannot write a report",
+  "pass": true,
+  "detail": "psql:/tmp/tmpfmhakbki.sql:4: ERROR:  Your role cannot write daily reports\nCONTEXT:  PL/pgSQL function dpr_save(jsonb) line 8 at RAISE"
+ },
+ {
+  "check": "...back to \"as the role\", he writes and submits it",
+  "pass": true,
+  "detail": "{'id': 'DPR-00001', 'status': 'Submitted', 'timing': {}}"
+ },
+ {
+  "check": "daily reports given to site managers",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...a site manager writes a report for the foreman",
+  "pass": true,
+  "detail": "{'id': 'DPR-00002', 'status': 'Draft', 'timing': {}}"
+ },
+ {
+  "check": "approving any daily report removed from project managers",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...the project manager can no longer review a report assigned to a site engineer",
+  "pass": true,
+  "detail": "psql:/tmp/tmps06urbxl.sql:4: ERROR:  You are not the reviewer or approver assigned to this report\nCONTEXT:  PL/pgSQL function dpr_act(text,text,text,integer,jsonb) line 36 at RAISE"
+ },
+ {
+  "check": "...the assigned site engineer still can",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...back to the default, the project manager approves it",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "internal report approval removed from a person who is the regional approver",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...the regional planning section manager no longer approves",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...back to \"as the role\", the position applies again",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a role setting does not remove a position: project managers without cost report approval",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...the Head (a project manager) keeps it",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "internal report approval given to planning engineers",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...for the projects in their access only",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the issue review given to one costing engineer",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "tender registration given to the planning role",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...pt_can_register follows",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the Planning row of the document rack given to site managers",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...a site manager keeps that row, not the others",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the change order log upload removed from the costing coordinator, by person",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...the server refuses the upload",
+  "pass": true,
+  "detail": "psql:/tmp/tmp27bbizy3.sql:4: ERROR:  Only a costing engineer, the costing coordinator or a super admin uploads this log\nCONTEXT:  PL/pgSQL function log_import(jsonb) line 10 at RAISE"
+ },
+ {
+  "check": "lifecycle approval removed from project managers",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...stages 6 to 12 are no longer theirs; stages 1 to 5 stay with the Head",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a screen is hidden for a role",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...and shown again",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...the setting is gone",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a custom role needs a name of 2 to 60 characters",
+  "pass": true,
+  "detail": "psql:/tmp/tmp5u2ml96o.sql:4: ERROR:  Give the role a name of 2 to 60 characters\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 54 at RAISE"
+ },
+ {
+  "check": "a custom role is not made from the super admin",
+  "pass": true,
+  "detail": "psql:/tmp/tmpoqt3e217.sql:4: ERROR:  Choose the role to start from (any role except super admin)\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 53 at RAISE"
+ },
+ {
+  "check": "a custom role is made from Planning Engineer",
+  "pass": true,
+  "detail": "{'key': 'c_planning_section_manager', 'name': 'Planning Section Manager', 'active': True, 'base_role': 'plan', 'created_at': '2026-10-13T23:13:29.023127+00:00', 'created_by': '00000000-0000-0000-0000-000000000401'}"
+ },
+ {
+  "check": "...it starts with the current settings of Planning Engineer (rights and screens)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "names are unique, whatever the capitals",
+  "pass": true,
+  "detail": "psql:/tmp/tmp7bghkv6q.sql:4: ERROR:  A role called planning section MANAGER already exists\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 55 at RAISE"
+ },
+ {
+  "check": "it gets its own right: approve internal and client reports",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "a person cannot be given a custom role made from another role",
+  "pass": true,
+  "detail": "psql:/tmp/tmpl9q0brr6.sql:4: ERROR:  Choose a custom role that is switched on and made from the chosen role\nCONTEXT:  PL/pgSQL function admin_save_person(jsonb) line 13 at RAISE"
+ },
+ {
+  "check": "...nor an unknown one",
+  "pass": true,
+  "detail": "psql:/tmp/tmpcomn5o5d.sql:4: ERROR:  Choose a custom role that is switched on and made from the chosen role\nCONTEXT:  PL/pgSQL function admin_save_person(jsonb) line 13 at RAISE"
+ },
+ {
+  "check": "a planning engineer is given the custom role, on P2",
+  "pass": true,
+  "detail": "{'id': '00000000-0000-0000-0000-000000000417'}"
+ },
+ {
+  "check": "...he approves internal reports of P2, not of P1",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...he keeps every built-in rule of a planning engineer (prepares internal reports, loads baselines on P2)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...and the planning engineer role itself is unchanged",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a role still given to someone cannot be switched off",
+  "pass": true,
+  "detail": "psql:/tmp/tmpo32xdq69.sql:4: ERROR:  People still have this role. Give them another role first\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 75 at RAISE"
+ },
+ {
+  "check": "it can be renamed",
+  "pass": true,
+  "detail": "{'key': 'c_planning_section_manager', 'name': 'Planning Section Mgr', 'active': True, 'base_role': 'plan', 'created_at': '2026-10-13T23:13:29.023127+00:00', 'created_by': '00000000-0000-0000-0000-000000000401'}"
+ },
+ {
+  "check": "once nobody has it...",
+  "pass": true,
+  "detail": "{'id': '00000000-0000-0000-0000-000000000417'}"
+ },
+ {
+  "check": "...it can be switched off",
+  "pass": true,
+  "detail": "{'key': 'c_planning_section_manager', 'name': 'Planning Section Mgr', 'active': False, 'base_role': 'plan', 'created_at': '2026-10-13T23:13:29.023127+00:00', 'created_by': '00000000-0000-0000-0000-000000000401'}"
+ },
+ {
+  "check": "a switched-off role cannot be given",
+  "pass": true,
+  "detail": "psql:/tmp/tmpeo812xo5.sql:4: ERROR:  Choose a custom role that is switched on and made from the chosen role\nCONTEXT:  PL/pgSQL function admin_save_person(jsonb) line 13 at RAISE"
+ },
+ {
+  "check": "a switched-off role gives nothing: the person falls back to the role he was made from",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a planning engineer is given All projects",
+  "pass": true,
+  "detail": "{'id': '00000000-0000-0000-0000-000000000409'}"
+ },
+ {
+  "check": "...he sees every project, including one added later",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...and the people directory shows it",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a project manager can be given a whole region",
+  "pass": true,
+  "detail": "{'id': '00000000-0000-0000-0000-000000000411'}"
+ },
+ {
+  "check": "...he sees P1 and both Central projects",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "All projects is not kept for an executive manager, who already sees everything",
+  "pass": true,
+  "detail": "{'id': '00000000-0000-0000-0000-000000000403'}"
+ },
+ {
+  "check": "...the flag stays off",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a site role needs at least one region, one project or All projects",
+  "pass": true,
+  "detail": "psql:/tmp/tmpx22c5ocp.sql:4: ERROR:  Give this person at least one region, one project or All projects\nCONTEXT:  PL/pgSQL function admin_save_person(jsonb) line 18 at RAISE"
+ },
+ {
+  "check": "people_access: a super admin sees everyone, others only themselves",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "everyone signed in reads custom roles, role rights and screens",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a person reads their own exceptions only",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "only super admins read the history",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "every change is in the history with who made it",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the history says what changed",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the history cannot be changed, even from the database console",
+  "pass": true,
+  "detail": "ERROR:  rights_audit is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+ },
+ {
+  "check": "the history cannot be deleted, even from the database console",
+  "pass": true,
+  "detail": "ERROR:  rights_audit is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+ },
+ {
+  "check": "the history cannot be emptied, even from the database console",
+  "pass": true,
+  "detail": "ERROR:  rights_audit cannot be emptied\nCONTEXT:  PL/pgSQL function pt_no_truncate() line 2 at RAISE"
+ },
+ {
+  "check": "the rollback runs (run 1)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the rollback runs (run 2)",
+  "pass": true,
+  "detail": "psql:/home/claude/protrack-ai/supabase/schema-rollback-v16.sql:721: NOTICE:  function rights_save(jsonb) does not exist, skipping\npsql:/home/claude/protrack-ai/supabase/schema-rollback-v16.sql:722: NOTICE:  function people_access() does not exist, skipping\npsql:/home/claude/protrack-ai/supabase/sche"
+ },
+ {
+  "check": "...back to the v3.6 rules: a role right is no longer read",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...the tables and the history are kept",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...and rights_save is gone",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...every helper gives the v3.6 answer again",
+  "pass": true,
+  "detail": "[]"
+ },
+ {
+  "check": "v16 can be applied again after the rollback",
+  "pass": true,
+  "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v16.sql:56: NOTICE:  relation \"app_roles\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v16.sql:57: NOTICE:  relation \"app_roles_name\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v1"
+ },
+ {
+  "check": "...and the kept settings apply again",
+  "pass": true,
+  "detail": ""
+ }
+]

@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-13 19:35",
- "app": "/home/claude/p14/app.html",
+ "run_at": "2026-10-13 23:50",
+ "app": "/home/claude/p15/site/live.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 208,
+  "PASS": 228,
   "FAIL": 0
  },
  "results": [
@@ -1090,6 +1090,126 @@
   {
    "area": "Schedule (v15)",
    "check": "the project manager sees progress by internal weightage on the project overview",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "before the v16 update, Roles and rights says the database update is needed and every role keeps its rights",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "the v16 update loads on top of a database in use",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "the setup check counts 8",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "after it, the tab has no warning",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "unticking a right for a role is saved on the server through rights_save",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "a person exception (Allow) is saved on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "a custom role is created on the server from Planning Engineer",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "...and given the right to approve internal and client reports",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "a screen hidden for project managers is saved on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "the planning engineer is given the custom role and All projects on the server (admin_save_person)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "the users list shows the custom role and All projects",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "the server refuses cost figures for foremen even from a super admin",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "the costing engineer reads his own exception and keeps the right the role lost",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "anyone but a super admin is refused by rights_save",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "a costing engineer does not read the history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "the costing coordinator keeps it through the position, whatever the role setting",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "without his exception the costing engineer follows the role: the app and the server refuse his cost report",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "the planning engineer signs in with the custom role and every project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "...he may approve internal reports (app and server agree)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights (v16)",
+   "check": "the project manager no longer has the cost dashboard in the menu",
    "result": "PASS",
    "detail": ""
   },

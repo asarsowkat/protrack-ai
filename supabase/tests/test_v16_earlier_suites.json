@@ -1,0 +1,177 @@
+{
+ "what": "Each earlier server suite run twice with the later updates loaded straight after its own update: once up to v15 (as v3.6), once up to v16. A failure that appears only with v16 would be a change made by v16.",
+ "suites": [
+  {
+   "suite": "test_v4.py",
+   "up_to_v15": {
+    "pass": 122,
+    "fail": 3
+   },
+   "up_to_v16": {
+    "pass": 122,
+    "fail": 3
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": [
+    "costing manhours used as budget",
+    "matched activities updated, unknown and zero-quantity rows refused",
+    "rollback script runs"
+   ]
+  },
+  {
+   "suite": "test_v5.py",
+   "up_to_v15": {
+    "pass": 64,
+    "fail": 0
+   },
+   "up_to_v16": {
+    "pass": 64,
+    "fail": 0
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": []
+  },
+  {
+   "suite": "test_v6.py",
+   "up_to_v15": {
+    "pass": 45,
+    "fail": 8
+   },
+   "up_to_v16": {
+    "pass": 45,
+    "fail": 8
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": [
+    "...",
+    "...and cannot approve their own submission either",
+    "...but cannot approve their own submission",
+    "...submits it",
+    "a project manager can own and submit a stage",
+    "a second super admin can",
+    "a super admin can submit",
+    "another project manager on the project approves it"
+   ]
+  },
+  {
+   "suite": "test_v7.py",
+   "up_to_v15": {
+    "pass": 104,
+    "fail": 0
+   },
+   "up_to_v16": {
+    "pass": 104,
+    "fail": 0
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": []
+  },
+  {
+   "suite": "test_v8.py",
+   "up_to_v15": {
+    "pass": 25,
+    "fail": 3
+   },
+   "up_to_v16": {
+    "pass": 25,
+    "fail": 3
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": [
+    "rollback removes the helper and touches no data",
+    "rollback runs (run 1)",
+    "rollback runs (run 2)"
+   ]
+  },
+  {
+   "suite": "test_v9.py",
+   "up_to_v15": {
+    "pass": 79,
+    "fail": 0
+   },
+   "up_to_v16": {
+    "pass": 79,
+    "fail": 0
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": []
+  },
+  {
+   "suite": "test_v10.py",
+   "up_to_v15": {
+    "pass": 51,
+    "fail": 0
+   },
+   "up_to_v16": {
+    "pass": 51,
+    "fail": 0
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": []
+  },
+  {
+   "suite": "test_v11.py",
+   "up_to_v15": {
+    "pass": 46,
+    "fail": 0
+   },
+   "up_to_v16": {
+    "pass": 46,
+    "fail": 0
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": []
+  },
+  {
+   "suite": "test_v12.py",
+   "up_to_v15": {
+    "pass": 44,
+    "fail": 0
+   },
+   "up_to_v16": {
+    "pass": 44,
+    "fail": 0
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": []
+  },
+  {
+   "suite": "test_v13.py",
+   "up_to_v15": {
+    "pass": 75,
+    "fail": 0
+   },
+   "up_to_v16": {
+    "pass": 75,
+    "fail": 0
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": []
+  },
+  {
+   "suite": "test_v14.py",
+   "up_to_v15": {
+    "pass": 56,
+    "fail": 0
+   },
+   "up_to_v16": {
+    "pass": 56,
+    "fail": 0
+   },
+   "failing_only_with_v16": [],
+   "failing_in_both (earlier rollback checks run on a newer database)": []
+  },
+  {
+   "suite": "test_v15.py",
+   "up_to_v15": {
+    "pass": 76,
+    "fail": 0
+   },
+   "up_to_v16": {
+    "pass": 76,
+    "fail": 0
+   },
+   "failing_only_with_v16": []
+  }
+ ]
+}
