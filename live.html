@@ -765,7 +765,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8.3</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8.4</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1578,7 +1578,7 @@ function renderImp(){
   </div>
   <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Upload a file</h2></div>
     <p class="small muted" style="margin:0 0 10px">Each upload page checks the file, shows a preview with a reconciliation and an exception report, and saves only when you confirm. Files up to 10 MB: Excel (.xlsx, .xls), CSV, Primavera XER or P6 XML. Workbooks with macros are refused.</p>
-    <div class="actions" style="margin:0">${go('inv','Invoice register',canCost())}${go('cost','Master Manpower Costing Sheet',canCost())}${go('p6','P6 baseline',canBaseline())}${go('upd','Weekly progress',canUpdate())}
+    <div class="actions" style="margin:0">${go('inv','Invoice register',canCost())}${go('cost','Master Manpower Costing Sheet',canCost())}${go('p6','P6 baseline',canBaseline())}
       ${!(canCost()||canBaseline()||canUpdate())?'<span class="small muted">Your role views the history only.</span>':''}</div>
     <div class="note-box" style="margin-top:12px"><b>SAP</b> ${PLANNED('Planned')} SAP ECC Excel exports will be added here once a sample export and the Finance rules are agreed. Direct SAP and S/4HANA connections stay switched off until IT, SAP, Cybersecurity and Finance approve them.</div></section>
   <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Import history</h2></div>
@@ -1635,7 +1635,7 @@ const LC_STAGES=[
   {n:4,name:'Kick-off and handover to Planning',dept:'Tendering and Planning',items:[['kickoff','Kick-off meeting held by Tender',1],['docs','Tender documents handed over to Planning',1],['costfile','Costing file with detailed breakup handed over',1],['minutes','Kick-off meeting minutes',0]]},
   {n:5,name:'Costing review, finance pack and SAP upload',dept:'Planning and Cost Control',items:[['site','Site management breakup checked',1],['install','Installation breakup checked',1],['mech','Mechanical breakup checked',1],['civil','Civil breakup checked',1],['missing','Missing items received from Tender (if any were missing)',0],['brief','Project brief prepared',1],['cashflow','Cash flow prepared',1],['finance','Project brief, cash flow and signed contract copy sent to Finance / Treasury',1],['sapupload','Costing uploaded to SAP with the standard template',1]]},
   {n:6,name:'Baseline preparation and approval',dept:'Planning',items:[['prepared','Baseline programme prepared and loaded',1],['dcma','Schedule quality check reviewed',0],['costing','Master Manpower Costing Sheet applied',1],['submitted','Baseline submitted to the client',1],['approved','Client approval of the baseline received',1]]},
-  {n:7,name:'Execution and progress updates',dept:'Projects and site',items:[['dpr','Daily reports flowing',1],['weekly','Weekly progress updates current',1],['lookahead','Look-ahead programme issued',0]]},
+  {n:7,name:'Execution and progress updates',dept:'Projects and site',items:[['dpr','Daily reports flowing',1],['weekly','Weekly updated schedule current',1],['lookahead','Look-ahead programme issued',0]]},
   {n:8,name:'Procurement and materials',dept:'Procurement',items:[['pos','Subcontract purchase orders recorded',1],['longlead','Long-lead items tracked',1],['materials','Material tracking in place',0]]},
   {n:9,name:'Budget, cost and forecast',dept:'Cost Control',items:[['budget','Budget loaded from the Master Manpower Costing Sheet',1],['invoices','Invoice register current',1],['forecast','Forecast at completion reviewed',1]]},
   {n:10,name:'Variations, claims and approvals',dept:'Contracts and commercial',items:[['register','Variation register maintained',1],['claims','Claims and extension of time submitted where due',0],['approvals','Variation approvals recorded',1]]},
@@ -1666,7 +1666,7 @@ const lcCurrent=pid=>LC_STAGES.map(S=>lcGet(pid,S.n)).find(s=>!LC_DONE.has(s.sta
 function lcEvidence(p,k){
   const acts=ACTS.filter(a=>a.p===p.id),reps=DB.dprs.filter(d=>d.p===p.id),site=isSiteRole();
   const recent=reps.filter(d=>d.date>=addDays(TODAY,-7)&&d.status!=='Draft').length;
-  const lastUpd=(DB.updates||[]).filter(u=>u.p===p.id).map(u=>u.dataDate).sort().pop();
+  const lastUpd=lastWk(p.id);
   const dc=(DB.dcma||{})[p.id],dcS=dc&&dc.checks?Math.round(dcmaScore(dc.checks)*100):null;
   const unassigned=teamOf(p.id,'foreman').filter(u=>!assigned(p.id,'fm',u.id)).length+teamOf(p.id,'eng').filter(u=>!assigned(p.id,'eng',u.id)).length;
   const ms=t=>(p.milestones||[]).find(m=>m.t===t);
@@ -1687,7 +1687,7 @@ function lcEvidence(p,k){
     dcma:[dc?(dcS>=80?'ok':'warn'):'no',dc?`DCMA ${dcS}%`:'runs on XER import'],
     costing:site?null:[acts.some(a=>a.costed)?'ok':'no',acts.some(a=>a.costed)?`${acts.filter(a=>a.costed).length} activities costed`:'no Master Manpower Costing Sheet applied'],
     dpr:[recent?'ok':'no',`${recent} reports in the last 7 days`],
-    weekly:[lastUpd&&lastUpd>=addDays(ASOF,-8)?'ok':lastUpd?'warn':'no',lastUpd?`last data date ${fmtDY(lastUpd)}`:'no weekly update loaded'],
+    weekly:[lastUpd&&lastUpd>=addDays(ASOF,-8)?'ok':lastUpd?'warn':'no',lastUpd?`updated schedule, data date ${fmtDY(lastUpd)}`:'no updated schedule loaded'],
     pos:site?null:(()=>{const n=SUBS.reduce((t,s)=>t+posOf(s,p.id).length,0);return [n?'ok':'no',n?`${n} purchase orders`:'none recorded']})(),
     longlead:[acts.some(a=>a.cls==='PRC')?'ok':'no',`${acts.filter(a=>a.cls==='PRC').length} procurement activities tracked`],
     budget:site?null:[acts.some(a=>a.costed)?'ok':'no',acts.some(a=>a.costed)?`budget ${sar(acts.reduce((t,a)=>t+(+a.bcost||0),0))}`:'no Master Manpower Costing Sheet applied'],
@@ -1911,7 +1911,7 @@ const canCostDash=()=>['sa','exec','rm','pf','costing','pm'].includes(state.role
 const stale=(d,days)=>!d||d<addDays(ASOF,-days);
 function planRows(){
   return scopeProjects().map(p=>{const k=projKPI(p),acts=k.acts,dc=(DB.dcma||{})[p.id],dcS=dc&&dc.checks?Math.round(dcmaScore(dc.checks)*100):null;
-    const lastUpd=(DB.updates||[]).filter(u=>u.p===p.id).map(u=>u.dataDate).sort().pop(),hasEP=acts.some(a=>!isCon(a));
+    const lastUpd=lastWk(p.id),hasEP=acts.length>0;   /* v3.8.4: the weekly updated schedule, every project with a baseline */
     const ms=(p.milestones||[]).filter(m=>!m.act),next=ms.slice().sort((a,b)=>(a.fc||a.plan||'').localeCompare(b.fc||b.plan||''))[0];
     const overdue=ms.filter(m=>(m.fc||m.plan)&&(m.fc||m.plan)<TODAY).length,late=acts.filter(a=>!isCon(a)&&curOf(a).ff&&curOf(a).ff>a.bf&&(curOf(a).pct||0)<1).length;
     const lastBase=(DB.batches||[]).filter(b=>b.kind==='baseline'&&b.project_id===p.id&&b.status==='committed').map(b=>String(b.at_time).slice(0,10)).sort().pop()
@@ -1926,11 +1926,11 @@ function renderPdash(){
     ${kpi('Baselines loaded',`${withBase.length} of ${R.length}`,'Projects with activities',withBase.length<R.length?'a':'')}
     ${kpi('Schedule performance',e.pv?fmt(e.spi,2):'—','SPI, portfolio in scope',e.pv?light(e.spi):'')}
     ${kpi('Milestones overdue',fmt(R.reduce((t,r)=>t+r.overdue,0)),'Not achieved, date passed',R.some(r=>r.overdue)?'r':'')}
-    ${kpi('Weekly updates stale',fmt(R.filter(r=>r.hasEP&&stale(r.lastUpd,8)).length),'Engineering and procurement, older than 8 days',R.some(r=>r.hasEP&&stale(r.lastUpd,8))?'a':'')}
+    ${kpi('Updated schedules stale',fmt(R.filter(r=>r.hasEP&&stale(r.lastUpd,8)).length),'Weekly P6 update older than 8 days',R.some(r=>r.hasEP&&stale(r.lastUpd,8))?'a':'')}
     ${kpi('Baselines awaiting approval',fmt(R.filter(r=>r.s6.status==='Awaiting approval').length),'Lifecycle stage 6')}
   </div>
   <section class="panel"><div class="card-head"><h2>Planning by project</h2><span class="small muted">Data date ${fmtDY(ASOF)} · critical path is calculated in Primavera P6, not here</span></div>
-    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Lifecycle</th><th>Baseline</th><th class="n">DCMA</th><th class="n">SPI</th><th class="n">Plan</th><th class="n">Actual</th><th>Next milestone</th><th class="n">Overdue</th><th>Weekly update</th><th class="n">Late E&amp;P items</th></tr></thead><tbody>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Lifecycle</th><th>Baseline</th><th class="n">DCMA</th><th class="n">SPI</th><th class="n">Plan</th><th class="n">Actual</th><th>Next milestone</th><th class="n">Overdue</th><th>Weekly update (P6)</th><th class="n">Late E&amp;P items</th></tr></thead><tbody>
     ${R.map(r=>{const nm=r.next,slip=nm&&nm.fc&&nm.plan?diffDays(nm.plan,nm.fc):0;return `<tr class="click" data-projopen="${esc(r.p.id)}" tabindex="0" title="Open the project overview">
       <td><b>${esc(r.p.short)}</b><span class="t2">${esc(r.p.name)}</span></td>
       <td>${esc(lcDef(r.cur.stage_no).name)}<span class="t2">${esc(r.cur.status)}${lcOverdue(r.cur)?', overdue':''}</span></td>
@@ -1939,10 +1939,10 @@ function renderPdash(){
       <td class="n">${r.k.e.pv||r.k.src?`<span class="${light(r.k.spi)}-c">${fmt(r.k.spi,2)}</span>`:'—'}</td><td class="n">${r.acts.length?pct(r.k.plan,0):'—'}</td><td class="n">${r.acts.length?pct(r.k.act,0):'—'}</td>
       <td>${nm?`${esc(nm.n)}<span class="t2">${fmtDY(nm.fc||nm.plan)}${slip>0?`, <span class="r-c">${slip} d late</span>`:''}</span>`:'<span class="muted">none set</span>'}</td>
       <td class="n">${r.overdue?`<span class="r-c">${r.overdue}</span>`:'0'}</td>
-      <td>${!r.hasEP?'<span class="muted">no E&amp;P activities</span>':r.lastUpd?`${fmtDY(r.lastUpd)}${stale(r.lastUpd,8)?' <span class="sev Medium">stale</span>':''}`:'<span class="sev High">none loaded</span>'}</td>
+      <td>${!r.hasEP?'<span class="muted">no baseline</span>':r.lastUpd?`${fmtDY(r.lastUpd)}${stale(r.lastUpd,8)?' <span class="sev Medium">stale</span>':''}`:'<span class="sev High">none loaded</span>'}</td>
       <td class="n">${r.late?`<span class="r-c">${r.late}</span>`:'0'}</td></tr>`}).join('')||'<tr><td colspan="11" class="muted">No projects in this scope.</td></tr>'}
     </tbody></table></div>
-    <p class="small muted" style="margin:10px 0 0">Sources: the P6 baseline import, the weekly engineering and procurement update, project milestones, and submitted, reviewed and approved daily reports. "—" means the data is not in ProTrackAI yet; nothing is estimated in its place.</p></section>
+    <p class="small muted" style="margin:10px 0 0">Sources: the P6 baseline import, the weekly updated P6 schedule (progress, and engineering and procurement status), project milestones, and submitted, reviewed and approved daily reports. "—" means the data is not in ProTrackAI yet; nothing is estimated in its place.</p></section>
   <section class="panel"><div class="card-head"><h2>Look-ahead and alerts</h2>${PLANNED('Planned')}</div><p class="small muted" style="margin:0">A three-week look-ahead from the P6 schedule and automatic slippage alerts are planned.</p></section>`;
 }
 
@@ -4118,6 +4118,15 @@ const hasPhaseW=pid=>phaseWSum(phaseSetupOf(pid).weights)>0;
 const schedUps=pid=>(DB.schedUpdates||[]).filter(u=>u.project_id===pid).sort((a,b)=>String(b.data_date).localeCompare(String(a.data_date))||String(b.uploaded_at).localeCompare(String(a.uploaded_at)));
 const schedAt=(pid,t,wt)=>schedUps(pid).find(u=>String(u.data_date)<=(t||ASOF)&&(!wt||u.weightage===wt))||null;
 const schedRowsOf=u=>u?(((DB.schedRows||{})[u.id])||null):null;
+/* v3.8.4: an activity's row in the updated schedule in force at a date (rows are held for the latest schedule) */
+let _srC=null;
+function schedRowOf(a,t){t=t||ASOF;const L=DB.schedUpdates||[];
+  if(!_srC||_srC.ref!==L||_srC.n!==L.length)_srC={ref:L,n:L.length,m:new Map()};
+  const k=a.p+'|'+t;let u=_srC.m.get(k);if(u===undefined){u=schedAt(a.p,t);_srC.m.set(k,u)}
+  const R=schedRowsOf(u);if(!R)return null;const m=R._m||(R._m=Object.fromEntries(R.map(r=>[r.id,r])));const r=m[a.id];return r?{r,u}:null}
+/* the weekly evidence of a project: its updated schedules, and the E&P Excel updates loaded before v3.8.4 for the weeks they cover */
+const wkDates=pid=>[...schedUps(pid).map(u=>String(u.data_date||'').slice(0,10)),...(DB.updates||[]).filter(u=>u.p===pid).map(u=>u.dataDate)].filter(Boolean).sort();
+const lastWk=pid=>wkDates(pid).pop()||null;
 const r2=x=>Math.round(x*100)/100;
 function planFrac(bs,bf,dd){if(!bs||!bf)return 0;if(dd>=bf)return 1;if(dd<=bs)return 0;if(bf<=bs)return dd>=bf?1:0;return Math.round(diffDays(bs,dd)/diffDays(bs,bf)*1e6)/1e6}
 function isoWeekMonday(per){const y=+per.slice(0,4),w=+per.slice(6),j=new Date(Date.UTC(y,0,4)),d=(j.getUTCDay()+6)%7;j.setUTCDate(j.getUTCDate()-d+(w-1)*7);return iso(j)}
@@ -4330,7 +4339,7 @@ async function schedGo(btn){
   const rows=schedRowsFor(S).map(({phase,...x})=>x);
   const r=await schedCommit({project_id:S.pid,data_date:S.dd,weightage:S.wt,file_name:S.file,file_hash:S.hash,weight_basis:S.wres==='__lab'?'Planned labour units':S.wres==='__dur'?'Planned duration':S.wres,rows});
   if(!r){btn.disabled=false;return err('Not saved: '+schedCommit.err)}
-  state.sched=null;toast((r.duplicate?'This file was already loaded; nothing changed':`Updated schedule saved, data date ${fmtDY(r.data_date)}`)+mtAutoMsg(mr));render();
+  state.sched=null;toast((r.duplicate?'This file was already loaded; nothing changed':`Updated schedule saved, data date ${fmtDY(r.data_date)}`)+mtAutoMsg(mr));if(!r.duplicate)epLateNotify(S.pid);render();
 }
 document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
   if(t.id==='schedfile'&&t.files[0]){handleSchedFile(t.files[0]);t.value='';return}
@@ -4505,7 +4514,7 @@ const DEMO_WBS={GEN:'PROJECT PREPARATION',DES:'ENGINEERING & DESIGN',MAT:'EQUIPM
 const RIGHTS=[
   ['dpr.create','Prepare daily reports','Daily reports',['eng','foreman']],
   ['dpr.approve','Review and approve any daily report of the project (as a project manager)','Daily reports',['pm']],
-  ['planning.manage','Load baselines, weekly progress, updated schedules and the internal weightage','Planning',['plan']],
+  ['planning.manage','Load baselines, updated schedules and the internal weightage','Planning',['plan']],
   ['report.internal.prepare','Prepare internal and client reports','Planning',['plan']],
   ['report.internal.approve','Approve internal and client reports (of projects in access)','Planning',[]],
   ['costing.manage','Load the Master Manpower Costing Sheet and invoice registers','Cost',['costing','pm']],
@@ -5229,8 +5238,8 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'E&P progress',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'تقدم الهندسة والمشتريات',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
   xr:'<path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 4-5"/>',rel:'<path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/><path d="M9 12l2 2 4-4"/>',logs:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>',
@@ -5261,7 +5270,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.8.3';
+const APP_VERSION='3.8.4';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
@@ -5270,7 +5279,7 @@ const DOMAINS=[
     {v:'proj',label:'Project overview'},{v:'act',label:'Actions and approvals'},
     {v:'tender',label:'Tender register'},{v:'iss',label:'Issue register'},{v:'docs',label:'Project document rack'},{plan:'Contract register'},{plan:'Handover checklist'}]},
   {k:'planning',label:'Planning & Scheduling',ic:'base',items:[
-    {v:'pdash',label:'Planning dashboard'},{v:'rel',sec:'planning',label:'Internal Reporting'},{v:'rel',sec:'client',label:'Client Reporting'},{v:'base',sec:'p6',label:'Baselines and P6 import'},{v:'upd',label:'Weekly E&P update'},
+    {v:'pdash',label:'Planning dashboard'},{v:'rel',sec:'planning',label:'Internal Reporting'},{v:'rel',sec:'client',label:'Client Reporting'},{v:'base',sec:'p6',label:'Baselines and P6 import'},{v:'upd',label:'E&P progress'},
     {v:'rep',rep:'basecmp',label:'Baseline comparison'},{v:'rep',rep:'p6upd',label:'P6 progress update'},
     {plan:'Governed baseline register'},{plan:'Look-ahead and alerts'}]},
   {k:'cost',label:'Cost Control',ic:'eva',items:[
@@ -5361,7 +5370,7 @@ function projLifecycle(p,k){
   const dc=(DB.dcma||{})[p.id],dcRaw=dc&&dc.checks?dcmaScore(dc.checks):null,dcScore=dcRaw==null?null:Math.round(dcRaw<=1?dcRaw*100:dcRaw);
   const recent=reps.filter(d=>d.date>=addDays(TODAY,-7)&&d.status!=='Draft').length;
   const waiting=reps.filter(d=>(d.status==='Submitted'||d.status==='Reviewed')&&d.date<addDays(TODAY,-1)).length;
-  const lastUpd=(DB.updates||[]).filter(u=>u.p===p.id).map(u=>u.dataDate).sort().pop();
+  const lastUpd=lastWk(p.id);
   const inv=invOf(p.id).length;
   const ms=t=>(p.milestones||[]).find(m=>m.t===t);
   const msIt=(t,l)=>{const m=ms(t);return m&&m.act?it(l,'ok',`achieved ${fmtDY(m.act)}`):m?it(l,'no',`forecast ${fmtDY(m.fc||m.plan)}`):it(l,'no','no milestone set')};
@@ -5385,7 +5394,7 @@ function projLifecycle(p,k){
       it('Productivity, 30 days',k.pi?(k.pi>=0.9?'ok':'warn'):'no',k.pi?pct(k.pi,0):'no reports'),
       it('Physical progress',k.act>0?'ok':'no',`${pct(k.act,0)} vs ${pct(k.plan,0)} planned`)]},
     {n:6,name:'Monitoring & control',items:[
-      it('Weekly E&P update',lastUpd&&lastUpd>=addDays(ASOF,-8)?'ok':lastUpd?'warn':'no',lastUpd?`data date ${fmtDY(lastUpd)}`:'none loaded'),
+      it('Weekly updated schedule (P6)',lastUpd&&lastUpd>=addDays(ASOF,-8)?'ok':lastUpd?'warn':'no',lastUpd?`data date ${fmtDY(lastUpd)}`:'none loaded'),
       it('Schedule performance',k.e.spi>=0.95?'ok':'warn',`SPI ${fmt(k.e.spi,2)}`),
       site?null:it('Cost performance',k.e.cpi>=0.95?'ok':'warn',`CPI ${fmt(k.e.cpi,2)}`),
       site?null:it('Invoice register loaded',inv?'ok':'no',inv?`${inv} invoices`:''),
@@ -6073,14 +6082,14 @@ function complianceRows(){
     const last=reps.map(d=>d.date).sort().pop();
     const pend=reps.filter(d=>d.status==='Submitted'||d.status==='Reviewed');
     const oldestPend=pend.map(d=>d.date).sort()[0];
-    const hasEP=ACTS.some(a=>a.p===p.id&&clsOf(a)!=='CON');
-    const upd=(DB.updates||[]).filter(u=>u.p===p.id).map(u=>u.dataDate).sort().pop();
+    const hasEP=ACTS.some(a=>a.p===p.id);   /* v3.8.4: every project with a baseline needs its weekly updated schedule */
+    const upd=lastWk(p.id);
     const inv=((DB.invMeta||{})[p.id]||{}).at,invDate=inv?String(inv).slice(0,10):null;
     const issues=[];
     if(!last||diffDays(last,ASOF)>1)issues.push({k:'daily',t:last?`No daily report for ${diffDays(last,ASOF)} days`:'No daily report ever submitted',sev:'High'});
     else if(missing.length>2)issues.push({k:'daily',t:`${missing.length} missing report days in 14`,sev:'Medium'});
     if(oldestPend&&diffDays(oldestPend,TODAY)>2)issues.push({k:'approval',t:`${pend.length} awaiting approval, oldest ${diffDays(oldestPend,TODAY)} days`,sev:diffDays(oldestPend,TODAY)>5?'High':'Medium'});
-    if(hasEP&&(!upd||diffDays(upd,ASOF)>9))issues.push({k:'weekly',t:upd?`Weekly update ${diffDays(upd,ASOF)} days old`:'No weekly design and procurement update',sev:'Medium'});
+    if(hasEP&&(!upd||diffDays(upd,ASOF)>9))issues.push({k:'weekly',t:upd?`Updated schedule ${diffDays(upd,ASOF)} days old`:'No weekly updated schedule (P6)',sev:'Medium'});
     if(p.billing&&Object.keys(p.billing).length&&(!invDate||diffDays(invDate,TODAY)>9))issues.push({k:'invoice',t:invDate?`Invoice register ${diffDays(invDate,TODAY)} days old`:'No invoice register uploaded',sev:'Low'});
     const score=Math.max(0,100-missing.length*5-(pend.length?Math.min(20,diffDays(oldestPend,TODAY)*3):0)-(issues.some(i=>i.k==='weekly')?10:0)-(issues.some(i=>i.k==='invoice')?5:0));
     return {p,expected:days.length,got:days.length-missing.length,missing,last,pend:pend.length,oldestPend,upd,invDate,hasEP,issues,score};
@@ -6118,17 +6127,14 @@ function invDiscipline(p){
     sinceLast:last?diffDays(last,ASOF):null,count:inv.length,invoicedPct:contract?cum/contract:0,stop,contract,
     missing:window.filter(m=>!billed.has(m))};
 }
+/* v3.8.4: weeks with an updated P6 schedule in the last twelve (or since the baseline starts) */
 function weeklyCompliance(p){
-  const ep=ACTS.filter(a=>a.p===p.id&&clsOf(a)!=='CON');
-  if(!ep.length)return null;
-  const from=ep.map(a=>bsOf(a,'ORG')).sort()[0]||p.start;
-  const allDone=ep.every(a=>(curOf(a).pct||0)>=1);
-  const to=allDone?(ep.map(a=>curOf(a).af||bfOf(a,'ORG')).sort().pop()):ASOF;
-  const end=to<ASOF?to:ASOF;
+  const acts=ACTS.filter(a=>a.p===p.id);
+  if(!acts.length)return null;
+  const st=acts.map(a=>bsOf(a,'ORG')).filter(Boolean).sort()[0]||p.start||ASOF,w12=addDays(ASOF,-84),from=st>w12?st:w12,end=ASOF;
   const weeks=Math.max(0,Math.floor(diffDays(from,end)/7));
-  const got=new Set((DB.updates||[]).filter(u=>u.p===p.id&&u.dataDate>=from&&u.dataDate<=end).map(u=>Math.floor(diffDays(from,u.dataDate)/7)));
-  const last=(DB.updates||[]).filter(u=>u.p===p.id).map(u=>u.dataDate).sort().pop();
-  return {weeks,got:Math.min(got.size,weeks),compliance:weeks?Math.min(1,got.size/weeks):1,last,complete:allDone,from,end};
+  const got=new Set(wkDates(p.id).filter(d=>d>=from&&d<=end).map(d=>Math.floor(diffDays(from,d)/7)));
+  return {weeks,got:Math.min(got.size,weeks),compliance:weeks?Math.min(1,got.size/weeks):1,last:lastWk(p.id),complete:false,from,end};
 }
 function plannerRows(){
   return DB.master.users.filter(u=>u.role==='plan'&&u.active!==false).map(u=>{
@@ -6194,7 +6200,7 @@ function seedHistories(){
         highFloat:Math.round(q[5]*3),negFloat:q[6],highDur:Math.round(q[7]*2.4),work:240,invalid:q[8],noRes:q[9],due:120,missed:Math.round(q[10]*1.2),doneDue:120-Math.round(q[10]*1.2),done:110};
       DB.dcma[p.id]={file:`${p.id}_Baseline_Rev00.xer (sample)`,at:addDays(p.start||TODAY,10)+' 09:00',by:'Planning',dataDate:ASOF,tasks:raw.tasks,rels:raw.rels,checks:dcmaChecks(raw)};
     }
-    if(!DB.updates.some(u=>u.p===p.id)&&ACTS.some(a=>a.p===p.id&&clsOf(a)!=='CON')){
+    if(!DB.updates.some(u=>u.p===p.id)&&ACTS.some(a=>a.p===p.id)){   /* sample weekly history for every project with a baseline (v3.8.4) */
       const skip={JDC:3,RTT:2,JBS:4}[p.id]||0;
       for(let w=1;w<=16;w++){if(skip&&w%skip===0)continue;
         DB.updates.push({id:`UPD-${p.id}-${w}`,p:p.id,dataDate:addDays(ASOF,-7*w+2),by:['JBS','RTT','JWP'].includes(p.id)?'Deepak Menon':'Nabil Haddad',at:addDays(ASOF,-7*w+2)+' 14:00',file:`weekly_${p.id}_${w}.xlsx`,rows:[]})}
@@ -6209,13 +6215,13 @@ function renderPerf(){
   const ROLE_TABS={foreman:['foremen'],eng:['foremen','engineers'],sm:['foremen','engineers','compliance']};
   const tabs=Object.fromEntries(Object.entries(ALLTABS).filter(([k])=>!ROLE_TABS[state.role]||ROLE_TABS[state.role].includes(k)));
   if(!tabs[state.perfTab])state.perfTab=Object.keys(tabs)[0];let body='';
-  if(state.perfTab==='planners'){const r=plannerRows();body=r.length?`<table class="tbl"><thead><tr><th>Planning engineer</th><th class="n">DCMA score</th><th>Checks failed</th><th class="n">Weekly updates</th><th class="n">Compliance</th><th>Last update</th><th class="n">Score</th></tr></thead><tbody>
+  if(state.perfTab==='planners'){const r=plannerRows();body=r.length?`<table class="tbl"><thead><tr><th>Planning engineer</th><th class="n">DCMA score</th><th>Checks failed</th><th class="n">Updated schedules</th><th class="n">Compliance</th><th>Last update</th><th class="n">Score</th></tr></thead><tbody>
     ${r.map(x=>`<tr><td><b>${esc(x.name)}</b><span class="t2">${esc(x.projects)}</span></td>
       <td class="n">${x.dc==null?'<span class="muted">No XER</span>':`<b class="${x.dc>=0.85?'g-c':x.dc>=0.6?'a-c':'r-c'}">${pct(x.dc,0)}</b><span class="t2">${x.assessed} of ${x.n} projects</span>`}</td>
       <td class="small">${x.fails.length?x.fails.map(esc).join(', '):'<span class="g-c">None</span>'}</td>
       <td class="n">${x.got} of ${x.weeks}</td><td class="n ${x.wc==null?'':x.wc>=0.9?'g-c':x.wc>=0.7?'a-c':'r-c'}">${x.wc==null?'—':pct(x.wc,0)}</td>
       <td>${x.last?fmtD(x.last):'<span class="r-c">Never</span>'}</td><td class="n"><b class="${x.score>=85?'g-c':x.score>=60?'a-c':'r-c'}">${x.score}</b></td></tr>`).join('')}
-    </tbody></table><p class="small muted">DCMA score: share of the assessable checks passed on each project's imported XER; tests 12 and 13 need a CPM run and are not assessed from the file. Weekly updates: weeks with a design and procurement upload, from the first engineering or procurement activity until that phase completes. Score weights the two equally.</p>
+    </tbody></table><p class="small muted">DCMA score: share of the assessable checks passed on each project's imported XER; tests 12 and 13 need a CPM run and are not assessed from the file. Updated schedules: weeks with an updated P6 schedule in the last twelve (or since the baseline starts); E&amp;P Excel updates loaded before v3.8.4 count for their weeks. Score weights the two equally.</p>
     <h3 style="margin-top:18px">DCMA results by project</h3><div class="scroll"><table class="tbl"><thead><tr><th>Project</th>${[1,2,3,4,5,6,7,8,9,10,11,14].map(n=>`<th class="n">${n}</th>`).join('')}<th class="n">Score</th></tr></thead><tbody>
     ${scopeProjects().map(p=>{const d=(DB.dcma||{})[p.id];if(!d)return `<tr><td>${esc(p.short)}</td><td colspan="13" class="muted small">No XER imported</td></tr>`;
       return `<tr><td>${esc(p.short)}</td>${[1,2,3,4,5,6,7,8,9,10,11,14].map(n=>{const c=d.checks.find(x=>x.no===n);return `<td class="n" title="${esc(c.name+': '+c.val)}">${c.pass===null?'<span class="muted">·</span>':c.pass?'<span class="g-c">✓</span>':'<span class="r-c">✗</span>'}</td>`}).join('')}<td class="n"><b>${pct(dcmaScore(d.checks),0)}</b></td></tr>`}).join('')}
@@ -6244,17 +6250,17 @@ function renderPerf(){
     </tbody></table></div>
     <p class="small muted">Expected: an invoice every month from project start until invoicing reaches 80% of the contract value; after that, milestone invoices at TCC and FAC take over and monthly invoicing is no longer measured. Retention releases do not count as monthly invoices.</p>
     <p class="small muted">Reports over the last ${WIN} days. Pending counts submitted and reviewed reports not yet approved; red when the oldest is more than two days old. Under-billed and collection pending come from the invoice register against the contract terms.</p>`:'<p class="muted">No project managers assigned in this scope.</p>'}
-  if(state.perfTab==='compliance'){const r=complianceRows();body=`<table class="tbl"><thead><tr><th>Project</th><th class="n">Daily reports, 14 days</th><th>Last report</th><th class="n">Awaiting approval</th><th>Weekly update</th><th>Invoice register</th><th class="n">Score</th><th>Issues</th>${canNotify()?'<th></th>':''}</tr></thead><tbody>
+  if(state.perfTab==='compliance'){const r=complianceRows();body=`<table class="tbl"><thead><tr><th>Project</th><th class="n">Daily reports, 14 days</th><th>Last report</th><th class="n">Awaiting approval</th><th>Updated schedule</th><th>Invoice register</th><th class="n">Score</th><th>Issues</th>${canNotify()?'<th></th>':''}</tr></thead><tbody>
     ${r.map(x=>`<tr><td><b>${esc(x.p.short)}</b><span class="t2">${esc(x.p.pm||'')}</span></td>
       <td class="n ${x.missing.length>2?'r-c':x.missing.length?'a-c':'g-c'}">${x.got} of ${x.expected}</td>
       <td>${x.last?fmtD(x.last):'<span class="r-c">Never</span>'}</td>
       <td class="n ${x.oldestPend&&diffDays(x.oldestPend,TODAY)>2?'r-c':''}">${x.pend}</td>
-      <td>${x.hasEP?(x.upd?fmtD(x.upd):'<span class="a-c">Never</span>'):'<span class="muted">Not needed</span>'}</td>
+      <td>${x.hasEP?(x.upd?fmtD(x.upd):'<span class="a-c">Never</span>'):'<span class="muted">No baseline</span>'}</td>
       <td>${x.invDate?fmtD(x.invDate):'<span class="muted">None</span>'}</td>
       <td class="n"><b class="${x.score>=85?'g-c':x.score>=60?'a-c':'r-c'}">${x.score}</b></td>
       <td class="small">${x.issues.map(i=>`<span class="sev ${i.sev}">${i.sev}</span> ${esc(i.t)}`).join('<br>')||'<span class="g-c">Up to date</span>'}</td>
       ${canNotify()?`<td class="n"><button class="btn sm" type="button" data-nudge="${x.p.id}" ${x.issues.length?'':'disabled'}>Notify team</button></td>`:''}</tr>`).join('')}
-    </tbody></table><p class="small muted">Expected: one daily report per working day (Friday excluded). A weekly design and procurement update within nine days where the project has those activities, and an invoice register within nine days where payment terms are set. Notify team sends a reminder naming the gaps to the project manager, site engineer and foremen.</p>
+    </tbody></table><p class="small muted">Expected: one daily report per working day (Friday excluded). A weekly updated P6 schedule within nine days where the project has a baseline (engineering and procurement progress comes from it), and an invoice register within nine days where payment terms are set. Notify team sends a reminder naming the gaps to the project manager, site engineer and foremen.</p>
     ${(DB.nudges||[]).filter(n=>SCOPE.has(n.p)).length?`<h3 style="margin-top:18px">Reminders sent</h3><table class="tbl"><thead><tr><th>When</th><th>Project</th><th>By</th><th>Message</th></tr></thead><tbody>${(DB.nudges||[]).filter(n=>SCOPE.has(n.p)).slice(0,10).map(n=>`<tr><td class="small">${esc(n.at)}</td><td>${esc((projById(n.p)||{}).short||n.p)}</td><td>${esc(n.by)}</td><td class="small">${esc(n.msg)}</td></tr>`).join('')}</tbody></table>`:''}`}
   if(state.perfTab==='foremen'){const r=foremanRows().filter(x=>state.role!=='foreman'||x.name===me().name);body=`<table class="tbl"><thead><tr><th>Foreman</th><th class="n">Reports</th><th class="n">Earned mh</th><th class="n">Productivity</th><th class="n">Overtime</th><th class="n">Rework</th><th class="n">Approval</th><th class="n">Score</th></tr></thead><tbody>${r.map((x,i)=>`<tr><td>${esc(x.n)}${i<2&&r.length>3?'<span class="tag up">Top</span>':''}${i>=r.length-2&&r.length>3?'<span class="tag down">Needs support</span>':''}<span class="t2">${esc(x.proj)}</span></td><td class="n">${x.nr}</td><td class="n">${fmt(x.g.earned)}</td><td class="n">${tl(x.g.pi)}</td><td class="n">${pct(x.ot)}</td><td class="n">${pct(x.rework)}</td><td class="n">${pct(x.appr,0)}</td><td class="n"><b>${x.score}</b></td></tr>`).join('')}</tbody></table><p class="small muted">Monthly scorecard: productivity 60%, approval rate 25%, first-time-right reports 15%. Rework counts reports that were returned or rejected.</p>`}
   if(state.perfTab==='engineers'){const r=engineerRows().filter(x=>state.role!=='eng'||x.name===me().name);body=`<table class="tbl"><thead><tr><th>Site engineer</th><th class="n">Report compliance</th><th class="n">On time</th><th class="n">Approval</th><th class="n">Project productivity</th><th class="n">Index</th></tr></thead><tbody>${r.map(x=>`<tr><td>${esc(x.n)}<span class="t2">${esc(x.proj)}</span></td><td class="n">${pct(x.comp,0)}</td><td class="n">${pct(x.timely,0)}</td><td class="n">${pct(x.appr,0)}</td><td class="n">${tl(x.g.pi)}</td><td class="n"><b>${x.idx}</b></td></tr>`).join('')}</tbody></table><p class="small muted">Compliance is working days with at least one report. On time means submitted by 20:00 the same day. Index weighs compliance 30%, timeliness 25%, approval 20%, productivity 25%.</p>`}
@@ -6784,7 +6790,7 @@ const RASA_UNTRACKED=[
   [/accrual/,'Accruals are not tracked in ProTrackAI yet.','Commitments are in the released monthly cost report.'],
   [/\bsap\b/,'ProTrackAI has no connection to SAP, so it holds no SAP figures.','The costing engineer records actual cost and commitments from SAP in the monthly cost report; no released cost report covers this scope yet.'],
   [/cash.?flow (forecast|projection|plan)/,'A cash-flow forecast is not held in ProTrackAI yet (planned).','Invoicing and collection to date are in Reports.'],
-  [/material (tracking|stock|status|on site|delivery)|stock level|inventory|warehouse/,'Material tracking is not in ProTrackAI yet (planned).','Procurement milestones are tracked in the weekly engineering and procurement update.'],
+  [/material (stock|on site)|stock level|inventory|warehouse/,'Material stock and inventory are not held in ProTrackAI.','Procurement and delivery of each material are in Materials & Procurement → Material tracking, from the weekly updated P6 schedule.'],
   [/safety|incident|\blti\b|\bhse\b|accident|near miss/,'ProTrackAI does not record safety or HSE data.',''],
   [/weather|rain|temperature/,'ProTrackAI does not record weather.','Site remarks on daily reports may mention it.']];
 function rasaEv(kinds,extra){
@@ -6800,7 +6806,7 @@ function rasaEv(kinds,extra){
     if(k==='terms')L.push('the contract billing terms in Settings → Projects and terms, with price weighting from the P6 baseline');
     if(k==='rates')L.push('dated trade cost rates and subcontract purchase-order rates');
     if(k==='milestones')L.push('the milestone and extension-of-time records for each project');
-    if(k==='weekly'){const u=(DB.updates||[]).filter(x=>ids.has(x.p)).map(x=>x.dataDate).sort().pop();if(u)L.push(`the weekly engineering and procurement update, data date ${fmtDY(u)}`);else M.push('no weekly engineering and procurement update loaded, so forecasts use baseline dates')}
+    if(k==='weekly'){const u=[...ids].map(lastWk).filter(Boolean).sort().pop();if(u)L.push(`the weekly updated P6 schedule, data date ${fmtDY(u)}`);else M.push('no updated P6 schedule loaded, so engineering and procurement forecasts use baseline dates')}
     if(k==='lifecycle')L.push('the lifecycle stages and their history');
     if(k==='register')L.push('the Tender register and its PE number history');
     if(k==='actions')L.push('the daily reports, lifecycle stages and imports waiting on someone, read from the records themselves');
@@ -8147,9 +8153,15 @@ const clsOf=a=>a.cls||'CON';
 const isCon=a=>clsOf(a)==='CON';
 const msList=a=>MS[clsOf(a)]||[];
 const msPct=(a,code)=>{const m=msList(a).find(x=>x[0]===code);return m?m[2]/100:0};
-const msName=(a,code)=>{const m=msList(a).find(x=>x[0]===code);return m?m[1]:'Not started'};
-const curOf=a=>a.cur||{ms:'NS',pct:0};
+const msName=(a,code)=>{if(P6ST[code])return P6ST[code];const m=msList(a).find(x=>x[0]===code);return m?m[1]:'Not started'};
+/* v3.8.4: an engineering or procurement activity's progress comes from the weekly updated P6 schedule: % complete,
+   actual start and finish, forecast finish. Without one, the progress loaded before (the E&P Excel update) still shows. */
+const P6ST={P6N:'Not started',P6S:'In progress',P6C:'Completed'};
+const curOf=a=>{if(a&&clsOf(a)!=='CON'){try{const x=schedRowOf(a);if(x){const r=x.r,p=Math.min(1,Math.max(0,(+r.pct||0)/100));
+  return {ms:p>=1?'P6C':p>0?'P6S':'P6N',pct:p,as:r.as||'',af:r.af||'',ff:r.af||r.ef||'',dataDate:String(x.u.data_date||'').slice(0,10),src:'sched',file:x.u.file_name||'',remarks:''}}}catch(e){}}
+  return a.cur||{ms:'NS',pct:0}};
 function nonConPct(a,t){
+  try{const x=schedRowOf(a,t||ASOF);if(x)return Math.min(1,Math.max(0,(+x.r.pct||0)/100))}catch(e){}   /* v3.8.4: the updated schedule in force at that date */
   const c=curOf(a);if(!c)return 0;
   if(!t||!c.dataDate||c.dataDate<=t)return c.pct||0;
   const hist=(DB.updates||[]).filter(b=>b.dataDate<=t).flatMap(b=>b.rows.filter(r=>r.act===a.id).map(r=>({d:b.dataDate,p:r.to.pct}))).sort((x,y)=>x.d.localeCompare(y.d));
@@ -8285,23 +8297,37 @@ function engProcStats(){
     return {n:g.length,w,pct:w?g.reduce((t,r)=>t+r.bac*r.pct,0)/w:0,plan:w?g.reduce((t,r)=>t+r.bac*r.plan,0)/w:0,late:g.filter(r=>r.slip>0).length}};
   return {rows,ENG:sum('ENG'),PRC:sum('PRC'),all:sum()};
 }
+/* v3.8.4: E&P progress, read from the weekly updated P6 schedule. No separate upload: the planning engineer loads the
+   updated XER in Baselines and P6 import → Updated schedule, and engineering and procurement progress follows from it. */
+function epLateNotify(pid){try{const p=projById(pid);if(!p)return;
+  const L=ACTS.filter(a=>a.p===pid&&!isCon(a)).map(a=>{const c=curOf(a);return c.src==='sched'&&(c.pct||0)<1&&c.ff&&c.ff>a.bf?diffDays(a.bf,c.ff):0}).filter(x=>x>7);
+  if(L.length)notify(`${L.length} design or procurement item${L.length===1?'':'s'} of ${p.short} forecast late in the updated schedule, worst ${Math.max(...L)} days.`,true)}catch(e){}}
+function epSources(){
+  return scopeProjects().filter(p=>ACTS.some(a=>a.p===p.id&&!isCon(a))).map(p=>{const u=schedAt(p.id),ep=ACTS.filter(a=>a.p===p.id&&!isCon(a));
+    const inS=u&&schedRowsOf(u)?ep.filter(a=>curOf(a).src==='sched').length:0,old=(DB.updates||[]).filter(x=>x.p===p.id).map(x=>x.dataDate).sort().pop();
+    return {p,u,n:ep.length,inS,old}});
+}
 function renderUpd(){
   if(!canUpdate()){go('dash');return}
-  const S=engProcStats(),rows=S.rows.slice().sort((a,b)=>b.slip-a.slip),last=updBatches()[0];
+  const S=engProcStats(),rows=S.rows.slice().sort((a,b)=>b.slip-a.slip),src=epSources();
   const card=(k,t)=>`<div class="panel kpi"><div class="l">${t}</div><div class="gaugerow">${donut(S[k].pct,t)}<div class="s">Plan ${pct(S[k].plan,0)} by today<br>${S[k].n} activit${S[k].n===1?'y':'ies'}<br>${S[k].late?`<span class="r-c">${S[k].late} forecast late</span>`:'<span class="g-c">None late</span>'}</div></div><div style="margin-top:10px">${pbar(S[k].plan,S[k].pct)}</div></div>`;
+  const ups=scopeProjects().flatMap(p=>schedUps(p.id).map(u=>({p,u}))).sort((a,b)=>String(b.u.data_date).localeCompare(String(a.u.data_date))).slice(0,12);
   document.getElementById('view').innerHTML=`${crumb()}
-  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Weekly update, engineering and procurement</h2>
-    <div class="actions" style="margin:0"><button class="btn" type="button" data-updtpl>Download update template</button><label class="btn primary" for="updfile">Upload filled template</label><input id="updfile" type="file" accept=".xlsx,.xls,.csv" hidden></div></div>
-    <p class="small muted" style="margin:0">Design and procurement activities are updated by milestone, weekly or whenever needed. Construction activities are not in this file; they come from the daily report. ${last?`Last update: data date <b>${fmtDY(last.dataDate)}</b> by ${esc(last.by)}, ${last.rows.length} activities.`:'No updates applied yet.'}</p>
-    <div id="updBox"></div></section>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Engineering and procurement progress</h2>
+    <div class="actions" style="margin:0"><button class="btn" type="button" data-go="base">Load the updated schedule (Baselines and P6 import)</button></div></div>
+    <p class="small" style="margin:0" id="epSrc">From the <b>weekly updated P6 schedule</b>: % complete, actual start and finish, and forecast finish of each engineering and procurement activity. There is no separate upload: load the updated XER in Baselines and P6 import → Updated schedule, and this page follows. Construction progress still comes from the daily reports.</p>
+    ${src.length?`<div class="scroll" style="margin-top:10px"><table class="tbl"><thead><tr><th>Project</th><th>Updated schedule</th><th class="n">E&amp;P activities in it</th></tr></thead><tbody>
+      ${src.map(x=>`<tr><td>${esc(x.p.short)}</td><td>${x.u?`data date <b>${fmtDY(String(x.u.data_date).slice(0,10))}</b>${stale(String(x.u.data_date).slice(0,10),8)?' <span class="sev Medium">stale</span>':''}<span class="t2">${esc(x.u.file_name||'')}</span>`
+        :`<span class="sev High">none loaded</span><span class="t2">${x.old?`Showing the E&amp;P update of ${fmtDY(x.old)} until the first updated schedule is loaded`:'Showing baseline dates until the first updated schedule is loaded'}</span>`}</td>
+        <td class="n">${x.u?`${x.inS} of ${x.n}`:'—'}</td></tr>`).join('')}</tbody></table></div>`:''}</section>
   <section class="g g-kpi">${card('ENG','Engineering progress')}${card('PRC','Procurement progress')}
     <div class="panel kpi"><div class="l">Weighted by budget</div><div class="gaugerow">${donut(S.all.pct,'Overall')}<div class="s">Engineering by manhours<br>Procurement by package value<br>${fmt(S.all.n)} activities tracked</div></div><div style="margin-top:10px">${pbar(S.all.plan,S.all.pct)}</div></div></section>
-  <section class="panel"><h2>Status by activity</h2><div class="scroll"><table class="tbl"><thead><tr><th>Activity</th><th>Class</th><th>Milestone</th><th>Progress vs plan</th><th class="n">Actual</th><th class="n">Plan</th><th>Baseline finish</th><th>Forecast finish</th><th class="n">Slip</th><th>Data date</th></tr></thead><tbody>
-    ${rows.map(r=>`<tr><td>${esc(r.name)}<span class="t2">${esc(r.a.id)}, ${esc(r.proj)}${r.rem?', '+esc(r.rem):''}</span></td><td>${CLASSES[r.cls]}</td><td>${esc(r.ms)}</td><td>${pbar(r.plan,r.pct)}</td><td class="n">${pct(r.pct,0)}</td><td class="n">${pct(r.plan,0)}</td><td>${fmtD(r.bf)}</td><td>${r.ff?fmtD(r.ff):'—'}</td><td class="n">${r.slip>0?`<span class="r-c">+${r.slip} d</span>`:r.slip<0?`<span class="g-c">${r.slip} d</span>`:'0'}</td><td class="small">${r.dd?fmtD(r.dd):'—'}</td></tr>`).join('')||'<tr><td colspan="10" class="muted">No engineering or procurement activities in this scope.</td></tr>'}
+  <section class="panel"><h2>Status by activity</h2><div class="scroll"><table class="tbl"><thead><tr><th>Activity</th><th>Class</th><th>Status</th><th>Progress vs plan</th><th class="n">Actual</th><th class="n">Plan</th><th>Baseline finish</th><th>Forecast finish</th><th class="n">Slip</th><th>Data date</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td>${esc(r.name)}<span class="t2">${esc(r.a.id)}, ${esc(r.proj)}${r.rem?', '+esc(r.rem):''}</span></td><td>${CLASSES[r.cls]}</td><td>${esc(r.ms)}${curOf(r.a).src==='sched'?'':'<span class="t2">not in an updated schedule yet</span>'}</td><td>${pbar(r.plan,r.pct)}</td><td class="n">${pct(r.pct,0)}</td><td class="n">${pct(r.plan,0)}</td><td>${fmtD(r.bf)}</td><td>${r.ff?fmtD(r.ff):'—'}</td><td class="n">${r.slip>0?`<span class="r-c">+${r.slip} d</span>`:r.slip<0?`<span class="g-c">${r.slip} d</span>`:'0'}</td><td>${r.dd?fmtD(r.dd):'—'}</td></tr>`).join('')||'<tr><td colspan="10" class="muted">No engineering or procurement activities in this scope.</td></tr>'}
   </tbody></table></div></section>
-  <section class="panel"><h2>Update history</h2><div class="scroll"><table class="tbl"><thead><tr><th>Batch</th><th>Data date</th><th>Project</th><th class="n">Activities</th><th>Uploaded by</th><th>File</th></tr></thead><tbody>
-    ${updBatches().slice(0,12).map(b=>`<tr><td><b>${b.id}</b></td><td>${fmtDY(b.dataDate)}</td><td>${esc(projById(b.p)?.short||'')}</td><td class="n">${b.rows.length}</td><td>${esc(b.by)}<span class="t2">${esc(b.at)}</span></td><td class="small">${esc(b.file||'')}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">No updates applied yet. Each upload is kept here as a dated snapshot.</td></tr>'}
-  </tbody></table></div><p class="small muted">Every upload is stored with its data date, so the weekly trend and the audit trail build up automatically.</p></section>`;
+  <section class="panel"><h2>Updated schedules</h2><div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Data date</th><th>File</th><th>Uploaded by</th></tr></thead><tbody>
+    ${ups.map(({p,u})=>`<tr><td>${esc(p.short)}</td><td>${fmtDY(String(u.data_date).slice(0,10))}</td><td class="small">${esc(u.file_name||'')}</td><td>${esc(u.uploaded_name||'')}<span class="t2">${esc(String(u.uploaded_at||'').slice(0,16).replace('T',' '))}</span></td></tr>`).join('')||'<tr><td colspan="4" class="muted">No updated schedule loaded yet. Load one in Baselines and P6 import → Updated schedule.</td></tr>'}
+  </tbody></table></div><p class="small muted">Every updated schedule is kept with its data date, so the weekly trend and the audit trail build up from the uploads you already make.</p></section>`;
 }
 
 /* ---------- reports ---------- */
@@ -8463,7 +8489,7 @@ const REPORTS={
     const worst=rows.slice(0,12);
     return {cols:[C('Project','proj'),C('Activity','name'),C('Class','cls'),C('Original start','os','date'),C('Original finish','of','date'),C('Revised finish','rf','date'),C('Recovery finish','cf','date'),C('Actual or forecast finish','ff','date'),C('Slip vs original','so','days'),C('Slip vs revised','sr','days'),C('Slip vs recovery','sc','days'),C('Status','st')],rows,
       chart:pal=>({type:'bar',data:{labels:worst.map(r=>r.name.length>26?r.name.slice(0,25)+'…':r.name),datasets:[{label:'Slip against original baseline, days',data:worst.map(r=>r.so),backgroundColor:worst.map(r=>r.so>14?pal.red:r.so>0?pal.amber:pal.green)}]},options:{indexAxis:'y',scales:{x:{title:{display:true,text:'Days late (+) or early (-)'}}}}}),
-      notes:'Forecast finish for construction extends the earned rate since the activity started; for engineering and procurement it is the forecast finish from the weekly update. A blank revised or recovery column means no such baseline is loaded for that project. Earned progress never changes when the measured baseline is switched.'}}},
+      notes:'Forecast finish for construction extends the earned rate since the activity started; for engineering and procurement it is the forecast finish from the weekly updated P6 schedule. A blank revised or recovery column means no such baseline is loaded for that project. Earned progress never changes when the measured baseline is switched.'}}},
   recon:{sheet:'Quantity reconciliation',title:'Quantity reconciliation, scope against executed',desc:'Original scope against quantity executed by own, rental and subcontract',build(){
     const rows=reconRows();
     const T=rows.reduce((t,r)=>({scope:t.scope+r.scope,prior:t.prior+r.prior,own:t.own+r.own,rent:t.rent+r.rent,sub:t.sub+r.sub,done:t.done+r.done,rem:t.rem+r.rem}),{scope:0,prior:0,own:0,rent:0,sub:0,done:0,rem:0});

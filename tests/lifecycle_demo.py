@@ -105,7 +105,7 @@ with sync_playwright() as p:
     # ---- dashboards
     pg.evaluate("state.scope='ALL';go('pdash')"); pg.wait_for_timeout(700)
     v = pg.inner_text('#view')
-    ck('Planning dashboard', 'one row per project with baseline, SPI, milestones and weekly update', pg.locator('#view tbody tr').count() == pg.evaluate("scopeProjects().length") and 'Next milestone' in v and 'Weekly update' in v, v[:300])
+    ck('Planning dashboard', 'one row per project with baseline, SPI, milestones and weekly update', pg.locator('#view tbody tr').count() == pg.evaluate("scopeProjects().length") and 'Next milestone' in v and 'Weekly update (P6)' in v, v[:300])
     ck('Planning dashboard', 'states that the critical path comes from P6', 'calculated in Primavera P6' in v)
     pg.evaluate("go('cdash')"); pg.wait_for_timeout(700)
     v = pg.inner_text('#view')

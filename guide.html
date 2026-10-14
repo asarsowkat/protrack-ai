@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.8.3, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.8.4, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -252,10 +252,12 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <p>ProTrack turns what the site records every evening into productivity, earned value, forecast cost, invoiceable value and early warnings, and it measures the people who feed it. Its principle is one sentence: <b>quantity alone is progress; quantity together with the resources that produced it is productivity.</b> Everything follows from capturing both, once, at site.</p>
   <div class="grid2">
     <div class="card"><b>For site teams</b><span>A daily report that takes under a minute per activity, on a phone, with the productivity index shown as you type.</span></div>
-    <div class="card"><b>For planning and costing</b><span>P6 in, P6 out; a Master Manpower Costing Sheet for budget quantity and rate; a weekly design and procurement update; an invoice register.</span></div>
+    <div class="card"><b>For planning and costing</b><span>P6 in, P6 out; a Master Manpower Costing Sheet for budget quantity and rate; a weekly updated P6 schedule for progress, including design and procurement; an invoice register.</span></div>
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.8.4</b>
+    Engineering and procurement progress comes from the <b>weekly updated P6 schedule</b>: no separate E&amp;P Excel upload. <b>E&amp;P progress</b> (Planning &amp; Scheduling) shows it per activity, and reporting compliance checks the updated schedule.</div>
   <div class="note"><b>New in version 3.8.3</b>
     On a phone or tablet, <b>Menu</b> at the bottom left opens the full menu, as on a laptop: Planning &amp; Scheduling, Cost Control, Materials &amp; Procurement, Administration and every other screen.</div>
   <div class="note"><b>New in version 3.8.2</b>
@@ -344,7 +346,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Budget and purchase orders.</b> The costing engineer downloads the costing template, pre-filled with every activity ID, adds budget quantity, unit, unit rate, cost and manhours, and uploads it. He then enters each subcontractor's purchase order for the project, with its rates.</li>
     <li><b>Daily reporting.</b> Every working day the foreman or site engineer reports, per activity, the quantity executed and the crews that produced it: own labour, subcontractors with their trades, and equipment.</li>
     <li><b>Review and approval.</b> The site engineer reviews what the foreman submitted; the site manager approves it the same evening. The project manager can do either. Nothing counts until it is submitted, and only approval closes the audit trail. Every step is timed.</li>
-    <li><b>Weekly update.</b> The planning engineer updates design and procurement by milestone from one Excel file, until those phases are complete.</li>
+    <li><b>Weekly updated schedule.</b> The planning engineer uploads the updated P6 XER each week. It carries progress for every activity, including design and procurement; there is no separate Excel update.</li>
     <li><b>Invoicing.</b> The costing engineer uploads the invoice register weekly: invoice number, amount, submitted, approved and collected, including the advance.</li>
     <li><b>Analysis.</b> ProTrack calculates productivity, earned value, EAC, manpower forecasts, unit rates, reconciliation and invoiceable value against the contract terms, and raises early warnings.</li>
     <li><b>Oversight.</b> Management reads the executive summary, the reports and RASA; the performance scorecards show who is keeping the chain alive, and reminders chase the gaps.</li>
@@ -382,7 +384,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <tr><td><b>Executive manager</b></td><td>All projects</td><td>Reading the portfolio, intervening, sending reminders</td><td>Enter or approve data</td></tr>
       <tr><td><b>Regional manager</b></td><td>One or more regions</td><td>Regional oversight, sending reminders</td><td>Enter or approve data</td></tr>
       <tr><td><b>Portfolio manager</b></td><td>Exactly one region</td><td>Portfolio oversight, sending reminders</td><td>Enter or approve data</td></tr>
-      <tr><td><b>Planning engineer</b></td><td>Assigned projects</td><td>P6 baselines, resource-to-trade mapping, weekly design and procurement update, P6 progress export, schedule quality</td><td>Create daily reports, approve, set rates</td></tr>
+      <tr><td><b>Planning engineer</b></td><td>Assigned projects</td><td>P6 baselines, resource-to-trade mapping, weekly updated P6 schedule, P6 progress export, schedule quality</td><td>Create daily reports, approve, set rates</td></tr>
       <tr><td><b>Costing engineer</b></td><td>Assigned projects</td><td>Master Manpower Costing Sheet, invoice register, <b>subcontractor purchase orders and their rates</b> for his projects, including adding a new subcontractor</td><td>Import schedules, approve reports, set salaries or payment terms</td></tr>
       <tr><td><b>Project manager</b></td><td>Every module for his projects, including costing, invoicing and purchase orders</td><td>Delivery, cost and monthly invoicing; may review and approve; sees the whole team's performance</td><td>Import schedules, change settings</td></tr>
       <tr><td><b>Site manager</b></td><td>Daily reports, executive summary and dashboard without cost, reports granted to his role, presentation, performance of foremen and site engineers</td><td><b>Approving every daily report</b> once the site engineer has reviewed it, the same day</td><td>Create reports, see costing, change his executive layout</td></tr>
@@ -450,7 +452,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <table><thead><tr><th>Domain</th><th>Working today</th><th>Planned</th></tr></thead><tbody>
     <tr><td>Home</td><td>Executive summary</td><td>—</td></tr>
     <tr><td>Projects &amp; Handover</td><td>Project overview</td><td>Tender register, contract register, handover checklist</td></tr>
-    <tr><td>Planning &amp; Scheduling</td><td>Baselines and P6 import, weekly design and procurement update, baseline comparison, P6 progress update</td><td>Governed baseline register, look-ahead and alerts</td></tr>
+    <tr><td>Planning &amp; Scheduling</td><td>Baselines and P6 import, weekly updated schedule, E&amp;P progress, baseline comparison, P6 progress update</td><td>Governed baseline register, look-ahead and alerts</td></tr>
     <tr><td>Cost Control</td><td>Earned value and EAC, Master Manpower Costing Sheet, unit rate analysis</td><td>Budget revisions, commitments and accruals, cost reconciliation</td></tr>
     <tr><td>Daily Reports</td><td>Daily reports, new report, report handling time</td><td>—</td></tr>
     <tr><td>Materials &amp; Procurement</td><td>Subcontract purchase orders</td><td>Material tracking, deliveries and stock</td></tr>
@@ -478,7 +480,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>Executive summary</b><span>Landing page for managers. Pick any of 18 tiles; group the breakdown by region, sector, city or project; choose its columns; add a billing and collection panel. Each person keeps their own layout.</span></div>
     <div class="card"><b>Dashboard</b><span>Productivity index, workforce, manhours, SPI, CPI, warnings, portfolio by region and sector, project health.</span></div>
     <div class="card"><b>Daily reports</b><span>Location, work type, WBS, activity; quantity; own labour; subcontractor companies each with one quantity and several trades; equipment; photos and remarks; live productivity with own and subcontract split. A clock records the time taken to prepare, review and approve each report.</span></div>
-    <div class="card"><b>Weekly update</b><span>Design and procurement by milestone from one Excel file, validated before it is applied.</span></div>
+    <div class="card"><b>E&amp;P progress</b><span>Design and procurement progress, status and forecast finish per activity, read from the weekly updated P6 schedule.</span></div>
     <div class="card"><b>Baselines</b><span>P6 XER, XML or Excel import with branch and class pickers, DCMA check, revised and recovery sets, undo and remove, Master Manpower Costing Sheet, invoice register, resource mapping.</span></div>
     <div class="card"><b>Earned value</b><span>PV, EV, AC, SPI, CPI, EAC, VAC and the S-curve against any baseline.</span></div>
     <div class="card"><b>Reports</b><span>Sixteen reports in Excel and PDF, including reconciliation, unit rates, manpower forecast, invoiceable value, invoicing and collection, and report handling time. Site roles see only the reports the super admin grants them.</span></div>
@@ -500,7 +502,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h3>Preparing and releasing</h3>
   <ol class="steps">
     <li>Open <b>Planning &amp; Scheduling → Progress releases</b> or <b>Cost Control → Monthly cost report</b>, choose the week or month, and press <b>Prepare</b> beside the project.</li>
-    <li><b>Progress:</b> ProTrackAI fills in what it computes now from daily reports, the baseline and the weekly engineering and procurement update. You can change any figure, but a change needs a reason; the computed value and your reason are kept. Add your comments.</li>
+    <li><b>Progress:</b> ProTrackAI fills in what it computes now from the latest updated P6 schedule (progress, including design and procurement), the baseline and the daily reports (manpower and productivity). You can change any figure, but a change needs a reason; the computed value and your reason are kept. Add your comments.</li>
     <li><b>Cost:</b> type the Rev-0 budget, actual cost to date, commitments and forecast cost to complete, or upload them for several projects with the template. ProTrackAI adds the approved supplements from the latest budget supplement log and works out the rest: <i>approved budget = Rev-0 + approved supplements; EAC = actual + forecast to complete; VAC = approved budget − EAC</i>. The server applies the same formulas, so every cost report uses them.</li>
     <li>Press <b>Submit for approval</b>. A progress release goes to the region's <b>planning section manager</b> (after the project manager's review, if a super admin has switched it on); a cost report goes to the Head of Planning and Cost Control. They find it in <b>Actions and approvals</b> and press <b>Approve and release</b> or <b>Reject (return to planner)</b> with a comment. Nobody approves a version they submitted.</li>
     <li>A released version never changes. To correct one, press <b>Start a new revision</b> and give a reason. Management keeps seeing the released revision until the new one is approved; the old one is then kept as superseded.</li>
@@ -643,7 +645,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <tr><td>4</td><td>Kick-off and handover to Planning</td><td>Tendering and Planning</td><td>Kick-off held by Tender; tender documents and the costing file with detailed breakup handed over. Due 7 days after contract signing</td></tr>
     <tr><td>5</td><td>Costing review, finance pack and SAP upload</td><td>Planning and Cost Control (costing engineer)</td><td>Site management, installation, mechanical and civil breakups checked; project brief and cash flow prepared and sent with the signed contract to Finance / Treasury; costing uploaded to SAP with the standard template</td></tr>
     <tr><td>6</td><td>Baseline preparation and approval</td><td>Planning</td><td>Baseline loaded; costing applied; submitted to and approved by the client</td></tr>
-    <tr><td>7</td><td>Execution and progress updates</td><td>Projects and site</td><td>Daily reports flowing; weekly updates current</td></tr>
+    <tr><td>7</td><td>Execution and progress updates</td><td>Projects and site</td><td>Daily reports flowing; weekly updated schedule current</td></tr>
     <tr><td>8</td><td>Procurement and materials</td><td>Procurement</td><td>Purchase orders recorded; long-lead items tracked</td></tr>
     <tr><td>9</td><td>Budget, cost and forecast</td><td>Cost Control</td><td>Budget loaded; invoice register current; forecast reviewed</td></tr>
     <tr><td>10</td><td>Variations, claims and approvals</td><td>Contracts and commercial</td><td>Variation register maintained; approvals recorded</td></tr>
@@ -743,7 +745,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Import,</b> then read the <b>DCMA check</b> on the same page and fix what fails in P6.</li>
     <li><b>Map P6 labour resources to trades,</b> once per project; create any missing trades.</li>
     <li><b>Tell costing the baseline is in.</b></li>
-    <li><b>Every week until design and procurement are complete:</b> Weekly update → download template → fill milestones and dates → upload → preview → apply. Then export the P6 progress update from Reports.</li>
+    <li><b>Every week:</b> upload the updated P6 XER (Baselines and P6 import → Updated schedule). Design and procurement progress, statuses and forecast finishes come from it; check them in Planning &amp; Scheduling → E&amp;P progress. Then export the P6 progress update from Reports.</li>
     <li><b>At a revision:</b> load a revised or recovery set; use Measure against to report on it. Wrong file? Undo this import.</li>
     <li><b>Every week and month:</b> upload the updated schedule (Baselines and P6 import), then Internal Reporting → Open: check the figures, fill the rest, write the release notes and submit; then Client Reporting → Open: write the client notes and submit. Both go to your regional planning section manager.</li>
     <li><b>At project start:</b> set the internal weightage by phase agreed with management.</li>
@@ -829,10 +831,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <p>Also shown per project: <b>longest gap</b> (longest run of months with nothing submitted), <b>days since last invoice</b> (red over 45), invoiced as a share of contract value, and the <b>months missed</b> by name. After 80%, milestone invoices at TCC and FAC take over and the monthly requirement stops.</p>
 
   <h3 id="p-plan">Planning engineer score, out of 100</h3>
-  <div class="f"><b>Score = (DCMA pass rate × 0.5 + weekly update compliance × 0.5) × 100</b></div>
+  <div class="f"><b>Score = (DCMA pass rate × 0.5 + updated schedule compliance × 0.5) × 100</b></div>
   <ul>
     <li><b>DCMA pass rate</b> — checks passed ÷ checks assessable, averaged across his projects' imported XERs (section 8).</li>
-    <li><b>Weekly update compliance</b> — weeks with a design and procurement upload ÷ weeks elapsed, counted from the first engineering or procurement activity until all of them are complete; after that no update is required.</li>
+    <li><b>Updated schedule compliance</b> — weeks with an updated P6 schedule ÷ weeks elapsed, over the last twelve weeks (or since the baseline starts). E&amp;P Excel updates loaded before version 3.8.4 count for the weeks they cover.</li>
     <li>Where either part cannot be measured yet, it counts as 50% so a new project neither rewards nor punishes.</li>
   </ul>
 
@@ -845,12 +847,12 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   </ul>
 
   <h3 id="p-comp">Reporting compliance score, by project, out of 100</h3>
-  <div class="f"><b>Score = 100 − 5 × missing report days − min(20, 3 × age of oldest pending report in days) − 10 if weekly update overdue − 5 if invoice register overdue</b></div>
+  <div class="f"><b>Score = 100 − 5 × missing report days − min(20, 3 × age of oldest pending report in days) − 10 if updated schedule overdue − 5 if invoice register overdue</b></div>
   <ul>
     <li><b>Missing report days</b> — working days in the last 14 (Fridays excluded) with no submitted report.</li>
-    <li><b>Weekly update overdue</b> — more than 9 days old, where the project has design or procurement activities.</li>
+    <li><b>Updated schedule overdue</b> — the latest updated P6 schedule is more than 9 days old, or none is loaded, where the project has a baseline.</li>
     <li><b>Invoice register overdue</b> — more than 9 days old, where payment terms are set.</li>
-    <li>Issues are graded: no report for more than a day is <b>High</b>; more than two missing days, an approval backlog, or an overdue weekly update is <b>Medium</b>; an overdue register is <b>Low</b>.</li>
+    <li>Issues are graded: no report for more than a day is <b>High</b>; more than two missing days, an approval backlog, or an overdue updated schedule is <b>Medium</b>; an overdue register is <b>Low</b>.</li>
   </ul>
   <p>Scores are coloured green at 85 and above, amber from 60, red below 60.</p>
 
@@ -1052,7 +1054,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h2>13. Rules the system enforces</h2>
   <ul>
     <li>Only submitted, reviewed and approved reports count; drafts and rejected reports never reach a dashboard.</li>
-    <li>Construction progress only from daily reports; engineering and procurement only from the weekly update.</li>
+    <li>Reported progress from the weekly updated P6 schedule, including engineering and procurement; daily reports drive manpower, productivity and quantities, and give construction progress until an updated schedule is loaded.</li>
     <li>Price only from P6; cost only from the Master Manpower Costing Sheet. Each project names which file owns budget manhours.</li>
     <li>Rates and PO rates are dated; a change never restates a filed report.</li>
     <li>One purchase order per subcontractor per project; a second one for the same company is refused.</li>

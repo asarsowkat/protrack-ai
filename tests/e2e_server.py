@@ -239,15 +239,10 @@ with sync_playwright() as p:
     ck('Baseline', 'planner adds an activity through the server', ok is True and sql("select name from activities where id='TT-120'") == 'Blockwork' and pg.evaluate("!!ACTS.find(a=>a.id==='TT-120')"), ok)
 
     pg.evaluate("go('upd')"); pg.wait_for_timeout(900)
-    uh = ['Activity ID', 'Milestone reached', 'Actual start', 'Actual finish', 'Forecast finish', 'Data date', 'Remarks']
-    pg.set_input_files('#updfile', book([uh, ['TT-E01', 'IDC', '2026-08-05', '', '2026-10-10', '2026-09-21', 'IDC sent']], 'Update', 'update_wk38.xlsx')); pg.wait_for_timeout(1200)
-    pg.click('[data-updgo]'); pg.wait_for_timeout(2500)
-    r = pg.inner_text('#toast')
-    ck('Weekly update', 'planner progress update saved on the server in one batch', sql("select cur->>'ms' from activities where id='TT-E01'") == 'IDC' and sql("select count(*) from weekly_updates") == '1' and sql("select count(*) from import_batches where kind='update' and status='committed'") == '1', r)
-    ck('Weekly update', 'app shows the server progress', pg.evaluate("curOf(ACTS.find(a=>a.id==='TT-E01')).ms") == 'IDC')
+    ck('E&P progress', 'no separate E&P upload on live: the page reads the updated P6 schedule (v3.8.4)', pg.locator('#updfile').count() == 0 and 'weekly updated P6 schedule' in pg.inner_text('#view'), pg.inner_text('#view')[:300])
     login(pg, 'f1')
     r = pg.evaluate("rpc('import_commit',{p:{kind:'update',project_id:null,file_name:'upd2.xlsx',hash:'a'.repeat(64),data_date:'2026-09-22',rows:[{project_id:'P1',id:'TT-E01',ms:'IFC'}]}}).then(()=>'ran',e=>'refused: '+e.message)"); pg.wait_for_timeout(800)
-    ck('Weekly update', 'a foreman cannot change progress (server refuses)', sql("select cur->>'ms' from activities where id='TT-E01'") == 'IDC' and 'refused' in r, r)
+    ck('E&P progress', 'a foreman still cannot change progress through the old import (server refuses)', sql("select coalesce(cur->>'ms','') from activities where id='TT-E01'") == '' and 'refused' in r, r)
 
     # ---------------------------------------------------------------- lifecycle through the server
     login(pg, 'pm')
@@ -713,6 +708,7 @@ with sync_playwright() as p:
        (srv_s.get('int_act'), app_s and app_s.get('int_act'), srv_s.get('client_plan'), app_s and app_s.get('client_plan')))
     ck('Schedule (v15)', 'internal actual = 20% x 100% + 80% x (50x60% + 30x20%)/80', abs(float(srv_s.get('int_act') or 0) - round(20 * 1 + 80 * (50 * .6 + 30 * .2) / 80, 2)) < 0.011, srv_s.get('int_act'))
     ck('Schedule (v15)', 'invoiceable reads the schedule % from the server', pg.evaluate("schedDone(ACTS.find(a=>a.id==='TT-100'),ASOF)") == 0.6)
+    ck('E&P from the schedule (v3.8.4)', 'engineering progress comes from the updated schedule on the server: Shop drawings 100%, nothing else uploaded', pg.evaluate("(c=>c.src==='sched'&&c.pct===1)(curOf(ACTS.find(a=>a.id==='TT-E01')))") is True, pg.evaluate("curOf(ACTS.find(a=>a.id==='TT-E01'))"))
     login(pg, 'c1')
     r = pg.evaluate("rpc('schedule_update_commit',{p:{project_id:'P1',data_date:'" + dd + "',weightage:'client',rows:[{id:'X',w:1,bs:'2026-09-01',bf:'2026-09-30',pct:5}]}}).then(()=>'ran',e=>'refused: '+e.message)")
     ck('Schedule (v15)', 'a costing engineer cannot upload a schedule (server refuses)', r.startswith('refused'), r)
