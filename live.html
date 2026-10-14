@@ -762,7 +762,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8.1</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -4302,6 +4302,7 @@ function schedPreviewHTML(S){
       <div class="scroll"><table class="tbl" style="margin-top:8px"><thead><tr><th>Phase</th><th class="n">Internal weightage</th><th class="n">Activities</th><th class="n">Planned</th><th class="n">Actual</th></tr></thead><tbody>
         ${sm.phases.map(x=>`<tr><td>${esc(RPH_N[x.phase])}</td><td class="n">${x.iw?fmt(x.iw,1)+'%':'—'}</td><td class="n">${fmt(x.n)}</td><td class="n">${x.present?fmt(x.plan_pct,1)+'%':'—'}</td><td class="n">${x.present?fmt(x.act_pct,1)+'%':'—'}</td></tr>`).join('')}</tbody></table></div>
       ${sm.missing_phases.length?`<p class="small muted">Phases with weightage but no activities in this schedule (left out, the others scaled up): ${sm.missing_phases.map(k=>esc(RPH_N[k])).join(', ')}.</p>`:''}`:''}
+    ${mtAutoHTML(S.mt,'sched')}
     <div class="actions"><button class="btn primary" type="button" data-schedgo ${block?'disabled':''}>Save updated schedule</button><button class="btn" type="button" data-schedcancel>Cancel</button></div><p class="err" id="schedErr"></p></div>`;
 }
 async function handleSchedFile(file){
@@ -4315,16 +4316,18 @@ async function handleSchedFile(file){
   P.rows.forEach(r=>{if(r.wbs&&!(r.wbs in map.wbs_map)){const s=phaseSuggest(r.wbs);if(s)map.wbs_map[r.wbs]=s}Object.values(r.codes).forEach(v=>{if(v&&!(v in map.code_map)){const s=phaseSuggest(v);if(s)map.code_map[v]=s}})});
   const pw=ACTS.find(a=>a.p===pid&&a.pwRes)?.pwRes;
   state.sched={pid,file:file.name,hash:await sha256Hex(text),parsed:P,wt:state.schedWt||'client',dd:P.dataDate||'',wres:P.weightRes.length?(P.weightRes.find(x=>x.name===pw)||P.weightRes[0]).name:'__lab',ctype,map};
+  state.sched.mt=mtSetup(pid)?null:mtAutoInit(P,pid,'update');   /* v3.8.1: no Material Tracking yet: offer it from this schedule */
   render();setTimeout(()=>{const el=$('#schedPanel');if(el&&el.scrollIntoView)el.scrollIntoView({block:'start'})},50);
 }
 async function schedGo(btn){
   const S=state.sched;if(!S)return;const err=m=>{const e=$('#schedErr');if(e)e.textContent=m};btn.disabled=true;
   const st=phaseSetupOf(S.pid),changed=JSON.stringify(st.wbs_map||{})!==JSON.stringify(S.map.wbs_map)||JSON.stringify(st.code_map||{})!==JSON.stringify(S.map.code_map)||(st.code_type||'')!==(S.ctype||'');
   if(changed){const r=await phaseSetupSave({project_id:S.pid,weights:st.weights||{},wbs_map:S.map.wbs_map,code_type:S.ctype||null,code_map:S.map.code_map});if(!r){btn.disabled=false;return err('The mapping was not saved: '+phaseSetupSave.err)}}
+  let mr=null;if(S.mt&&S.mt.on){mr=await mtAutoRun(S.mt,S.file,S.hash);if(mr&&mr.err){btn.disabled=false;return err('Material Tracking was not set up: '+mr.err)}}   /* first, so the rows carry the material codes */
   const rows=schedRowsFor(S).map(({phase,...x})=>x);
   const r=await schedCommit({project_id:S.pid,data_date:S.dd,weightage:S.wt,file_name:S.file,file_hash:S.hash,weight_basis:S.wres==='__lab'?'Planned labour units':S.wres==='__dur'?'Planned duration':S.wres,rows});
   if(!r){btn.disabled=false;return err('Not saved: '+schedCommit.err)}
-  state.sched=null;toast(r.duplicate?'This file was already loaded; nothing changed':`Updated schedule saved, data date ${fmtDY(r.data_date)}`);render();
+  state.sched=null;toast((r.duplicate?'This file was already loaded; nothing changed':`Updated schedule saved, data date ${fmtDY(r.data_date)}`)+mtAutoMsg(mr));render();
 }
 document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
   if(t.id==='schedfile'&&t.files[0]){handleSchedFile(t.files[0]);t.value='';return}
@@ -4646,6 +4649,51 @@ function seedV37(){
   DB.v37Seeded=true;save();
 }
 
+/* ---------- v3.8.1: Material Tracking without an extra upload ----------
+   Material Tracking takes its material activities and baseline dates from the original baseline XER when it is
+   imported (Baselines → Original baseline), and its actual and forecast dates from the weekly updated schedule.
+   For a project whose baseline is already in ProTrackAI, the next weekly upload can set it up instead: baseline dates
+   then come from ProTrackAI's original baseline where the activity was imported, otherwise from the planned dates in
+   that file. No separate Material Tracking upload is needed. */
+function mtAutoInit(P,pid,source){
+  const ct=(P&&P.codeTypes)||[];if(ct.length<2)return null;const S=mtSetup(pid);
+  const mc=(S&&ct.includes(S.mat_code)&&S.mat_code)||ct.find(c=>/material/i.test(c))||'';
+  const uc=(S&&ct.includes(S.uact_code)&&S.uact_code)||ct.find(c=>c!==mc&&/unified|activity name|stage|step/i.test(c))||'';
+  const wb=[...new Set(P.rows.map(r=>r.wbs).filter(Boolean))];
+  let wbs=S?wb.filter(w=>(S.wbs_filter||[]).includes(w)):wb.filter(w=>/procure|material|supply|purchas/i.test(w));
+  if(!wbs.length&&mc)wbs=wb.filter(w=>P.rows.some(r=>r.wbs===w&&String((r.codes||{})[mc]||'').trim()));
+  const M={pid,source,P,mc,uc,wbs,on:false};M.on=!!(mc&&uc&&mtAutoRows(M).length)&&(source==='baseline'||!S);return M}
+function mtAutoRows(M){if(!M||!M.mc)return [];const wf=new Set(M.wbs);return M.P.rows.filter(r=>wf.has(r.wbs)&&String((r.codes||{})[M.mc]||'').trim())}
+function mtAutoHTML(M,key){
+  if(!M)return '';const P=M.P,ct=P.codeTypes,rows=mtAutoRows(M),mats=[...new Set(rows.map(r=>r.codes[M.mc].trim()))],S=mtSetup(M.pid),ed=canMatKeep(M.pid);
+  const wb=[...new Set(P.rows.map(r=>r.wbs).filter(Boolean))];
+  return `<div class="rdcard mtauto" style="margin-top:10px"><label class="chk"><input type="checkbox" data-mta="${key}|on" ${M.on?'checked':''} ${ed?'':'disabled'}><span><b>${M.source==='baseline'?(S?'Refresh Material Tracking from this baseline':'Also set up Material Tracking from this baseline'):'Also set up Material Tracking from this schedule'}</b></span>
+      <span class="muted small">${M.source==='baseline'?'Material activities and their baseline dates come from this file; actual and forecast dates will come from the weekly updated schedules.':'This project has no Material Tracking yet. Baseline dates come from the original baseline in ProTrackAI where the activity was imported, otherwise from the planned dates in this file.'}${S?' PO numbers, suppliers, remarks and the materials you monitor are kept.':''}</span></label>
+    ${M.on?`<div class="fields" style="margin-top:8px">
+      ${F('Material Name from activity code',`<select data-mta="${key}|mc"><option value="">Choose</option>${ct.map(c=>`<option ${c===M.mc?'selected':''}>${esc(c)}</option>`).join('')}</select>`)}
+      ${F('Unified Activity Name from activity code',`<select data-mta="${key}|uc"><option value="">Choose</option>${ct.map(c=>`<option ${c===M.uc?'selected':''}>${esc(c)}</option>`).join('')}</select>`)}</div>
+      <div class="checks" style="margin-top:6px">${wb.map(w=>`<label class="chk"><input type="checkbox" data-mtaw="${key}" value="${esc(w)}" ${M.wbs.includes(w)?'checked':''}><span>${esc(w)}</span><span class="muted small">${P.rows.filter(r=>r.wbs===w&&String((r.codes||{})[M.mc]||'').trim()).length} with a Material Name</span></label>`).join('')}</div>
+      <p class="small ${rows.length?'':'err'}" style="margin:6px 0 0">${rows.length?`${fmt(rows.length)} material activities, ${mats.length} materials: ${mats.slice(0,8).map(esc).join(', ')}${mats.length>8?' and more':''}. The milestone of each Unified Activity Name is matched from its name; change it later in Material tracking.`:'No activity in the ticked WBS branches carries a Material Name with this activity code.'}</p>`:''}</div>`}
+/* the set-up sent after the import or upload */
+function mtAutoPayload(M,file,hash){
+  const rows=mtAutoRows(M),S=mtSetup(M.pid),map={...((S&&S.stage_map)||{})},I=mtItems(M.pid);
+  rows.forEach(r=>{const u=String(r.codes[M.uc]||'').trim();if(u&&!(u in map))map[u]=mtGuess(u)});
+  const off=new Set(Object.values(I).filter(x=>x.selected===false).map(x=>x.material)),mats=[...new Set(rows.map(r=>r.codes[M.mc].trim()))];
+  const sel=[...new Set([...mats,...Object.values(I).filter(x=>x.selected!==false).map(x=>x.material)])].filter(m=>!off.has(m));
+  const base=id=>M.source==='update'?ACTS.find(a=>a.p===M.pid&&a.id===id):null;
+  return {project_id:M.pid,action:'baseline',mat_code:M.mc,uact_code:M.uc,wbs_filter:M.wbs,stage_map:map,file_name:file,file_hash:hash||null,data_date:M.P.dataDate||null,
+    note:M.source==='update'?'Set up from the weekly updated schedule':'From the original baseline import',
+    rows:rows.map(r=>{const a=base(r.id);return {id:r.id,name:r.name,wbs:r.wbs,wbs_leaf:r.wbsLeaf||'',material:r.codes[M.mc].trim(),uact:String(r.codes[M.uc]||'').trim(),
+      bs:(a&&a.bs)||r.bs,bf:(a&&a.bf)||r.bf,es:M.source==='baseline'?r.es:null,ef:M.source==='baseline'?r.ef:null,as:M.source==='baseline'?r.as:null,af:M.source==='baseline'?r.af:null,pct:M.source==='baseline'?r.pct:0,ms:r.ms}}),select:sel}}
+async function mtAutoRun(M,file,hash){if(!M||!M.on)return null;if(!M.mc||!M.uc||M.mc===M.uc)return {err:'choose two different activity codes for Material Tracking'};
+  if(!mtAutoRows(M).length)return {err:'no material activities in the ticked WBS branches'};
+  const r=await mtSave('setup',mtAutoPayload(M,file,hash));return r?r:{err:mtSave.err}}
+const mtAutoMsg=r=>!r?'':r.err?` · Material Tracking not set up: ${r.err}`:` · Material Tracking: ${r.materials} materials, ${r.monitored} monitored`;
+const mtAutoOf=key=>key==='imp'?(state.imp&&state.imp.mt):(state.sched&&state.sched.mt);
+document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
+  if(t.matches('[data-mta]')){const [key,f]=t.dataset.mta.split('|'),M=mtAutoOf(key);if(!M)return;M[f]=t.type==='checkbox'?t.checked:t.value;key==='imp'?renderImport():render();return}
+  if(t.matches('[data-mtaw]')){const key=t.dataset.mtaw,M=mtAutoOf(key);if(!M)return;M.wbs=[...document.querySelectorAll(`[data-mtaw="${key}"]:checked`)].map(x=>x.value);key==='imp'?renderImport():render();return}});
+
 /* ---------- v3.8: Material Tracking (Materials & Procurement) ----------
    The planning engineer loads the approved baseline schedule (P6 XER) into Material Tracking and chooses the activity
    codes that carry the Material Name and the Unified Activity Name, the WBS branches holding the material activities,
@@ -4824,14 +4872,14 @@ function mtSetupHTML(pid,ps){
   const mats=S?[...new Set(mtActs(pid).map(a=>a.material))].sort():[],I=mtItems(pid),uacts=S?[...new Set(mtActs(pid).map(a=>a.uact).filter(Boolean))].sort((x,y)=>(MT_ORD[(S.stage_map||{})[x]]??99)-(MT_ORD[(S.stage_map||{})[y]]??99)||x.localeCompare(y)):[];
   let body='';
   if(D)body=mtDraftHTML(D);
-  else if(S)body=`<p class="small">Baseline <b>${esc(S.file_name||'—')}</b>${S.data_date?`, data date ${fmtDY(S.data_date)}`:''}. Material Name from the activity code <b>${esc(S.mat_code)}</b>, Unified Activity Name from <b>${esc(S.uact_code)}</b>. WBS: ${(S.wbs_filter||[]).map(esc).join(', ')}. ${mats.length} materials, ${Object.values(I).filter(x=>x.selected!==false).length} monitored.</p>
+  else if(S)body=`<p class="small">Material activities from <b>${esc(S.file_name||'—')}</b>${S.data_date?`, data date ${fmtDY(S.data_date)}`:''}. Material Name from the activity code <b>${esc(S.mat_code)}</b>, Unified Activity Name from <b>${esc(S.uact_code)}</b>. WBS: ${(S.wbs_filter||[]).map(esc).join(', ')}. ${mats.length} materials, ${Object.values(I).filter(x=>x.selected!==false).length} monitored.</p>
     ${ed?`<form id="mtSetForm"><div class="g mtg2"><div><h3>Milestone of each Unified Activity Name</h3><table class="tbl"><thead><tr><th>Unified Activity Name</th><th>Milestone column</th></tr></thead><tbody>
       ${uacts.map(u=>`<tr><td>${esc(u)}</td><td><select data-mtmap="${esc(u)}"><option value="">Not tracked</option>${MT_STAGES.map(([k,l])=>`<option value="${k}" ${(S.stage_map||{})[u]===k?'selected':''}>${esc(l)}</option>`).join('')}</select></td></tr>`).join('')||'<tr><td colspan="2" class="muted">No Unified Activity Name in the baseline.</td></tr>'}</tbody></table></div>
       <div><h3>Materials to monitor</h3><div class="checks mtchecks">${mats.map(m=>chk('mtsel',m,(I[m]||{}).selected!==false,m,`${mtActs(pid).filter(a=>a.material===m).length} activities`)).join('')}</div></div></div>
       <p class="err" id="mtSetErr"></p><div class="actions"><button class="btn primary" type="submit">Save mapping and monitored materials</button></div></form>`:''}`;
-  else body=`<p class="muted small">Not set up yet for ${esc(p.short||pid)}.</p>`;
+  else body=`<p class="small">Not set up yet for ${esc(p.short||pid)}. It is set up from the schedules you already load: tick <b>Also set up Material Tracking</b> when importing the original baseline (Planning &amp; Scheduling → Baselines and P6 import), or with the next weekly updated schedule. Actual and forecast dates always come from the weekly updated schedule.</p>`;
   return `<section class="panel" id="mtSetup"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h2>Set-up${p.short?' · '+esc(p.short):''}</h2>
-      ${ed&&!D?`<label class="btn ${S?'':'primary'}" for="mtFile">${S?'Load a revised baseline (XER)':'Load the approved baseline (XER)'}</label><input id="mtFile" type="file" accept=".xer" hidden>`:''}</div>
+      ${ed&&!D?`<label class="btn sm" for="mtFile" title="Only if the baseline was imported without its activity codes">Load a schedule file here instead</label><input id="mtFile" type="file" accept=".xer" hidden>`:''}</div>
     ${pick}${body}
     ${hist.length?`<h3>History</h3><ul class="audit">${hist.map(a=>`<li><b>${esc(a.field)}</b>${a.material?' · '+esc(a.material):''}${a.field==='Set-up'?'':`: ${esc(a.before||'—')} → ${esc(a.after||'—')}`} <span class="muted small">${esc(a.by_name||'')}, ${esc(tStamp(a.at_time))}</span></li>`).join('')}</ul>`:''}
     ${ed?'':'<p class="small muted">Planning engineers of the project and the Head of Planning and Cost Control keep Material Tracking (Settings → Roles and rights: "Keep material tracking").</p>'}</section>`;
@@ -5207,7 +5255,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.8';
+const APP_VERSION='3.8.1';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
@@ -9341,8 +9389,8 @@ function parseSheet(ab){
 async function handleImportFile(file){
   const box=$('#impBox');box.innerHTML='<p class="muted">Reading the file…</p>';
   try{
-    const ext=file.name.split('.').pop().toLowerCase();let parsed;
-    if(ext==='xer')parsed=parseXER(await file.text());
+    const ext=file.name.split('.').pop().toLowerCase();let parsed,xtxt=null;
+    if(ext==='xer'){xtxt=await file.text();parsed=parseXER(xtxt)}
     else if(ext==='xml')parsed=parsePMXML(await file.text());
     else{await loadLib(LIBS.xlsx);parsed=parseSheet(await file.arrayBuffer())}
     parsed.rows=parsed.rows.filter(r=>r.id&&r.name);
@@ -9351,6 +9399,7 @@ async function handleImportFile(file){
     const wr=(parsed.weightRes||[])[0];
     state.imp={...parsed,file:file.name,lvl:Math.min(maxLvl,maxLvl>=4?4:2),maxLvl,minBH:0,limit:2000,skipDone:true,defDisc:'Civil',
       lvlCls:Math.min(2,maxLvl),wres:wr?wr.name:'',ignorePct:false,brLvl:Math.min(2,maxLvl),branches:null,clsOn:{CON:true,ENG:true,PRC:true}};
+    if(xtxt){try{state.imp.mt=mtAutoInit(parseSchedXER(xtxt),impPid(),'baseline');state.imp.hash=await sha256Hex(xtxt)}catch(e){state.imp.mt=null}}   /* v3.8.1: Material Tracking from this baseline */
     renderImport();
   }catch(e){box.innerHTML=`<p class="err">${esc(e.message||'This file could not be read.')}</p><p class="small muted">Supported: Primavera XER, P6 XML (PMXML), and the Excel template.</p>`}
 }
@@ -9451,7 +9500,7 @@ function renderImport(){
     ${(()=>{const probs=baselineProblems(),set=state.view==='base'?(state.bset||'ORG'):'ORG';
       if(probs.length)return `<div class="warn-box"><b>This file cannot be imported as it is</b>${probs.slice(0,5).map(p=>esc(p.id+': '+p.error)).join('<br>')}${probs.length>5?`<br>and ${probs.length-5} more`:''}. Nothing is imported until every activity is fixed.</div>
         <div class="actions"><button class="btn sm" type="button" data-excdl="imp">Download exception report</button><button class="btn" type="button" data-impcancel>Cancel</button></div>`;
-      return (set==='ORG'?reconHTML('imp',{total:rows.length,bad:0,warn:0}):'')+`<div class="actions"><button class="btn primary" type="button" data-impgo ${rows.length?'':'disabled'}>Import ${fmt(rows.length)} activities</button><button class="btn" type="button" data-impcancel>Cancel</button></div>`})()}</div>`;
+      return (set==='ORG'?reconHTML('imp',{total:rows.length,bad:0,warn:0})+mtAutoHTML(I.mt,'imp'):'')+`<div class="actions"><button class="btn primary" type="button" data-impgo ${rows.length?'':'disabled'}>Import ${fmt(rows.length)} activities</button><button class="btn" type="button" data-impcancel>Cancel</button></div>`})()}</div>`;
 }
 async function runImport(){
   const pid=impPid(),rows=mapRows();if(!rows.length)return;
@@ -9471,7 +9520,8 @@ async function runImport(){
     try{r=await cloudImport('baseline',pid,I,dbRows,o)}catch(e){busyBtns('[data-impgo]',false);toast('Nothing was imported: '+e.message);return}
     dcma();try{await cloudLoadActs();applyMaster();await cloudLoadProjects();await cloudLoadInvoices()}catch(e){}
     if(!r.duplicate)logChange(`Imported ${add.length} baseline activities into ${projById(pid).short} from ${I.file}`);
-    applyMaster();save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render();toast(importDone(r,`${r.upserted??0} activities imported on the server.`));return}
+    const mr=await mtAutoRun(I.mt,I.file,I.hash);
+    applyMaster();save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render();toast(importDone(r,`${r.upserted??0} activities imported on the server.`)+mtAutoMsg(mr));return}
   const b=await localImport('baseline',pid,I,dbRows,o,()=>{
     dcma();
     DB.baseHist=DB.baseHist||{};
@@ -9481,7 +9531,8 @@ async function runImport(){
     if(st)pr.start=st;if(fi)pr.finish=fi;
     logChange(`Imported ${add.length} baseline activities into ${pr.short} from ${I.file}`);
   });
-  if(!b)return;applyMaster();save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render();toast(`${add.length} activities imported, batch ${batchNo(b)}`);
+  if(!b)return;const mr=await mtAutoRun(I.mt,I.file,I.hash);
+  applyMaster();save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render();toast(`${add.length} activities imported, batch ${batchNo(b)}`+mtAutoMsg(mr));
 }
 async function templateXlsx(){
   try{

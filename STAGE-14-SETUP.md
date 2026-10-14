@@ -37,15 +37,14 @@ Material Tracking reads two **activity codes** from the XER. In P6, the material
 
 The code types can have other names; you choose them in Step 4. They must be exported with the XER (P6: Export → XER, with activity codes).
 
-## Step 4: Set it up for one project (planning engineer, 10 minutes)
+## Step 4: Set it up for one project (planning engineer, 5 minutes; from v3.8.1, no extra upload)
 
 | Do | Expect |
 |---|---|
-| **Materials & Procurement → Material tracking**, choose the project in **Set-up** | "Not set up yet" |
-| **Load the approved baseline (XER)** | The file is read: number of activities, the code types picked, the WBS branches, the milestone of each Unified Activity Name, the materials found |
-| Check the two code types, tick the WBS branch(es) with the material activities (for example Procurement) | The Unified Activity Names and materials update |
-| Check each milestone match; untick any material you do not want to monitor | |
-| **Load … activities into Material Tracking** | One row per monitored material, with the nine milestone columns and Delivery Status |
+| **New project:** import the original baseline XER as usual (Planning & Scheduling → Baselines and P6 import → Original baseline) | The preview shows **Also set up Material Tracking from this baseline**, ticked, with the two activity codes and the Procurement branch picked |
+| **Project whose baseline is already loaded:** upload the next weekly updated XER as usual (Baselines → Updated schedule) | The preview shows **Also set up Material Tracking from this schedule**, ticked |
+| Check the two code types and the WBS branch(es), then **Import** / **Save updated schedule** | One step: the import or update, and Material Tracking |
+| **Materials & Procurement → Material tracking** | One row per material; check the milestone of each Unified Activity Name and untick materials you do not monitor in Set-up |
 | Type a PO number, a supplier and remarks in a row, then click elsewhere | "Saved". **History** on the row lists the change |
 
 ## Step 5: Every schedule update (planning engineer)

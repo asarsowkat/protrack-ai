@@ -78,7 +78,7 @@ with sync_playwright() as p:
     # ---- set-up from a baseline XER, as the planning engineer of a project without it
     PID = J("PROJECTS.find(p=>!mtSetup(p.id)&&teamOf(p.id,'plan').length).id"); PL = J(f"teamOf('{PID}','plan')[0].id")
     as_(PL, PID); J("go('mat')"); pg.wait_for_timeout(300)
-    ck('Set-up', 'a project without Material Tracking offers the planning engineer to load the approved baseline', 'Load the approved baseline (XER)' in pg.inner_text('#mtSetup') and J("mtAllRows().length") == 0)
+    ck('Set-up', 'a project without Material Tracking explains it is set up from the original baseline import or the next weekly upload (v3.8.1), with a file load as a fallback', 'Also set up Material Tracking' in pg.inner_text('#mtSetup') and 'Load a schedule file here instead' in pg.inner_text('#mtSetup') and J("mtAllRows().length") == 0)
     MATS = ['GIS Equipment', 'Power Transformer', 'Cable Drum']
     base = xer('2026-01-01', MATS)
     pg.set_input_files('#mtFile', files=[{'name': 'MT_baseline.xer', 'mimeType': 'text/plain', 'buffer': base.encode()}]); pg.wait_for_timeout(700)
