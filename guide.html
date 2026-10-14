@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.6, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.7, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -197,6 +197,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#process">2. How the application works</a>
   <a href="#owners">3. Who owns which number</a>
   <a href="#roles">4. Roles, access and responsibilities</a>
+  <a href="#rights" class="sub">Roles and rights (super admin)</a>
   <a href="#matrix" class="sub">Approval matrix</a>
   <a href="#email" class="sub">Approval email</a>
   <a href="#features">5. Features at a glance</a>
@@ -254,6 +255,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.7</b>
+    <b>Roles and rights</b> (Settings → Roles and rights): the super admin gives or removes seventeen rights for each role, chooses which screens each role sees, and creates custom roles from a built-in one. ·
+    <b>Access for any role</b> (Settings → Users and access): whole regions, chosen projects or All projects, for every role, plus rights given or removed for one person. The server checks the same rights.</div>
   <div class="note"><b>New in version 3.6</b>
     <b>Internal weightage by phase</b> (Baselines and P6 import): seven phases agreed with management, set once per project. ·
     <b>Updated schedule</b>: upload the updated P6 file; ProTrackAI takes the data date, % complete and milestones, and works out client and internal progress by phase. Every progress report uses the internal weightage; invoiceable uses the client weightage. ·
@@ -357,7 +361,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 
 <section id="roles">
   <h2>4. Roles, access and responsibilities</h2>
-  <p>Access is set per person by the super admin. A person sees only the projects or regions attached to their account.</p>
+  <p>Access is set per person by the super admin. A person sees only the projects or regions attached to their account, or every project when the super admin chooses <b>All projects</b>. The table shows each role's rights before anything is changed; section <a href="#rights">Roles and rights</a> explains how the super admin changes them.</p>
   <div class="scroll"><table>
     <thead><tr><th>Role</th><th>Sees</th><th>Responsible for</th><th>Cannot</th></tr></thead>
     <tbody>
@@ -375,7 +379,34 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     </tbody>
   </table></div>
   <p>Reminders for reporting gaps can be sent by the super admin, executive, regional and portfolio managers, and planning engineers.</p>
-  <p>What site engineers and site managers see is set by the super admin in <b>Settings → Role access</b>: which reports they may open, and the tiles and columns of their executive summary. Cost and billing figures are never offered to site roles, and they cannot change their own layout.</p>
+  <p>What site engineers and site managers see is set by the super admin in <b>Settings → Role access</b>: which reports they may open, and the tiles and columns of their executive summary. Cost and billing figures are not offered to site roles unless the super admin gives a site role the right <b>See cost and billing figures</b> in Roles and rights (never to foremen), and they cannot change their own layout.</p>
+
+  <h3 id="rights">Roles and rights (super admin)</h3>
+  <p>Only a super admin changes rights. Everything below is checked again by the server, so hiding a button is never the protection.</p>
+  <p><b>Settings → Roles and rights</b> has five parts:</p>
+  <div class="scroll"><table><thead><tr><th>Part</th><th>What it does</th></tr></thead><tbody>
+    <tr><td><b>Rights by role</b></td><td>Seventeen rights in four groups: daily reports, planning, cost and projects. Tick a right to give it to everyone with that role; untick to remove it. A dot ● marks a setting changed from the default; setting it back to the default removes the dot.</td></tr>
+    <tr><td><b>Screens by role</b></td><td>Which of the 21 menu screens each role sees. A hidden screen leaves the menu, and anyone who opens it directly is sent to an allowed screen. Showing a screen gives no right to change anything on it.</td></tr>
+    <tr><td><b>Custom roles</b></td><td>Name a role and choose the built-in role to start from (any role except super admin). It starts with that role's current rights and screens and gets its own column. Its people keep every built-in rule of that role, for example the approval route of a planning engineer. A custom role can be renamed, and switched off once nobody has it.</td></tr>
+    <tr><td><b>People with their own exceptions</b></td><td>Everyone with a right given or removed just for them.</td></tr>
+    <tr><td><b>History</b></td><td>Every change of a right, a screen or a role, with who made it and when. It cannot be edited or deleted.</td></tr>
+  </tbody></table></div>
+  <p><b>Settings → Users and access</b>, for each person:</p>
+  <ul>
+    <li><b>Role:</b> the built-in roles and the custom roles.</li>
+    <li><b>Access:</b> <i>Chosen regions and projects</i> or <i>All projects</i>, for every role except super admin and executive manager, who already see everything. A region includes every project added to it later.</li>
+    <li><b>Rights for this person only:</b> each right can be <i>As the role</i>, <i>Allow</i> or <i>Remove</i>. The person's choice wins over the role's setting and is saved as soon as it is chosen.</li>
+  </ul>
+  <p><b>How a right is decided</b>, in this order:</p>
+  <ol>
+    <li>A super admin always has every right.</li>
+    <li>A foreman never sees cost and billing figures.</li>
+    <li>The person's own exception, if any.</li>
+    <li>A position that comes with the right: the Head of Planning and Cost Control, the costing coordinator, or the regional report approver set in the Approval matrix. A role's setting never removes it; a person's exception can.</li>
+    <li>The role's setting, if the super admin changed it.</li>
+    <li>Otherwise, the role's default rule (the table above).</li>
+  </ol>
+  <p><b>Rules that never change:</b> super admins cannot be limited; foremen never get cost and billing figures; Settings is for super admins only; lifecycle stages 1 to 5 stay with the Head of Planning and Cost Control.</p>
 
   <h3 id="matrix">Approval matrix</h3>
   <p>The super admin decides, project by project, who reviews and who approves. In <b>Settings → Approval matrix</b> each project lists its foremen and site engineers, with a choice beside each name:</p>
@@ -722,7 +753,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Settings → Email:</b> choose who receives the approval summary.</li>
     <li><b>Settings → System, once after installing version 2.5:</b> move anything people entered in their browsers to the server (see <a href="#move">Moving browser data to the server</a>), and download a server backup every week.</li>
     <li><b>Settings → System:</b> check the version, and choose the date basis: demo (fixed 22 Sept 2026) for demonstrations, live (today) for real work. Each keeps its own data in the browser. Once real data is on the server, set <code>DATE_MODE: 'live'</code> in config.js so nobody can switch it by mistake.</li>
-    <li><b>Settings → Role access:</b> for site engineers and site managers, tick the reports they may open and set the tiles, breakdown and columns of their executive summary. Cost and billing are never offered.</li>
+    <li><b>Settings → Role access:</b> for site engineers and site managers, tick the reports they may open and set the tiles, breakdown and columns of their executive summary. Cost and billing are not offered here; they follow the right <b>See cost and billing figures</b> in Roles and rights.</li>
     <li><b>Hand purchase orders to costing.</b> Each project's costing engineer keeps its subcontractor POs on the Baselines page. Settings → Subcontractors still shows every company and PO across all projects, for review or correction.</li>
     <li><b>Hand over</b> to planning and costing. Afterwards: leavers set inactive, pay rises as new dated rates, wrong baselines undone, change log reviewed.</li>
   </ol>

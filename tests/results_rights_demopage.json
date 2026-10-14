@@ -1,0 +1,362 @@
+{
+ "suite": "rights_demo",
+ "page": "/home/claude/p15/site/demo.html",
+ "passed": 59,
+ "total": 59,
+ "checks": [
+  {
+   "area": "Roles and rights",
+   "check": "Administration has a Roles and rights tab, also in the side menu",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Roles and rights",
+   "check": "seventeen rights in four groups (daily reports, planning, cost, projects)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Roles and rights",
+   "check": "a column for each role except super admin, plus the demo custom role",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Roles and rights",
+   "check": "the ticks show today's rights: planning engineers load baselines; costing engineers and project managers load costing files; site engineers and foremen prepare daily reports",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Roles and rights",
+   "check": "foremen and cost figures cannot be ticked",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Roles and rights",
+   "check": "rights that come with a position say so (Head, coordinator, regional approver)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Roles and rights",
+   "check": "nothing is marked as changed to start with",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screens by role",
+   "check": "twenty-one menu screens per role; Administration is not one of them",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screens by role",
+   "check": "the ticks show today's menus (a foreman sees Daily reports, not the Executive summary; a project manager sees the cost dashboard)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "before: a costing engineer prepares monthly cost reports",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "unticking a right marks it changed (\u25cf)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "...the costing engineer can no longer prepare one",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "...and saving one is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "...the costing coordinator keeps it through the position",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "ticking it again goes back to the default and removes the setting",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "a right given to project managers: they load baselines and see the weekly update",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "...and back",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "cost figures given to site engineers: the cost layout and the Contract row of the rack",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights by role",
+   "check": "...and taken away again",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules that never change",
+   "check": "cost figures cannot be given to foremen (refused even when ticked by script)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screens by role",
+   "check": "a screen unticked for project managers leaves their menu",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screens by role",
+   "check": "...opening it directly sends them back to an allowed screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screens by role",
+   "check": "...ticking it again removes the setting",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screens by role",
+   "check": "daily reports and the New report screen given to site managers: the menu shows it and drafts can be edited",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screens by role",
+   "check": "...a screen shown without the right still needs the right (New report needs Prepare daily reports)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Screens by role",
+   "check": "Administration cannot be given to other roles",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Custom roles",
+   "check": "a custom role is created from Costing Engineer and gets its own column in both tables",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Custom roles",
+   "check": "...it starts with the rights of the role it is made from",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Custom roles",
+   "check": "names are unique whatever the capitals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Custom roles",
+   "check": "a custom role cannot be made from the super admin",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Users and access",
+   "check": "the role list includes the custom roles",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Users and access",
+   "check": "a person is given the custom role; the users list shows its name",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Custom roles",
+   "check": "...the person gets the custom role's rights and keeps the built-in rules of a costing engineer",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Custom roles",
+   "check": "a role still given to someone cannot be switched off",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Custom roles",
+   "check": "it can be renamed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Custom roles",
+   "check": "once nobody has it, it can be switched off; its column goes",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Custom roles",
+   "check": "the demo section managers have the Planning Section Manager role and still approve their region",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Users and access",
+   "check": "the access choice is offered for a planning engineer, with regions and projects",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Users and access",
+   "check": "All projects hides the region and project lists",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Users and access",
+   "check": "the users list says All projects",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Users and access",
+   "check": "the planning engineer now has every project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Users and access",
+   "check": "a project manager can be given a whole region (before: projects only)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Users and access",
+   "check": "a site engineer needs at least one project, one region or All projects",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Users and access",
+   "check": "super admins and executive managers see everything without an access choice",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights for one person",
+   "check": "the person form lists every right with \"As the role\", Allow and Remove",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights for one person",
+   "check": "Remove is saved at once",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights for one person",
+   "check": "...the costing engineer cannot prepare the cost report; the exception wins over the role",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights for one person",
+   "check": "...and is listed under People with their own exceptions",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights for one person",
+   "check": "back to \"As the role\" removes the exception",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules that never change",
+   "check": "a foreman cannot be given cost figures, even by a person exception",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules that never change",
+   "check": "...the foreman's cost figures choice is locked in the form",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules that never change",
+   "check": "a super admin cannot be limited",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules that never change",
+   "check": "only a super admin changes rights",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules that never change",
+   "check": "Administration is never in a project manager's menu",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "History",
+   "check": "every change is in the history with who made it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "History",
+   "check": "the settings are kept after a reload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "the Roles and rights tab fits the phone width (tables scroll inside their box)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "the person form with its rights fits too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

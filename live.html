@@ -422,6 +422,7 @@ label.btn{display:inline-block}
 .rdtabs{margin:12px 0 8px;position:sticky;top:0;background:var(--surface);z-index:2;padding:6px 0}
 .rdgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}.rdgrid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:12px}
 #sheet .rdcard{min-width:0;overflow-x:auto}
+.rmatrix th.rcol{white-space:normal;min-width:74px;font-size:12px;vertical-align:bottom}.rmatrix td.n{text-align:center}.rmatrix tr.rgrp td{background:var(--surface-2,rgba(0,0,0,.03));padding-top:10px}.rmatrix td.rset{background:rgba(23,99,216,.07)}.rdot{color:var(--accent,#1763D8);font-size:10px;margin-left:3px;vertical-align:top}.rmatrix td:first-child,.rmatrix th:first-child{position:sticky;left:0;background:var(--surface);z-index:1;min-width:210px;max-width:320px}.rmatrix tr.rgrp td{position:static}.rsec{margin:0 0 26px}.rsec h2{font-size:16px;margin:0}.rsec+.rsec{border-top:1px solid var(--line);padding-top:16px}@media (max-width:640px){.rmatrix td:first-child,.rmatrix th:first-child{min-width:140px;max-width:170px;font-size:12px}.rmatrix th.rcol{min-width:64px;font-size:11px}}
 .rdsched{border:1px solid var(--line);border-inline-start:4px solid var(--green);border-radius:10px;padding:10px 14px;margin:8px 0 4px;background:var(--surface)}.rdsched.warn{border-inline-start-color:var(--amber);background:color-mix(in srgb,var(--amber) 8%,var(--surface))}.rdsched .field{margin-top:6px}
 .rdcard{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface)}.rdcard h3{margin:0 0 8px;font-size:14px}
 .rdcard textarea{width:100%;box-sizing:border-box}.fields1{grid-template-columns:1fr}
@@ -748,7 +749,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.6</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.7</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1264,6 +1265,7 @@ async function cloudLoadDirectory(){
   DB.master.users=(rows||[]).map(u=>({id:u.id,name:u.name||u.email||'Unnamed',email:u.email||'',title:u.title||ROLES[u.role]||'',
     role:u.role||'ro',active:u.active!==false,projects:u.projects||[],regions:u.regions||[],cloud:true}));
   if(CLOUD_ME&&!DB.master.users.some(u=>u.id===CLOUD_ME.id))DB.master.users.push(CLOUD_ME);
+  await cloudLoadPeopleAccess();
 }
 async function cloudLoadActs(){
   const rows=await selAll('activities','*',null,['project_id','id']);
@@ -1308,7 +1310,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDocs();
+    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDocs();await cloudLoadRights();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -1389,12 +1391,12 @@ async function cloudLoadUpdates(){
 }
 
 /* People and their access, on the server (super admin). Only people whose details changed are sent. */
-const personKey=u=>JSON.stringify([u.name,(u.email||'').toLowerCase(),u.title||'',u.role,u.active!==false,[...(u.projects||[])].sort(),[...(u.regions||[])].sort()]);
+const personKey=u=>JSON.stringify([u.name,(u.email||'').toLowerCase(),u.title||'',u.role,u.active!==false,[...(u.projects||[])].sort(),[...(u.regions||[])].sort(),u.crole||null,!!u.allProjects]);
 async function cloudSavePeople(before){
   const changed=DB.master.users.filter(u=>!before||before.get(u.id)!==personKey(u));
   let failure=null;
   for(const u of changed){
-    try{await rpc('admin_save_person',{p:{email:u.email,name:u.name,title:u.title||'',role:u.role,active:u.active!==false,projects:u.projects||[],regions:u.regions||[]}})}
+    try{await rpc('admin_save_person',{p:{email:u.email,name:u.name,title:u.title||'',role:u.role,active:u.active!==false,projects:u.projects||[],regions:u.regions||[],custom_role:u.crole||null,all_projects:!!u.allProjects}})}
     catch(e){failure=failure||e}
   }
   try{await cloudLoadDirectory();applyMaster();save()}catch(e){}
@@ -1636,7 +1638,7 @@ const pccOf=id=>((DB.pcc||{})[id]||[]);
 const isHead=u=>{u=u||me();return !!u&&u.active!==false&&pccOf(u.id).includes('head')};
 const isCoord=u=>{u=u||me();return !!u&&u.active!==false&&pccOf(u.id).includes('coordinator')};
 const pccHeads=()=>DB.master.users.filter(u=>isHead(u));
-const lcBoss=(pid,n)=>state.role==='sa'||(n<=5?isHead()&&accessIds().includes(pid):state.role==='pm'&&accessIds().includes(pid));
+const lcBoss=(pid,n)=>state.role==='sa'||(n<=5?isHead()&&accessIds().includes(pid):can('lifecycle.approve')&&accessIds().includes(pid));
 const lcBossText=n=>n<=5?'the Head of Planning and Cost Control or a super admin':'the project manager or a super admin';
 const lcEditor=(pid,s)=>lcBoss(pid,s.stage_no)||(!!s.owner&&s.owner===me().id);
 const lcApproverText=(pid,n)=>{
@@ -1978,8 +1980,8 @@ function renderCdash(){
    choose another. No two live projects ever hold the same PE number; a cancelled project releases its
    number for another L1 project, and the history keeps both. On the server, tender_act enforces the
    same rules (schema-update-v7.sql). */
-const canRegister=()=>state.role==='sa'||isHead()||isCoord();
-const canTenderView=()=>PLAN_ROLES.includes(state.role)||isHead()||isCoord();
+const canRegister=()=>can('tender.register',isHead()||isCoord());
+const canTenderView=()=>PLAN_ROLES.includes(state.role)||isHead()||isCoord()||canRegister();
 const PE_RE=/^PE\s*-?\s*[0-9]{1,6}$/;
 function peCanon(t){
   const x=String(t||'').trim().toUpperCase();if(!x)return null;
@@ -2284,13 +2286,13 @@ function lcUpgrade28(){
    revision. On the server, release_act and log_import enforce the same rules (schema-update-v9.sql). */
 const REL_KIND={planning:'Internal report',cost:'Monthly cost report',client:'Client report'};
 const SUPP_CATS=['Project execution','Under estimate','External factor','Saudization','Finance','Claims','Change order'];
-const canPrepRel=k=>state.role==='sa'||(k==='planning'||k==='client'?state.role==='plan':(state.role==='costing'||isCoord()));
-const canApproveRel=()=>state.role==='sa'||isHead();
-const relStaff=k=>canPrepRel(k)||canApproveRel();
+const canPrepRel=k=>k==='planning'||k==='client'?can('report.internal.prepare'):can('report.cost.prepare',isCoord());
+const canApproveRel=()=>can('report.cost.approve',isHead());   /* the monthly cost report */
+const relStaff=k=>canPrepRel(k)||(k==='cost'?canApproveRel():can('report.internal.approve',isHead()));
 const canRelView=()=>relStaff('planning')||relStaff('cost')||isRegionPlanner();
 const canXr=()=>canExec()||canRelView();
 const canLogsView=()=>rasaMoneyOk()&&!['foreman'].includes(state.role);
-const canLogUpload=()=>state.role==='sa'||state.role==='costing'||isCoord();
+const canLogUpload=()=>can('logs.upload',isCoord());
 const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const curMonth=()=>TODAY.slice(0,7);
 function isoWeekOf(iso){const d=new Date(iso+'T00:00:00Z'),day=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-day+3);const y=d.getUTCFullYear(),j=new Date(Date.UTC(y,0,4));
@@ -2809,8 +2811,8 @@ const ISS_FIELDS=[['data_date','Data date','date'],['owner','Issue owner','owner
   ['priority_internal','Priority (internal)','prio'],['action_by','Action by',''],['planned_target','Planned target','date'],['forecast_target','Forecast / expected target','date'],
   ['remarks','Remarks','long'],['schedule_impact','Schedule impact',''],['cost_impact','Cost impact','']];
 const canIssView=()=>state.role!=='foreman'&&(!ROLE_VIEWS[state.role]||ROLE_VIEWS[state.role].includes('iss'));
-const canIssEdit=pid=>accessIds().includes(pid)&&(state.role==='sa'||isHead()||['plan','costing'].includes(state.role));
-const canIssReview=()=>state.role==='sa'||isHead();
+const canIssEdit=pid=>accessIds().includes(pid)&&can('issues.keep',isHead());
+const canIssReview=()=>can('issues.review',isHead());
 const issImpact=t=>({'extremely high':'Extremely High','very high':'Extremely High',high:'High',medium:'Medium',low:'Low'})[String(t||'').trim().toLowerCase()]||null;
 const issPrio=t=>['A','B','C'].includes(String(t||'').trim().toUpperCase())?String(t).trim().toUpperCase():null;
 const issRank=i=>({'Extremely High':0,High:1,Medium:2,Low:3})[i]??4;
@@ -3513,8 +3515,8 @@ const docIco=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const docDefOf=k=>{const d=DOC_DEF.find(x=>x[0]===k);return d?{key:d[0],title:d[1],label:d[2],icon:d[3],shade:d[4],period:d[5],items:d[6],row:({C:'contract',P:'planning',K:'cost'})[k[0]]}:null};
 const docRowOfKey=(pid,k)=>{const b=(DB.docBoxes||[]).find(x=>x.project_id===pid&&x.box_key===k);return b?b.row_key:(docDefOf(k)||{}).row||null};
 /* rights, as on the server (pt_doc_can) */
-const docCanRead=row=>row==='planning'?state.role!=='foreman':!['foreman','eng','sm'].includes(state.role);
-const docCanKeep=row=>state.role==='sa'||isHead()||(row==='planning'&&state.role==='plan')||(row!=='planning'&&state.role==='costing');
+const docCanRead=row=>docCanKeep(row)||(row==='planning'?state.role!=='foreman':can('money.view'));
+const docCanKeep=row=>['contract','planning','cost'].includes(row)&&can('docs.'+row,isHead());
 const canDocsView=()=>state.role!=='foreman'&&(!ROLE_VIEWS[state.role]||ROLE_VIEWS[state.role].includes('docs'));
 function docBoxes(pid,row){
   const saved=(DB.docBoxes||[]).filter(b=>b.project_id===pid);
@@ -3845,8 +3847,9 @@ const RD_IN=[...RD_MS.flatMap(g=>g[1].map(x=>x[0])),'sub_project_text','tcc_rece
 const relSettings=()=>DB.relSettings||{pm_review:false};
 const relApproversOf=rg=>(DB.relApprovers||[]).filter(a=>a.region_id===rg).map(a=>userById(a.user_id)).filter(Boolean);
 const isRegionPlanner=()=>(DB.relApprovers||[]).some(a=>a.user_id===me().id);
-function relCanApprove(pid,k){if(state.role==='sa'||isHead())return true;if(k!=='planning'&&k!=='client')return false;const p=projById(pid);
-  return !!p&&accessIds().includes(pid)&&(DB.relApprovers||[]).some(a=>a.user_id===me().id&&a.region_id===p.region)}
+function relCanApprove(pid,k){if(state.role==='sa')return true;if(k!=='planning'&&k!=='client')return canApproveRel();
+  const p=projById(pid),hd=isHead(),acc=!!p&&accessIds().includes(pid),reg=acc&&(DB.relApprovers||[]).some(a=>a.user_id===me().id&&a.region_id===p.region);
+  return can('report.internal.approve',hd||reg)&&(hd||acc)}
 const relCanReview=r=>!!r&&r.kind==='planning'&&relSettings().pm_review&&r.status==='Submitted'&&!r.reviewed_by&&(state.role==='sa'||(state.role==='pm'&&accessIds().includes(r.project_id)))&&r.submitted_by!==me().id;
 const relCanReturn=r=>!!r&&r.status==='Submitted'&&(relCanApprove(r.project_id,r.kind)||(r.kind==='planning'&&relSettings().pm_review&&state.role==='pm'&&accessIds().includes(r.project_id)&&!r.reviewed_by));
 const relApproverText=(pid,k)=>{if(k==='cost')return 'Head of Planning and Cost Control';const p=projById(pid)||{},A=relApproversOf(p.region);return A.length?A.map(u=>u.name).join(', ')+' (planning section manager)':'Head of Planning and Cost Control (no planning section manager named for '+(regName(p)||'the region')+')'};
@@ -4468,6 +4471,163 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-clexp]');i
 
 /* ---------- demo: phase weightage and an updated schedule for two sample projects ---------- */
 const DEMO_WBS={GEN:'PROJECT PREPARATION',DES:'ENGINEERING & DESIGN',MAT:'EQUIPMENT & MATERIAL',CON:'CONSTRUCTION',INS:'INSTALLATION',TC:'TESTING & COMMISSIONING',CLO:'PROJECT CLOSE OUT'};
+/* ---------- v3.7: roles, rights and access, controlled by the super admin ----------
+   Every governed action is a right. Each built-in role has today's rights by default; the super admin can give or
+   remove a right for a role (built-in or custom) or for one person, choose which screens each role sees, give any
+   person all projects or whole regions, and create roles from a template. Super admins always keep every right;
+   foremen never see cost figures. The order of a check: super admin → foreman and cost figures → the person's
+   exception → a position (Head of Planning and Cost Control, costing coordinator, regional report approver) → the
+   role's setting → today's rule for the role. The server (schema-update-v16.sql: pt_right, rights_save) checks the
+   same rights; hiding a button is never the protection. */
+const RIGHTS=[
+  ['dpr.create','Prepare daily reports','Daily reports',['eng','foreman']],
+  ['dpr.approve','Review and approve any daily report of the project (as a project manager)','Daily reports',['pm']],
+  ['planning.manage','Load baselines, weekly progress, updated schedules and the internal weightage','Planning',['plan']],
+  ['report.internal.prepare','Prepare internal and client reports','Planning',['plan']],
+  ['report.internal.approve','Approve internal and client reports (of projects in access)','Planning',[]],
+  ['costing.manage','Load costing files and invoice registers','Cost',['costing','pm']],
+  ['money.view','See cost and billing figures','Cost',['exec','rm','pf','plan','costing','pm','ro']],
+  ['report.cost.prepare','Prepare monthly cost reports','Cost',['costing']],
+  ['report.cost.approve','Approve monthly cost reports','Cost',[]],
+  ['logs.upload','Upload change order, claim and budget supplement logs','Cost',['costing']],
+  ['issues.keep','Keep the issue register','Projects',['plan','costing']],
+  ['issues.review','Mark issues reviewed','Projects',[]],
+  ['docs.contract','Keep the Contract & Commercial row of the document rack','Projects',['costing']],
+  ['docs.planning','Keep the Planning & Scheduling row of the document rack','Projects',['plan']],
+  ['docs.cost','Keep the Cost Control & Costing row of the document rack','Projects',['costing']],
+  ['tender.register','Register Tender L1 projects and their details','Projects',[]],
+  ['lifecycle.approve','Approve lifecycle stages 6 to 12 (as a project manager)','Projects',['pm']]];
+/* what comes with a position, shown beside the right in the tables */
+const RIGHT_POS={'report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
+  'report.cost.approve':'Head of Planning and Cost Control','logs.upload':'costing coordinator','issues.keep':'Head of Planning and Cost Control',
+  'issues.review':'Head of Planning and Cost Control','docs.contract':'Head of Planning and Cost Control','docs.planning':'Head of Planning and Cost Control',
+  'docs.cost':'Head of Planning and Cost Control','tender.register':'Head of Planning and Cost Control; costing coordinator'};
+const RIGHT_N=Object.fromEntries(RIGHTS.map(r=>[r[0],r[1]]));
+const SCREENS=['xr','exec','proj','tender','iss','docs','act','rel','logs','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf'];
+const RIGHT_ROLES=['exec','rm','pf','plan','costing','pm','sm','eng','foreman','ro'];
+const rightsDB=()=>DB.rights||(DB.rights={roles:[],role:{},user:{},screen:{},audit:[]});
+const appRoles=()=>rightsDB().roles||[];
+const appRole=k=>appRoles().find(r=>r.key===k)||null;
+/* a person's custom role counts while it is switched on and made from their role */
+const cRoleOf=u=>{const r=u&&u.crole?appRole(u.crole):null;return r&&r.active!==false&&r.base_role===u.role?r:null};
+const roleKeyOf=u=>u?(cRoleOf(u)?u.crole:u.role):null;
+const roleName=u=>u?(cRoleOf(u)?cRoleOf(u).name:(ROLES[u.role]||u.role)):'';
+const roleKeyName=k=>appRole(k)?appRole(k).name:(ROLES[k]||k);
+const rightRoleDef=(base,k)=>base==='sa'||((RIGHTS.find(r=>r[0]===k)||[0,0,0,[]])[3]).includes(base);
+/* the right of a person; pos: they hold a position that comes with it */
+function rightOf(k,u,pos){u=u||me();if(!u)return false;if(u.role==='sa')return true;if(k==='money.view'&&u.role==='foreman')return false;
+  const R=rightsDB(),uo=((R.user||{})[u.id]||{})[k];if(uo!==undefined)return !!uo;if(pos)return true;
+  const ro=((R.role||{})[roleKeyOf(u)]||{})[k];if(ro!==undefined)return !!ro;return rightRoleDef(u.role,k)}
+const can=(k,pos,u)=>rightOf(k,u,pos);
+/* the setting shown for a role: its own setting if any, else today's rule (custom roles: the role they are made from) */
+function roleRight(rk,k){const o=((rightsDB().role||{})[rk]||{})[k];const base=appRole(rk)?appRole(rk).base_role:rk;
+  if(k==='money.view'&&base==='foreman')return {v:false,set:false,fixed:true};if(o!==undefined)return {v:!!o,set:true};return {v:rightRoleDef(base,k),set:false}}
+const screenOv=(v,u)=>{u=u||me();if(!u||u.role==='sa')return undefined;const o=((rightsDB().screen||{})[roleKeyOf(u)]||{})[v];return o===undefined?undefined:!!o};
+/* the screens a person of a role sees by default (today's rules, for that role and its rights) */
+function screenDefault(v,rk){const base=appRole(rk)?appRole(rk).base_role:rk,probe={id:'__probe__',name:'',title:'',role:base,crole:appRole(rk)?rk:null,regions:[],projects:[],active:true};
+  const ks=state.role,kc=CLOUD_ME;try{CLOUD_ME=probe;state.role=base;return !!navDefault(v)}catch(e){return false}finally{CLOUD_ME=kc;state.role=ks}}
+
+/* ---------- saving (super admin): on the server through rights_save, or in this browser ---------- */
+function rightsLocal(p){
+  const fail=t=>{throw new Error(t)},R=rightsDB(),a=p.action,log=(action,target,k,val)=>{R.audit=R.audit||[];R.audit.push({id:R.audit.length+1,action,target,right_key:k||null,value:val,note:p.note||null,by_name:me().name,at_time:new Date().toISOString()})};
+  if(state.role!=='sa')fail('Only a super admin changes roles, rights and screens');
+  if(!['role_right','user_right','screen','role_create','role_update'].includes(a))fail('Unknown action '+a);
+  let base=null;
+  if(a==='role_right'||a==='screen'){if(!p.role_key||p.role_key==='sa')fail('A super admin always has every right and screen');if(!RIGHT_ROLES.includes(p.role_key)&&!appRole(p.role_key))fail('Unknown role '+p.role_key);base=appRole(p.role_key)?appRole(p.role_key).base_role:p.role_key}
+  if(a==='role_right'){if(!RIGHT_N[p.right_key])fail('Unknown right '+p.right_key);if(p.allow===true&&p.right_key==='money.view'&&base==='foreman')fail('Foremen never see cost and billing figures');
+    R.role[p.role_key]=R.role[p.role_key]||{};if(p.allow==null)delete R.role[p.role_key][p.right_key];else R.role[p.role_key][p.right_key]=!!p.allow;log('Role right',p.role_key,p.right_key,p.allow==null?'default':String(!!p.allow))}
+  else if(a==='user_right'){const u=userById(p.user_id);if(!u||u.active===false)fail('Choose an active person');if(u.role==='sa')fail('A super admin always has every right');if(!RIGHT_N[p.right_key])fail('Unknown right '+p.right_key);
+    if(p.allow===true&&p.right_key==='money.view'&&u.role==='foreman')fail('Foremen never see cost and billing figures');
+    R.user[u.id]=R.user[u.id]||{};if(p.allow==null)delete R.user[u.id][p.right_key];else R.user[u.id][p.right_key]=!!p.allow;if(!Object.keys(R.user[u.id]).length)delete R.user[u.id];
+    log('Person exception',u.name,p.right_key,p.allow==null?'default':String(!!p.allow))}
+  else if(a==='screen'){if(!SCREENS.includes(p.view_key))fail('Unknown screen '+p.view_key);R.screen[p.role_key]=R.screen[p.role_key]||{};if(p.visible==null)delete R.screen[p.role_key][p.view_key];else R.screen[p.role_key][p.view_key]=!!p.visible;log('Screen',p.role_key,p.view_key,p.visible==null?'default':String(!!p.visible))}
+  else if(a==='role_create'){const nm=String(p.name||'').trim(),b=p.base_role;if(!RIGHT_ROLES.includes(b))fail('Choose the role to start from (any role except super admin)');if(nm.length<2||nm.length>60)fail('Give the role a name of 2 to 60 characters');
+    if(appRoles().some(r=>r.name.trim().toLowerCase()===nm.toLowerCase()))fail(`A role called ${nm} already exists`);
+    let k='c_'+nm.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,30);if(k.length<4)k='c_role';let n=1,t=k;while(appRole(t)){n++;t=k+'_'+n}
+    const r={key:t,name:nm,base_role:b,active:true,created_at:new Date().toISOString()};R.roles.push(r);R.role[t]={...(R.role[b]||{})};R.screen[t]={...(R.screen[b]||{})};log('Role created',nm,null,'from '+b);save();return r}
+  else if(a==='role_update'){const r=appRole(p.key);if(!r)fail('Unknown role '+p.key);const nm=String(p.name||'').trim();
+    if(nm&&(nm.length<2||nm.length>60))fail('Give the role a name of 2 to 60 characters');if(nm&&appRoles().some(x=>x.key!==r.key&&x.name.trim().toLowerCase()===nm.toLowerCase()))fail(`A role called ${nm} already exists`);
+    if(p.active===false&&DB.master.users.some(u=>u.crole===r.key&&u.active!==false))fail('People still have this role. Give them another role first');
+    if(nm)r.name=nm;if(p.active!=null)r.active=!!p.active;log('Role changed',r.key,null,[nm,p.active!=null?'active='+p.active:''].filter(Boolean).join(' '));save();return r}
+  save();return {ok:true};
+}
+async function rightsSave(p){rightsSave.err='';
+  if(CLOUD_ME){try{const r=await rpc('rights_save',{p});await cloudLoadRights();save();return r||{ok:true}}catch(e){rightsSave.err=srvMsg(e)+(/rights_save|does not exist/i.test(srvMsg(e))?' (the server needs the v16 database update, see STAGE-13-SETUP)':'');toast('Not saved: '+rightsSave.err);await cloudLoadRights();return null}}
+  try{return rightsLocal(p)}catch(e){rightsSave.err=e.message;toast(e.message);return null}}
+async function cloudLoadPeopleAccess(){
+  try{const pa=await rpc('people_access');(pa||[]).forEach(x=>{const u=userById(x.id);if(u){u.crole=x.custom_role||null;u.allProjects=!!x.all_projects}
+    if(CLOUD_ME&&CLOUD_ME.id===x.id){CLOUD_ME.crole=x.custom_role||null;CLOUD_ME.allProjects=!!x.all_projects}})}catch(e){}}
+async function cloudLoadRights(){
+  try{const [roles,rr,sr]=await Promise.all([selAll('app_roles','*',null,['key']),selAll('role_rights','*',null,['role_key','right_key']),selAll('screen_rights','*',null,['role_key','view_key'])]);
+    let ur=[];try{ur=await selAll('user_rights','*',null,['user_id','right_key'])}catch(e){}
+    let au=[];if(CLOUD_ME&&CLOUD_ME.role==='sa'){try{au=await selAll('rights_audit','*',null,['id'])}catch(e){}}
+    const R={roles,role:{},user:{},screen:{},audit:au};rr.forEach(x=>{(R.role[x.role_key]=R.role[x.role_key]||{})[x.right_key]=x.allow});ur.forEach(x=>{(R.user[x.user_id]=R.user[x.user_id]||{})[x.right_key]=x.allow});
+    sr.forEach(x=>{(R.screen[x.role_key]=R.screen[x.role_key]||{})[x.view_key]=x.visible});DB.rights=R;DB.rightsMissing=false;await cloudLoadPeopleAccess()}
+  catch(e){DB.rights={roles:[],role:{},user:{},screen:{},audit:[]};DB.rightsMissing=srvMsg(e)}}
+
+/* ---------- Administration → Roles and rights ---------- */
+function rightsAdminHTML(){
+  const R=rightsDB(),cols=[...RIGHT_ROLES,...appRoles().filter(r=>r.active!==false).map(r=>r.key)],L=T[state.lang],groups=[...new Set(RIGHTS.map(r=>r[2]))];
+  const head=`<tr><th>${''}</th>${cols.map(c=>`<th class="n rcol"${appRole(c)?` title="Custom role, made from ${esc(ROLES[appRole(c).base_role])}"`:''}>${esc(roleKeyName(c))}${appRole(c)?'<span class="t2">custom</span>':''}</th>`).join('')}</tr>`;
+  const cell=(rk,k)=>{const x=roleRight(rk,k);return `<td class="n${x.set?' rset':''}"><input type="checkbox" data-rr="${esc(rk)}|${esc(k)}" ${x.v?'checked':''} ${x.fixed?'disabled title="Foremen never see cost and billing figures"':''} aria-label="${esc(roleKeyName(rk))}: ${esc(RIGHT_N[k])}">${x.set?'<span class="rdot" title="Changed from the default">●</span>':''}</td>`};
+  const scell=(rk,v)=>{const o=((R.screen||{})[rk]||{})[v],d=screenDefault(v,rk),on=o!==undefined?!!o:d;
+    return `<td class="n${o!==undefined?' rset':''}"><input type="checkbox" data-sr="${esc(rk)}|${esc(v)}" ${on?'checked':''} aria-label="${esc(roleKeyName(rk))}: ${esc(L[v]||v)}">${o!==undefined?'<span class="rdot" title="Changed from the default">●</span>':''}</td>`};
+  const ex=DB.master.users.filter(u=>Object.keys((R.user||{})[u.id]||{}).length);
+  return `${CLOUD_ME&&DB.rightsMissing?`<div class="warn-box" style="margin-bottom:12px">Roles and rights need the v16 database update (see STAGE-13-SETUP). Until then every role keeps its default rights. <span class="small">${esc(DB.rightsMissing)}</span></div>`:''}
+    <section class="rsec" id="rightsPanel"><div class="card-head" style="flex-wrap:wrap"><h2>Rights by role</h2><span class="small muted">Ticked = allowed · ● = changed from the default · checked on the server</span></div>
+      <p class="small muted" style="margin:0 0 8px">Super admins always have every right. Foremen never see cost and billing figures. A change applies to everyone with that role, except people with their own exception (set in Users and access). Rights that come with a position (Head of Planning and Cost Control, costing coordinator, regional report approver) are kept whatever the role's setting; remove one from a person with that person's exception.</p>
+      <div class="scroll"><table class="tbl rmatrix"><thead>${head}</thead><tbody>
+        ${groups.map(g=>`<tr class="rgrp"><td colspan="${cols.length+1}"><b>${esc(g)}</b></td></tr>${RIGHTS.filter(r=>r[2]===g).map(([k,l])=>`<tr><td>${esc(l)}${RIGHT_POS[k]?`<span class="t2">Also with the position: ${esc(RIGHT_POS[k])}</span>`:''}</td>${cols.map(c=>cell(c,k)).join('')}</tr>`).join('')}`).join('')}
+      </tbody></table></div></section>
+    <section class="rsec" id="screensPanel"><div class="card-head"><h2>Screens by role</h2><span class="small muted">Which menu screens each role sees</span></div>
+      <p class="small muted" style="margin:0 0 8px">Hiding a screen removes it from the menu, and a person who opens it directly is sent back to an allowed screen. The data behind it stays protected by project access and the rights above; showing a screen does not give the right to change anything on it. Administration is always for super admins only.</p>
+      <div class="scroll"><table class="tbl rmatrix"><thead>${head}</thead><tbody>${SCREENS.map(v=>`<tr><td>${esc(L[v]||v)}</td>${cols.map(c=>scell(c,v)).join('')}</tr>`).join('')}</tbody></table></div></section>
+    <section class="rsec" id="customRoles"><div class="card-head"><h2>Custom roles</h2><span class="small muted">Made from a built-in role, then adjusted above</span></div>
+      <div class="scroll"><table class="tbl"><thead><tr><th>Role</th><th>Made from</th><th class="n">People</th><th></th></tr></thead><tbody>
+        ${appRoles().map(r=>`<tr><td><input value="${esc(r.name)}" data-crname="${esc(r.key)}" maxlength="60" aria-label="Role name"> ${r.active===false?'<span class="st Draft">Switched off</span>':''}</td><td>${esc(ROLES[r.base_role]||r.base_role)}</td><td class="n">${DB.master.users.filter(u=>u.crole===r.key&&u.active!==false).length}</td>
+          <td class="n"><button class="btn sm" type="button" data-cractive="${esc(r.key)}|${r.active===false?'1':'0'}">${r.active===false?'Switch on':'Switch off'}</button></td></tr>`).join('')||'<tr><td colspan="4" class="muted">No custom roles yet.</td></tr>'}</tbody></table></div>
+      <div class="fields" style="margin-top:10px"><label class="field">New role name<input id="crName" maxlength="60" placeholder="e.g. Contract &amp; Commercial Engineer"></label>
+        <label class="field">Start from<select id="crBase">${RIGHT_ROLES.map(r=>`<option value="${r}">${esc(ROLES[r])}</option>`).join('')}</select></label>
+        <div class="field">&nbsp;<button class="btn primary" type="button" data-crcreate>Create role</button></div></div>
+      <p class="small muted">A new role starts with the current rights and screens of the role it is made from, and its people keep every built-in rule of that role (for example the approval route of a planning engineer). Give it to people in Users and access.</p></section>
+    <section class="rsec" id="rightsPeople"><h2>People with their own exceptions</h2>${ex.length?`<ul class="audit">${ex.map(u=>`<li><b>${esc(u.name)}</b> <span class="muted small">${esc(roleName(u))}</span><span class="t2">${Object.entries(R.user[u.id]).map(([k,v])=>`${v?'Allowed':'Removed'}: ${esc(RIGHT_N[k]||k)}`).join(' · ')}</span></li>`).join('')}</ul>`:'<p class="muted small">None. Open a person in Users and access to give or remove a right just for them.</p>'}</section>
+    <section class="rsec" id="rightsHist"><h2>History</h2><ul class="audit">${(R.audit||[]).slice(-25).reverse().map(a=>`<li><b>${esc(a.action)}</b> ${esc(roleKeyName(a.target||'')||'')}${a.right_key?' · '+esc(RIGHT_N[a.right_key]||L[a.right_key]||a.right_key):''} → ${esc(a.value||'')} <span class="muted small">${esc(a.by_name||'')}, ${esc(tStamp(a.at_time))}</span></li>`).join('')||'<li class="muted">No changes yet.</li>'}</ul></section>`;
+}
+/* the user form: rights for one person */
+function userRightsHTML(u){
+  if(!u||!u.id||!userById(u.id))return '<p class="small muted">Save the person first, then reopen them to give or remove rights just for them.</p>';
+  if(u.role==='sa')return '<p class="small muted">A super admin always has every right.</p>';
+  const R=rightsDB(),mine=(R.user||{})[u.id]||{};
+  return `<div class="scroll"><table class="tbl"><thead><tr><th>Right</th><th>For this person</th></tr></thead><tbody>${RIGHTS.map(([k,l])=>{const o=mine[k],fixed=k==='money.view'&&u.role==='foreman';
+    return `<tr><td class="small">${esc(l)}</td><td><select data-ur="${esc(u.id)}|${esc(k)}" ${fixed?'disabled':''} aria-label="${esc(l)}"><option value="" ${o===undefined?'selected':''}>As the role (${rightNoEx(k,u)?'yes':'no'})</option><option value="1" ${o===true?'selected':''}>Allow</option><option value="0" ${o===false?'selected':''}>Remove</option></select></td></tr>`}).join('')}</tbody></table></div>`;
+}
+/* what a person gets without an exception */
+function rightNoEx(k,u){if(u.role==='sa')return true;if(k==='money.view'&&u.role==='foreman')return false;if(rightPosOf(k,u))return true;
+  const ro=((rightsDB().role||{})[roleKeyOf(u)]||{})[k];if(ro!==undefined)return !!ro;return rightRoleDef(u.role,k)}
+/* the positions a person holds, for a right (used for "As the role" in the form) */
+function rightPosOf(k,u){const hd=isHead(u),co=isCoord(u),reg=(DB.relApprovers||[]).some(a=>a.user_id===u.id);
+  return {'report.internal.approve':hd||reg,'report.cost.prepare':co,'report.cost.approve':hd,'logs.upload':co,'issues.keep':hd,'issues.review':hd,'docs.contract':hd,'docs.planning':hd,'docs.cost':hd,'tender.register':hd||co}[k]||false}
+document.addEventListener('change',async e=>{const t=e.target;if(!t.matches)return;
+  if(t.matches('[data-rr]')){const [rk,k]=t.dataset.rr.split('|'),base=appRole(rk)?appRole(rk).base_role:rk,d=rightRoleDef(base,k);
+    const r=await rightsSave({action:'role_right',role_key:rk,right_key:k,allow:t.checked===d&&!appRole(rk)?null:t.checked});if(r)toast('Saved');render();return}
+  if(t.matches('[data-sr]')){const [rk,v]=t.dataset.sr.split('|'),d=screenDefault(v,rk);
+    const r=await rightsSave({action:'screen',role_key:rk,view_key:v,visible:t.checked===d&&!appRole(rk)?null:t.checked});if(r)toast('Saved');render();return}
+  if(t.matches('[data-ur]')){const [uid,k]=t.dataset.ur.split('|');const r=await rightsSave({action:'user_right',user_id:uid,right_key:k,allow:t.value===''?null:t.value==='1'});if(r)toast('Saved for this person');
+    const box=$('#urBox');if(box){const u=userById(uid);if(u)box.innerHTML=userRightsHTML(u)}return}
+  if(t.matches('[data-crname]')){const r=await rightsSave({action:'role_update',key:t.dataset.crname,name:t.value});if(r)toast('Role renamed');render();return}});
+document.addEventListener('click',async e=>{const t=e.target.closest&&e.target.closest('[data-crcreate],[data-cractive]');if(!t)return;
+  if(t.matches('[data-crcreate]')){const r=await rightsSave({action:'role_create',name:($('#crName')||{}).value||'',base_role:($('#crBase')||{}).value});if(r){toast(`Role ${r.name||''} created`);render()}return}
+  const [k,on]=t.dataset.cractive.split('|');const r=await rightsSave({action:'role_update',key:k,active:on==='1'});if(r){toast(on==='1'?'Role switched on':'Role switched off');render()}});
+
+/* ---------- demo: a custom role for the planning section managers ---------- */
+function seedV37(){
+  if(CLOUD||DB.v37Seeded)return;const R=rightsDB();
+  if(!appRole('c_planning_section_manager')){R.roles.push({key:'c_planning_section_manager',name:'Planning Section Manager',base_role:'plan',active:true,created_at:addDays(TODAY,-30)+'T09:00:00'});R.role.c_planning_section_manager={};R.screen.c_planning_section_manager={};
+    R.audit.push({id:R.audit.length+1,action:'Role created',target:'Planning Section Manager',right_key:null,value:'from plan',by_name:(userById('U28')||{}).name||'Super admin',at_time:addDays(TODAY,-30)+'T09:00:00'})}
+  ['U48','U49'].forEach(id=>{const u=userById(id);if(u&&u.role==='plan')u.crole='c_planning_section_manager'});
+  DB.v37Seeded=true;save();
+}
+
 function seedV36(){
   if(CLOUD||DB.v36Seeded)return;DB.phaseSetup=DB.phaseSetup||{};DB.phaseAudit=DB.phaseAudit||[];DB.schedUpdates=DB.schedUpdates||[];DB.schedRows=DB.schedRows||{};
   const W={GEN:5,DES:10,MAT:30,CON:30,INS:15,TC:7,CLO:3},wm=Object.fromEntries(Object.entries(DEMO_WBS).map(([k,v])=>[v,k]));
@@ -4636,7 +4796,7 @@ async function cloudProfile(){
     SB.from('project_access').select('project_id').eq('user_id',user.id),
     SB.from('region_access').select('region_id').eq('user_id',user.id)]);
   return {id:prof.id,name:prof.name||user.email,email:user.email,title:prof.title||ROLES[prof.role]||'',
-    role:prof.role||'ro',active:true,cloud:true,
+    role:prof.role||'ro',active:true,cloud:true,crole:prof.custom_role||null,allProjects:!!prof.all_projects,
     projects:(pa||[]).map(x=>x.project_id),regions:(ra||[]).map(x=>x.region_id)};
 }
 async function startCloudSession(profile,quiet){
@@ -4648,7 +4808,7 @@ async function startCloudSession(profile,quiet){
   SESSION={uid:profile.id,exp:Date.now()+12*36e5,seen:Date.now(),cloud:true};
   showApp();if(!quiet)toast(`Welcome, ${profile.name.replace(/^Eng\.\s*/,'')}`);
 }
-function accessIds(u=me()){if(u.role==='sa'||u.role==='exec')return PROJECTS.map(p=>p.id);const r=new Set(u.regions);return PROJECTS.filter(p=>r.has(p.region)||u.projects.includes(p.id)).map(p=>p.id)}
+function accessIds(u=me()){if(u.role==='sa'||u.role==='exec'||u.allProjects)return PROJECTS.map(p=>p.id);const r=new Set(u.regions);return PROJECTS.filter(p=>r.has(p.region)||u.projects.includes(p.id)).map(p=>p.id)}
 function scopeIds(){
   let ids=accessIds();
   if(state.scope.startsWith('R:')){const r=state.scope.slice(2),f=ids.filter(id=>projById(id).region===r);if(f.length&&new Set(ids.map(id=>projById(id).region)).size>1)ids=f;else state.scope='ALL'}
@@ -4733,13 +4893,13 @@ const ICONS={
   admin:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'
 };
 const icon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
-const canCreate=()=>state.role==='eng'||state.role==='foreman';
+const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins write reports through the server only, as before */
 
 /* ---------- domain navigation (v2.3) ----------
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.6';
+const APP_VERSION='3.7';
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'xr',label:'Executive report (released)'},{v:'exec',label:'Live summary (working data)'}]},
@@ -4769,7 +4929,7 @@ const DOMAINS=[
     {v:'imp',label:'Import centre'},{v:'base',sec:'p6',label:'Primavera P6 (XER, XML)'},{v:'base',sec:'cost',label:'Excel templates'},
     {plan:'SAP ECC Excel exports',note:'Planned: needs a sample export and Finance approval'},{plan:'S/4HANA connector',note:'Disabled until IT, SAP, Cybersecurity and Finance approve'}]},
   {k:'admin',label:'Administration',ic:'admin',items:[
-    {v:'admin',tab:'users',label:'Users and access'},{v:'admin',tab:'roles',label:'Role access'},{v:'admin',tab:'matrix',label:'Approval matrix'},
+    {v:'admin',tab:'users',label:'Users and access'},{v:'admin',tab:'rights',label:'Roles and rights'},{v:'admin',tab:'roles',label:'Role access'},{v:'admin',tab:'matrix',label:'Approval matrix'},
     {v:'admin',tab:'mail',label:'Approval email'},{v:'admin',tab:'projects',label:'Projects and terms'},{v:'admin',tab:'system',label:'System and date basis'}]}];
 const NAV_SEC={recon:/Source reconciliation/i,p6:/Baseline management|baseline/i,cost:/Costing file/i,po:/purchase orders/i,inv:/Invoice register/i,actions:/Critical items/i};
 function navItemOk(it,views){
@@ -4827,7 +4987,7 @@ document.addEventListener('click',e=>{
    "Planned" in a disabled style rather than filled with a value. Lifecycle ticks mean "data present",
    not "stage approved": formal stage approval is a planned enhancement. */
 const PLANNED=(t)=>`<span class="pend" title="${esc(t||'Planned: not tracked in ProTrackAI yet')}">Planned</span>`;
-const isSiteRole=()=>SITE_ROLES.includes(state.role)||state.role==='foreman';
+const isSiteRole=()=>!can('money.view');   /* v3.7: no cost and billing figures (site roles by default) */
 function projLifecycle(p,k){
   const acts=k.acts,reps=DB.dprs.filter(d=>d.p===p.id),fms=teamOf(p.id,'foreman'),engs=teamOf(p.id,'eng');
   const it=(label,st,note)=>({label,st,note:note||''}); // st: ok | no | warn | plan
@@ -5027,8 +5187,14 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- shell ---------- */
+const NAV_ALL=['xr','exec','proj','tender','iss','docs','act','rel','logs','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'];
+let NAV_VIEWS=[];
+/* the screens a person sees under today's rules (v3.6), for their role and rights */
+function navDefault(v){return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())}
+/* v3.7: the super admin may show or hide a screen for a role; Administration stays with super admins */
+function navOn(v){if(v==='admin')return state.role==='sa';const o=screenOv(v);return (o!==undefined?o:navDefault(v))&&(v!=='new'||canCreate())}
 function renderNav(){
-  const L=T[state.lang];const views=['xr','exec','proj','tender','iss','docs','act','rel','logs','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'].filter(v=>ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView()));
+  const L=T[state.lang];const views=NAV_ALL.filter(navOn);NAV_VIEWS=views;
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
   $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','xr'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=L[state.view];
@@ -5053,6 +5219,7 @@ let charts=[];const killCharts=()=>{charts.forEach(c=>c.destroy());charts=[]};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
+  if(screenOv(state.view)===false){state.view=NAV_VIEWS.find(v=>v!==state.view)||'dash';renderNav()}   /* v3.7: a hidden screen sends the person to an allowed one */
   ({xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
@@ -5141,7 +5308,7 @@ function renderDash(){
     <div class="panel kpi" data-kpi="heads"><div class="l">Workforce on site</div><div class="v">${fmt(today.heads)}</div><div class="s">Reported ${lastDate?fmtD(lastDate):'—'}, own crews and subcontractors</div>${sparkline(series.map(o=>o.heads))}</div>
     <div class="panel kpi" data-kpi="prod"><div class="l">Manhours, 30 days</div><div class="v">${fmt(p30.mh)}</div><div class="s">Earned ${fmt(p30.earned)} (${pct(p30.pi)}), overtime ${pct(p30.mh?p30.ot/p30.mh:0,0)}</div>${sparkline(series.map(o=>o.mh),{color:'var(--bar)',fillOp:.35})}</div>
     <div class="panel kpi" data-kpi="spi"><div class="l">Schedule (SPI)</div><div class="gaugerow">${gauge(e.spi,'SPI')}<div class="s">EV ${sar(e.ev)}<br>PV ${sar(e.pv)}<br>${e.sv>=0?'Ahead':'Behind'} by ${sar(Math.abs(e.sv))}</div></div></div>
-    ${SITE_ROLES.includes(state.role)?'':`<div class="panel kpi" data-kpi="cpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(e.cpi,'CPI')}<div class="s">EV ${sar(e.ev)}<br>AC ${sar(e.ac)}<br>${e.cv>=0?'Under':'Over'} by ${sar(Math.abs(e.cv))}</div></div></div>`}
+    ${isSiteRole()?'':`<div class="panel kpi" data-kpi="cpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(e.cpi,'CPI')}<div class="s">EV ${sar(e.ev)}<br>AC ${sar(e.ac)}<br>${e.cv>=0?'Under':'Over'} by ${sar(Math.abs(e.cv))}</div></div></div>`}
     <div class="panel kpi" data-kpi="complete"><div class="l">Portfolio complete</div><div class="gaugerow">${(()=>{const P=progIds([...SCOPE],e);return `${donut(P.act,'Portfolio complete')}<div class="s">Plan ${pct(P.plan,0)} ${P.sched?'(internal weightage)':'by today'}<br>`})()}${fmt(acts.length)} activities<br>${fmt(scopeProjects().length)} project${scopeProjects().length===1?'':'s'}</div></div></div>
     <div class="panel kpi warncard ${state.role==='foreman'?'':'click'}" ${state.role==='foreman'?'':'data-go="rep" data-rep="warn"'}><div class="l">Early warnings</div>
       <div class="sevs">${['High','Medium','Low'].map(k=>`<span class="sev ${k}">${warn.filter(w=>w.sev===k).length} ${k.toLowerCase()}</span>`).join('')}</div>
@@ -5219,11 +5386,13 @@ function renderDpr(){
   </tbody></table></div>${list.length>state.showN?`<div style="text-align:center;margin-top:12px"><button class="btn" type="button" data-more>Show ${Math.min(40,list.length-state.showN)} more</button></div>`:''}</div>`;
 }
 function actionsFor(d){
-  const r=state.role,s=d.status;
-  if(r==='pm'||r==='sa')return s==='Submitted'?['review','return','reject']:s==='Reviewed'?['approve','return','reject']:[];
-  if(r==='sm'){const R=routeOf(d);return s==='Reviewed'&&isMe(R.apr)?['approve','return','reject']:[]}
+  const r=state.role,s=d.status,boss=can('dpr.approve');
+  if(boss&&(r==='pm'||r==='sa'||s==='Submitted'||s==='Reviewed'))return s==='Submitted'?['review','return','reject']:s==='Reviewed'?['approve','return','reject']:[];
+  if(r==='pm'||r==='sa')return [];
+  if(r==='sm'){const R=routeOf(d);return s==='Reviewed'&&isMe(R.apr)?['approve','return','reject']:s==='Draft'&&can('dpr.create')?['submit','edit']:[]}
   if(r==='eng'){const R=routeOf(d);return s==='Draft'?['submit','edit']:s==='Submitted'&&isMe(R.rev)?['review','return','edit']:s==='Reviewed'&&isMe(R.rev)?['edit']:[]}
-  if(r==='foreman')return s==='Draft'?['submit','edit']:[];
+  if(r==='foreman')return s==='Draft'&&can('dpr.create')?['submit','edit']:[];
+  if(can('dpr.create'))return s==='Draft'?['submit','edit']:[];   /* v3.7: a role given daily reports */
   return [];
 }
 const ALABEL={review:'Mark as reviewed',approve:'Approve',reject:'Reject',return:'Return with comments',submit:'Submit for approval',edit:'Edit report'};
@@ -5859,7 +6028,7 @@ window.addEventListener('scroll',()=>{if(RasaPointer.el)RasaPointer.beam()},{pas
 /* same basis as the executive summary tiles: earned value at the data date */
 function rasaProj(p){const acts=ACTS.filter(a=>a.p===p.id),e=evm(acts,ASOF),f=forecast(p);return {p,f:{...f,spi:e.spi,cpi:e.cpi,bac:e.bac}}}
 function rasaInsights(){
-  const out=[],role=state.role,site=SITE_ROLES.includes(role)||role==='foreman';
+  const out=[],role=state.role,site=isSiteRole();
   try{
     const queue=DB.dprs.filter(d=>SCOPE.has(d.p)&&actionsFor(d).some(a=>a==='approve'||a==='review'));
     if(queue.length){const ap=queue.filter(d=>actionsFor(d).includes('approve')).length;
@@ -5920,7 +6089,7 @@ const RASA_QA=[
   ['risk','⚠️','Risk analysis'],['manpower','👷','Manpower'],['procurement','📦','Procurement'],['progress','📈','Progress report'],
   ['exec','🧭','Executive summary'],['ask','💬','Ask RASA']];
 function rasaQAList(){
-  const site=SITE_ROLES.includes(state.role);
+  const site=isSiteRole();
   if(state.role==='foreman')return RASA_QA.filter(([k])=>['critical','manpower','progress','ask'].includes(k));
   return RASA_QA.filter(([k])=>!(site&&k==='cost')&&!(k==='exec'&&!canExec()));
 }
@@ -5933,7 +6102,7 @@ const spiOf=(p,f)=>{const P=progOf(p.id);return P?P.spi:f.spi};
 function rasaQA(k){
   const lab=(RASA_QA.find(x=>x[0]===k)||[])[2]||k;
   if(k==='ask'){RasaState.set('LISTENING',{caption:'Go ahead, ask me anything about your projects.',hold:6000,next:'IDLE'});$('#aiQ').focus();return}
-  const site=SITE_ROLES.includes(state.role);let h='',meta={};
+  const site=isSiteRole();let h='',meta={};
   const X=rasaPortfolio(),sc=aiScope();
   if(['health','schedule','progress','cost','critical','manpower'].includes(k)&&!scopeActs().length){rasaTurn(lab,NOEV(`No baseline in ${sc}, so there are no progress, schedule or cost figures to report.`,'Load the P6 baseline first.'),{final:'IMPORTANT_INSIGHT'});return}
   if(k==='health'){
@@ -5971,7 +6140,7 @@ async function rasaTurn(q,html,meta){
   rasaAfter(q,html,meta,tok);
 }
 function rasaInfer(q,html){
-  const site=SITE_ROLES.includes(state.role),t=(q+' '+String(html).replace(/<[^>]+>/g,' ')).toLowerCase();
+  const site=isSiteRole(),t=(q+' '+String(html).replace(/<[^>]+>/g,' ')).toLowerCase();
   let point=null,label='';
   if(/\bspi\b|schedule|behind plan|slipp?/.test(t)){point='spi';label='Schedule (SPI)'}
   else if(!site&&/\bcpi\b|\beac\b|overrun|budget|cost/.test(t)){point='cpi';label='Cost (CPI)'}
@@ -6798,10 +6967,10 @@ function execProject(){
     <div class="panel kpi"><div class="l">Schedule (SPI)</div><div class="gaugerow">${gauge(k.f.spi,'SPI')}<div class="s">Forecast finish<br><b>${k.f.fin?fmtDY(k.f.fin):'—'}</b><br>${k.f.slip>900?'':k.f.slip>0?`<span class="r-c">${k.f.slip} days late</span>`:`<span class="g-c">${Math.abs(k.f.slip)} days early</span>`}</div></div></div>
     <div class="panel kpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(k.f.cpi,'CPI')}<div class="s">EAC ${sar(k.x.eac1)}<br>VAC ${sar(k.x.vac)}<br>${k.x.vac<0?'<span class="r-c">Overrun forecast</span>':'<span class="g-c">Within budget</span>'}</div></div></div>
     <div class="panel kpi"><div class="l">Productivity, 30 days</div><div class="gaugerow">${gauge(k.pi||0,'Productivity',{max:1.4})}<div class="s">${fmt(head.heads)} workers on the last reported day<br>${fmt(agg(V).mh)} manhours in 30 days</div></div></div>
-    ${SITE_ROLES.includes(state.role)?'':`<div class="panel kpi"><div class="l">Earned value</div><div class="v" style="font-size:24px">${sar(k.e.ev)}</div><div class="s">PV ${sar(k.e.pv)}, AC ${sar(k.e.ac)}<br>BAC ${sar(k.e.bac)}, ETC ${sar(k.x.etc)}</div></div>`}
+    ${isSiteRole()?'':`<div class="panel kpi"><div class="l">Earned value</div><div class="v" style="font-size:24px">${sar(k.e.ev)}</div><div class="s">PV ${sar(k.e.pv)}, AC ${sar(k.e.ac)}<br>BAC ${sar(k.e.bac)}, ETC ${sar(k.x.etc)}</div></div>`}
     <div class="panel kpi"><div class="l">Engineering and procurement</div><div class="v" style="font-size:24px">${(()=>{const S=engProcStats().rows.filter(r=>r.proj===p.short);return S.length?pct(S.reduce((t,r)=>t+r.bac*r.pct,0)/S.reduce((t,r)=>t+r.bac,0),0):'—'})()}</div><div class="s">${(()=>{const S=engProcStats().rows.filter(r=>r.proj===p.short);const l=S.filter(r=>r.slip>0).length;return S.length?`${S.length} items, ${l?`<span class="r-c">${l} forecast late</span>`:'<span class="g-c">none late</span>'}`:'No design or procurement items'})()}</div></div>
   </section>
-  ${(()=>{if(SITE_ROLES.includes(state.role))return '';const X=billPosition(p);if(!X.b.contract&&!X.t.n)return '';
+  ${(()=>{if(isSiteRole())return '';const X=billPosition(p);if(!X.b.contract&&!X.t.n)return '';
     return `<section class="g g-kpi">
       <div class="panel kpi"><div class="l">Invoiceable</div><div class="v" style="font-size:22px">${sar(X.invoiceable)}</div><div class="s">Price progress ${pct(X.b.progress,0)}</div></div>
       <div class="panel kpi"><div class="l">Invoiced</div><div class="v" style="font-size:22px">${sar(X.t.submitted)}</div><div class="s">${X.gapSub>1?`<span class="r-c">${sar(X.gapSub)} still to bill</span>`:'Up to date'}</div></div>
@@ -7398,8 +7567,8 @@ function costingHTML(pid){
 
 /* ---------- baselines (planning engineer) ---------- */
 const BSETS={ORG:'Original baseline',REV:'Revised baseline',REC:'Recovery baseline'};
-const canBaseline=()=>['sa','plan'].includes(state.role);
-const canCost=()=>['sa','costing','pm'].includes(state.role);
+const canBaseline=()=>can('planning.manage');
+const canCost=()=>can('costing.manage');
 const impPid=()=>state.impPid||(state.adm&&state.adm.id);
 function bsetOf(pid,k){return ((DB.baselines||{})[pid]||{})[k]}
 /* ---------- purchase orders on the Baselines page, owned by costing ---------- */
@@ -7623,7 +7792,7 @@ function nonConPct(a,t){
 }
 const guessClass=t=>/design|drawing|engineer|ifc|idc|calculation|model|specification|datasheet/i.test(t)?'ENG'
   :/procure|purchase|\bpo\b|\bpr\b|vendor|supply|deliver|manufactur|fabricat(?!ion works)|fat |shipment|shipping|material/i.test(t)?'PRC':'CON';
-const canUpdate=()=>['sa','plan'].includes(state.role);
+const canUpdate=()=>can('planning.manage');
 const updBatches=()=>(DB.updates||[]).filter(b=>SCOPE.has(b.p)).sort((a,b)=>b.dataDate.localeCompare(a.dataDate)||b.at.localeCompare(a.at));
 
 const UHEAD={id:/activity ?id|^id$|code/i,ms:/milestone ?reached|new ?milestone/i,as:/actual ?start/i,af:/actual ?finish/i,ff:/forecast ?finish|expected ?finish/i,dd:/data ?date/i,rem:/remark|comment|reason/i,pctIn:/new ?%|progress ?%|percent ?complete/i};
@@ -8177,18 +8346,18 @@ function portfolioHTML(){
 }
 
 /* ---------- settings (super admin) ---------- */
-const ATABS={projects:'Projects',users:'Users and access',roles:'Role access',matrix:'Approval matrix',mail:'Email',system:'System',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',log:'Change log'};
+const ATABS={projects:'Projects',users:'Users and access',rights:'Roles and rights',roles:'Role access',matrix:'Approval matrix',mail:'Email',system:'System',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',log:'Change log'};
 const NOUN={projects:'project',users:'user',trades:'trade',subs:'subcontractor',regions:'region',cities:'city',sectors:'sector'};
 function usedBy(type,id){if(type==='regions')return PROJECTS.filter(p=>p.region===id).length+DB.master.cities.filter(c=>c.region===id).length;if(type==='cities')return PROJECTS.filter(p=>p.city===id).length;if(type==='sectors')return PROJECTS.filter(p=>p.sector===id).length;return 0}
-function accessText(u){if(u.role==='sa')return 'Everything, including settings';const r=u.regions.map(id=>regById(id)?.name).filter(Boolean),ps=u.projects.map(id=>projById(id)?.short).filter(Boolean);return [r.length?r.join(', ')+(r.length>1?' regions':' region'):'',ps.join(', ')].filter(Boolean).join('; ')||'No access yet'}
+function accessText(u){if(u.role==='sa')return 'Everything, including settings';if(u.allProjects&&u.role!=='exec')return 'All projects';const r=u.regions.map(id=>regById(id)?.name).filter(Boolean),ps=u.projects.map(id=>projById(id)?.short).filter(Boolean);return [r.length?r.join(', ')+(r.length>1?' regions':' region'):'',ps.join(', ')].filter(Boolean).join('; ')||'No access yet'}
 const stCls=s=>s==='Active'?'Approved':s==='On hold'||s==='Pre-award'?'Reviewed':'Draft';
 function renderAdmin(){
   if(state.role!=='sa'){go('dash');return}
-  const m=DB.master,t=state.adminTab,add=['log','roles','matrix','mail','system'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>`;
+  const m=DB.master,t=state.adminTab,add=['log','roles','rights','matrix','mail','system'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>`;
   const edit=(k,id,del)=>`<td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-aedit="${k}:${id}">Edit</button>${del===undefined?'':del?` <button class="btn sm" type="button" disabled title="In use, cannot delete">In use</button>`:` <button class="btn sm danger" type="button" data-adel="${k}:${id}">Delete</button>`}</td>`;
   let body='',count=0;
   if(t==='projects'){count=PROJECTS.length;body=`<table class="tbl"><thead><tr><th>Project</th><th>Sector</th><th>Region and city</th><th>Team</th><th class="n">Activities</th><th class="n">Value</th><th>Status</th><th></th></tr></thead><tbody>${PROJECTS.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}${p.te?' · '+esc(p.te):''}, ${esc(p.name)}</span></td><td>${esc(secById(p.sector)?.name||'—')}</td><td>${esc(regName(p))}<span class="t2">${esc(cityName(p))}</span></td><td>${esc(p.pm)}<span class="t2">${esc(p.eng)}, ${p.foremen.length} foreman${p.foremen.length===1?'':'en'}</span></td><td class="n">${ACTS.filter(a=>a.p===p.id).length}</td><td class="n">SAR ${fmt(p.value)}M</td><td><span class="st ${stCls(p.status)}">${p.status}</span></td>${edit('projects',p.id,false)}</tr>`).join('')}</tbody></table>`}
-  if(t==='users'){const us=m.users.slice().sort((a,b)=>Object.keys(ROLES).indexOf(a.role)-Object.keys(ROLES).indexOf(b.role));count=us.length;body=`<table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Access</th><th>Status</th><th></th></tr></thead><tbody>${us.map(u=>`<tr><td><b>${esc(u.name)}</b><span class="t2">${esc(u.email)}</span></td><td>${ROLES[u.role]}<span class="t2">${esc(u.title)}</span></td><td class="small">${esc(accessText(u))}</td><td><span class="st ${u.active?'Approved':'Draft'}">${u.active?'Active':'Inactive'}</span></td>${edit('users',u.id)}</tr>`).join('')}</tbody></table>`}
+  if(t==='users'){const us=m.users.slice().sort((a,b)=>Object.keys(ROLES).indexOf(a.role)-Object.keys(ROLES).indexOf(b.role));count=us.length;body=`<table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Access</th><th>Status</th><th></th></tr></thead><tbody>${us.map(u=>`<tr><td><b>${esc(u.name)}</b><span class="t2">${esc(u.email)}</span></td><td>${esc(roleName(u))}<span class="t2">${esc(u.title)}</span></td><td class="small">${esc(accessText(u))}</td><td><span class="st ${u.active?'Approved':'Draft'}">${u.active?'Active':'Inactive'}</span></td>${edit('users',u.id)}</tr>`).join('')}</tbody></table>`}
   if(t==='trades'){const tr=m.trades||[];count=tr.length;body=`<p class="small muted" style="margin:0 0 12px">Cost rates are dated. A new rate applies to reports from its effective date onwards; reports already filed keep the rate that applied when the work was done.</p><table class="tbl"><thead><tr><th>Trade</th><th class="n">Basic salary</th><th class="n">Cost rate</th><th>Effective from</th><th class="n">Rate changes</th><th>Status</th><th></th></tr></thead><tbody>${tr.map(x=>{const rs=(x.rates||[]).slice().sort((a,b)=>a.from.localeCompare(b.from));let cur=rs[0];rs.forEach(r=>{if(r.from<=TODAY)cur=r});const next=rs.find(r=>r.from>TODAY);
     if(!cur)return `<tr><td><b>${esc(x.name)}</b></td><td class="n muted">—</td><td class="n muted">No rate set</td><td>—</td><td class="n">0</td><td><span class="st Draft">${x.active?'Active':'Inactive'}</span></td>${edit('trades',x.name)}</tr>`;
     return `<tr><td><b>${esc(x.name)}</b>${next?`<span class="t2">SAR ${fmt(next.hourly,2)}/h from ${fmtD(next.from)}</span>`:''}</td><td class="n">SAR ${fmt(cur.monthly)}<span class="t2">per month</span></td><td class="n">SAR ${fmt(cur.hourly,2)}<span class="t2">per hour, loaded</span></td><td>${fmtDY(cur.from)}</td><td class="n">${rs.length}</td><td><span class="st ${x.active?'Approved':'Draft'}">${x.active?'Active':'Inactive'}</span></td>${edit('trades',x.name)}</tr>`}).join('')}</tbody></table>`}
@@ -8197,6 +8366,7 @@ function renderAdmin(){
   if(t==='cities'){count=m.cities.length;body=`<table class="tbl"><thead><tr><th>City</th><th>Region</th><th class="n">Projects</th><th></th></tr></thead><tbody>${m.cities.slice().sort((a,b)=>a.region.localeCompare(b.region)||a.name.localeCompare(b.name)).map(c=>`<tr><td><b>${esc(c.name)}</b><span class="t2">Code ${c.id}</span></td><td>${esc(regById(c.region)?.name||'—')}</td><td class="n">${usedBy('cities',c.id)}</td>${edit('cities',c.id,usedBy('cities',c.id))}</tr>`).join('')}</tbody></table>`}
   if(t==='sectors'){count=m.sectors.length;body=`<table class="tbl"><thead><tr><th>Sector</th><th class="n">Projects</th><th class="n">Contract value</th><th></th></tr></thead><tbody>${m.sectors.map(x=>`<tr><td><b>${esc(x.name)}</b><span class="t2">Code ${x.id}</span></td><td class="n">${usedBy('sectors',x.id)}</td><td class="n">SAR ${fmt(PROJECTS.filter(p=>p.sector===x.id).reduce((a,p)=>a+(+p.value||0),0))}M</td>${edit('sectors',x.id,usedBy('sectors',x.id))}</tr>`).join('')}</tbody></table>`}
   if(t==='roles'){count=SITE_ROLES.length;body=roleAccessHTML()}
+  if(t==='rights'){count=RIGHTS.length+' rights';body=rightsAdminHTML()}
   if(t==='matrix'){count=scopeProjects().length;body=matrixHTML()+relSetupHTML()}
   if(t==='mail'){count=(DB.outbox||[]).length;body=mailAdminHTML()}
   if(t==='system'){count='';body=systemHTML()}
@@ -8246,15 +8416,17 @@ function admDrawer(type,id){
       ${F('Full name',inp('name',u.name,'autocomplete="off"'))}
       ${F('Email',inp('email',u.email,'type="email" autocomplete="off"'))}
       ${F('Job title',inp('title',u.title,'placeholder="e.g. Foreman, Civil"'))}
-      ${F('Role',sel('role',Object.entries(ROLES),u.role,`data-rolefor ${self?'disabled':''}`))}
+      ${F('Role',sel('role',[...Object.entries(ROLES),...appRoles().filter(r=>r.active!==false||r.key===u.crole).map(r=>[r.key,r.name+' (from '+ROLES[r.base_role]+')'])],cRoleOf(u)?u.crole:u.role,`data-rolefor ${self?'disabled':''}`))}
       ${F('Status',sel('status',['Active','Inactive'],u.active?'Active':'Inactive',self?'disabled':''))}
     </div>${id?`<p class="small muted" style="margin:8px 0 0">Sign-in: ${esc(u.email)}${u.pwSet?`, password set ${fmtDY(u.pwSet)}`:''}. <button class="btn sm" type="button" data-pwreset="${id}">Reset password</button></p><div class="fields" style="margin-top:12px">`:'<div class="fields">'}
     </div>
     <div id="accSA" class="note-box">Full access to every project. Super Admin can also change settings; an Executive Manager is read only.</div>
-    <div id="accR" class="field" style="margin-top:12px">Region access<div class="checks">${m.regions.map(r=>chk('regions',r.id,u.regions.includes(r.id),r.name+' Region',PROJECTS.filter(p=>p.region===r.id).length+' projects')).join('')}</div></div>
+    <div id="accMode" class="field" style="margin-top:12px">Access<select name="accmode" data-rolefor><option value="chosen" ${u.allProjects?'':'selected'}>Chosen regions and projects</option><option value="all" ${u.allProjects?'selected':''}>All projects</option></select><span class="small muted">All projects includes every project added later.</span></div>
+    <div id="accR" class="field" style="margin-top:12px">Region access <span class="small muted">(every project of the region, including ones added later)</span><div class="checks">${m.regions.map(r=>chk('regions',r.id,u.regions.includes(r.id),r.name+' Region',PROJECTS.filter(p=>p.region===r.id).length+' projects')).join('')}</div></div>
     <div id="accP" class="field" style="margin-top:12px">Project access<div class="checks">${projectChecks(u.projects)}</div></div>
     <div class="field" style="margin-top:12px">Planning and Cost Control<div class="checks">${chk('pcc','head',!!id&&pccOf(id).includes('head'),'Head of Planning and Cost Control','approves lifecycle stages 1 to 5 and cancels projects')}${chk('pcc','coordinator',!!id&&pccOf(id).includes('coordinator'),'Costing coordinator','registers Tender L1 projects and records stages 1 to 4')}</div>${CLOUD_ME&&!id?'<span class="small muted">Save the person first, then reopen them to tick these.</span>':''}</div>
     <p class="small muted" style="margin-top:10px">Who reviews and approves this person's reports is set per project in Settings → Approval matrix.</p>
+    <details class="field" id="urWrap" style="margin-top:12px"><summary><b>Rights for this person only</b> <span class="small muted">exceptions to the role, saved as soon as you choose</span></summary><div id="urBox">${userRightsHTML(u)}</div></details>
     ${CLOUD_ME&&!id?'<p class="small" style="margin-top:6px"><b>On the server:</b> first create the sign-in account in Supabase (Authentication → Users → Add user, tick Auto Confirm), then save the person here with the same email. Their role and access are saved on the server.</p>':''}
     <p class="small muted" id="accHint"></p>`;
   }
@@ -8286,8 +8458,8 @@ function admDrawer(type,id){
     ${type==='subs'&&id?subRateEditor(subById(id)):''}`;
   $('#drawer').hidden=false;if(type==='users')toggleAccess();
 }
-function toggleAccess(){const f=$('#admForm');if(!f)return;const r=f.elements.role.value;
-  $('#accSA').hidden=!(r==='sa'||r==='exec');$('#accR').hidden=!(r==='rm'||r==='pf'||r==='ro');$('#accP').hidden=['sa','exec','rm','pf'].includes(r);
+function toggleAccess(){const f=$('#admForm');if(!f)return;const rv=f.elements.role.value,r=appRole(rv)?appRole(rv).base_role:rv,all=f.elements.accmode&&f.elements.accmode.value==='all',top=r==='sa'||r==='exec';
+  $('#accSA').hidden=!top;$('#accMode').hidden=top;$('#accR').hidden=top||all;$('#accP').hidden=top||all;const uw=$('#urWrap');if(uw)uw.hidden=r==='sa';
   $('#accHint').textContent={sa:'',exec:'Executive managers see every project, read only, plus the executive summary.',pf:'A portfolio manager covers exactly one region.',rm:'Tick every region this manager is responsible for; it can be more than one.',pm:'A project manager reviews and approves reports for the projects ticked.',eng:'A site engineer creates and edits reports for the projects ticked.',foreman:'A foreman enters daily quantities and crews for the projects ticked.',ro:'Read-only users can view dashboards for the regions or projects ticked.'}[r]}
 
 function msEditor(p){
@@ -8347,21 +8519,22 @@ function saveAdm(fd){
     msg=`${id?'Updated':'Created'} project ${p.short} (${p.id}), ${secById(p.sector)?.name}, ${regById(p.region)?.name} Region`;
   }
   if(type==='users'){
-    const self=id===state.uid,role=self?me().role:v('role'),email=v('email').toLowerCase();
+    const self=id===state.uid,rv=self?me().role:v('role'),cr=appRole(rv),role=cr?cr.base_role:rv,email=v('email').toLowerCase(),allP=!['sa','exec'].includes(role)&&v('accmode')==='all';
     if(!v('name'))return err('Enter the person\'s full name.');
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return err('Enter a valid email address.');
     if(m.users.some(u=>u.email===email&&u.id!==id))return err('Another user already has this email.');
     const regions=fd.getAll('regions'),projects=fd.getAll('projects');
-    if(role==='rm'&&!regions.length)return err('Choose at least one region for this regional manager.');
-    if(role==='pf'&&regions.length!==1)return err('A portfolio manager covers exactly one region. Tick one.');
-    if(['pm','sm','eng','foreman'].includes(role)&&!projects.length)return err('Give access to at least one project.');
-    if(role==='ro'&&!regions.length&&!projects.length)return err('Give read-only access to at least one region or project.');
-    const data={name:v('name'),email,title:v('title')||ROLES[role],role,regions:['rm','pf','ro'].includes(role)?regions:[],projects:['sa','exec','rm','pf'].includes(role)?[]:projects,active:self?true:v('status')!=='Inactive'};
+    if(cr&&cr.active===false)return err('This custom role is switched off. Choose another role.');
+    if(role==='rm'&&!allP&&!regions.length)return err('Choose at least one region for this regional manager.');
+    if(role==='pf'&&!allP&&regions.length!==1)return err('A portfolio manager covers exactly one region. Tick one.');
+    if(['pm','sm','eng','foreman'].includes(role)&&!allP&&!projects.length&&!regions.length)return err('Give access to at least one project, one region or All projects.');
+    if(role==='ro'&&!allP&&!regions.length&&!projects.length)return err('Give read-only access to at least one region or project.');
+    const top=['sa','exec'].includes(role),data={name:v('name'),email,title:v('title')||(cr?cr.name:ROLES[role]),role,crole:cr?cr.key:null,allProjects:allP,regions:top||allP?[]:regions,projects:top||allP?[]:projects,active:self?true:v('status')!=='Inactive'};
     let u=id?userById(id):null;if(u)Object.assign(u,data);else{u={id:'U'+String(m.nextUser++).padStart(2,'0'),...data};m.users.push(u)}
     pccChange={uid:u.id,before:pccOf(u.id).slice(),want:fd.getAll('pcc')};
     if(!CLOUD_ME){DB.pcc=DB.pcc||{};DB.pcc[u.id]=pccChange.want.slice()}
     if(role==='rm')regions.forEach(r=>{const g=regById(r);if(g&&!userById(g.manager)?.active)g.manager=u.id});
-    msg=`${id?'Updated':'Created'} user ${u.name} as ${ROLES[role]} with access to ${accessText(u)}${u.active?'':' (inactive)'}`;
+    msg=`${id?'Updated':'Created'} user ${u.name} as ${cr?cr.name:ROLES[role]} with access to ${accessText(u)}${u.active?'':' (inactive)'}`;
   }
   if(type==='regions'){
     const code=id||v('code').toUpperCase();
@@ -8699,7 +8872,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

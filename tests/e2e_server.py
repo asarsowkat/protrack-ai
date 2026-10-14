@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ProTrackAI v2.5+ (extended to v3.6) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
-from the real ProTrack schema (schema.sql + v2 ... v9, then v10 to v15 applied mid-run as on a live database) through fake_supabase.py.
+from the real ProTrack schema (schema.sql + v2 ... v9, then v10 to v16 applied mid-run as on a live database) through fake_supabase.py.
 Every allow/refuse decision in these tests is made by the database (row level security and the v4
 functions), exactly as on Supabase. What is NOT covered: Supabase's own sign-in service, its REST layer
 and the email function; those are replaced by the stand-in.
@@ -740,6 +740,53 @@ with sync_playwright() as p:
     login(pg, 'pm')
     pg.evaluate("state.scope='P1';go('proj')"); pg.wait_for_timeout(900)
     ck('Schedule (v15)', 'the project manager sees progress by internal weightage on the project overview', 'internal weightage, schedule of' in pg.inner_text('#view'), pg.inner_text('#view')[:300])
+
+    # ---------------------------------------------------------------- roles, rights and access (v16)
+    login(pg, 'sa'); pg.evaluate("go('admin');state.adminTab='rights';render()"); pg.wait_for_timeout(700)
+    ck('Rights (v16)', 'before the v16 update, Roles and rights says the database update is needed and every role keeps its rights', 'v16 database update' in pg.inner_text('#view') and pg.evaluate("canCost()") is True, pg.inner_text('#view')[:300])
+    pv = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, 'schema-update-v16.sql')], capture_output=True, text=True)
+    ck('Rights (v16)', 'the v16 update loads on top of a database in use', pv.returncode == 0, pv.stderr[:300])
+    ck('Rights (v16)', 'the setup check counts 8', sql("select (select count(*) from pg_proc where proname in ('rights_save','pt_right','people_access','pt_rights')) + (select count(*) from information_schema.tables where table_schema='public' and table_name in ('app_roles','role_rights','user_rights','screen_rights'))") == '8')
+    pg.evaluate("cloudLoadAll(true).then(()=>render())"); pg.wait_for_timeout(1800)
+    ck('Rights (v16)', 'after it, the tab has no warning', 'v16 database update' not in pg.inner_text('#view') and pg.locator('#rightsPanel').count() == 1)
+    pg.uncheck('[data-rr="costing|report.cost.prepare"]'); pg.wait_for_timeout(1500)
+    ck('Rights (v16)', 'unticking a right for a role is saved on the server through rights_save', sql("select allow from role_rights where role_key='costing' and right_key='report.cost.prepare'") == 'f'
+       and sql("select count(*) from rights_audit where action='Role right' and by_user='%s'" % U['sa']) == '1')
+    pg.evaluate(f"state.adminTab='users';render();admDrawer('users','{U['c1']}');document.querySelector('#urWrap').open=true"); pg.wait_for_timeout(500)
+    pg.select_option(f'#urBox select[data-ur="{U["c1"]}|report.cost.prepare"]', '1'); pg.wait_for_timeout(1500)
+    ck('Rights (v16)', 'a person exception (Allow) is saved on the server', sql(f"select allow from user_rights where user_id='{U['c1']}' and right_key='report.cost.prepare'") == 't')
+    pg.evaluate("closeDrawer()")
+    pg.evaluate("state.adminTab='rights';render()"); pg.wait_for_timeout(400)
+    pg.fill('#crName', 'Site Planner'); pg.select_option('#crBase', 'plan'); pg.click('[data-crcreate]'); pg.wait_for_timeout(1500)
+    ck('Rights (v16)', 'a custom role is created on the server from Planning Engineer', sql("select base_role||'/'||active from app_roles where key='c_site_planner'") == 'plan/true')
+    pg.check('[data-rr="c_site_planner|report.internal.approve"]'); pg.wait_for_timeout(1500)
+    ck('Rights (v16)', '...and given the right to approve internal and client reports', sql("select allow from role_rights where role_key='c_site_planner' and right_key='report.internal.approve'") == 't')
+    pg.uncheck('[data-sr="pm|cdash"]'); pg.wait_for_timeout(1500)
+    ck('Rights (v16)', 'a screen hidden for project managers is saved on the server', sql("select visible from screen_rights where role_key='pm' and view_key='cdash'") == 'f')
+    pg.evaluate(f"state.adminTab='users';render();admDrawer('users','{U['pl']}')"); pg.wait_for_timeout(500)
+    pg.select_option('#admForm [name="role"]', 'c_site_planner'); pg.select_option('#admForm [name="accmode"]', 'all'); pg.click('#admForm [type=submit]'); pg.wait_for_timeout(2500)
+    ck('Rights (v16)', 'the planning engineer is given the custom role and All projects on the server (admin_save_person)', sql(f"select role||'/'||coalesce(custom_role,'-')||'/'||all_projects from profiles where id='{U['pl']}'") == 'plan/c_site_planner/true', sql(f"select role||'/'||coalesce(custom_role,'-')||'/'||all_projects from profiles where id='{U['pl']}'"))
+    ck('Rights (v16)', 'the users list shows the custom role and All projects', 'Site Planner' in pg.inner_text('#view') and 'All projects' in pg.inner_text('#view'), pg.inner_text('#view')[:300])
+    r = pg.evaluate("rpc('rights_save',{p:{action:'role_right',role_key:'foreman',right_key:'money.view',allow:true}}).then(()=>'saved').catch(e=>'refused '+srvMsg(e))")
+    ck('Rights (v16)', 'the server refuses cost figures for foremen even from a super admin', r.startswith('refused') and 'Foremen never' in r, r)
+    login(pg, 'c1')
+    ck('Rights (v16)', 'the costing engineer reads his own exception and keeps the right the role lost', pg.evaluate("canPrepRel('cost')") is True and pg.evaluate("DB.rights.role.costing['report.cost.prepare']") is False)
+    r = pg.evaluate("rpc('rights_save',{p:{action:'role_right',role_key:'pm',right_key:'money.view',allow:false}}).then(()=>'saved').catch(e=>'refused '+srvMsg(e))")
+    ck('Rights (v16)', 'anyone but a super admin is refused by rights_save', r.startswith('refused') and 'Only a super admin' in r, r)
+    ck('Rights (v16)', 'a costing engineer does not read the history', pg.evaluate("(DB.rights.audit||[]).length") == 0 and sql("select count(*) from rights_audit") != '0')
+    login(pg, 'cc')
+    ck('Rights (v16)', 'the costing coordinator keeps it through the position, whatever the role setting', pg.evaluate("canPrepRel('cost')") is True and sql(f"select pt_release_preparer('{U['cc']}','cost')") == 't')
+    sql(f"delete from user_rights where user_id='{U['c1']}'")
+    login(pg, 'c1')
+    ck('Rights (v16)', 'without his exception the costing engineer follows the role: the app and the server refuse his cost report', pg.evaluate("canPrepRel('cost')") is False
+       and pg.evaluate("rpc('release_act',{p:{action:'save',project_id:'P1',kind:'cost',period_type:'month',period:'2026-11',figures:{budget_rev0:1,actual:1,commitment:1,ftc:1}}}).then(()=>'saved').catch(e=>'refused '+srvMsg(e))").startswith('refused'))
+    login(pg, 'pl')
+    ck('Rights (v16)', 'the planning engineer signs in with the custom role and every project', pg.evaluate("roleName(me())") == 'Site Planner' and pg.evaluate("me().allProjects") is True and pg.evaluate("accessIds().length") == pg.evaluate("PROJECTS.length"))
+    ck('Rights (v16)', '...he may approve internal reports (app and server agree)', pg.evaluate("relCanApprove('P1','planning')") is True and sql(f"select pt_rel_approver('{U['pl']}','P1')") == 't')
+    login(pg, 'pm')
+    ck('Rights (v16)', 'the project manager no longer has the cost dashboard in the menu', 'cdash' not in pg.evaluate("NAV_VIEWS") and 'eva' in pg.evaluate("NAV_VIEWS"), pg.evaluate("NAV_VIEWS"))
+    sql("delete from role_rights; delete from user_rights; delete from screen_rights")
+    sql(f"update profiles set custom_role=null, all_projects=false where id='{U['pl']}'; insert into project_access values ('{U['pl']}','P1') on conflict do nothing")
 
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))
