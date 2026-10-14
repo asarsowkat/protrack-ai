@@ -1,0 +1,161 @@
+{
+ "what": "Each earlier server suite run with the later updates loaded straight after its own update: once up to v16 (as v3.7), once up to v17. A failure that appears only with v17 would be a change made by v17.",
+ "suites": [
+  {
+   "suite": "test_v4.py",
+   "up_to_v16": {
+    "pass": 122,
+    "fail": 3
+   },
+   "up_to_v17": {
+    "pass": 122,
+    "fail": 3
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v5.py",
+   "up_to_v16": {
+    "pass": 64,
+    "fail": 0
+   },
+   "up_to_v17": {
+    "pass": 64,
+    "fail": 0
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v6.py",
+   "up_to_v16": {
+    "pass": 45,
+    "fail": 8
+   },
+   "up_to_v17": {
+    "pass": 45,
+    "fail": 8
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v7.py",
+   "up_to_v16": {
+    "pass": 104,
+    "fail": 0
+   },
+   "up_to_v17": {
+    "pass": 104,
+    "fail": 0
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v8.py",
+   "up_to_v16": {
+    "pass": 25,
+    "fail": 3
+   },
+   "up_to_v17": {
+    "pass": 25,
+    "fail": 3
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v9.py",
+   "up_to_v16": {
+    "pass": 79,
+    "fail": 0
+   },
+   "up_to_v17": {
+    "pass": 79,
+    "fail": 0
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v10.py",
+   "up_to_v16": {
+    "pass": 51,
+    "fail": 0
+   },
+   "up_to_v17": {
+    "pass": 51,
+    "fail": 0
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v11.py",
+   "up_to_v16": {
+    "pass": 46,
+    "fail": 0
+   },
+   "up_to_v17": {
+    "pass": 46,
+    "fail": 0
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v12.py",
+   "up_to_v16": {
+    "pass": 44,
+    "fail": 0
+   },
+   "up_to_v17": {
+    "pass": 44,
+    "fail": 0
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v13.py",
+   "up_to_v16": {
+    "pass": 75,
+    "fail": 0
+   },
+   "up_to_v17": {
+    "pass": 75,
+    "fail": 0
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v14.py",
+   "up_to_v16": {
+    "pass": 56,
+    "fail": 0
+   },
+   "up_to_v17": {
+    "pass": 56,
+    "fail": 0
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v15.py",
+   "up_to_v16": {
+    "pass": 76,
+    "fail": 0
+   },
+   "up_to_v17": {
+    "pass": 76,
+    "fail": 0
+   },
+   "failing_only_with_v17": []
+  },
+  {
+   "suite": "test_v16.py",
+   "up_to_v16": "its own run: 114/114",
+   "up_to_v17": {
+    "pass": 113,
+    "fail": 1
+   },
+   "failing_only_with_v17": [
+    "seventeen rights and twenty-one screens are known"
+   ],
+   "note": "expected: v17 adds a right and a screen, so the v16 check \"seventeen rights and twenty-one screens\" now counts 18 and 22"
+  }
+ ]
+}

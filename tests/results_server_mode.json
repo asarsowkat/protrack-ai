@@ -1,9 +1,9 @@
 {
- "run_at": "2026-10-14 09:45",
- "app": "/home/claude/p17/site/live.html",
+ "run_at": "2026-10-14 16:11",
+ "app": "/home/claude/p18/site/live.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
-  "PASS": 228,
+  "PASS": 237,
   "FAIL": 0
  },
  "results": [
@@ -1210,6 +1210,60 @@
   {
    "area": "Rights (v16)",
    "check": "the project manager no longer has the cost dashboard in the menu",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Materials (v17)",
+   "check": "before the v17 update, Material tracking says the database update is needed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Materials (v17)",
+   "check": "the v17 update loads on top of a database in use",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Materials (v17)",
+   "check": "the setup check counts 7",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Materials (v17)",
+   "check": "the planning engineer loads the baseline into Material Tracking on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Materials (v17)",
+   "check": "PO number and supplier typed in the table are saved on the server, with the history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Materials (v17)",
+   "check": "an updated schedule keeps the material codes on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Materials (v17)",
+   "check": "statuses come from the update on the server: FAT completed, delivery started and delayed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Materials (v17)",
+   "check": "a revised baseline on the server keeps PO number and supplier",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Materials (v17)",
+   "check": "a costing engineer reads the tracking but the server refuses his edits (and the app shows no input boxes)",
    "result": "PASS",
    "detail": ""
   },

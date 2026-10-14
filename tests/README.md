@@ -1,9 +1,9 @@
-# ProTrackAI automated tests (v3.7)
+# ProTrackAI automated tests (v3.8)
 
 | Suite | Checks | What it covers | Needs |
 |---|---|---|---|
 | `test_v4.py` | 125 | The server rules (v4): attacks that must fail, approval chain, imports, migration, people, rollback | PostgreSQL 16 on `/tmp:5499`, the SQL files next to it |
-| `e2e_server.py` + `fake_supabase.py` | 228 | The app in server mode, end to end, against that database (up to v3.5: Tender register, releases, logs; v10 to v16 applied mid-run: issues, quantities, cost report by WBS head, document rack with Storage uploads and signed downloads, progress release dashboard with regional approval and the project manager review, internal weightage, updated schedule upload, validation of differences, client report; v16: rights by role and person, custom role, All projects, screens, refusals by the server) | PostgreSQL, Playwright, Chromium |
+| `e2e_server.py` + `fake_supabase.py` | 228 | The app in server mode, end to end, against that database (up to v3.5: Tender register, releases, logs; v10 to v17 applied mid-run: issues, quantities, cost report by WBS head, document rack with Storage uploads and signed downloads, progress release dashboard with regional approval and the project manager review, internal weightage, updated schedule upload, validation of differences, client report; v16: rights by role and person, custom role, All projects, screens, refusals by the server; v17: material tracking set-up, manual fields, statuses from an update, refusals) | PostgreSQL, Playwright, Chromium |
 | `test_v5.py` (in supabase/tests) | 64 | Controlled imports on the server: checks, reconciliation, failure, retry, concurrency, authorization, rollback | PostgreSQL 16 |
 | `test_v6.py` (in supabase/tests) | 53 | Lifecycle rules on the server: who may change, submit, approve, return, reopen; no self-approval; history | PostgreSQL 16 |
 | `test_v7.py` (in supabase/tests) | 104 | Tender register on the server: PE proposal, duplicates, release and reallocation, cancel and reinstate, stages 1 to 5 approver, 7-day handover, checklist update, rollback | PostgreSQL 16 |
@@ -16,6 +16,8 @@
 | `test_v14.py` (in supabase/tests) | 56 | Progress release dashboard on the server: worked-out delays, variances, SPI and manpower, validation, regional planning section manager approval, project manager review step, set-up by super admin only, frozen review fields, rollback | PostgreSQL 16 |
 | `test_v15.py` (in supabase/tests) | 76 | Internal weightage and mapping, updated schedules and their formulas, append-only, reads, reports compared with the schedule, validation, client reports, rollback | PostgreSQL 16 |
 | `test_v16.py` (in supabase/tests) | 114 | Roles and rights on the server: every permission helper gives the v3.6 answer until a right is changed (17 people x 89 answers), only a super admin changes rights, super admins cannot be limited, foremen never see cost figures, role rights, person exceptions, positions, screens, custom roles, All projects and regions for any role, daily reports, releases, logs, issues, documents, Tender and lifecycle reading the rights, reads, the history that cannot be changed, rollback | PostgreSQL 16 |
+| `test_v17.py` (in supabase/tests) | 63 | Material Tracking on the server: who may set it up and keep it, baseline load checks, mapping, monitored materials, PO number, supplier and remarks with history, never overwritten by a revised baseline or an updated schedule, the updated schedule keeping the codes, reads, the new right and screen, rollback | PostgreSQL 16 |
+| `mat_demo.py` | 50 | Material Tracking in demo mode: synthetic XER set-up (codes, WBS, mapping, materials), milestone and delivery statuses, Delayed rule, schedule updates, manual fields and history, never overwritten, KPIs, charts, filters, search, sorting, Excel and PDF, rights, phone | Playwright, Chromium |
 | `fullscreen_demo.py` | 21 | v3.7.2: daily reports opened for review or approval and Create / Edit project fill the screen; action buttons stay in view; other settings forms stay a side panel; desktop and phone | Playwright, Chromium |
 | `mmcs_demo.py` | 10 | v3.7.1: the costing file shown as the Master Manpower Costing Sheet everywhere, stored values unchanged, tender documents untouched | Playwright, Chromium |
 | `rights_demo.py` | 59 | Roles and rights in demo mode: the tab and its defaults, rights and screens by role, custom roles, All projects and regions for any role, rights for one person, the rules that never change, history, reload, phone width | Playwright, Chromium |
@@ -52,6 +54,7 @@ python3 tests/docs_demo.py live.html > results_docs_demo.json
 python3 tests/reldash_demo.py live.html > results_reldash_demo.json
 python3 tests/sched_demo.py live.html > results_sched_demo.json
 python3 tests/rights_demo.py live.html > results_rights_demo.json
+python3 tests/mat_demo.py live.html > results_mat_demo.json
 python3 tests/rights_parity.py old-v3.6-live.html parity_v36.json && python3 tests/rights_parity.py live.html parity_v37.json   # then compare the two files
 python3 test_v4.py                                    # run from the folder with the SQL files
 python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json

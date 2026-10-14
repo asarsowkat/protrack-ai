@@ -413,6 +413,14 @@ label.btn{display:inline-block}
 :root{--shelf:#A3ABB8}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--shelf:#4B5563}}:root[data-theme="dark"]{--shelf:#4B5563}
 @media (max-width:640px){.boxfile{width:118px;height:228px}.docitems{columns:1}}
 .sheet.full{width:100%;max-width:none;padding-bottom:0}
+.mtp{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap}.mtns{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.mtip{background:var(--accent-soft);color:var(--accent)}.mtok{background:var(--green-soft);color:var(--green)}.mtlate{background:var(--red-soft);color:var(--red)}.mtamb{background:var(--amber-soft);color:var(--amber)}
+.mttbl{font-size:13px}.mttbl td,.mttbl th{white-space:nowrap;vertical-align:top}.mttbl th.mtm{white-space:normal;min-width:96px}.mttbl .mtsticky{position:sticky;left:0;background:var(--surface);z-index:1}
+.mtwrap{max-height:72vh;overflow:auto}.mttbl thead th{position:sticky;top:0;background:var(--surface);z-index:2}.mttbl thead th.mtsticky{z-index:3}
+.mtin{width:140px;font-size:13px;padding:4px 6px}.mtrem{width:220px;min-height:34px;white-space:pre-wrap}.mtoff td{opacity:.6}
+.mtch{height:240px;position:relative}.mtg3{grid-template-columns:repeat(3,minmax(0,1fr))}.mtg2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mtfilters{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin:8px 0 12px}.mtchecks{max-height:300px;overflow:auto}
+@media (max-width:1000px){.mtg3,.mtg2{grid-template-columns:minmax(0,1fr)}}
 .dprfacts{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet.full .dprfacts{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media (min-width:1100px){.sheet.full .dprlines{display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:0 18px;align-items:start}}
 @media (max-width:640px){.sheet.full .dprfacts{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -754,7 +762,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.7.2</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1315,7 +1323,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDocs();await cloudLoadRights();
+    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDocs();await cloudLoadRights();await cloudLoadMat();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -4172,7 +4180,7 @@ function parseSchedXER(text){
     if(st==='TK_Complete')pc=100;else if(ty==='CP_Drtn'){const td=n(t.target_drtn_hr_cnt);pc=td>0?(1-n(t.remain_drtn_hr_cnt)/td)*100:(st==='TK_NotStart'?0:n(t.phys_complete_pct))}
     else if(ty==='CP_Units'){const a=n(t.act_work_qty),r=n(t.remain_work_qty);pc=a+r>0?a/(a+r)*100:n(t.phys_complete_pct)}else pc=n(t.phys_complete_pct);
     if(st==='TK_NotStart'&&ty!=='CP_Phys')pc=0;
-    return {id:String(t.task_code||t.task_id||'').trim(),name:String(t.task_name||'').trim(),wbs:mainOf(t.wbs_id),codes:codes[t.task_id]||{},wts:wts[t.task_id]||{},
+    return {id:String(t.task_code||t.task_id||'').trim(),name:String(t.task_name||'').trim(),wbs:mainOf(t.wbs_id),wbsLeaf:String((W[t.wbs_id]||{}).wbs_name||'').trim(),codes:codes[t.task_id]||{},wts:wts[t.task_id]||{},
       bh:n(t.target_work_qty)||lab[t.task_id]||0,dur:n(t.target_drtn_hr_cnt),ms:t.task_type==='TT_Mile'||t.task_type==='TT_FinMile',
       bs:dOnly(t.target_start_date)||null,bf:dOnly(t.target_end_date)||null,es:dOnly(t.early_start_date)||null,ef:dOnly(t.early_end_date)||null,
       as:dOnly(t.act_start_date)||null,af:dOnly(t.act_end_date)||null,pct:Math.round(clamp(pc||0,0,100)*100)/100}}).filter(r=>r.id);
@@ -4183,7 +4191,9 @@ function parseSchedXER(text){
 function schedRowsFor(S){const st=S.map,ct=S.ctype;
   return S.parsed.rows.map(r=>{const code=ct?(r.codes[ct]||''):'',w=S.wres==='__lab'?r.bh:S.wres==='__dur'?r.dur:(+(r.wts||{})[S.wres]||0);
     const a=ACTS.find(x=>x.p===S.pid&&x.id===r.id);
-    return {id:r.id,name:r.name,wbs:r.wbs||'',code,w:r.ms?0:Math.max(0,w),bs:(a&&a.bs)||r.bs,bf:(a&&a.bf)||r.bf,pct:r.pct,ms:r.ms,as:r.as,af:r.af,ef:r.ef,
+    const M=mtSetup(S.pid);
+    return {id:r.id,name:r.name,wbs:r.wbs||'',code,w:r.ms?0:Math.max(0,w),bs:(a&&a.bs)||r.bs,bf:(a&&a.bf)||r.bf,pct:r.pct,ms:r.ms,as:r.as,af:r.af,ef:r.ef,es:r.es||null,wbs_leaf:r.wbsLeaf||'',
+      mat:M?String((r.codes||{})[M.mat_code]||'').trim():'',uact:M?String((r.codes||{})[M.uact_code]||'').trim():'',
       phase:(code&&st.code_map[code])||(r.wbs&&st.wbs_map[r.wbs])||null}})}
 
 /* ---------- saving: phase weightage and mapping, updated schedules ---------- */
@@ -4215,7 +4225,7 @@ function schedCommitLocal(p){
   rows.forEach(x=>{const id=String(x.id||'').trim();if(!id||id.length>60)fail('Every activity needs an ID of up to 60 characters');if(seen.has(id))return;seen.add(id);
     if(+x.w<0||!isFinite(+x.w||0))fail(`Activity ${id}: the weight must be a number, not negative`);const v=+x.pct||0;if(v<0||v>100)fail(`Activity ${id}: % complete must be between 0 and 100`);
     const a=ACTS.find(z=>z.p===pid&&z.id===id),bs=(a&&a.bs)||x.bs||null,bf=(a&&a.bf)||x.bf||null;if(+x.w>0&&(!bs||!bf))fail(`Activity ${id}: planned start and finish are needed`);
-    R.push({id,name:String(x.name||'').slice(0,300),wbs:x.wbs||'',code:x.code||'',phase:(x.code&&st.code_map[x.code])||(x.wbs&&st.wbs_map[x.wbs])||null,w:+x.w||0,bs,bf,pct:v,ms:!!x.ms,as:x.as||null,af:x.af||null,ef:x.ef||null})});
+    R.push({id,name:String(x.name||'').slice(0,300),wbs:x.wbs||'',code:x.code||'',phase:(x.code&&st.code_map[x.code])||(x.wbs&&st.wbs_map[x.wbs])||null,w:+x.w||0,bs,bf,pct:v,ms:!!x.ms,as:x.as||null,af:x.af||null,ef:x.ef||null,es:x.es||null,mat:x.mat||'',uact:x.uact||'',wbs_leaf:x.wbs_leaf||''})});
   const nu=R.filter(r=>!r.phase&&r.w>0).length;if(nu&&p.weightage==='client'&&hasPhaseW(pid))fail(`${nu} weighted activities have no phase. Map every main WBS branch (or activity code value) to a phase first`);
   if(!R.some(r=>r.w>0))fail('No activity in the schedule carries a weight');
   const u={id:'SU'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),project_id:pid,data_date:p.data_date,weightage:p.weightage,file_name:p.file_name||null,file_hash:p.file_hash||null,
@@ -4231,8 +4241,10 @@ async function cloudLoadSched(){
   try{const [st,ups,aud]=await Promise.all([selAll('project_phase_setup','*',null,['project_id']),selAll('schedule_updates','*',null,['uploaded_at','id']),selAll('phase_setup_audit','*',null,['id'])]);
     DB.phaseSetup=Object.fromEntries(st.map(x=>[x.project_id,x]));DB.schedUpdates=ups;DB.phaseAudit=aud;
     const latest=[...new Set(ups.map(u=>u.project_id))].map(pid=>schedAt(pid,'9999-12-31')).filter(Boolean).map(u=>u.id);DB.schedRows={};
-    if(latest.length){const rows=await selAll('schedule_update_rows','update_id,act_id,name,phase,w,bs,bf,pct,ms,af,ef',q=>q.in('update_id',latest),['update_id','act_id']);
-      rows.forEach(r=>{(DB.schedRows[r.update_id]=DB.schedRows[r.update_id]||[]).push({id:r.act_id,name:r.name,phase:r.phase,w:+r.w,bs:r.bs,bf:r.bf,pct:+r.pct,ms:r.ms,af:r.af,ef:r.ef})})}
+    if(latest.length){let rows;const qq=q=>q.in('update_id',latest);   /* v3.8: also the codes for material tracking, when the v17 update is in */
+      try{rows=await selAll('schedule_update_rows','update_id,act_id,name,wbs,phase,w,bs,bf,pct,ms,as_d,af,ef,es,mat,uact,wbs_leaf',qq,['update_id','act_id'])}
+      catch(e){rows=await selAll('schedule_update_rows','update_id,act_id,name,phase,w,bs,bf,pct,ms,af,ef',qq,['update_id','act_id'])}
+      rows.forEach(r=>{(DB.schedRows[r.update_id]=DB.schedRows[r.update_id]||[]).push({id:r.act_id,name:r.name,wbs:r.wbs||'',phase:r.phase,w:+r.w,bs:r.bs,bf:r.bf,pct:+r.pct,ms:r.ms,as:r.as_d||null,af:r.af,ef:r.ef,es:r.es||null,mat:r.mat||'',uact:r.uact||'',wbs_leaf:r.wbs_leaf||''})})}
     DB.schedMissing=false}
   catch(e){DB.phaseSetup=DB.phaseSetup||{};DB.schedUpdates=DB.schedUpdates||[];DB.schedRows=DB.schedRows||{};DB.phaseAudit=DB.phaseAudit||[];DB.schedMissing=srvMsg(e)}}
 
@@ -4501,14 +4513,15 @@ const RIGHTS=[
   ['docs.planning','Keep the Planning & Scheduling row of the document rack','Projects',['plan']],
   ['docs.cost','Keep the Cost Control & Costing row of the document rack','Projects',['costing']],
   ['tender.register','Register Tender L1 projects and their details','Projects',[]],
-  ['lifecycle.approve','Approve lifecycle stages 6 to 12 (as a project manager)','Projects',['pm']]];
+  ['lifecycle.approve','Approve lifecycle stages 6 to 12 (as a project manager)','Projects',['pm']],
+  ['materials.keep','Keep material tracking: set-up, PO number, supplier and remarks','Projects',['plan']]];
 /* what comes with a position, shown beside the right in the tables */
-const RIGHT_POS={'report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
+const RIGHT_POS={'materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
   'report.cost.approve':'Head of Planning and Cost Control','logs.upload':'costing coordinator','issues.keep':'Head of Planning and Cost Control',
   'issues.review':'Head of Planning and Cost Control','docs.contract':'Head of Planning and Cost Control','docs.planning':'Head of Planning and Cost Control',
   'docs.cost':'Head of Planning and Cost Control','tender.register':'Head of Planning and Cost Control; costing coordinator'};
 const RIGHT_N=Object.fromEntries(RIGHTS.map(r=>[r[0],r[1]]));
-const SCREENS=['xr','exec','proj','tender','iss','docs','act','rel','logs','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf'];
+const SCREENS=['xr','exec','proj','tender','iss','docs','act','rel','logs','mat','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf'];
 const RIGHT_ROLES=['exec','rm','pf','plan','costing','pm','sm','eng','foreman','ro'];
 const rightsDB=()=>DB.rights||(DB.rights={roles:[],role:{},user:{},screen:{},audit:[]});
 const appRoles=()=>rightsDB().roles||[];
@@ -4611,7 +4624,7 @@ function rightNoEx(k,u){if(u.role==='sa')return true;if(k==='money.view'&&u.role
   const ro=((rightsDB().role||{})[roleKeyOf(u)]||{})[k];if(ro!==undefined)return !!ro;return rightRoleDef(u.role,k)}
 /* the positions a person holds, for a right (used for "As the role" in the form) */
 function rightPosOf(k,u){const hd=isHead(u),co=isCoord(u),reg=(DB.relApprovers||[]).some(a=>a.user_id===u.id);
-  return {'report.internal.approve':hd||reg,'report.cost.prepare':co,'report.cost.approve':hd,'logs.upload':co,'issues.keep':hd,'issues.review':hd,'docs.contract':hd,'docs.planning':hd,'docs.cost':hd,'tender.register':hd||co}[k]||false}
+  return {'report.internal.approve':hd||reg,'report.cost.prepare':co,'report.cost.approve':hd,'logs.upload':co,'issues.keep':hd,'issues.review':hd,'docs.contract':hd,'docs.planning':hd,'docs.cost':hd,'tender.register':hd||co,'materials.keep':hd}[k]||false}
 document.addEventListener('change',async e=>{const t=e.target;if(!t.matches)return;
   if(t.matches('[data-rr]')){const [rk,k]=t.dataset.rr.split('|'),base=appRole(rk)?appRole(rk).base_role:rk,d=rightRoleDef(base,k);
     const r=await rightsSave({action:'role_right',role_key:rk,right_key:k,allow:t.checked===d&&!appRole(rk)?null:t.checked});if(r)toast('Saved');render();return}
@@ -4631,6 +4644,296 @@ function seedV37(){
     R.audit.push({id:R.audit.length+1,action:'Role created',target:'Planning Section Manager',right_key:null,value:'from plan',by_name:(userById('U28')||{}).name||'Super admin',at_time:addDays(TODAY,-30)+'T09:00:00'})}
   ['U48','U49'].forEach(id=>{const u=userById(id);if(u&&u.role==='plan')u.crole='c_planning_section_manager'});
   DB.v37Seeded=true;save();
+}
+
+/* ---------- v3.8: Material Tracking (Materials & Procurement) ----------
+   The planning engineer loads the approved baseline schedule (P6 XER) into Material Tracking and chooses the activity
+   codes that carry the Material Name and the Unified Activity Name, the WBS branches holding the material activities,
+   which of the nine procurement milestones each Unified Activity Name stands for, and which materials are monitored.
+   One row per material. Statuses come from the latest updated schedule (Baselines → Updated schedule, v3.6), matched by
+   activity ID, else from the baseline. PO Number, Supplier Name and Remarks are kept by hand, never touched by a
+   schedule import, with a history of every change. The server (schema-update-v17.sql: material_setup_save,
+   material_item_save) checks who may change what. */
+const MT_STAGES=[['PR','PR Creation'],['PO','PO Creation'],['BD','Base Design'],['GAFM','GAFM Approval'],['MFG','Manufacturing'],['FAT','FAT'],['RFS','Release for Shipment'],['DEL','Delivery at Site'],['CIV','Civil Readiness']];
+const MT_N=Object.fromEntries(MT_STAGES),MT_ORD=Object.fromEntries(MT_STAGES.map(([k],i)=>[k,i]));
+const MT_ST={'Not Started':'mtns','In Progress':'mtip','Completed':'mtok','Delayed':'mtlate'};
+const MT_DEL={'Not Delivered':'mtlate','Delivery Started':'mtamb','Delivered':'mtok','No delivery activity':'mtns'};
+/* the milestone a Unified Activity Name most likely stands for */
+function mtGuess(u){const s=String(u||'').toLowerCase();
+  if(/\bpr\b|purchase req|requisition/.test(s))return 'PR';if(/\bpo\b|purchase order|order placement|award/.test(s))return 'PO';if(/gafm/.test(s))return 'GAFM';
+  if(/design|drawing/.test(s))return 'BD';if(/manufactur|fabricat|production/.test(s))return 'MFG';if(/\bfat\b|factory accept|factory test/.test(s))return 'FAT';
+  if(/ship|dispatch|release/.test(s))return 'RFS';if(/deliver|arriv|receipt at site|on site/.test(s))return 'DEL';if(/civil|readiness|foundation/.test(s))return 'CIV';return ''}
+const mtSetup=pid=>(DB.matSetup||{})[pid]||null;
+const mtActs=pid=>((DB.matActs||{})[pid])||[];
+const mtItems=pid=>((DB.matItems||{})[pid])||{};
+const canMatKeep=pid=>!!pid&&accessIds().includes(pid)&&can('materials.keep',isHead());
+const canMatView=()=>state.role!=='foreman';
+/* the status of one activity at the data date */
+function mtActStatus(a,dd){const done=(+a.pct||0)>=100||!!a.af,started=done||(+a.pct||0)>0||!!a.as,cf=a.af||a.ef||null;
+  const late=!done&&!!a.bf&&((cf&&cf>a.bf)||(dd&&dd>a.bf));
+  return {done,started,late,status:done?'Completed':late?'Delayed':started?'In Progress':'Not Started'}}
+/* the activities of one project's materials, with the latest status */
+function mtActivities(pid){
+  const S=mtSetup(pid);if(!S)return {rows:[],dd:null,src:null};
+  const u=schedAt(pid,'9999-12-31'),ur=schedRowsOf(u)||[],byId=new Map(ur.map(r=>[r.id,r])),wf=new Set(S.wbs_filter||[]),seen=new Set();
+  const dd=(u&&u.data_date)||S.data_date||ASOF;
+  const mk=(b,x,inBase)=>{const r={id:b.act_id||b.id,name:(x&&x.name)||b.name,wbs:b.wbs||(x&&x.wbs)||'',wbs_leaf:(x&&x.wbs_leaf)||b.wbs_leaf||'',material:b.material||(x&&x.mat),
+      uact:b.uact||(x&&x.uact)||'',bs:inBase?b.bs:(x&&x.bs),bf:inBase?b.bf:(x&&x.bf),pct:x?(+x.pct||0):(+b.pct||0),as:x?(x.as||null):(b.as_d||b.as||null),
+      af:x?(x.af||null):(b.af||null),es:x?(x.es||null):(b.es||null),ef:x?(x.ef||null):(b.ef||null),inBase,fromUpdate:!!x};
+    r.stage=(S.stage_map||{})[r.uact]||'';Object.assign(r,mtActStatus(r,dd));r.cs=r.as||r.es||(!r.started?r.bs:null);r.cf=r.af||r.ef||r.bf;return r};
+  const out=mtActs(pid).map(b=>{seen.add(b.act_id);return mk(b,byId.get(b.act_id),true)});
+  ur.filter(x=>x.mat&&!seen.has(x.id)&&(!wf.size||wf.has(x.wbs))).forEach(x=>out.push(mk({act_id:x.id,material:x.mat,uact:x.uact,wbs:x.wbs,wbs_leaf:x.wbs_leaf},x,false)));
+  return {rows:out,dd,src:u}}
+/* one milestone cell from its activities */
+function mtCell(A){if(!A.length)return null;const done=A.every(a=>a.done),started=A.some(a=>a.started),late=A.some(a=>a.late);
+  const date=done?A.map(a=>a.af||a.cf).filter(Boolean).sort().pop():A.map(a=>a.cf).filter(Boolean).sort().pop();
+  return {status:done?'Completed':late?'Delayed':started?'In Progress':'Not Started',done,started,late,date:date||null,n:A.length}}
+/* one row per material */
+function mtMaterials(pid){
+  const {rows,dd,src}=mtActivities(pid),items=mtItems(pid),by={};rows.forEach(r=>{(by[r.material]=by[r.material]||[]).push(r)});
+  return Object.entries(by).map(([m,A])=>{
+    A.sort((a,b)=>(MT_ORD[a.stage]??99)-(MT_ORD[b.stage]??99)||String(a.bs||'').localeCompare(String(b.bs||'')));
+    const cur=A.find(a=>!a.done)||A[A.length-1],cells=Object.fromEntries(MT_STAGES.map(([k])=>[k,mtCell(A.filter(a=>a.stage===k))]));
+    const allDone=A.every(a=>a.done),D=cells.DEL,del=!D?'No delivery activity':D.done?'Delivered':D.started?'Delivery Started':'Not Delivered';
+    const it=items[m]||{material:m,selected:true};
+    return {pid,material:m,acts:A,cur,cells,allDone,status:allDone?'Completed':cur.status,delayed:A.some(a=>a.late),delivery:del,delDate:D?D.date:null,
+      proc:allDone?'Completed':(MT_N[cur.stage]||cur.uact||'Not mapped'),wbs:cur.wbs_leaf||cur.wbs,item:it,selected:it.selected!==false,dd,src}})
+  .sort((a,b)=>a.material.localeCompare(b.material))}
+
+/* ---------- saving: on the server through material_setup_save / material_item_save, or in this browser ---------- */
+function mtSetupLocal(p){
+  const fail=t=>{throw new Error(t)},pid=p.project_id,a=p.action||'settings';
+  if(!pid||!accessIds().includes(pid))fail('You do not have access to this project');
+  if(!canMatKeep(pid))fail('Only the people who keep material tracking (planning engineers of this project, the Head of Planning and Cost Control or a super admin) can change it');
+  const old=mtSetup(pid);if(a==='settings'&&!old)fail('Load the baseline schedule into Material Tracking first');
+  const mc=String(p.mat_code||(old&&old.mat_code)||'').trim(),uc=String(p.uact_code||(old&&old.uact_code)||'').trim();
+  if(!mc||!uc)fail('Choose the activity codes for the Material Name and the Unified Activity Name');
+  if(mc.toLowerCase()===uc.toLowerCase())fail('The Material Name and the Unified Activity Name must be two different activity codes');
+  const wf=p.wbs_filter!==undefined?p.wbs_filter:(old&&old.wbs_filter)||[],sm=p.stage_map!==undefined?p.stage_map:(old&&old.stage_map)||{};
+  if(!Array.isArray(wf)||!wf.length)fail('Choose at least one WBS branch that holds the material activities');
+  Object.entries(sm).forEach(([k,v])=>{if(v&&!MT_N[v])fail(`Unknown milestone ${v} for ${k}`)});
+  const log=(material,field,before,after,note)=>{DB.matAudit=DB.matAudit||[];DB.matAudit.push({id:DB.matAudit.length+1,project_id:pid,material:material||null,field,before:before==null?null:String(before),after:after==null?null:String(after),note:note||null,by_user:me().id,by_name:me().name,at_time:new Date().toISOString()})};
+  DB.matActs=DB.matActs||{};DB.matItems=DB.matItems||{};DB.matSetup=DB.matSetup||{};let n=0,nm=0;
+  if(a==='baseline'){const R=p.rows||[];if(!R.length)fail('No activity in the chosen WBS branches carries a Material Name');if(R.length>20000)fail('More than 20,000 material activities');
+    const bad=R.filter(r=>!String(r.id||'').trim()||String(r.id).length>60||!String(r.material||'').trim()||String(r.material).length>120||['bs','bf','es','ef','as','af'].some(k=>r[k]&&!isoOk(r[k]))||!(+r.pct>=0&&+r.pct<=100||r.pct==null));
+    if(bad.length)fail('Activities refused (an ID, a Material Name, a date or a % complete is missing or wrong): '+bad.slice(0,8).map(r=>r.id||'?').join(', '));
+    const seen=new Set();DB.matActs[pid]=R.filter(r=>{const k=String(r.id).trim();if(seen.has(k))return false;seen.add(k);return true}).map(r=>({act_id:String(r.id).trim(),name:r.name||'',wbs:r.wbs||'',wbs_leaf:r.wbs_leaf||'',material:String(r.material).trim(),uact:String(r.uact||'').trim()||null,
+      bs:r.bs||null,bf:r.bf||null,es:r.es||null,ef:r.ef||null,as_d:r.as||null,af:r.af||null,pct:+r.pct||0,ms:!!r.ms}));n=DB.matActs[pid].length;
+    const I=DB.matItems[pid]=DB.matItems[pid]||{};[...new Set(DB.matActs[pid].map(x=>x.material))].forEach(m=>{if(!I[m]){I[m]={project_id:pid,material:m,selected:true,po_number:null,supplier:null,remarks:null};nm++}});
+    log(null,'Baseline loaded',null,`${p.file_name||'schedule'}: ${n} activities, ${nm} new materials`,p.note)}
+  const before=old?JSON.stringify({mat_code:old.mat_code,uact_code:old.uact_code,wbs:old.wbs_filter,map:old.stage_map}):null,after=JSON.stringify({mat_code:mc,uact_code:uc,wbs:wf,map:sm});
+  DB.matSetup[pid]={project_id:pid,mat_code:mc,uact_code:uc,wbs_filter:wf.slice(),stage_map:{...sm},file_name:a==='baseline'?(p.file_name||null):old.file_name,file_hash:a==='baseline'?(p.file_hash||null):old.file_hash,
+    data_date:a==='baseline'?(p.data_date||null):old.data_date,updated_by:me().id,updated_at:new Date().toISOString()};
+  if(old&&before!==after)log(null,'Set-up',before,after);
+  if(Array.isArray(p.select)){const sel=new Set(p.select),I=DB.matItems[pid]||{};Object.values(I).forEach(it=>{const v=sel.has(it.material);if((it.selected!==false)!==v){log(it.material,'Monitored',String(it.selected!==false),String(v));it.selected=v}})}
+  save();const I=DB.matItems[pid]||{};return {project_id:pid,activities:n,new_materials:nm,materials:Object.keys(I).length,monitored:Object.values(I).filter(x=>x.selected!==false).length}}
+function mtItemLocal(p){
+  const fail=t=>{throw new Error(t)},pid=p.project_id,m=String(p.material||'').trim();
+  if(!pid||!accessIds().includes(pid))fail('You do not have access to this project');
+  if(!canMatKeep(pid))fail('Only the people who keep material tracking (planning engineers of this project, the Head of Planning and Cost Control or a super admin) can change it');
+  const it=mtItems(pid)[m];if(!it)fail('Unknown material '+m);
+  if(String(p.po_number||'').length>60)fail('The PO number is 60 characters at most');if(String(p.supplier||'').length>120)fail('The supplier name is 120 characters at most');
+  if(String(p.remarks||'').length>4000)fail('Remarks are 4,000 characters at most');
+  const N={po_number:'PO Number',supplier:'Supplier Name',remarks:'Remarks',selected:'Monitored'};let ch=0;DB.matAudit=DB.matAudit||[];
+  Object.keys(N).forEach(f=>{if(!(f in p))return;const nv=f==='selected'?String(!!p.selected):(String(p[f]??'').trim()||null),ov=f==='selected'?String(it.selected!==false):(it[f]||null);
+    if(nv!==ov){ch++;DB.matAudit.push({id:DB.matAudit.length+1,project_id:pid,material:m,field:N[f],before:ov,after:nv,by_user:me().id,by_name:me().name,at_time:new Date().toISOString()});it[f]=f==='selected'?!!p.selected:nv}});
+  if(ch){it.updated_by=me().id;it.updated_at=new Date().toISOString();save()}return {...it,changed:ch}}
+async function mtSave(kind,p){mtSave.err='';const fn=kind==='setup'?'material_setup_save':'material_item_save';
+  if(CLOUD_ME){try{const r=await rpc(fn,{p});await cloudLoadMat();save();return r||{}}catch(e){mtSave.err=srvMsg(e)+(/does not exist|material_/i.test(srvMsg(e))&&/function/i.test(srvMsg(e))?' (the server needs the v17 database update, see STAGE-14-SETUP)':'');return null}}
+  try{return kind==='setup'?mtSetupLocal(p):mtItemLocal(p)}catch(e){mtSave.err=e.message;return null}}
+async function cloudLoadMat(){
+  try{const [s,a,i,au]=await Promise.all([selAll('material_setup','*',null,['project_id']),selAll('material_acts','*',null,['project_id','act_id']),selAll('material_items','*',null,['project_id','material']),selAll('material_audit','*',null,['id'])]);
+    DB.matSetup=Object.fromEntries(s.map(x=>[x.project_id,x]));DB.matActs={};a.forEach(x=>{(DB.matActs[x.project_id]=DB.matActs[x.project_id]||[]).push(x)});
+    DB.matItems={};i.forEach(x=>{(DB.matItems[x.project_id]=DB.matItems[x.project_id]||{})[x.material]=x});DB.matAudit=au;DB.matMissing=false}
+  catch(e){DB.matSetup=DB.matSetup||{};DB.matActs=DB.matActs||{};DB.matItems=DB.matItems||{};DB.matAudit=DB.matAudit||[];DB.matMissing=srvMsg(e)}}
+
+/* ---------- the page ---------- */
+function mtState(){state.mt=state.mt||{pid:'',wbs:'',mat:'',sup:'',del:'',proc:'',q:'',sort:'del',all:false};return state.mt}
+function mtProjects(){return PROJECTS.filter(p=>SCOPE.has?SCOPE.has(p.id):SCOPE.includes(p.id))}
+function mtAllRows(){const F=mtState();return mtProjects().filter(p=>mtSetup(p.id)&&(!F.pid||F.pid===p.id)).flatMap(p=>mtMaterials(p.id))}
+function mtFiltered(){const F=mtState(),q=F.q.trim().toLowerCase();
+  let R=mtAllRows().filter(r=>F.all||r.selected);
+  if(F.wbs)R=R.filter(r=>r.wbs===F.wbs);if(F.mat)R=R.filter(r=>r.material===F.mat);if(F.sup)R=R.filter(r=>(r.item.supplier||'—')===F.sup);
+  if(F.del)R=R.filter(r=>r.delivery===F.del);if(F.proc)R=R.filter(r=>r.proc===F.proc);
+  if(q)R=R.filter(r=>[r.material,r.item.po_number,r.item.supplier].some(x=>String(x||'').toLowerCase().includes(q)));
+  const so={del:(a,b)=>String(a.delDate||'9999').localeCompare(String(b.delDate||'9999')),sup:(a,b)=>(!a.item.supplier)-(!b.item.supplier)||String(a.item.supplier||'').localeCompare(String(b.item.supplier||'')),
+    st:(a,b)=>['Delayed','In Progress','Not Started','Completed'].indexOf(a.status)-['Delayed','In Progress','Not Started','Completed'].indexOf(b.status),mat:(a,b)=>a.material.localeCompare(b.material)}[F.sort];
+  if(so)R.sort((a,b)=>so(a,b)||a.material.localeCompare(b.material));return R}
+function mtKPIs(R){const c=f=>R.filter(f).length;
+  return {total:R.length,nd:c(r=>r.delivery==='Not Delivered'),ds:c(r=>r.delivery==='Delivery Started'),dv:c(r=>r.delivery==='Delivered'),late:c(r=>r.delayed),
+    mfg:c(r=>r.cells.MFG&&r.cells.MFG.started&&!r.cells.MFG.done),fat:c(r=>r.cells.FAT&&!r.cells.FAT.done&&(!r.cells.MFG||r.cells.MFG.done)),
+    ship:c(r=>r.cells.RFS&&!r.cells.RFS.done&&(!r.cells.FAT||r.cells.FAT.done))}}
+const mtPill=(t,cls,date)=>`<span class="mtp ${cls}">${esc(t)}</span>${date?`<span class="t2">${fmtDY(date)}</span>`:''}`;
+function renderMat(){
+  const F=mtState(),L=T[state.lang],ps=mtProjects(),setPid=(F.pid&&ps.some(p=>p.id===F.pid))?F.pid:(ps.find(p=>mtSetup(p.id))||ps[0]||{}).id||'';
+  const all=mtAllRows(),R=mtFiltered(),K=mtKPIs(R),keepAny=ps.some(p=>canMatKeep(p.id)),opts=(v,arr)=>`<option value="">All</option>`+[...new Set(arr)].filter(x=>x!=null&&x!=='').sort().map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('');
+  const shown=all.filter(r=>F.all||r.selected),sups=[...new Set(shown.map(r=>r.item.supplier||'—'))],ddl=[...new Set(all.map(r=>r.dd).filter(Boolean))].sort();
+  const head=`<tr><th class="mtsticky">Material</th>${ps.length>1&&!F.pid?'<th>Project</th>':''}<th>WBS</th><th>Unified Activity Name</th><th>Current schedule status</th><th>Baseline start</th><th>Baseline finish</th><th>Current start</th><th>Current finish</th><th class="n">% complete</th>${MT_STAGES.map(([,l])=>`<th class="mtm">${esc(l)}</th>`).join('')}<th>Delivery Status</th><th>PO Number</th><th>Supplier Name</th><th>Remarks</th><th></th></tr>`;
+  const row=r=>{const ed=canMatKeep(r.pid),it=r.item,k=`${esc(r.pid)}|${esc(r.material)}`,c=r.cur;
+    return `<tr class="${r.selected?'':'mtoff'}"><td class="mtsticky"><b>${esc(r.material)}</b>${r.selected?'':'<span class="t2">not monitored</span>'}</td>${ps.length>1&&!F.pid?`<td>${esc((projById(r.pid)||{}).short||r.pid)}</td>`:''}
+      <td class="small">${esc(r.wbs||'—')}</td><td>${esc(c.uact||'—')}</td><td>${mtPill(r.status,MT_ST[r.status])}</td>
+      <td>${c.bs?fmtDY(c.bs):'—'}</td><td>${c.bf?fmtDY(c.bf):'—'}</td><td>${c.cs?fmtDY(c.cs):'—'}${c.as?'<span class="t2">actual</span>':''}</td><td>${c.cf?fmtDY(c.cf):'—'}${c.af?'<span class="t2">actual</span>':''}</td><td class="n">${fmt(c.pct,0)}%</td>
+      ${MT_STAGES.map(([s])=>{const x=r.cells[s];return `<td class="mtm">${x?mtPill(x.status,MT_ST[x.status],x.date):'<span class="muted">—</span>'}</td>`}).join('')}
+      <td>${mtPill(r.delivery,MT_DEL[r.delivery],r.delDate)}</td>
+      <td>${ed?`<input class="mtin" data-mtf="${k}|po_number" value="${esc(it.po_number||'')}" maxlength="60" aria-label="PO Number of ${esc(r.material)}">`:esc(it.po_number||'—')}</td>
+      <td>${ed?`<input class="mtin" list="mtSup" data-mtf="${k}|supplier" value="${esc(it.supplier||'')}" maxlength="120" aria-label="Supplier of ${esc(r.material)}">`:esc(it.supplier||'—')}</td>
+      <td>${ed?`<textarea class="mtin mtrem" rows="2" data-mtf="${k}|remarks" maxlength="4000" aria-label="Remarks for ${esc(r.material)}">${esc(it.remarks||'')}</textarea>`:`<span class="small" style="white-space:pre-wrap">${esc(it.remarks||'—')}</span>`}</td>
+      <td><button class="btn sm" type="button" data-mthist="${k}">History</button></td></tr>`};
+  const kp=(l,v,cls,s)=>`<div class="rkpi ${cls||''}"><span class="l">${l}</span><b>${fmt(v)}</b>${s?`<span class="t2">${s}</span>`:''}</div>`;
+  const missing=CLOUD_ME&&DB.matMissing?`<div class="warn-box" style="margin-bottom:12px">Material Tracking needs the v17 database update (see STAGE-14-SETUP). <span class="small">${esc(DB.matMissing)}</span></div>`:'';
+  $('#view').innerHTML=`${missing}<div class="crumb">Materials & Procurement › Material tracking. Statuses come from the latest updated schedule${ddl.length?` (data date ${ddl.map(fmtDY).join(', ')})`:''}; PO number, supplier and remarks are kept here and never changed by a schedule import.</div>
+    ${all.length?`<div class="rkpis" style="margin-bottom:12px">${kp('Total materials tracked',K.total,'')}${kp('Not Delivered',K.nd,'r')}${kp('Delivery Started',K.ds,'a')}${kp('Delivered',K.dv,'g')}${kp('Delayed materials',K.late,K.late?'r':'g')}${kp('Manufacturing in progress',K.mfg,'')}${kp('Pending FAT',K.fat,'')}${kp('Pending shipment',K.ship,'')}</div>
+    <div class="g mtg3 mtcharts"><section class="panel"><h2>Delivery status</h2><div class="mtch"><canvas id="mtcDel" aria-label="Delivery status distribution"></canvas></div></section>
+      <section class="panel"><h2>By supplier</h2><div class="mtch"><canvas id="mtcSup" aria-label="Supplier-wise material status"></canvas></div></section>
+      <section class="panel"><h2>Procurement progress by milestone</h2><div class="mtch"><canvas id="mtcStg" aria-label="Procurement progress breakdown"></canvas></div></section></div>
+    <section class="panel" id="mtTable"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h2>Materials <span class="muted small">${R.length} of ${shown.length}</span></h2>
+      <div class="actions" style="margin:0"><button class="btn sm" type="button" data-mtexp="xlsx">Excel</button><button class="btn sm" type="button" data-mtexp="pdf">PDF</button></div></div>
+      <div class="fields mtfilters">
+        ${ps.length>1?`<label class="field">Project<select data-mtflt="pid"><option value="">All</option>${ps.filter(p=>mtSetup(p.id)).map(p=>`<option value="${esc(p.id)}" ${p.id===F.pid?'selected':''}>${esc(p.short)}</option>`).join('')}</select></label>`:''}
+        <label class="field">WBS<select data-mtflt="wbs">${opts(F.wbs,shown.map(r=>r.wbs))}</select></label>
+        <label class="field">Material<select data-mtflt="mat">${opts(F.mat,shown.map(r=>r.material))}</select></label>
+        <label class="field">Supplier<select data-mtflt="sup">${opts(F.sup,sups)}</select></label>
+        <label class="field">Delivery status<select data-mtflt="del">${opts(F.del,['Not Delivered','Delivery Started','Delivered','No delivery activity'])}</select></label>
+        <label class="field">Procurement status<select data-mtflt="proc">${opts(F.proc,shown.map(r=>r.proc))}</select></label>
+        <label class="field">Search<input type="search" data-mtflt="q" value="${esc(F.q)}" placeholder="Material, PO number or supplier"></label>
+        <label class="field">Sort by<select data-mtflt="sort">${[['del','Delivery date'],['sup','Supplier'],['st','Status'],['mat','Material']].map(([v,l])=>`<option value="${v}" ${F.sort===v?'selected':''}>${l}</option>`).join('')}</select></label>
+        <label class="chk" style="align-self:end"><input type="checkbox" data-mtflt="all" ${F.all?'checked':''}><span>Show materials not monitored</span></label></div>
+      <datalist id="mtSup">${[...new Set([...all.map(r=>r.item.supplier).filter(Boolean),...(DB.master.subs||[]).map(s=>s.name)])].sort().map(s=>`<option value="${esc(s)}">`).join('')}</datalist>
+      <div class="scroll mtwrap"><table class="tbl mttbl"><thead>${head}</thead><tbody>${R.map(row).join('')||`<tr><td colspan="30" class="muted">No material matches these filters.</td></tr>`}</tbody></table></div>
+      <p class="small muted" style="margin:8px 0 0">Each milestone shows Not Started, In Progress, Completed or Delayed from the P6 activity status, with its actual or forecast finish. Delayed: not completed, and the forecast finish is later than the baseline finish, or the baseline finish has passed at the data date. The row's schedule columns are those of the material's current stage: the activity in progress or next due. Delivery Status: Not Delivered until a Delivery at Site activity starts, Delivery Started while it runs, Delivered once completed. Pending FAT: manufacturing completed, FAT not done. Pending shipment: FAT done, not yet released for shipment.</p></section>`
+    :`<section class="panel"><h2>Material tracking</h2><p class="muted">${ps.some(p=>mtSetup(p.id))?'No material in this scope.':'No project in this scope has Material Tracking set up yet.'} ${keepAny?'Set it up below from the approved baseline schedule.':'A planning engineer sets it up from the approved baseline schedule.'}</p></section>`}
+    ${setPid?mtSetupHTML(setPid,ps):''}`;
+  if(all.length)mtCharts(R);
+}
+function mtCharts(R){
+  const G=css('--green'),A=css('--amber'),Rd=css('--red'),B=css('--accent'),Gy=css('--bar'),opt={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:12}}}};
+  const dc=['Not Delivered','Delivery Started','Delivered','No delivery activity'].map(k=>R.filter(r=>r.delivery===k).length);
+  charts.push(new Chart($('#mtcDel'),{type:'doughnut',data:{labels:['Not Delivered','Delivery Started','Delivered','No delivery activity'],datasets:[{data:dc,backgroundColor:[Rd,A,G,Gy],borderWidth:0}]},options:{...opt,cutout:'58%'}}));
+  const sups=[...new Set(R.map(r=>r.item.supplier||'No supplier yet'))].sort().slice(0,12),cnt=(s,k)=>R.filter(r=>(r.item.supplier||'No supplier yet')===s&&r.delivery===k).length;
+  charts.push(new Chart($('#mtcSup'),{type:'bar',data:{labels:sups,datasets:[['Delivered',G],['Delivery Started',A],['Not Delivered',Rd]].map(([k,c])=>({label:k,data:sups.map(s=>cnt(s,k)),backgroundColor:c}))},
+    options:{...opt,indexAxis:'y',scales:{x:{stacked:true,beginAtZero:true,ticks:{precision:0}},y:{stacked:true}}}}));
+  const st=(s,k)=>R.filter(r=>r.cells[s]&&r.cells[s].status===k).length;
+  charts.push(new Chart($('#mtcStg'),{type:'bar',data:{labels:MT_STAGES.map(([,l])=>l),datasets:[['Completed',G],['In Progress',B],['Delayed',Rd],['Not Started',Gy]].map(([k,c])=>({label:k,data:MT_STAGES.map(([s])=>st(s,k)),backgroundColor:c}))},
+    options:{...opt,scales:{x:{stacked:true,ticks:{autoSkip:false,maxRotation:60,minRotation:30}},y:{stacked:true,beginAtZero:true,ticks:{precision:0}}}}}));
+}
+/* set-up: load the baseline, choose codes, WBS, mapping and the monitored materials */
+function mtSetupHTML(pid,ps){
+  const S=mtSetup(pid),ed=canMatKeep(pid),D=state.mtDraft&&state.mtDraft.pid===pid?state.mtDraft:null,p=projById(pid)||{};
+  const hist=(DB.matAudit||[]).filter(a=>a.project_id===pid).slice(-12).reverse();
+  const pick=ps.length>1?`<label class="field" style="max-width:280px">Project<select data-mtsetpid>${ps.map(x=>`<option value="${esc(x.id)}" ${x.id===pid?'selected':''}>${esc(x.short)}${mtSetup(x.id)?'':' (not set up)'}</option>`).join('')}</select></label>`:'';
+  const mats=S?[...new Set(mtActs(pid).map(a=>a.material))].sort():[],I=mtItems(pid),uacts=S?[...new Set(mtActs(pid).map(a=>a.uact).filter(Boolean))].sort((x,y)=>(MT_ORD[(S.stage_map||{})[x]]??99)-(MT_ORD[(S.stage_map||{})[y]]??99)||x.localeCompare(y)):[];
+  let body='';
+  if(D)body=mtDraftHTML(D);
+  else if(S)body=`<p class="small">Baseline <b>${esc(S.file_name||'—')}</b>${S.data_date?`, data date ${fmtDY(S.data_date)}`:''}. Material Name from the activity code <b>${esc(S.mat_code)}</b>, Unified Activity Name from <b>${esc(S.uact_code)}</b>. WBS: ${(S.wbs_filter||[]).map(esc).join(', ')}. ${mats.length} materials, ${Object.values(I).filter(x=>x.selected!==false).length} monitored.</p>
+    ${ed?`<form id="mtSetForm"><div class="g mtg2"><div><h3>Milestone of each Unified Activity Name</h3><table class="tbl"><thead><tr><th>Unified Activity Name</th><th>Milestone column</th></tr></thead><tbody>
+      ${uacts.map(u=>`<tr><td>${esc(u)}</td><td><select data-mtmap="${esc(u)}"><option value="">Not tracked</option>${MT_STAGES.map(([k,l])=>`<option value="${k}" ${(S.stage_map||{})[u]===k?'selected':''}>${esc(l)}</option>`).join('')}</select></td></tr>`).join('')||'<tr><td colspan="2" class="muted">No Unified Activity Name in the baseline.</td></tr>'}</tbody></table></div>
+      <div><h3>Materials to monitor</h3><div class="checks mtchecks">${mats.map(m=>chk('mtsel',m,(I[m]||{}).selected!==false,m,`${mtActs(pid).filter(a=>a.material===m).length} activities`)).join('')}</div></div></div>
+      <p class="err" id="mtSetErr"></p><div class="actions"><button class="btn primary" type="submit">Save mapping and monitored materials</button></div></form>`:''}`;
+  else body=`<p class="muted small">Not set up yet for ${esc(p.short||pid)}.</p>`;
+  return `<section class="panel" id="mtSetup"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h2>Set-up${p.short?' · '+esc(p.short):''}</h2>
+      ${ed&&!D?`<label class="btn ${S?'':'primary'}" for="mtFile">${S?'Load a revised baseline (XER)':'Load the approved baseline (XER)'}</label><input id="mtFile" type="file" accept=".xer" hidden>`:''}</div>
+    ${pick}${body}
+    ${hist.length?`<h3>History</h3><ul class="audit">${hist.map(a=>`<li><b>${esc(a.field)}</b>${a.material?' · '+esc(a.material):''}${a.field==='Set-up'?'':`: ${esc(a.before||'—')} → ${esc(a.after||'—')}`} <span class="muted small">${esc(a.by_name||'')}, ${esc(tStamp(a.at_time))}</span></li>`).join('')}</ul>`:''}
+    ${ed?'':'<p class="small muted">Planning engineers of the project and the Head of Planning and Cost Control keep Material Tracking (Settings → Roles and rights: "Keep material tracking").</p>'}</section>`;
+}
+/* the draft after reading a baseline XER: choose codes, WBS, mapping and materials, then load */
+function mtDraftRows(D){const wf=new Set(D.wbs);return D.parsed.rows.filter(r=>wf.has(r.wbs)&&String((r.codes||{})[D.mc]||'').trim())}
+function mtDraftHTML(D){
+  const P=D.parsed,ct=P.codeTypes,wbsAll=[...new Set(P.rows.map(r=>r.wbs).filter(Boolean))],withMat=w=>P.rows.filter(r=>r.wbs===w&&String((r.codes||{})[D.mc]||'').trim()).length;
+  const rows=mtDraftRows(D),mats={};rows.forEach(r=>{const m=r.codes[D.mc].trim();mats[m]=(mats[m]||0)+1});const uacts=[...new Set(rows.map(r=>String(r.codes[D.uc]||'').trim()).filter(Boolean))].sort((x,y)=>(MT_ORD[D.map[x]??mtGuess(x)]??99)-(MT_ORD[D.map[y]??mtGuess(y)]??99)||x.localeCompare(y));
+  return `<div class="note-box" style="margin-bottom:10px"><b>${esc(D.file)}</b>: ${fmt(P.rows.length)} activities${P.dataDate?`, data date ${fmtDY(P.dataDate)}`:''}. Choose below, then load.</div>
+    <form id="mtDraftForm"><div class="fields" style="max-width:720px">
+      <label class="field">Activity code with the Material Name<select data-mtd="mc">${ct.map(c=>`<option ${c===D.mc?'selected':''}>${esc(c)}</option>`).join('')}</select></label>
+      <label class="field">Activity code with the Unified Activity Name<select data-mtd="uc">${ct.map(c=>`<option ${c===D.uc?'selected':''}>${esc(c)}</option>`).join('')}</select></label></div>
+    ${ct.length<2?'<p class="err">This schedule has fewer than two activity code types. Material Tracking needs one for the Material Name and one for the Unified Activity Name.</p>':''}
+    <div class="g mtg3"><div><h3>WBS branches with material activities</h3><div class="checks">${wbsAll.map(w=>chk('mtwbs',w,D.wbs.includes(w),w,`${withMat(w)} with a Material Name`)).join('')}</div></div>
+      <div><h3>Milestone of each Unified Activity Name</h3><table class="tbl"><tbody>${uacts.map(u=>`<tr><td>${esc(u)}</td><td><select data-mtdmap="${esc(u)}"><option value="">Not tracked</option>${MT_STAGES.map(([k,l])=>`<option value="${k}" ${(D.map[u]??mtGuess(u))===k?'selected':''}>${esc(l)}</option>`).join('')}</select></td></tr>`).join('')||'<tr><td class="muted">None in the chosen branches.</td></tr>'}</tbody></table></div>
+      <div><h3>Materials to monitor <span class="muted small">${Object.keys(mats).length}</span></h3><div class="checks mtchecks">${Object.entries(mats).sort().map(([m,n])=>chk('mtdsel',m,!D.off.includes(m),m,`${n} activities`)).join('')||'<span class="muted small">No activity in these branches carries a Material Name.</span>'}</div></div></div>
+    <p class="err" id="mtDraftErr"></p><div class="actions"><button class="btn primary" type="submit" ${rows.length?'':'disabled'}>Load ${fmt(rows.length)} activities into Material Tracking</button><button class="btn" type="button" data-mtdcancel>Cancel</button></div></form>`;
+}
+async function mtReadFile(file,pid){
+  if(!/\.xer$/i.test(file.name))return toast('Choose a P6 XER file.');if(file.size>40*1024*1024)return toast('The file is larger than 40 MB.');
+  let text;try{text=await file.text()}catch(e){return toast('The file could not be read.')}
+  let P;try{P=parseSchedXER(text)}catch(e){return toast(e.message)}
+  const S=mtSetup(pid),ct=P.codeTypes,mc=(S&&ct.includes(S.mat_code)&&S.mat_code)||ct.find(c=>/material/i.test(c))||ct[0]||'',uc=(S&&ct.includes(S.uact_code)&&S.uact_code)||ct.find(c=>c!==mc&&/unified|activity|stage|step/i.test(c))||ct.find(c=>c!==mc)||'';
+  const wb=[...new Set(P.rows.map(r=>r.wbs).filter(Boolean))],pre=S?wb.filter(w=>(S.wbs_filter||[]).includes(w)):wb.filter(w=>/procure|material|supply|purchas/i.test(w));
+  state.mtDraft={pid,parsed:P,file:file.name,hash:await sha256Hex('mt'+text.length+':'+text.slice(0,200000)),mc,uc,wbs:pre.length?pre:wb.filter(w=>P.rows.some(r=>r.wbs===w&&(r.codes||{})[mc])),map:{...((S&&S.stage_map)||{})},off:Object.values(mtItems(pid)).filter(x=>x.selected===false).map(x=>x.material)};   /* a revised baseline keeps the earlier choice */
+  render();setTimeout(()=>{const x=$('#mtSetup');x&&x.scrollIntoView({block:'start'})},40);
+}
+async function mtExport(kind){
+  const R=mtFiltered(),head=['Project','WBS','Material Name','Unified Activity Name','Current schedule status','Baseline start','Baseline finish','Current start','Current finish','% complete',...MT_STAGES.map(([,l])=>l),'Delivery Status','PO Number','Supplier Name','Remarks'];
+  const body=R.map(r=>{const c=r.cur;return [(projById(r.pid)||{}).short||r.pid,r.wbs||'',r.material,c.uact||'',r.status,c.bs||'',c.bf||'',c.cs||'',c.cf||'',Math.round(+c.pct||0),
+    ...MT_STAGES.map(([s])=>{const x=r.cells[s];return x?x.status+(x.date?' '+x.date:''):''}),r.delivery+(r.delDate?' '+r.delDate:''),r.item.po_number||'',r.item.supplier||'',r.item.remarks||'']});
+  const stamp=localISO();
+  if(kind==='xlsx'){try{await loadLib(LIBS.xlsx);const wb=XLSX.utils.book_new(),K=mtKPIs(R);
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([[`Material tracking, ${stamp}`],[],head,...body]),'Material tracking');
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Figure','Count'],['Total materials tracked',K.total],['Not Delivered',K.nd],['Delivery Started',K.ds],['Delivered',K.dv],['Delayed materials',K.late],['Manufacturing in progress',K.mfg],['Pending FAT',K.fat],['Pending shipment',K.ship]]),'Summary');
+      const ids=new Set(R.map(r=>r.pid));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Project','Material','Field','Before','After','By','When'],...(DB.matAudit||[]).filter(a=>ids.has(a.project_id)).map(a=>[a.project_id,a.material||'',a.field,a.before||'',a.after||'',a.by_name||'',a.at_time||''])]),'History');
+      await saveFile(`Material_tracking_${stamp}.xlsx`,new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}))}catch(e){toast('The Excel file could not be built: '+(e.message||'check your connection'))}return}
+  try{await loadLib(LIBS.jspdf);await loadLib(LIBS.auto);const {jsPDF}=window.jspdf,doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a3'});
+    doc.setFontSize(14);doc.text(`Material tracking, ${stamp}`,12,14);doc.setFontSize(9);const K=mtKPIs(R);
+    doc.text(`Tracked ${K.total} · Not Delivered ${K.nd} · Delivery Started ${K.ds} · Delivered ${K.dv} · Delayed ${K.late} · Manufacturing ${K.mfg} · Pending FAT ${K.fat} · Pending shipment ${K.ship}`,12,21);
+    doc.autoTable({head:[head],body,startY:25,styles:{fontSize:6.2,cellPadding:1},headStyles:{fillColor:[36,80,138]},margin:{left:8,right:8}});
+    await saveFile(`Material_tracking_${stamp}.pdf`,doc.output('blob'))}catch(e){toast('The PDF could not be built: '+(e.message||'check your connection'))}}
+function mtHistory(pid,m){const A=(DB.matAudit||[]).filter(a=>a.project_id===pid&&a.material===m).slice().reverse(),r=mtMaterials(pid).find(x=>x.material===m);
+  $('#sheet').classList.remove('full','wide');
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${esc(m)}</h2><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <p class="small muted">${esc((projById(pid)||{}).short||pid)}${r?` · ${esc(r.status)} · ${esc(r.delivery)}`:''}</p>
+    ${r?`<h3>Activities</h3><div class="scroll"><table class="tbl"><thead><tr><th>Activity</th><th>Unified Activity Name</th><th>Milestone</th><th>Baseline finish</th><th>Current finish</th><th class="n">%</th><th>Status</th></tr></thead><tbody>${r.acts.map(a=>`<tr><td>${esc(a.id)}<span class="t2">${esc(a.name||'')}</span></td><td>${esc(a.uact||'—')}</td><td>${esc(MT_N[a.stage]||'Not tracked')}</td><td>${a.bf?fmtDY(a.bf):'—'}</td><td>${a.cf?fmtDY(a.cf):'—'}</td><td class="n">${fmt(a.pct,0)}</td><td>${mtPill(a.status,MT_ST[a.status])}${a.inBase?'':'<span class="t2">not in the baseline</span>'}</td></tr>`).join('')}</tbody></table></div>`:''}
+    <h3>History of the manual fields</h3><ul class="audit">${A.map(a=>`<li><b>${esc(a.field)}</b>: ${esc(a.before||'—')} → ${esc(a.after||'—')} <span class="muted small">${esc(a.by_name||'')}, ${esc(tStamp(a.at_time))}</span></li>`).join('')||'<li class="muted">No change yet.</li>'}</ul>`;
+  $('#drawer').hidden=false}
+document.addEventListener('change',async e=>{const t=e.target;if(!t.matches||!$('#view'))return;
+  if(t.matches('[data-mtflt]')){const F=mtState(),k=t.dataset.mtflt;F[k]=t.type==='checkbox'?t.checked:t.value;if(k!=='q')render();return}
+  if(t.matches('[data-mtsetpid]')){mtState().pid=t.value;state.mtDraft=null;render();return}
+  if(t.id==='mtFile'&&t.files[0]){const pid=(document.querySelector('[data-mtsetpid]')||{}).value||mtState().pid||(mtProjects().find(p=>mtSetup(p.id))||mtProjects()[0]||{}).id;await mtReadFile(t.files[0],pid);t.value='';return}
+  if(t.matches('[data-mtf]')){const [pid,m,f]=t.dataset.mtf.split('|');const r=await mtSave('item',{project_id:pid,material:m,[f]:t.value});
+    if(r){toast(r.changed?'Saved':'No change');}else{toast('Not saved: '+mtSave.err);render()}return}
+  const D=state.mtDraft;if(!D)return;
+  if(t.matches('[data-mtd]')){D[t.dataset.mtd]=t.value;render();return}
+  if(t.matches('[name=mtwbs]')){D.wbs=[...document.querySelectorAll('#mtDraftForm [name=mtwbs]:checked')].map(x=>x.value);render();return}
+  if(t.matches('[data-mtdmap]')){D.map[t.dataset.mtdmap]=t.value;return}
+  if(t.matches('[name=mtdsel]')){D.off=[...document.querySelectorAll('#mtDraftForm [name=mtdsel]:not(:checked)')].map(x=>x.value);return}});
+document.addEventListener('input',e=>{const t=e.target;if(t.matches&&t.matches('[data-mtflt="q"]')){mtState().q=t.value;clearTimeout(mtSave.qt);mtSave.qt=setTimeout(()=>{const pos=t.selectionStart;render();const n=document.querySelector('[data-mtflt="q"]');if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},350)}});
+document.addEventListener('submit',async e=>{const f=e.target;if(f.id!=='mtDraftForm'&&f.id!=='mtSetForm')return;e.preventDefault();
+  if(f.id==='mtDraftForm'){const D=state.mtDraft;if(!D)return;const rows=mtDraftRows(D),map={};
+    [...new Set(rows.map(r=>String(r.codes[D.uc]||'').trim()).filter(Boolean))].forEach(u=>{map[u]=D.map[u]??mtGuess(u)});
+    const mats=[...new Set(rows.map(r=>r.codes[D.mc].trim()))];
+    const p={project_id:D.pid,action:'baseline',mat_code:D.mc,uact_code:D.uc,wbs_filter:D.wbs,stage_map:map,file_name:D.file,file_hash:D.hash,data_date:D.parsed.dataDate||null,
+      rows:rows.map(r=>({id:r.id,name:r.name,wbs:r.wbs,wbs_leaf:r.wbsLeaf||'',material:r.codes[D.mc].trim(),uact:String(r.codes[D.uc]||'').trim(),bs:r.bs,bf:r.bf,es:r.es,ef:r.ef,as:r.as,af:r.af,pct:r.pct,ms:r.ms})),
+      select:mats.filter(m=>!D.off.includes(m))};
+    if(mtSetup(D.pid))p.select=[...new Set([...p.select,...Object.values(mtItems(D.pid)).filter(x=>x.selected!==false).map(x=>x.material)])].filter(m=>!D.off.includes(m));
+    const r=await mtSave('setup',p);if(!r){$('#mtDraftErr').textContent=mtSave.err;return}
+    state.mtDraft=null;logChange(`Material Tracking: baseline ${D.file} loaded into ${(projById(D.pid)||{}).short||D.pid}, ${r.activities} activities, ${r.monitored} materials monitored`);toast(`Loaded: ${r.materials} materials, ${r.monitored} monitored`);render();return}
+  const pid=(document.querySelector('[data-mtsetpid]')||{}).value||mtState().pid||(mtProjects().find(p=>mtSetup(p.id))||{}).id,S=mtSetup(pid);if(!S)return;
+  const map={...(S.stage_map||{})};f.querySelectorAll('[data-mtmap]').forEach(s=>{map[s.dataset.mtmap]=s.value});
+  const r=await mtSave('setup',{project_id:pid,action:'settings',stage_map:map,select:[...f.querySelectorAll('[name=mtsel]:checked')].map(x=>x.value)});
+  if(!r){$('#mtSetErr').textContent=mtSave.err;return}toast('Saved');render()});
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-mtexp],[data-mthist],[data-mtdcancel]');if(!t)return;
+  if(t.dataset.mtexp)return mtExport(t.dataset.mtexp);
+  if(t.matches('[data-mtdcancel]')){state.mtDraft=null;render();return}
+  const [pid,m]=t.dataset.mthist.split('|');mtHistory(pid,m)});
+
+/* ---------- demo: material tracking on the two substation and line projects ---------- */
+function seedV38(){
+  if(CLOUD||DB.v38Seeded)return;DB.matSetup=DB.matSetup||{};DB.matActs=DB.matActs||{};DB.matItems=DB.matItems||{};DB.matAudit=DB.matAudit||[];
+  const U=['PR Creation','PO Creation','Base Design','GAFM Approval','Manufacturing','FAT','Shipment','Delivery','Installation Readiness'],K=['PR','PO','BD','GAFM','MFG','FAT','RFS','DEL','CIV'];
+  const SETS={JBS:[['GIS Equipment','Siemens Energy','4500118420',-300,1],['Power Transformer','Hitachi Energy','4500118433',-280,0.85],['Shunt Reactor','',null,-240,0.6],['Control Panels','Arabian Panels Co.','4500118511',-260,1.1],['Steel Structures','Al-Yamama Steel','4500118540',-220,0.95],['Cable Drum','Saudi Cable Co.','4500118562',-200,0.7]],
+    QOT:[['Lattice Towers','Al-Yamama Steel','4500220110',-330,1],['ACSR Conductor Drums','Saudi Cable Co.','4500220145',-300,0.8],['Composite Insulators','',null,-260,0.65],['OPGW Fibre Cable','Riyadh Cables','4500220190',-240,1.05]]};
+  Object.entries(SETS).forEach(([pid,list])=>{const p=projById(pid);if(!p||!ACTS.some(a=>a.p===pid))return;const pl=teamOf(pid,'plan')[0]||{name:'Planning engineer',id:null};
+    const map=Object.fromEntries(U.map((u,i)=>[u,K[i]])),acts=[],u=(DB.schedUpdates||[]).find(x=>x.id==='SU-'+pid),dd=u?u.data_date:ASOF,ur=u?(DB.schedRows[u.id]=DB.schedRows[u.id]||[]):null;
+    list.forEach(([m,sup,po,off,pace],mi)=>{let d=addDays(TODAY,off),fc=null;
+      if(mi===1)d=addDays(dd,-[10,20,45,25,120,10,30].reduce((t,x)=>t+Math.round(x/pace)+1,0)-5);   /* the second material is being delivered at the data date */
+      U.forEach((uname,si)=>{const dur=[10,20,45,25,120,10,30,15,20][si],bs=d,bf=addDays(d,dur);d=addDays(bf,1);const id=`${pid}-M${mi+1}-${K[si]}`;
+        acts.push({act_id:id,name:`${m} - ${uname}`,wbs:'Procurement',wbs_leaf:`${m} package`,material:m,uact:uname,bs,bf,es:bs,ef:bf,as_d:null,af:null,pct:0,ms:false});
+        if(ur){/* the forecast follows the previous stage; a pace below 1 stretches each stage */
+          const es=fc&&fc>=bs?addDays(fc,1):bs,ef=addDays(es,Math.round(dur/pace));fc=ef;
+          const pc=dd>=ef?100:dd<=es?0:Math.round(Math.min(99,(diffDays(es,dd)/Math.max(1,diffDays(es,ef)))*100));
+          ur.push({id,name:`${m} - ${uname}`,wbs:'Procurement',wbs_leaf:`${m} package`,code:'',phase:'MAT',w:0,bs,bf,pct:pc,ms:false,as:pc>0?es:null,af:pc>=100?ef:null,es,ef,mat:m,uact:uname})}})});
+    DB.matActs[pid]=acts;DB.matSetup[pid]={project_id:pid,mat_code:'Material Name',uact_code:'Unified Activity Name',wbs_filter:['Procurement'],stage_map:map,file_name:`${pid}_approved_baseline.xer`,file_hash:'demo-mt-'+pid,data_date:addDays(TODAY,-340),updated_by:pl.id,updated_at:addDays(TODAY,-60)+'T10:00:00'};
+    DB.matItems[pid]=Object.fromEntries(list.map(([m,sup,po])=>[m,{project_id:pid,material:m,selected:true,po_number:po,supplier:sup||null,remarks:po?null:'PO under negotiation',updated_by:pl.id,updated_at:addDays(TODAY,-20)+'T10:00:00'}]));
+    DB.matAudit.push({id:DB.matAudit.length+1,project_id:pid,material:null,field:'Baseline loaded',before:null,after:`${pid}_approved_baseline.xer: ${acts.length} activities, ${list.length} new materials`,by_user:pl.id,by_name:pl.name,at_time:addDays(TODAY,-60)+'T10:00:00'});
+    list.filter(x=>x[2]).forEach(([m,sup,po])=>{['PO Number','Supplier Name'].forEach((f,i)=>DB.matAudit.push({id:DB.matAudit.length+1,project_id:pid,material:m,field:f,before:null,after:i?sup:po,by_user:pl.id,by_name:pl.name,at_time:addDays(TODAY,-20)+'T10:00:00'}))})});
+  DB.v38Seeded=true;save();
 }
 
 function seedV36(){
@@ -4872,8 +5175,8 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={
   xr:'<path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 4-5"/>',rel:'<path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/><path d="M9 12l2 2 4-4"/>',logs:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>',
@@ -4904,7 +5207,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.7.2';
+const APP_VERSION='3.8';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
@@ -4922,7 +5225,7 @@ const DOMAINS=[
   {k:'daily',label:'Daily Reports',ic:'dpr',items:[
     {v:'dpr',label:'Daily reports'},{v:'new',label:'New report'},{v:'rep',rep:'timing',label:'Report handling time'}]},
   {k:'materials',label:'Materials & Procurement',ic:'mat',items:[
-    {v:'base',sec:'po',label:'Subcontract POs'},{plan:'Material tracking'},{plan:'Deliveries and stock'}]},
+    {v:'base',sec:'po',label:'Subcontract POs'},{v:'mat',label:'Material tracking'},{plan:'Deliveries and stock'}]},
   {k:'claims',label:'Claims & Variations',ic:'claims',items:[
     {v:'proj',sec:'actions',label:'Extension of time'},{v:'logs',sec:'vo',label:'Change order and claim log'}]},
   {k:'invoices',label:'Invoices & Cash Flow',ic:'cash',items:[
@@ -5193,16 +5496,16 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- shell ---------- */
-const NAV_ALL=['xr','exec','proj','tender','iss','docs','act','rel','logs','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'];
+const NAV_ALL=['xr','exec','proj','tender','iss','docs','act','rel','logs','mat','dash','dpr','new','pdash','upd','base','imp','cdash','eva','rep','deck','perf','admin'];
 let NAV_VIEWS=[];
 /* the screens a person sees under today's rules (v3.6), for their role and rights */
-function navDefault(v){return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())}
+function navDefault(v){if(v==='mat'&&!ROLE_VIEWS[state.role])return canMatView();return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())}
 /* v3.7: the super admin may show or hide a screen for a role; Administration stays with super admins */
 function navOn(v){if(v==='admin')return state.role==='sa';const o=screenOv(v);return (o!==undefined?o:navDefault(v))&&(v!=='new'||canCreate())}
 function renderNav(){
   const L=T[state.lang];const views=NAV_ALL.filter(navOn);NAV_VIEWS=views;
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','xr'].includes(v)).map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['mat','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','xr'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -5226,7 +5529,7 @@ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
   if(screenOv(state.view)===false){state.view=NAV_VIEWS.find(v=>v!==state.view)||'dash';renderNav()}   /* v3.7: a hidden screen sends the person to an allowed one */
-  ({xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({mat:renderMat,xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpd,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -8880,7 +9183,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

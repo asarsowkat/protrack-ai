@@ -1,6 +1,6 @@
 {
  "suite": "rights_demo",
- "page": "/home/claude/p17/site/demo.html",
+ "page": "/home/claude/p18/site/demo.html",
  "passed": 59,
  "total": 59,
  "checks": [
@@ -12,7 +12,7 @@
   },
   {
    "area": "Roles and rights",
-   "check": "seventeen rights in four groups (daily reports, planning, cost, projects)",
+   "check": "eighteen rights in four groups (daily reports, planning, cost, projects; v3.8 adds Keep material tracking)",
    "result": "PASS",
    "detail": ""
   },
@@ -48,7 +48,7 @@
   },
   {
    "area": "Screens by role",
-   "check": "twenty-one menu screens per role; Administration is not one of them",
+   "check": "twenty-two menu screens per role (v3.8 adds Material tracking); Administration is not one of them",
    "result": "PASS",
    "detail": ""
   },
