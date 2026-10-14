@@ -1,6 +1,6 @@
 {
  "suite": "mat_demo",
- "page": "/home/claude/p18/site/demo.html",
+ "page": "/home/claude/p19/site/demo.html",
  "passed": 50,
  "total": 50,
  "checks": [
@@ -42,7 +42,7 @@
   },
   {
    "area": "Set-up",
-   "check": "a project without Material Tracking offers the planning engineer to load the approved baseline",
+   "check": "a project without Material Tracking explains it is set up from the original baseline import or the next weekly upload (v3.8.1), with a file load as a fallback",
    "result": "PASS",
    "detail": ""
   },

@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.8, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.8.1, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -256,6 +256,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.8.1</b>
+    Material tracking needs no extra upload: it is set up from the original baseline import, and actual and forecast dates come from the weekly updated schedule.</div>
   <div class="note"><b>New in version 3.8</b>
     <b>Material tracking</b> (Materials &amp; Procurement): one row per material from the approved baseline's Material Name and Unified Activity Name activity codes, nine procurement milestones from PR Creation to Civil Readiness, Delivery Status, KPIs and charts, refreshed by every updated schedule; PO number, supplier and remarks kept by hand with a history.</div>
   <div class="note"><b>New in version 3.7.2</b>
@@ -584,14 +586,12 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 <section id="tender">
   <h2 id="mattrack">Material tracking</h2>
   <p><b>Materials &amp; Procurement → Material tracking</b> follows each critical material from purchase requisition to site readiness, straight from the Primavera schedule.</p>
-  <h3>Set-up (planning engineer, once per project)</h3>
-  <ol>
-    <li>Load the approved baseline XER in <b>Set-up</b>.</li>
-    <li>Choose the activity code holding the <b>Material Name</b> (GIS Equipment, Power Transformer…) and the one holding the <b>Unified Activity Name</b> (PR Creation, PO Creation, Base Design, GAFM Approval, Manufacturing, FAT, Shipment, Delivery, Installation Readiness).</li>
-    <li>Tick the WBS branches holding the material activities (Procurement, Material, Supply Chain or any other).</li>
-    <li>Check the milestone column of each Unified Activity Name; ProTrackAI suggests it from the name.</li>
-    <li>Choose the materials to monitor, then load. A revised baseline can be loaded later; the manual fields and your choices are kept.</li>
-  </ol>
+  <h3>Set-up: from the files you already load (no extra upload)</h3>
+  <ul>
+    <li><b>Original baseline import</b> (Baselines and P6 import → Original baseline): when the XER carries activity codes, tick <b>Also set up Material Tracking from this baseline</b> (ticked for you). Check the activity code holding the <b>Material Name</b> and the one holding the <b>Unified Activity Name</b>, and the WBS branch with the material activities. The material activities and their baseline dates come from this file, even procurement activities you leave out of the ProTrackAI baseline itself.</li>
+    <li><b>Weekly updated schedule</b> (Baselines → Updated schedule): every upload refreshes the actual and forecast dates. For a project whose baseline was loaded before Material Tracking existed, the next weekly upload offers <b>Also set up Material Tracking from this schedule</b>; baseline dates then come from the ProTrackAI baseline where the activity was imported, otherwise from the planned dates of that file.</li>
+    <li>In Material tracking you check the milestone column of each Unified Activity Name (suggested from the name) and choose the materials to monitor. A small <i>Load a schedule file here instead</i> is there only for a baseline imported without activity codes.</li>
+  </ul>
   <h3>The table</h3>
   <ul>
     <li><b>One row per material.</b> The schedule columns (WBS, Unified Activity Name, status, baseline and current dates, % complete) are those of the <b>current stage</b>: the activity in progress or next due.</li>

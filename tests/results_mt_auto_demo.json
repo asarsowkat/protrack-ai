@@ -1,0 +1,110 @@
+{
+ "suite": "mt_auto_demo",
+ "page": "/home/claude/p19/site/live.html",
+ "passed": 17,
+ "total": 17,
+ "checks": [
+  {
+   "area": "Original baseline",
+   "check": "the import preview offers to set up Material Tracking from the same file, ticked",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Original baseline",
+   "check": "the activity codes and the Procurement branch are picked; 27 material activities, 3 materials",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Original baseline",
+   "check": "one import: the baseline activities and Material Tracking (27 activities, 3 materials, all monitored)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Original baseline",
+   "check": "the baseline dates come from the baseline file",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Original baseline",
+   "check": "the milestones are matched from the Unified Activity Names",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Original baseline",
+   "check": "Material tracking shows the materials straight away, with no upload on its page",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weekly update",
+   "check": "when Material Tracking exists, the weekly upload does not ask again",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weekly update",
+   "check": "actual and forecast come from the weekly updated schedule: PR Creation completed, PO Creation running with its forecast",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Weekly update",
+   "check": "the baseline dates stay those of the original baseline",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "First weekly update",
+   "check": "a project without Material Tracking is offered it in the weekly upload, ticked",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "First weekly update",
+   "check": "saving the update also sets up Material Tracking (27 activities, 3 materials)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "First weekly update",
+   "check": "the update rows carry the material codes, so statuses come from it: Power Transformer PR Creation completed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "First weekly update",
+   "check": "baseline dates are the planned dates of that file where the activity is not in the ProTrackAI baseline",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "First weekly update",
+   "check": "the set-up history says where it came from",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "the Material tracking page explains it is set up from the schedules already loaded; a file load there is optional",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "a project not set up yet says to tick the option at the original baseline import or the next weekly upload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-14 16:26",
- "app": "/home/claude/p18/site/demo.html",
+ "run_at": "2026-10-14 17:22",
+ "app": "/home/claude/p19/site/demo.html",
  "results": [
   {
    "area": "Auth",
@@ -124,7 +124,7 @@
   },
   {
    "area": "Reports",
-   "check": "report histo builds (0.52 s)",
+   "check": "report histo builds (0.42 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -178,13 +178,13 @@
   },
   {
    "area": "Reports",
-   "check": "report mhrec builds (0.0 s)",
+   "check": "report mhrec builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report p6upd builds (0.02 s)",
+   "check": "report p6upd builds (0.03 s)",
    "result": "PASS",
    "detail": ""
   },

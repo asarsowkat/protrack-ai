@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.8.1
+
+- Material tracking needs no extra upload: set up from the original baseline import (or, for projects already loaded, the next weekly updated schedule); actual and forecast from the weekly updated schedule. See RELEASE-NOTES-v3.8.1.md
+
 ## Version 3.8
 
 - **Material tracking** (Materials & Procurement): set up from the approved baseline XER (Material Name and Unified Activity Name activity codes, WBS branches, milestone mapping, monitored materials); one row per material with the current stage, nine milestones (PR Creation to Civil Readiness) and Delivery Status from the latest updated schedule; KPIs, charts, filters, search, sorting, Excel and PDF; PO number, supplier and remarks kept by hand with a history and never overwritten (`schema-update-v17.sql`)
