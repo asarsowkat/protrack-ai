@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.8.1, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.8.2, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -256,6 +256,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.8.2</b>
+    In Material tracking, <b>History</b> on a material opens full screen, with its nine milestones, its activities and every change to PO number, supplier and remarks.</div>
   <div class="note"><b>New in version 3.8.1</b>
     Material tracking needs no extra upload: it is set up from the original baseline import, and actual and forecast dates come from the weekly updated schedule.</div>
   <div class="note"><b>New in version 3.8</b>
@@ -598,7 +600,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Nine milestones:</b> PR Creation, PO Creation, Base Design, GAFM Approval, Manufacturing, FAT, Release for Shipment, Delivery at Site, Civil Readiness. Each shows <b>Not Started</b>, <b>In Progress</b>, <b>Completed</b> or <b>Delayed</b> with its actual or forecast finish.</li>
     <li><b>Delayed:</b> not completed, and the forecast finish is later than the baseline finish, or the baseline finish has passed at the data date.</li>
     <li><b>Delivery Status:</b> Not Delivered (red) until a Delivery at Site activity starts, Delivery Started (amber) while it runs, Delivered (green) once it is complete.</li>
-    <li><b>PO Number, Supplier Name, Remarks</b> are typed in the table and saved when you leave the box. Schedule imports never change them. <b>History</b> lists every change with who and when.</li>
+    <li><b>PO Number, Supplier Name, Remarks</b> are typed in the table and saved when you leave the box. Schedule imports never change them. <b>History</b> opens full screen with the material's nine milestones, its activities and every change with who and when.</li>
   </ul>
   <p>Statuses come from the latest updated schedule (Baselines → Updated schedule), matched by activity ID. KPIs, three charts (delivery status, by supplier, by milestone), filters, search, sorting and Excel or PDF export are above and on the table. Editing needs the right <b>Keep material tracking</b> (planning engineers and the Head by default; set in Roles and rights).</p>
 

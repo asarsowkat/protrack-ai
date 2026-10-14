@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.8.2
+
+- Material tracking: History on a material opens full screen, with the nine milestones, the activities and every change. See RELEASE-NOTES-v3.8.2.md
+
 ## Version 3.8.1
 
 - Material tracking needs no extra upload: set up from the original baseline import (or, for projects already loaded, the next weekly updated schedule); actual and forecast from the weekly updated schedule. See RELEASE-NOTES-v3.8.1.md

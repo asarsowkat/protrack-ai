@@ -1,6 +1,6 @@
 {
  "suite": "fullscreen_demo",
- "page": "/home/claude/p19/site/live.html",
+ "page": "/home/claude/protrack-ai/tests/../live.html",
  "passed": 21,
  "total": 21,
  "checks": [

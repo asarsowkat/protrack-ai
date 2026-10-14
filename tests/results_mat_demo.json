@@ -1,8 +1,8 @@
 {
  "suite": "mat_demo",
- "page": "/home/claude/p19/site/live.html",
- "passed": 50,
- "total": 50,
+ "page": "/home/claude/protrack-ai/tests/../live.html",
+ "passed": 52,
+ "total": 52,
  "checks": [
   {
    "area": "Menu",
@@ -145,6 +145,18 @@
   {
    "area": "Manual fields",
    "check": "History shows the material's activities and every change",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Manual fields",
+   "check": "History opens full screen, with the nine milestones, the activities and the changes (v3.8.2)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Manual fields",
+   "check": "closing it returns the panel to its normal size",
    "result": "PASS",
    "detail": ""
   },
