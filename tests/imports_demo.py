@@ -111,17 +111,11 @@ with sync_playwright() as p:
     pg.check('#reconAck'); pg.click('[data-costgo]'); pg.wait_for_timeout(900)
     ck('Costing checks', 'valid row applied and batch logged', pg.evaluate(f"ACTS.find(a=>a.id==='{ids[0]}').bcost") == 5000 and pg.evaluate("DB.batches.at(-1).kind") == 'costing')
 
-    # --- weekly progress
+    # --- weekly progress: from v3.8.4 it comes from the updated P6 schedule, so there is no E&P file to check
     sa = pg.evaluate("(DB.master.users.find(u=>u.email==='asarudeen@company.com')||{}).id")
     pg.select_option('#role', sa); pg.wait_for_timeout(500)
     pg.evaluate("go('upd')"); pg.wait_for_timeout(700)
-    eng = pg.evaluate("ACTS.filter(a=>a.cls==='ENG'&&SCOPE.has(a.p)).slice(0,2).map(a=>a.id)")
-    uh = ['Activity ID', 'Milestone reached', 'Actual start', 'Actual finish', 'Forecast finish', 'Data date', 'Remarks']
-    uaoa = [uh, [eng[0], 'IFC', '2026-08-01', '2026-09-20', '', '2026-09-21', 'done'], [eng[0], 'IFC', '', '', '', '2026-09-21', 'dup'], [eng[1], 'ST', '2026-13-01', '', '', '2026-09-21', 'bad date']]
-    pg.set_input_files('#updfile', book(uaoa, 'Update', 'update_wk38.xlsx')); pg.wait_for_timeout(1000)
-    ust = pg.evaluate("state.upd.rows.map(r=>({id:r.id,err:r.err||null}))")
-    ck('Progress checks', 'duplicate activity and invalid date refused', sum(1 for r in ust if r['err']) == 3 and any('date' in (r['err'] or '') for r in ust), ust)
-    ck('Progress checks', 'nothing to apply when every row is refused', pg.is_disabled('[data-updgo]'))
+    ck('Progress checks', 'no separate E&P upload: progress comes from the updated P6 schedule (v3.8.4)', pg.locator('#updfile').count() == 0 and 'weekly updated P6 schedule' in pg.inner_text('#view'))
 
     # --- Import centre lists everything
     pg.evaluate("go('imp')"); pg.wait_for_timeout(700)

@@ -43,7 +43,7 @@ with sync_playwright() as p:
     ck('Sources', 'answers built on earned value state the data date', 'Data date' in A('EAC forecast') and J("fmtDY(ASOF)") in A('EAC forecast'))
     ck('Sources', 'the scope is named on every answer', all('Scope:' in A(q) for q in ['Early warnings', 'Compare foremen']))
     ck('Sources', 'billing answers name the invoice register and the contract terms', 'invoice register' in A('Invoicing and collection') and 'billing terms' in A('Invoicing and collection'))
-    ck('Sources', 'procurement answers name the weekly update and its data date', 'weekly engineering and procurement update' in A('Design and procurement'))
+    ck('Sources', 'procurement answers name the weekly updated P6 schedule and its data date (v3.8.4)', 'weekly updated P6 schedule' in A('Design and procurement'))
     ck('Sources', 'insights carry their sources too', J("(rasaRefreshInsights(false),RASA.insights.length>0&&RASA.insights.every(i=>RasaMessage.insight(i).includes('data-rasasrc')))"))
     J("state.chat=[];rasaQA('health')"); pg.wait_for_timeout(1200)
     ck('Sources', 'quick actions carry their sources (project health)', 'data-rasasrc' in J("state.chat.filter(m=>m.b).pop().h"))

@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.8.4
+
+- Engineering and procurement progress from the weekly updated P6 schedule; the separate E&P Excel upload is retired. See RELEASE-NOTES-v3.8.4.md
+
 ## Version 3.8.3
 
 - Phones and tablets: a Menu button in the bottom bar opens the full menu, as on a laptop (Planning & Scheduling, Cost Control, Materials & Procurement, Administration...). See RELEASE-NOTES-v3.8.3.md
