@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-14 08:13",
- "app": "/home/claude/p16/site/live.html",
+ "run_at": "2026-10-14 09:45",
+ "app": "/home/claude/p17/site/live.html",
  "mode": "server (local PostgreSQL + Supabase stand-in)",
  "summary": {
   "PASS": 228,

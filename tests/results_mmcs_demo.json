@@ -1,6 +1,6 @@
 {
  "suite": "mmcs_demo",
- "page": "/home/claude/protrack-ai/live.html",
+ "page": "/home/claude/p17/site/live.html",
  "passed": 10,
  "total": 10,
  "checks": [
@@ -54,7 +54,7 @@
   },
   {
    "area": "Version",
-   "check": "the side menu shows v3.7.1",
+   "check": "the side menu shows v3.7.1 or later",
    "result": "PASS",
    "detail": ""
   },

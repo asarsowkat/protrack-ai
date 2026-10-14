@@ -1,0 +1,134 @@
+{
+ "suite": "fullscreen_demo",
+ "page": "/home/claude/p17/site/live.html",
+ "passed": 21,
+ "total": 21,
+ "checks": [
+  {
+   "area": "Desktop",
+   "check": "a daily report opened by the project manager for approval fills the screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "the approval buttons are there",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "they stay in view at the bottom while scrolling",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "the four figures are in one row and the activities side by side",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "closing it returns the panel to its normal size",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "a report opened by the site engineer for review is full screen too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "Create project fills the screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "Edit project fills the screen too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "other settings forms (people) stay a side panel",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "the page never scrolls sideways",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Desktop",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "a daily report opened by the project manager for approval fills the screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "the approval buttons are there",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "they stay in view at the bottom while scrolling",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "closing it returns the panel to its normal size",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "a report opened by the site engineer for review is full screen too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "Create project fills the screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "Edit project fills the screen too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "other settings forms (people) stay a side panel",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "the page never scrolls sideways",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

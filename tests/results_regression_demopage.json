@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-14 07:51",
- "app": "/home/claude/p16/site/demo.html",
+ "run_at": "2026-10-14 09:31",
+ "app": "/home/claude/p17/site/demo.html",
  "results": [
   {
    "area": "Auth",
@@ -124,19 +124,19 @@
   },
   {
    "area": "Reports",
-   "check": "report histo builds (0.33 s)",
+   "check": "report histo builds (0.34 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report prod builds (0.01 s)",
+   "check": "report prod builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report eac builds (0.01 s)",
+   "check": "report eac builds (0.03 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -154,25 +154,25 @@
   },
   {
    "area": "Reports",
-   "check": "report unitrate builds (0.01 s)",
+   "check": "report unitrate builds (0.0 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report invoice builds (0.0 s)",
+   "check": "report invoice builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report cash builds (0.02 s)",
+   "check": "report cash builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report timing builds (0.01 s)",
+   "check": "report timing builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -190,7 +190,7 @@
   },
   {
    "area": "Reports",
-   "check": "report warn builds (0.08 s)",
+   "check": "report warn builds (0.04 s)",
    "result": "PASS",
    "detail": ""
   },

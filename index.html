@@ -413,6 +413,11 @@ label.btn{display:inline-block}
 :root{--shelf:#A3ABB8}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--shelf:#4B5563}}:root[data-theme="dark"]{--shelf:#4B5563}
 @media (max-width:640px){.boxfile{width:118px;height:228px}.docitems{columns:1}}
 .sheet.full{width:100%;max-width:none;padding-bottom:0}
+.dprfacts{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet.full .dprfacts{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (min-width:1100px){.sheet.full .dprlines{display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:0 18px;align-items:start}}
+@media (max-width:640px){.sheet.full .dprfacts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sheet.full #admForm>.fields{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.sheet.full .dpract{position:sticky;bottom:0;z-index:2;background:var(--surface);border-top:1px solid var(--line);padding:4px 0 calc(env(safe-area-inset-bottom,0px) + 8px);margin-top:14px}.sheet.full .dpract h3{margin-top:8px}.sheet.full .dpract .actions{margin-bottom:0}
 .rdhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}.rdhead>div{flex:1;min-width:240px}
 .rkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px}
 .rkpi{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface);display:flex;flex-direction:column;gap:1px;border-top:4px solid var(--line)}
@@ -749,7 +754,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.7.1</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.7.2</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -4899,7 +4904,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.7.1';
+const APP_VERSION='3.7.2';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
@@ -5420,20 +5425,21 @@ function openDpr(id){
   const d=DB.dprs.find(x=>x.id===id);if(!d)return;state.open=id;
   {const a0=actionsFor(d);if(a0.includes('approve'))timerStart('approve',d.id);else if(a0.includes('review'))timerStart('review',d.id);}
   const p=projById(d.p),g=repAgg(d),acts=actionsFor(d);
+  $('#sheet').classList.remove('wide');$('#sheet').classList.add('full');   /* v3.7.2: a daily report opens full screen */
   $('#sheet').innerHTML=`<div class="sheet-head"><h2>${d.id}</h2><span class="st ${d.status}">${d.status}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>${(()=>{const R=routeOf(d);return `<p class="small muted" style="margin:0 0 12px">Prepared by ${esc(d.foreman)} · reviewed by ${esc(R.revName)}${R.rev?'':' (project manager, no site engineer assigned)'} · approved by ${esc(R.aprName)}${R.apr?'':' (project manager, no site manager assigned)'}${d.mailed?` · <b>summary emailed to ${d.mailed.n}</b>`:''}</p>`})()}
   <div class="small muted">${fmtDY(d.date)}, ${esc(p.short)}. Foreman ${esc(d.foreman)}, site engineer ${esc(d.engineer)}.</div>
-  <div class="facts" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+  <div class="facts dprfacts">
     <div><div class="l">Activities</div><div class="v">${d.lines.length}</div></div>
     <div><div class="l">Crew entries</div><div class="v">${g.heads}</div></div>
     <div><div class="l">Manhours</div><div class="v">${fmt(g.mh)}</div></div>
     <div><div class="l">Report index</div><div class="v ${light(g.pi)}-c">${pct(g.pi)}</div></div>
   </div>
-  ${d.lines.map((l,i)=>lineHTML(l,i,d.lines.length,d)).join('')}
+  <div class="dprlines">${d.lines.map((l,i)=>lineHTML(l,i,d.lines.length,d)).join('')}</div>
   ${d.attachments.length?`<h3>Attachments</h3><p class="small">${d.attachments.map(esc).join(', ')}</p>`:''}
   ${d.remarks?`<h3>Remarks</h3><p class="small">${esc(d.remarks)}</p>`:''}
   <h3>Audit trail</h3><ul class="audit">${d.audit.map(x=>`<li><b>${esc(x.action)}</b> by ${esc(x.who)} <span class="muted small">${esc(x.t)}</span>${x.note?`<span class="note">${esc(x.note)}</span>`:''}</li>`).join('')}</ul>
-  ${acts.length?`<h3>Your action as ${ROLES[state.role]}</h3>${acts.some(k=>k==='reject'||k==='return')?'<textarea id="cmt" rows="3" placeholder="Comment for the site team (required to reject or return)"></textarea>':''}
-  <div class="actions">${acts.map(k=>`<button type="button" class="btn ${k==='approve'||k==='submit'||k==='review'?'primary':k==='reject'?'danger':''}" data-do="${k}">${ALABEL[k]}</button>`).join('')}</div><p class="err" id="actErr"></p>`:''}`;
+  ${acts.length?`<div class="dpract"><h3>Your action as ${ROLES[state.role]}</h3>${acts.some(k=>k==='reject'||k==='return')?'<textarea id="cmt" rows="2" placeholder="Comment for the site team (required to reject or return)"></textarea>':''}
+  <div class="actions">${acts.map(k=>`<button type="button" class="btn ${k==='approve'||k==='submit'||k==='review'?'primary':k==='reject'?'danger':''}" data-do="${k}">${ALABEL[k]}</button>`).join('')}</div><p class="err" id="actErr"></p></div>`:''}`;
   $('#drawer').hidden=false;
 }
 
@@ -8457,6 +8463,7 @@ function admDrawer(type,id){
     ${type==='projects'&&id?msEditor(projById(id))+billingEditor(projById(id))+baselineHTML(id):''}
     ${type==='trades'&&id?rateEditor(tradeBy(id)):''}
     ${type==='subs'&&id?subRateEditor(subById(id)):''}`;
+  $('#sheet').classList.remove('wide');$('#sheet').classList.toggle('full',type==='projects');   /* v3.7.2: projects open full screen */
   $('#drawer').hidden=false;if(type==='users')toggleAccess();
 }
 function toggleAccess(){const f=$('#admForm');if(!f)return;const rv=f.elements.role.value,r=appRole(rv)?appRole(rv).base_role:rv,all=f.elements.accmode&&f.elements.accmode.value==='all',top=r==='sa'||r==='exec';
