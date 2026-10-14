@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.7.2
+
+- Daily reports (review, approval, reading) and Create / Edit project open full screen; the review and approval buttons stay in view at the bottom. See RELEASE-NOTES-v3.7.2.md
+
 ## Version 3.7.1
 
 - The costing file is renamed **Master Manpower Costing Sheet** throughout the app, the template download and the guides; saved values and the database are unchanged. See RELEASE-NOTES-v3.7.1.md

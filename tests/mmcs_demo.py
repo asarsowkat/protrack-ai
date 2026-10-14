@@ -40,7 +40,7 @@ with sync_playwright() as p:
     ck('Import centre', 'uploads of kind costing are listed under the new name', J("IMPORT_KINDS.costing") == N)
     ck('Roles and rights', 'the costing right uses the new name', J("RIGHT_N['costing.manage']") == f'Load the {N} and invoice registers')
     ck('Document rack', 'the tender costing documents keep their own name', 'Original tender costing files' in pg.content())
-    ck('Version', 'the side menu shows v3.7.1', 'ProTrackAI v3.7.1' in pg.inner_text('#sideVer'))
+    ck('Version', 'the side menu shows v3.7.1 or later', any(f'ProTrackAI v3.7.{i}' in pg.inner_text('#sideVer') for i in range(1, 10)))
     ck('Page', 'no script errors', not errs, errs)
     b.close()
 print(json.dumps({'suite': 'mmcs_demo', 'page': APP, 'passed': sum(r['result'] == 'PASS' for r in R), 'total': len(R), 'checks': R}, indent=1))
