@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.7.2, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.8, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -208,6 +208,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#reldash" class="sub">Internal report dashboard</a>
   <a href="#issues" class="sub">Issue register</a>
   <a href="#docrack" class="sub">Project document rack</a>
+  <a href="#mattrack" class="sub">Material tracking</a>
   <a href="#tender">Tender register and PE numbers</a>
   <a href="#lifecycle">Project lifecycle, actions and dashboards</a>
   <a href="#imports">Import centre and controlled uploads</a>
@@ -255,6 +256,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.8</b>
+    <b>Material tracking</b> (Materials &amp; Procurement): one row per material from the approved baseline's Material Name and Unified Activity Name activity codes, nine procurement milestones from PR Creation to Civil Readiness, Delivery Status, KPIs and charts, refreshed by every updated schedule; PO number, supplier and remarks kept by hand with a history.</div>
   <div class="note"><b>New in version 3.7.2</b>
     Daily reports open <b>full screen</b> for review and approval, with the action buttons always in view at the bottom; <b>Create project</b> and <b>Edit project</b> open full screen too.</div>
   <div class="note"><b>New in version 3.7.1</b>
@@ -579,6 +582,26 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 </section>
 
 <section id="tender">
+  <h2 id="mattrack">Material tracking</h2>
+  <p><b>Materials &amp; Procurement → Material tracking</b> follows each critical material from purchase requisition to site readiness, straight from the Primavera schedule.</p>
+  <h3>Set-up (planning engineer, once per project)</h3>
+  <ol>
+    <li>Load the approved baseline XER in <b>Set-up</b>.</li>
+    <li>Choose the activity code holding the <b>Material Name</b> (GIS Equipment, Power Transformer…) and the one holding the <b>Unified Activity Name</b> (PR Creation, PO Creation, Base Design, GAFM Approval, Manufacturing, FAT, Shipment, Delivery, Installation Readiness).</li>
+    <li>Tick the WBS branches holding the material activities (Procurement, Material, Supply Chain or any other).</li>
+    <li>Check the milestone column of each Unified Activity Name; ProTrackAI suggests it from the name.</li>
+    <li>Choose the materials to monitor, then load. A revised baseline can be loaded later; the manual fields and your choices are kept.</li>
+  </ol>
+  <h3>The table</h3>
+  <ul>
+    <li><b>One row per material.</b> The schedule columns (WBS, Unified Activity Name, status, baseline and current dates, % complete) are those of the <b>current stage</b>: the activity in progress or next due.</li>
+    <li><b>Nine milestones:</b> PR Creation, PO Creation, Base Design, GAFM Approval, Manufacturing, FAT, Release for Shipment, Delivery at Site, Civil Readiness. Each shows <b>Not Started</b>, <b>In Progress</b>, <b>Completed</b> or <b>Delayed</b> with its actual or forecast finish.</li>
+    <li><b>Delayed:</b> not completed, and the forecast finish is later than the baseline finish, or the baseline finish has passed at the data date.</li>
+    <li><b>Delivery Status:</b> Not Delivered (red) until a Delivery at Site activity starts, Delivery Started (amber) while it runs, Delivered (green) once it is complete.</li>
+    <li><b>PO Number, Supplier Name, Remarks</b> are typed in the table and saved when you leave the box. Schedule imports never change them. <b>History</b> lists every change with who and when.</li>
+  </ul>
+  <p>Statuses come from the latest updated schedule (Baselines → Updated schedule), matched by activity ID. KPIs, three charts (delivery status, by supplier, by milestone), filters, search, sorting and Excel or PDF export are above and on the table. Editing needs the right <b>Keep material tracking</b> (planning engineers and the Head by default; set in Roles and rights).</p>
+
   <h2>Tender register and PE numbers</h2>
   <p>Projects &amp; Handover → <b>Tender register</b> lists every project in your scope with its PE number, the TE number from Tender's L1 list, client, location, expected value, status and current lifecycle stage, and below it the PE number history.</p>
   <h3>Designations</h3>

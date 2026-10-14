@@ -168,6 +168,12 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.8
+
+- **Material tracking** (Materials & Procurement): set up from the approved baseline XER (Material Name and Unified Activity Name activity codes, WBS branches, milestone mapping, monitored materials); one row per material with the current stage, nine milestones (PR Creation to Civil Readiness) and Delivery Status from the latest updated schedule; KPIs, charts, filters, search, sorting, Excel and PDF; PO number, supplier and remarks kept by hand with a history and never overwritten (`schema-update-v17.sql`)
+- New right "Keep material tracking" and new screen "Material tracking" in Roles and rights
+- See RELEASE-NOTES-v3.8.md and STAGE-14-SETUP.md
+
 ## Version 3.7.2
 
 - Daily reports (review, approval, reading) and Create / Edit project open full screen; the review and approval buttons stay in view at the bottom. See RELEASE-NOTES-v3.7.2.md

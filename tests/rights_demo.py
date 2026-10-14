@@ -34,7 +34,7 @@ with sync_playwright() as p:
     admin('rights')
     ck('Roles and rights', 'Administration has a Roles and rights tab, also in the side menu', 'Roles and rights' in pg.inner_text('.chips') and J("[...document.querySelectorAll('#nav [data-navtab]')].some(b=>b.dataset.navtab==='rights')"))
     rows = J("document.querySelectorAll('#rightsPanel tbody tr:not(.rgrp)').length")
-    ck('Roles and rights', 'seventeen rights in four groups (daily reports, planning, cost, projects)', rows == 17 and J("[...document.querySelectorAll('#rightsPanel tr.rgrp')].map(r=>r.textContent.trim())") == ['Daily reports', 'Planning', 'Cost', 'Projects'], rows)
+    ck('Roles and rights', 'eighteen rights in four groups (daily reports, planning, cost, projects; v3.8 adds Keep material tracking)', rows == 18 and J("[...document.querySelectorAll('#rightsPanel tr.rgrp')].map(r=>r.textContent.trim())") == ['Daily reports', 'Planning', 'Cost', 'Projects'], rows)
     heads = J("[...document.querySelectorAll('#rightsPanel thead th.rcol')].map(t=>t.textContent.trim())")
     ck('Roles and rights', 'a column for each role except super admin, plus the demo custom role', len(heads) == 11 and 'Super Admin' not in ' '.join(heads) and heads[-1].startswith('Planning Section Manager'), heads)
     ck('Roles and rights', 'the ticks show today\'s rights: planning engineers load baselines; costing engineers and project managers load costing files; site engineers and foremen prepare daily reports',
@@ -43,7 +43,7 @@ with sync_playwright() as p:
     ck('Roles and rights', 'rights that come with a position say so (Head, coordinator, regional approver)', 'Also with the position: Head of Planning and Cost Control; regional report approver' in pg.inner_text('#rightsPanel'))
     ck('Roles and rights', 'nothing is marked as changed to start with', J("document.querySelectorAll('#rightsPanel .rdot,#screensPanel .rdot').length") == 0)
     sc = J("document.querySelectorAll('#screensPanel tbody tr').length")
-    ck('Screens by role', 'twenty-one menu screens per role; Administration is not one of them', sc == 21 and 'Settings' not in J("[...document.querySelectorAll('#screensPanel tbody td:first-child')].map(t=>t.textContent).join('|')"), sc)
+    ck('Screens by role', 'twenty-two menu screens per role (v3.8 adds Material tracking); Administration is not one of them', sc == 22 and 'Settings' not in J("[...document.querySelectorAll('#screensPanel tbody td:first-child')].map(t=>t.textContent).join('|')"), sc)
     ck('Screens by role', 'the ticks show today\'s menus (a foreman sees Daily reports, not the Executive summary; a project manager sees the cost dashboard)',
        J("document.querySelector('[data-sr=\"foreman|dpr\"]').checked && !document.querySelector('[data-sr=\"foreman|exec\"]').checked && document.querySelector('[data-sr=\"pm|cdash\"]').checked"))
 
@@ -127,7 +127,7 @@ with sync_playwright() as p:
 
     # ---- rights for one person
     admin('users'); J(f"admDrawer('users','{CO}');document.querySelector('#urWrap').open=true"); pg.wait_for_timeout(200)
-    ck('Rights for one person', 'the person form lists every right with "As the role", Allow and Remove', J("document.querySelectorAll('#urBox select[data-ur]').length") == 17 and 'As the role (yes)' in pg.inner_text('#urBox'))
+    ck('Rights for one person', 'the person form lists every right with "As the role", Allow and Remove', J("document.querySelectorAll('#urBox select[data-ur]').length") == 18 and 'As the role (yes)' in pg.inner_text('#urBox'))
     pg.select_option(f'#urBox select[data-ur="{CO}|report.cost.prepare"]', '0'); pg.wait_for_timeout(300)
     ck('Rights for one person', 'Remove is saved at once', J(f"DB.rights.user['{CO}']['report.cost.prepare']") is False)
     J("closeDrawer()"); as_(CO); ck('Rights for one person', '...the costing engineer cannot prepare the cost report; the exception wins over the role', J("canPrepRel('cost')") is False and J("canCost()") is True)

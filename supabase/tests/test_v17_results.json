@@ -1,0 +1,317 @@
+[
+ {
+  "check": "v17 loads (run 1)",
+  "pass": true,
+  "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v17.sql:90: NOTICE:  policy \"mset_read\" for relation \"material_setup\" does not exist, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v17.sql:92: NOTICE:  policy \"mact_read\" for relation \"material_acts\" does not exist, skipping\npsql:"
+ },
+ {
+  "check": "v17 loads (run 2)",
+  "pass": true,
+  "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v17.sql:52: NOTICE:  column \"es\" of relation \"schedule_update_rows\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v17.sql:53: NOTICE:  column \"mat\" of relation \"schedule_update_rows\" already exists, skipping\npsql:/h"
+ },
+ {
+  "check": "the setup check counts 7",
+  "pass": true,
+  "detail": "7"
+ },
+ {
+  "check": "eighteen rights (the new one: keep material tracking) and twenty-two screens (the new one: Material tracking)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the right goes to planning engineers and, by position, the Head; not to costing engineers or project managers",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a costing engineer cannot set it up",
+  "pass": true,
+  "detail": "psql:/tmp/tmp0khnv4dx.sql:4: ERROR:  Only the people who keep material tracking (planning engineers of this project, the Head of Planning and Cost Control or a super admin) can change it\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 9 at RAISE"
+ },
+ {
+  "check": "a project manager cannot",
+  "pass": true,
+  "detail": "psql:/tmp/tmphbjuv2pg.sql:4: ERROR:  Only the people who keep material tracking (planning engineers of this project, the Head of Planning and Cost Control or a super admin) can change it\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 9 at RAISE"
+ },
+ {
+  "check": "a foreman cannot",
+  "pass": true,
+  "detail": "psql:/tmp/tmpl_c8z5mi.sql:4: ERROR:  Only the people who keep material tracking (planning engineers of this project, the Head of Planning and Cost Control or a super admin) can change it\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 9 at RAISE"
+ },
+ {
+  "check": "a planning engineer of another project cannot",
+  "pass": true,
+  "detail": "psql:/tmp/tmpmrquyfco.sql:4: ERROR:  You do not have access to this project\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 8 at RAISE"
+ },
+ {
+  "check": "settings before a baseline are refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmpbp5k5b29.sql:4: ERROR:  Load the baseline schedule into Material Tracking first\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 12 at RAISE"
+ },
+ {
+  "check": "the two activity codes must differ",
+  "pass": true,
+  "detail": "psql:/tmp/tmpvpemjix8.sql:4: ERROR:  The Material Name and the Unified Activity Name must be two different activity codes\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 15 at RAISE"
+ },
+ {
+  "check": "at least one WBS branch",
+  "pass": true,
+  "detail": "psql:/tmp/tmp_61vvnfm.sql:4: ERROR:  Choose at least one WBS branch that holds the material activities\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 19 at RAISE"
+ },
+ {
+  "check": "an unknown milestone is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmpia7msdw9.sql:4: ERROR:  Unknown milestone XYZ for FAT\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 23 at RAISE"
+ },
+ {
+  "check": "an activity without a Material Name is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmp6qh156re.sql:4: ERROR:  Activities refused (an ID, a Material Name, a date or a % complete is missing or wrong): X1\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 33 at RAISE"
+ },
+ {
+  "check": "a wrong date is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmpezpy1g42.sql:4: ERROR:  Activities refused (an ID, a Material Name, a date or a % complete is missing or wrong): X2\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 33 at RAISE"
+ },
+ {
+  "check": "% complete over 100 is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmpncao_b6m.sql:4: ERROR:  Activities refused (an ID, a Material Name, a date or a % complete is missing or wrong): X3\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 33 at RAISE"
+ },
+ {
+  "check": "a baseline with no material activities is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmpotyb0q0u.sql:4: ERROR:  No activity in the chosen WBS branches carries a Material Name\nCONTEXT:  PL/pgSQL function material_setup_save(jsonb) line 34 at RAISE"
+ },
+ {
+  "check": "...and nothing was kept from refused loads",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the planning engineer loads the baseline: 3 materials x 9 milestone activities",
+  "pass": true,
+  "detail": "{'materials': 3, 'monitored': 3, 'activities': 27, 'project_id': 'P1', 'new_materials': 3}"
+ },
+ {
+  "check": "one monitoring row per material, monitored by default",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the set-up is kept: codes, WBS and the mapping",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the planning engineer chooses which materials are monitored",
+  "pass": true,
+  "detail": "{'materials': 3, 'monitored': 2, 'activities': 0, 'project_id': 'P1', 'new_materials': 0}"
+ },
+ {
+  "check": "...Cable Drum is no longer monitored, and the history says so",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the mapping can be changed later without loading again",
+  "pass": true,
+  "detail": "{'materials': 3, 'monitored': 2, 'activities': 0, 'project_id': 'P1', 'new_materials': 0}"
+ },
+ {
+  "check": "...kept, with the set-up change in the history",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the planning engineer enters the PO number, supplier and remarks",
+  "pass": true,
+  "detail": "{'uom': None, 'changed': 3, 'remarks': 'FAT witnessed by client\\nShipment by sea', 'material': 'GIS Equipment', 'selected': True, 'supplier': 'Siemens Energy', 'po_number': '4500012345', 'project_id': 'P1', 'updated_at': '2026-10-14T15:34:36.489446+00:00', 'updated_by': '00000000-0000-0000-0000-0000"
+ },
+ {
+  "check": "each field change is in the history with user, date and field",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "saving the same values again changes nothing",
+  "pass": true,
+  "detail": "{'uom': None, 'changed': 0, 'remarks': 'FAT witnessed by client\\nShipment by sea', 'material': 'GIS Equipment', 'selected': True, 'supplier': 'Siemens Energy', 'po_number': '4500012345', 'project_id': 'P1', 'updated_at': '2026-10-14T15:34:36.489446+00:00', 'updated_by': '00000000-0000-0000-0000-0000"
+ },
+ {
+  "check": "the supplier is changed",
+  "pass": true,
+  "detail": "{'uom': None, 'changed': 1, 'remarks': 'FAT witnessed by client\\nShipment by sea', 'material': 'GIS Equipment', 'selected': True, 'supplier': 'Hitachi Energy', 'po_number': '4500012345', 'project_id': 'P1', 'updated_at': '2026-10-14T15:34:36.65135+00:00', 'updated_by': '00000000-0000-0000-0000-00000"
+ },
+ {
+  "check": "...the history keeps before and after",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "only the fields sent are changed",
+  "pass": true,
+  "detail": "{'uom': None, 'changed': 1, 'remarks': 'Shipment by sea', 'material': 'GIS Equipment', 'selected': True, 'supplier': 'Hitachi Energy', 'po_number': '4500012345', 'project_id': 'P1', 'updated_at': '2026-10-14T15:34:36.735634+00:00', 'updated_by': '00000000-0000-0000-0000-000000000508', 'qty_ordered':"
+ },
+ {
+  "check": "a PO number over 60 characters is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmp4e5ejllu.sql:4: ERROR:  The PO number is 60 characters at most\nCONTEXT:  PL/pgSQL function material_item_save(jsonb) line 9 at RAISE"
+ },
+ {
+  "check": "remarks over 4,000 characters are refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmpv1gub555.sql:4: ERROR:  Remarks are 4,000 characters at most\nCONTEXT:  PL/pgSQL function material_item_save(jsonb) line 11 at RAISE"
+ },
+ {
+  "check": "an unknown material is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmpp8_copg8.sql:4: ERROR:  Unknown material Nothing\nCONTEXT:  PL/pgSQL function material_item_save(jsonb) line 8 at RAISE"
+ },
+ {
+  "check": "a costing engineer cannot edit them",
+  "pass": true,
+  "detail": "psql:/tmp/tmplp7wd2r8.sql:4: ERROR:  Only the people who keep material tracking (planning engineers of this project, the Head of Planning and Cost Control or a super admin) can change it\nCONTEXT:  PL/pgSQL function material_item_save(jsonb) line 6 at RAISE"
+ },
+ {
+  "check": "the Head of Planning and Cost Control can (position)",
+  "pass": true,
+  "detail": "{'uom': None, 'changed': 1, 'remarks': 'Checked by the Head', 'material': 'GIS Equipment', 'selected': True, 'supplier': 'Hitachi Energy', 'po_number': '4500012345', 'project_id': 'P1', 'updated_at': '2026-10-14T15:34:36.97327+00:00', 'updated_by': '00000000-0000-0000-0000-000000000506', 'qty_ordere"
+ },
+ {
+  "check": "a super admin gives the right to one costing engineer",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...who can now edit them",
+  "pass": true,
+  "detail": "{'uom': None, 'changed': 1, 'remarks': 'Checked by the Head', 'material': 'GIS Equipment', 'selected': True, 'supplier': 'Hitachi Energy', 'po_number': '4500012346', 'project_id': 'P1', 'updated_at': '2026-10-14T15:34:37.068328+00:00', 'updated_by': '00000000-0000-0000-0000-000000000510', 'qty_order"
+ },
+ {
+  "check": "a super admin removes it from planning engineers (role)",
+  "pass": true,
+  "detail": "{'ok': True}"
+ },
+ {
+  "check": "...a planning engineer is refused",
+  "pass": true,
+  "detail": "psql:/tmp/tmp35i336sa.sql:4: ERROR:  Only the people who keep material tracking (planning engineers of this project, the Head of Planning and Cost Control or a super admin) can change it\nCONTEXT:  PL/pgSQL function material_item_save(jsonb) line 6 at RAISE"
+ },
+ {
+  "check": "foremen never get it either way: a foreman cannot edit",
+  "pass": true,
+  "detail": "psql:/tmp/tmp7x9j90pu.sql:4: ERROR:  Only the people who keep material tracking (planning engineers of this project, the Head of Planning and Cost Control or a super admin) can change it\nCONTEXT:  PL/pgSQL function material_item_save(jsonb) line 6 at RAISE"
+ },
+ {
+  "check": "the fields cannot be written around the functions",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "a revised baseline is loaded: a new material, one activity less",
+  "pass": true,
+  "detail": "{'materials': 4, 'monitored': 3, 'activities': 35, 'project_id': 'P1', 'new_materials': 1}"
+ },
+ {
+  "check": "...PO number, supplier and remarks are kept",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...Cable Drum stays unmonitored; the new Shunt Reactor is monitored",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...the removed activity is gone from the material activities",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "an updated schedule is loaded (v15 upload)",
+  "pass": true,
+  "detail": "{'id': '4f2de12a-571b-44a2-90cd-1f8bd358d9a5', 'summary': {'n': 2, 'phases': [{'n': 0, 'w': 0, 'iw': 0, 'phase': 'GEN', 'act_pct': 0.0, 'present': False, 'plan_pct': 0.0}, {'n': 0, 'w': 0, 'iw': 0, 'phase': 'DES', 'act_pct': 0.0, 'present': False, 'plan_pct': 0.0}, {'n': 0, 'w': 0, 'iw': 0, 'phase':"
+ },
+ {
+  "check": "...it keeps the early start, Material Name, Unified Activity Name and own WBS of each activity",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...and never touches the manual fields",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "everyone with access to the project reads the tracking (a foreman too)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "people without access to the project read nothing",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the history cannot be changed, even from the database console",
+  "pass": true,
+  "detail": "ERROR:  material_audit is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+ },
+ {
+  "check": "the history cannot be deleted, even from the database console",
+  "pass": true,
+  "detail": "ERROR:  material_audit is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+ },
+ {
+  "check": "the history cannot be emptied, even from the database console",
+  "pass": true,
+  "detail": "ERROR:  material_audit cannot be emptied\nCONTEXT:  PL/pgSQL function pt_no_truncate() line 2 at RAISE"
+ },
+ {
+  "check": "Roles and rights accepts the new right and screen",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "foremen still never see cost figures (unchanged)",
+  "pass": true,
+  "detail": "psql:/tmp/tmptvuz_vlr.sql:4: ERROR:  Foremen never see cost and billing figures\nCONTEXT:  PL/pgSQL function rights_save(jsonb) line 22 at RAISE"
+ },
+ {
+  "check": "the rollback runs (run 1)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "the rollback runs (run 2)",
+  "pass": true,
+  "detail": "psql:/home/claude/protrack-ai/supabase/schema-rollback-v17.sql:89: NOTICE:  function material_setup_save(jsonb) does not exist, skipping\npsql:/home/claude/protrack-ai/supabase/schema-rollback-v17.sql:90: NOTICE:  function material_item_save(jsonb) does not exist, skipping\npsql:/home/claude/protrack-"
+ },
+ {
+  "check": "...the functions are gone, the tables and history are kept",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...the v3.7 rights and screens are back (17 and 21)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "...an updated schedule still loads (the v3.7 upload)",
+  "pass": true,
+  "detail": "{'id': 'fdb46342-8855-4300-a832-4b003ddd25d0', 'summary': {'n': 2, 'phases': [{'n': 0, 'w': 0, 'iw': 0, 'phase': 'GEN', 'act_pct': 0.0, 'present': False, 'plan_pct': 0.0}, {'n': 0, 'w': 0, 'iw': 0, 'phase': 'DES', 'act_pct': 0.0, 'present': False, 'plan_pct': 0.0}, {'n': 0, 'w': 0, 'iw': 0, 'phase':"
+ },
+ {
+  "check": "v17 can be applied again after the rollback",
+  "pass": true,
+  "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v17.sql:52: NOTICE:  column \"es\" of relation \"schedule_update_rows\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v17.sql:53: NOTICE:  column \"mat\" of relation \"schedule_update_rows\" already exists, skipping\npsql:/h"
+ },
+ {
+  "check": "...and the kept data is there",
+  "pass": true,
+  "detail": ""
+ }
+]

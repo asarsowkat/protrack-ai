@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ProTrackAI v2.5+ (extended to v3.6) in server mode, end to end: the real app in Chromium, talking to a local PostgreSQL built
-from the real ProTrack schema (schema.sql + v2 ... v9, then v10 to v16 applied mid-run as on a live database) through fake_supabase.py.
+from the real ProTrack schema (schema.sql + v2 ... v9, then v10 to v17 applied mid-run as on a live database) through fake_supabase.py.
 Every allow/refuse decision in these tests is made by the database (row level security and the v4
 functions), exactly as on Supabase. What is NOT covered: Supabase's own sign-in service, its REST layer
 and the email function; those are replaced by the stand-in.
@@ -788,13 +788,48 @@ with sync_playwright() as p:
     sql("delete from role_rights; delete from user_rights; delete from screen_rights")
     sql(f"update profiles set custom_role=null, all_projects=false where id='{U['pl']}'; insert into project_access values ('{U['pl']}','P1') on conflict do nothing")
 
+    # ---------------------------------------------------------------- material tracking (v17)
+    login(pg, 'pl'); pg.evaluate("state.scope='P1';go('mat')"); pg.wait_for_timeout(700)
+    ck('Materials (v17)', 'before the v17 update, Material tracking says the database update is needed', 'v17 database update' in pg.inner_text('#view'), pg.inner_text('#view')[:300])
+    pv = subprocess.run(PG + ['-d', DBN, '-f', os.path.join(DBDIR, 'schema-update-v17.sql')], capture_output=True, text=True)
+    ck('Materials (v17)', 'the v17 update loads on top of a database in use', pv.returncode == 0, pv.stderr[:300])
+    ck('Materials (v17)', 'the setup check counts 7', sql("select (select count(*) from pg_proc where proname in ('material_setup_save','material_item_save','pt_mat_keeper')) + (select count(*) from information_schema.tables where table_schema='public' and table_name in ('material_setup','material_acts','material_items','material_audit'))") == '7')
+    pg.evaluate("cloudLoadAll(true).then(()=>render())"); pg.wait_for_timeout(1800)
+    STG = ['PR Creation', 'PO Creation', 'Base Design', 'GAFM Approval', 'Manufacturing', 'FAT', 'Shipment', 'Delivery', 'Installation Readiness']
+    MROWS = [dict(id=f'MT{i}-{j}', name=f'{m} - {u}', wbs='Procurement', wbs_leaf=f'{m} package', material=m, uact=u, bs=f'2026-{j + 1:02d}-01', bf=f'2026-{j + 1:02d}-25', pct=0)
+             for i, m in enumerate(['GIS Equipment', 'Power Transformer']) for j, u in enumerate(STG)]
+    MAPS = {u: k for u, k in zip(STG, ['PR', 'PO', 'BD', 'GAFM', 'MFG', 'FAT', 'RFS', 'DEL', 'CIV'])}
+    r = pg.evaluate(f"mtSave('setup',{json.dumps(dict(project_id='P1', action='baseline', mat_code='Material Name', uact_code='Unified Activity Name', wbs_filter=['Procurement'], stage_map=MAPS, file_name='TT_baseline.xer', file_hash='mtb1', data_date='2026-01-01', rows=MROWS))}).then(r=>r||mtSave.err)")
+    ck('Materials (v17)', 'the planning engineer loads the baseline into Material Tracking on the server', sql("select count(*) from material_acts where project_id='P1'") == '18' and sql("select count(*) from material_items where project_id='P1' and selected") == '2', r)
+    pg.evaluate("render()"); pg.wait_for_timeout(500)
+    pg.fill('[data-mtf="P1|GIS Equipment|po_number"]', '4500077001'); pg.press('[data-mtf="P1|GIS Equipment|po_number"]', 'Tab'); pg.wait_for_timeout(1500)
+    pg.fill('[data-mtf="P1|GIS Equipment|supplier"]', 'Siemens Energy'); pg.press('[data-mtf="P1|GIS Equipment|supplier"]', 'Tab'); pg.wait_for_timeout(1500)
+    ck('Materials (v17)', 'PO number and supplier typed in the table are saved on the server, with the history', sql("select po_number||'/'||supplier from material_items where project_id='P1' and material='GIS Equipment'") == '4500077001/Siemens Energy'
+       and sql("select string_agg(field, ',' order by id) from material_audit where material='GIS Equipment'") == 'PO Number,Supplier Name')
+    UPROWS = [dict(id='TT-100', name='Raft concrete', wbs='Structure Works', w=100, bs='2026-09-01', bf='2026-09-30', pct=50)] + \
+             [dict(r, w=0, pct=100 if r['id'] in ('MT0-0', 'MT0-1', 'MT0-2', 'MT0-3', 'MT0-4', 'MT0-5', 'MT0-6') else (40 if r['id'] == 'MT0-7' else 0), mat=r['material'], uact=r['uact'],
+                   **({'as': r['bs'], 'af': r['bf']} if r['id'] in ('MT0-0', 'MT0-1', 'MT0-2', 'MT0-3', 'MT0-4', 'MT0-5', 'MT0-6') else ({'as': r['bs'], 'ef': '2026-08-30'} if r['id'] == 'MT0-7' else {}))) for r in MROWS]
+    r = pg.evaluate(f"schedCommit({json.dumps(dict(project_id='P1', data_date=pg.evaluate('ASOF'), weightage='internal', file_name='TT_update_Aug.xer', file_hash='mtu1', weight_basis='Duration', rows=UPROWS))}).then(r=>r?'ok':schedCommit.err)")
+    ck('Materials (v17)', 'an updated schedule keeps the material codes on the server', r == 'ok' and sql("select count(*) from schedule_update_rows where project_id='P1' and mat is not null") == '18', r)
+    pg.evaluate("render()"); pg.wait_for_timeout(500)
+    G = pg.evaluate("(()=>{const r=mtMaterials('P1').find(r=>r.material==='GIS Equipment');return {del:r.delivery,dl:r.cells.DEL.status,fat:r.cells.FAT.status}})()")
+    ck('Materials (v17)', 'statuses come from the update on the server: FAT completed, delivery started and delayed', G == {'del': 'Delivery Started', 'dl': 'Delayed', 'fat': 'Completed'}, G)
+    r = pg.evaluate(f"mtSave('setup',{json.dumps(dict(project_id='P1', action='baseline', mat_code='Material Name', uact_code='Unified Activity Name', wbs_filter=['Procurement'], stage_map=MAPS, file_name='TT_baseline_rev1.xer', file_hash='mtb2', data_date='2026-02-01', rows=MROWS))}).then(r=>r||mtSave.err)")
+    ck('Materials (v17)', 'a revised baseline on the server keeps PO number and supplier', sql("select po_number||'/'||supplier from material_items where material='GIS Equipment'") == '4500077001/Siemens Energy', r)
+    r = pg.evaluate("rpc('material_item_save',{p:{project_id:'P1',material:'GIS Equipment',po_number:'X'}}).then(()=>'saved').catch(e=>'refused '+srvMsg(e))")
+    login(pg, 'c1'); pg.evaluate("state.scope='P1';go('mat')"); pg.wait_for_timeout(700)
+    r2 = pg.evaluate("rpc('material_item_save',{p:{project_id:'P1',material:'GIS Equipment',po_number:'X'}}).then(()=>'saved').catch(e=>'refused '+srvMsg(e))")
+    ck('Materials (v17)', 'a costing engineer reads the tracking but the server refuses his edits (and the app shows no input boxes)', pg.evaluate("mtFiltered().length") == 2 and pg.locator('[data-mtf]').count() == 0 and r2.startswith('refused'), r2)
+
     # ---------------------------------------------------------------- load failure is visible, never silent
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=json.dumps({'tables': ['activities']}).encode(), headers={'content-type': 'application/json'}))
     pg.evaluate("cloudLoadAll(true).then(()=>render())"); pg.wait_for_timeout(1500)
     ck('Errors', 'a failed server load shows a warning with Try again', pg.locator('[data-cloudreload]').count() >= 1 and 'could not be loaded' in pg.inner_text('#view'), pg.inner_text('#view')[:200])
     urllib.request.urlopen(urllib.request.Request(URL + '__sb/fail', data=b'{"tables":[]}', headers={'content-type': 'application/json'}))
     pg.click('[data-cloudreload]'); pg.wait_for_timeout(2000)
-    ck('Errors', 'Try again recovers', pg.locator('[data-cloudreload]').count() == 0)
+    try: pg.wait_for_function("!document.querySelector('[data-cloudreload]')", timeout=12000)   # the reload takes longer as more is loaded
+    except Exception: pass
+    ck('Errors', 'Try again recovers', pg.locator('[data-cloudreload]').count() == 0, pg.evaluate("JSON.stringify(CLOUD_LOAD)"))
 
     # ---------------------------------------------------------------- browser data from before the move
     pg.evaluate("signOut()"); pg.wait_for_timeout(600); pg.close()

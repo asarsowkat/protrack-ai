@@ -1,0 +1,308 @@
+{
+ "suite": "mat_demo",
+ "page": "/home/claude/p18/site/demo.html",
+ "passed": 50,
+ "total": 50,
+ "checks": [
+  {
+   "area": "Menu",
+   "check": "Materials & Procurement has Material tracking (no longer \"planned\")",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Demo data",
+   "check": "the demo tracks the materials of the Jubail substation and the Riyadh-Qassim line",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "KPIs",
+   "check": "eight summary figures: total, not delivered, delivery started, delivered, delayed, manufacturing in progress, pending FAT, pending shipment",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "KPIs",
+   "check": "not delivered + delivery started + delivered + no delivery activity = total",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Charts",
+   "check": "three charts: delivery status distribution, supplier-wise status, procurement progress by milestone",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Table",
+   "check": "all 21 columns of the specification plus Delivery Status",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "a project without Material Tracking offers the planning engineer to load the approved baseline",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "the XER is read: 28 activities, the code types offered, Material Name and Unified Activity Name picked",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "the Procurement WBS is picked, Construction is not",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "each Unified Activity Name is matched to a milestone (Shipment \u2192 Release for Shipment, Delivery \u2192 Delivery at Site, Installation Readiness \u2192 Civil Readiness)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "the three materials are listed to choose from",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "loading keeps 27 material activities and three materials, two monitored",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Table",
+   "check": "one row per monitored material",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Table",
+   "check": "before any update: every milestone Not Started or, once its baseline finish has passed, Delayed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Table",
+   "check": "Show materials not monitored brings back Cable Drum",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule update",
+   "check": "the updated schedule keeps the material codes of each activity",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Schedule update",
+   "check": "GIS Equipment: FAT and shipment Completed, delivery running \u2192 Delivery Started, current stage Delivery",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Delayed",
+   "check": "a running delivery whose forecast finish (10 Sept) is after its baseline finish (25 Aug) is Delayed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Delayed",
+   "check": "a stage not started whose baseline finish (25 Sept) is still ahead of the data date and has no late forecast is Not Started",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Delayed",
+   "check": "Power Transformer manufacturing, running with a forecast after its baseline finish, is Delayed; FAT (baseline finish passed, not started) is Delayed too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Delivery Status",
+   "check": "no delivery started \u2192 Not Delivered; the procurement status is the current stage (Manufacturing)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Manual fields",
+   "check": "PO number, supplier and multi-line remarks are saved",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Manual fields",
+   "check": "each change is in the history: field, new value, user and date",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Manual fields",
+   "check": "History shows the material's activities and every change",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Manual fields",
+   "check": "the supplier box suggests known suppliers and subcontractors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Never overwritten",
+   "check": "a revised baseline keeps PO number, supplier, remarks and the choice of monitored materials, and adds the new material",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Never overwritten",
+   "check": "another updated schedule changes statuses only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Set-up",
+   "check": "the mapping and the monitored materials can be changed without loading again",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Filters",
+   "check": "Delivery status filter",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Filters",
+   "check": "Supplier filter",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Filters",
+   "check": "Procurement status filter (current stage)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Filters",
+   "check": "WBS filter",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Filters",
+   "check": "Material filter",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Filters",
+   "check": "Project filter",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Search",
+   "check": "search by PO number (\"4500099001\")",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Search",
+   "check": "search by supplier (\"hitachi\")",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Search",
+   "check": "search by material (\"reactor\")",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sorting",
+   "check": "by supplier (materials without a supplier last)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sorting",
+   "check": "by status (delayed first)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sorting",
+   "check": "by delivery date",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Export",
+   "check": "Excel: material tracking, summary and history sheets",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Export",
+   "check": "PDF: one table row per material",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a costing engineer sees the tracking but cannot edit (no input boxes; refused if tried)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "the Head of Planning and Cost Control can edit (position)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "foremen do not have Material tracking in the menu",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "Roles and rights lists the new right and the new screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "once the super admin gives costing engineers the right, they can edit",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "the page fits the phone width (the table scrolls inside its box)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Phone",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}
