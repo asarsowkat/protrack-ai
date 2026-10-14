@@ -418,7 +418,7 @@ label.btn{display:inline-block}
 .mttbl{font-size:13px}.mttbl td,.mttbl th{white-space:nowrap;vertical-align:top}.mttbl th.mtm{white-space:normal;min-width:96px}.mttbl .mtsticky{position:sticky;left:0;background:var(--surface);z-index:1}
 .mtwrap{max-height:72vh;overflow:auto}.mttbl thead th{position:sticky;top:0;background:var(--surface);z-index:2}.mttbl thead th.mtsticky{z-index:3}
 .mtin{width:140px;font-size:13px;padding:4px 6px}.mtrem{width:220px;min-height:34px;white-space:pre-wrap}.mtoff td{opacity:.6}
-.mtch{height:240px;position:relative}.mtg3{grid-template-columns:repeat(3,minmax(0,1fr))}.mtg2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mtch{height:240px;position:relative}.mthms{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:0 0 14px}.mthm{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;background:var(--surface)}.mthm .l{font-size:11.5px;color:var(--ink-2)}.mthm .mtp{align-self:flex-start}@media (min-width:1200px){.mthms{grid-template-columns:repeat(9,minmax(0,1fr))}}.mthgrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:18px;align-items:start}.mthk{grid-template-columns:repeat(3,minmax(0,1fr))}@media (max-width:1000px){.mthgrid,.mthk{grid-template-columns:minmax(0,1fr)}}.mtg3{grid-template-columns:repeat(3,minmax(0,1fr))}.mtg2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .mtfilters{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin:8px 0 12px}.mtchecks{max-height:300px;overflow:auto}
 @media (max-width:1000px){.mtg3,.mtg2{grid-template-columns:minmax(0,1fr)}}
 .dprfacts{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet.full .dprfacts{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -762,7 +762,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8.1</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8.2</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -4923,12 +4923,15 @@ async function mtExport(kind){
     doc.text(`Tracked ${K.total} · Not Delivered ${K.nd} · Delivery Started ${K.ds} · Delivered ${K.dv} · Delayed ${K.late} · Manufacturing ${K.mfg} · Pending FAT ${K.fat} · Pending shipment ${K.ship}`,12,21);
     doc.autoTable({head:[head],body,startY:25,styles:{fontSize:6.2,cellPadding:1},headStyles:{fillColor:[36,80,138]},margin:{left:8,right:8}});
     await saveFile(`Material_tracking_${stamp}.pdf`,doc.output('blob'))}catch(e){toast('The PDF could not be built: '+(e.message||'check your connection'))}}
-function mtHistory(pid,m){const A=(DB.matAudit||[]).filter(a=>a.project_id===pid&&a.material===m).slice().reverse(),r=mtMaterials(pid).find(x=>x.material===m);
-  $('#sheet').classList.remove('full','wide');
-  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${esc(m)}</h2><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
-    <p class="small muted">${esc((projById(pid)||{}).short||pid)}${r?` · ${esc(r.status)} · ${esc(r.delivery)}`:''}</p>
-    ${r?`<h3>Activities</h3><div class="scroll"><table class="tbl"><thead><tr><th>Activity</th><th>Unified Activity Name</th><th>Milestone</th><th>Baseline finish</th><th>Current finish</th><th class="n">%</th><th>Status</th></tr></thead><tbody>${r.acts.map(a=>`<tr><td>${esc(a.id)}<span class="t2">${esc(a.name||'')}</span></td><td>${esc(a.uact||'—')}</td><td>${esc(MT_N[a.stage]||'Not tracked')}</td><td>${a.bf?fmtDY(a.bf):'—'}</td><td>${a.cf?fmtDY(a.cf):'—'}</td><td class="n">${fmt(a.pct,0)}</td><td>${mtPill(a.status,MT_ST[a.status])}${a.inBase?'':'<span class="t2">not in the baseline</span>'}</td></tr>`).join('')}</tbody></table></div>`:''}
-    <h3>History of the manual fields</h3><ul class="audit">${A.map(a=>`<li><b>${esc(a.field)}</b>: ${esc(a.before||'—')} → ${esc(a.after||'—')} <span class="muted small">${esc(a.by_name||'')}, ${esc(tStamp(a.at_time))}</span></li>`).join('')||'<li class="muted">No change yet.</li>'}</ul>`;
+function mtHistory(pid,m){const A=(DB.matAudit||[]).filter(a=>a.project_id===pid&&a.material===m).slice().reverse(),r=mtMaterials(pid).find(x=>x.material===m),it=mtItems(pid)[m]||{};
+  $('#sheet').classList.remove('wide');$('#sheet').classList.add('full');   /* v3.8.2: a material's history opens full screen */
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${esc(m)}</h2>${r?mtPill(r.delivery,MT_DEL[r.delivery]):''}<button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <p class="small muted">${esc((projById(pid)||{}).short||pid)}${r?` · current stage ${esc(r.cur.uact||'—')} · ${esc(r.status)}${r.dd?` · schedule data date ${fmtDY(r.dd)}`:''}`:''}</p>
+    <div class="rkpis mthk" style="margin:10px 0 14px"><div class="rkpi"><span class="l">PO Number</span><b>${esc(it.po_number||'—')}</b></div><div class="rkpi"><span class="l">Supplier Name</span><b>${esc(it.supplier||'—')}</b></div>
+      <div class="rkpi"><span class="l">Remarks</span><span class="small" style="white-space:pre-wrap">${esc(it.remarks||'—')}</span></div></div>
+    ${r?`<h3>Milestones</h3><div class="mthms">${MT_STAGES.map(([s,l])=>{const x=r.cells[s];return `<div class="mthm"><span class="l">${esc(l)}</span>${x?mtPill(x.status,MT_ST[x.status],x.date):'<span class="muted small">not tracked</span>'}</div>`}).join('')}</div>`:''}
+    <div class="mthgrid">${r?`<div><h3>Activities</h3><div class="scroll"><table class="tbl"><thead><tr><th>Activity</th><th>Unified Activity Name</th><th>Milestone</th><th>Baseline start</th><th>Baseline finish</th><th>Current start</th><th>Current finish</th><th class="n">%</th><th>Status</th></tr></thead><tbody>${r.acts.map(a=>`<tr><td>${esc(a.id)}<span class="t2">${esc(a.name||'')}</span></td><td>${esc(a.uact||'—')}</td><td>${esc(MT_N[a.stage]||'Not tracked')}</td><td>${a.bs?fmtDY(a.bs):'—'}</td><td>${a.bf?fmtDY(a.bf):'—'}</td><td>${a.cs?fmtDY(a.cs):'—'}${a.as?'<span class="t2">actual</span>':''}</td><td>${a.cf?fmtDY(a.cf):'—'}${a.af?'<span class="t2">actual</span>':''}</td><td class="n">${fmt(a.pct,0)}</td><td>${mtPill(a.status,MT_ST[a.status])}${a.inBase?'':'<span class="t2">not in the baseline</span>'}</td></tr>`).join('')}</tbody></table></div></div>`:''}
+    <div><h3>History of the manual fields</h3><ul class="audit">${A.map(a=>`<li><b>${esc(a.field)}</b>: ${esc(a.before||'—')} → ${esc(a.after||'—')} <span class="muted small">${esc(a.by_name||'')}, ${esc(tStamp(a.at_time))}</span></li>`).join('')||'<li class="muted">No change yet.</li>'}</ul></div></div>`;
   $('#drawer').hidden=false}
 document.addEventListener('change',async e=>{const t=e.target;if(!t.matches||!$('#view'))return;
   if(t.matches('[data-mtflt]')){const F=mtState(),k=t.dataset.mtflt;F[k]=t.type==='checkbox'?t.checked:t.value;if(k!=='q')render();return}
@@ -5255,7 +5258,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.8.1';
+const APP_VERSION='3.8.2';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
