@@ -38,7 +38,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 .app{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100%}
 .side{background:var(--side);color:var(--side-ink);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:22px 14px}
-.brand{display:flex;flex-direction:column;gap:2px;padding:4px 10px 24px}
+.brand{display:flex;flex-direction:column;gap:2px;padding:4px 10px 24px;position:relative}.mnavx{display:none;position:absolute;top:0;right:4px;background:transparent;border:1px solid rgba(255,255,255,.25);color:var(--side-ink);border-radius:8px;width:36px;height:36px;font-size:16px;cursor:pointer}body.mnav .mnavx{display:inline-flex;align-items:center;justify-content:center}
 .brand b{font:700 28px/1 var(--cond);letter-spacing:.02em}
 .brand span{font-size:12.5px;color:var(--side-2)}
 .nav{display:flex;flex-direction:column;gap:2px}
@@ -234,6 +234,9 @@ html[dir="rtl"] .audit li{padding:0 14px 12px 0}
 @media (max-width:1180px){.g-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.g-2{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:900px){
   .app{grid-template-columns:minmax(0,1fr)}.side{display:none}.bottom{display:flex}
+  /* v3.8.3: on a phone the full menu opens from Menu in the bottom bar; the bar keeps Menu and four shortcuts */
+  body.mnav .side{display:flex;position:fixed;inset:0;z-index:50;height:auto;overflow-y:auto;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+  body.mnav{overflow:hidden}.bottom button:nth-child(n+6){display:none}
   .top{padding:10px 14px}.top h1{font-size:22px;flex:1 1 auto;width:auto;min-width:0;order:-1}
   .topmark{order:-2}
   .top .ctl,.top .iconbtn,.top .txtbtn{order:1}
@@ -759,10 +762,10 @@ label.btn{display:inline-block}
 </div>
 <div class="app" id="app" hidden>
   <aside class="side">
-    <div class="brand"><img class="logo-word" alt="ProTrack"></div>
+    <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8.2</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8.3</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -5229,7 +5232,7 @@ const T={
   en:{mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'Weekly update',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
   ar:{mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'التحديث الأسبوعي',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
-const ICONS={
+const ICONS={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
   xr:'<path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 4-5"/>',rel:'<path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/><path d="M9 12l2 2 4-4"/>',logs:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>',
   tender:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 9h6M9 13h6M9 17h3"/>',iss:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',docs:'<path d="M3 20h18"/><rect x="4" y="5" width="4" height="15"/><rect x="9" y="3" width="4" height="17"/><rect x="14" y="6" width="5" height="14"/>',
   act:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',pdash:'<path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/>',cdash:'<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
@@ -5258,7 +5261,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.8.2';
+const APP_VERSION='3.8.3';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
@@ -5556,7 +5559,7 @@ function navOn(v){if(v==='admin')return state.role==='sa';const o=screenOv(v);re
 function renderNav(){
   const L=T[state.lang];const views=NAV_ALL.filter(navOn);NAV_VIEWS=views;
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=views.filter(v=>!['mat','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','xr'].includes(v)).map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=`<button type="button" data-mnav aria-label="Open the full menu">${icon('menu')}<span>Menu</span></button>`+views.filter(v=>!['mat','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','xr'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -5571,6 +5574,10 @@ function renderNav(){
   $('#lang').textContent=state.lang==='en'?'عربي':'English';
   const u=me();$('#whoami').innerHTML=`Signed in as <b style="color:var(--side-ink)">${esc(u.name)}</b><br>${esc(u.title)}`;
 }
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-mnav]');
+  if(t){document.body.classList.toggle('mnav');return}
+  if(document.body.classList.contains('mnav')&&e.target.closest&&e.target.closest('.side [data-go],.side [data-navkey],.side [data-signout],.side [data-reset]'))setTimeout(()=>document.body.classList.remove('mnav'),0)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('mnav')});
 function renderBell(){
   const unread=Math.max(0,DB.notes.length-DB.read);const dot=$('#bellDot');dot.hidden=!unread;dot.textContent=unread;
   $('#notes').innerHTML=`<div class="nh"><span>Notifications</span><span><button type="button" data-signout>Sign out</button>${CLOUD?'':' · <button type="button" data-reset>Reset demo data</button>'}</span></div><ul>${DB.notes.slice(0,25).map(n=>`<li class="${n.w?'w':''}"><time>${esc(n.t)}</time>${esc(n.text)}</li>`).join('')}</ul>`;
