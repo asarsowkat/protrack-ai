@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-13 23:54",
- "app": "/home/claude/p15/site/live.html",
+ "run_at": "2026-10-14 07:47",
+ "app": "/home/claude/p16/site/live.html",
  "results": [
   {
    "area": "Auth",
@@ -106,7 +106,7 @@
   },
   {
    "area": "Reports",
-   "check": "report actprog builds (0.01 s)",
+   "check": "report actprog builds (0.0 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -124,7 +124,7 @@
   },
   {
    "area": "Reports",
-   "check": "report histo builds (0.4 s)",
+   "check": "report histo builds (0.34 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -160,7 +160,7 @@
   },
   {
    "area": "Reports",
-   "check": "report invoice builds (0.0 s)",
+   "check": "report invoice builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -172,7 +172,7 @@
   },
   {
    "area": "Reports",
-   "check": "report timing builds (0.01 s)",
+   "check": "report timing builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -184,13 +184,13 @@
   },
   {
    "area": "Reports",
-   "check": "report p6upd builds (0.02 s)",
+   "check": "report p6upd builds (0.03 s)",
    "result": "PASS",
    "detail": ""
   },
   {
    "area": "Reports",
-   "check": "report warn builds (0.07 s)",
+   "check": "report warn builds (0.06 s)",
    "result": "PASS",
    "detail": ""
   },

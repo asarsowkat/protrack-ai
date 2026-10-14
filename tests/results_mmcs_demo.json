@@ -1,0 +1,68 @@
+{
+ "suite": "mmcs_demo",
+ "page": "/home/claude/protrack-ai/live.html",
+ "passed": 10,
+ "total": 10,
+ "checks": [
+  {
+   "area": "Baselines",
+   "check": "the section is called Master Manpower Costing Sheet, with its template and upload buttons",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Baselines",
+   "check": "the old name is not shown",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Menu",
+   "check": "the Cost Control menu entry has the new name",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Template",
+   "check": "the downloaded template is named Master_Manpower_Costing_Sheet_<project>_<date>.xlsx",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Project settings",
+   "check": "Budget manhours from offers the Master Manpower Costing Sheet; the saved value is unchanged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import centre",
+   "check": "uploads of kind costing are listed under the new name",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Roles and rights",
+   "check": "the costing right uses the new name",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Document rack",
+   "check": "the tender costing documents keep their own name",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Version",
+   "check": "the side menu shows v3.7.1",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

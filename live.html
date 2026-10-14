@@ -749,7 +749,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.7</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.7.1</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1409,7 +1409,7 @@ async function cloudSavePeople(before){
    and recorded as a numbered batch with the file's fingerprint. Refused rows must be acknowledged before
    the rest is saved. The Import centre lists every batch, failed attempts and retries included. */
 const IMPORT_MAX=10*1024*1024,IMPORT_EXT=/\.(xlsx|xls|csv|xer|xml)$/i;
-const IMPORT_KINDS={issues:'Issue register upload',volog:'Change order and claim log',supplements:'Budget supplement log',invoices:'Invoice register',costing:'Costing file',baseline:'P6 baseline',update:'Weekly progress',migration:'Move to server',restore:'Restore'};
+const IMPORT_KINDS={issues:'Issue register upload',volog:'Change order and claim log',supplements:'Budget supplement log',invoices:'Invoice register',costing:'Master Manpower Costing Sheet',baseline:'P6 baseline',update:'Weekly progress',migration:'Move to server',restore:'Restore'};
 const isoOk=d=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(d||''))return false;const x=new Date(d+'T00:00:00Z');return isFinite(x)&&x.toISOString().slice(0,10)===d};
 const dBad=v=>!(v instanceof Date)&&String(v??'').trim()!==''&&!isoOk(dOnly(v));
 const nBad=v=>{if(v instanceof Date||v==null)return false;const t=String(v).trim();if(!t)return false;const c=t.replace(/^(SAR|SR)\s*/i,'').replace(/[,\s]/g,'');return !/^-?\d*\.?\d+$/.test(c)};
@@ -1562,7 +1562,7 @@ function renderImp(){
   </div>
   <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Upload a file</h2></div>
     <p class="small muted" style="margin:0 0 10px">Each upload page checks the file, shows a preview with a reconciliation and an exception report, and saves only when you confirm. Files up to 10 MB: Excel (.xlsx, .xls), CSV, Primavera XER or P6 XML. Workbooks with macros are refused.</p>
-    <div class="actions" style="margin:0">${go('inv','Invoice register',canCost())}${go('cost','Costing file',canCost())}${go('p6','P6 baseline',canBaseline())}${go('upd','Weekly progress',canUpdate())}
+    <div class="actions" style="margin:0">${go('inv','Invoice register',canCost())}${go('cost','Master Manpower Costing Sheet',canCost())}${go('p6','P6 baseline',canBaseline())}${go('upd','Weekly progress',canUpdate())}
       ${!(canCost()||canBaseline()||canUpdate())?'<span class="small muted">Your role views the history only.</span>':''}</div>
     <div class="note-box" style="margin-top:12px"><b>SAP</b> ${PLANNED('Planned')} SAP ECC Excel exports will be added here once a sample export and the Finance rules are agreed. Direct SAP and S/4HANA connections stay switched off until IT, SAP, Cybersecurity and Finance approve them.</div></section>
   <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Import history</h2></div>
@@ -1618,10 +1618,10 @@ const LC_STAGES=[
   {n:3,name:'Award, finance WBS and SAP activation',dept:'Planning and Cost Control',items:[['loa','Notice of award received from the client',1],['wbs','Higher-level WBS created in SAP',1],['fwbs','Finance WBS sent to Tender for the advance bank guarantee charges',1],['sapact','SAP team activated only the finance WBS for actual cost',1],['contract','Contract signed',1]]},
   {n:4,name:'Kick-off and handover to Planning',dept:'Tendering and Planning',items:[['kickoff','Kick-off meeting held by Tender',1],['docs','Tender documents handed over to Planning',1],['costfile','Costing file with detailed breakup handed over',1],['minutes','Kick-off meeting minutes',0]]},
   {n:5,name:'Costing review, finance pack and SAP upload',dept:'Planning and Cost Control',items:[['site','Site management breakup checked',1],['install','Installation breakup checked',1],['mech','Mechanical breakup checked',1],['civil','Civil breakup checked',1],['missing','Missing items received from Tender (if any were missing)',0],['brief','Project brief prepared',1],['cashflow','Cash flow prepared',1],['finance','Project brief, cash flow and signed contract copy sent to Finance / Treasury',1],['sapupload','Costing uploaded to SAP with the standard template',1]]},
-  {n:6,name:'Baseline preparation and approval',dept:'Planning',items:[['prepared','Baseline programme prepared and loaded',1],['dcma','Schedule quality check reviewed',0],['costing','Costing file applied',1],['submitted','Baseline submitted to the client',1],['approved','Client approval of the baseline received',1]]},
+  {n:6,name:'Baseline preparation and approval',dept:'Planning',items:[['prepared','Baseline programme prepared and loaded',1],['dcma','Schedule quality check reviewed',0],['costing','Master Manpower Costing Sheet applied',1],['submitted','Baseline submitted to the client',1],['approved','Client approval of the baseline received',1]]},
   {n:7,name:'Execution and progress updates',dept:'Projects and site',items:[['dpr','Daily reports flowing',1],['weekly','Weekly progress updates current',1],['lookahead','Look-ahead programme issued',0]]},
   {n:8,name:'Procurement and materials',dept:'Procurement',items:[['pos','Subcontract purchase orders recorded',1],['longlead','Long-lead items tracked',1],['materials','Material tracking in place',0]]},
-  {n:9,name:'Budget, cost and forecast',dept:'Cost Control',items:[['budget','Budget loaded from the costing file',1],['invoices','Invoice register current',1],['forecast','Forecast at completion reviewed',1]]},
+  {n:9,name:'Budget, cost and forecast',dept:'Cost Control',items:[['budget','Budget loaded from the Master Manpower Costing Sheet',1],['invoices','Invoice register current',1],['forecast','Forecast at completion reviewed',1]]},
   {n:10,name:'Variations, claims and approvals',dept:'Contracts and commercial',items:[['register','Variation register maintained',1],['claims','Claims and extension of time submitted where due',0],['approvals','Variation approvals recorded',1]]},
   {n:11,name:'Monthly reporting and review',dept:'Planning and project management',items:[['report','Monthly report issued',1],['review','Management review held',1],['actions','Actions from the review assigned',0]]},
   {n:12,name:'Final account and closeout',dept:'Commercial and projects',items:[['tcc','Technical completion (TCC) achieved',1],['pac','Provisional acceptance (PAC) achieved',1],['final','Final account agreed',1],['handover','Handover to operations',1],['lessons','Lessons learned recorded',0]]}];
@@ -1661,7 +1661,7 @@ function lcEvidence(p,k){
     number:(()=>{const a=(DB.regAudit||[]).filter(x=>x.project_id===p.id&&x.action==='PE allocated').pop();return [/^PE-\d+$/i.test(pcode(p))?'ok':'no',/^PE-\d+$/i.test(pcode(p))?`${pcode(p)}${a?', allocated '+fmtDY(String(a.at_time).slice(0,10))+' by '+(a.by_name||'—'):''}`:'no PE number']})(),
     loa:p.award?['ok',`award recorded ${fmtDY(p.award)}`]:['no','no award date in the Tender register'],
     contract:p.signed?['ok',`signed ${fmtDY(p.signed)}`]:['no','no signing date in the Tender register'],
-    costfile:site?null:(DB.costing||{})[p.id]?['ok',`costing file ${(DB.costing[p.id].file||'')} loaded ${DB.costing[p.id].at||''}`]:['no','no costing file loaded in ProTrackAI yet'],
+    costfile:site?null:(DB.costing||{})[p.id]?['ok',`Master Manpower Costing Sheet ${(DB.costing[p.id].file||'')} loaded ${DB.costing[p.id].at||''}`]:['no','no Master Manpower Costing Sheet loaded in ProTrackAI yet'],
     terms:site?null:[p.value&&p.billing?'ok':'no',p.value?`contract SAR ${fmt(+p.value,1)} M${p.billing&&p.billing.v?', payment terms saved':''}`:'no contract value'],
     team:[p.pm&&p.pm!=='Unassigned'&&p.eng&&p.eng!=='Unassigned'?'ok':'no',`PM ${p.pm||'—'}, site engineer ${p.eng||'—'}`],
     planner:(()=>{const u=teamOf(p.id,'plan');return [u.length?'ok':'no',u.length?u.map(x=>x.name).join(', '):'no planning engineer has access']})(),
@@ -1669,12 +1669,12 @@ function lcEvidence(p,k){
     matrix:[unassigned?'warn':'ok',unassigned?`${unassigned} foreman or engineer not assigned`:'every foreman and engineer assigned'],
     prepared:[acts.length?'ok':'no',acts.length?`${fmt(acts.length)} activities in the baseline`:'no baseline loaded'],
     dcma:[dc?(dcS>=80?'ok':'warn'):'no',dc?`DCMA ${dcS}%`:'runs on XER import'],
-    costing:site?null:[acts.some(a=>a.costed)?'ok':'no',acts.some(a=>a.costed)?`${acts.filter(a=>a.costed).length} activities costed`:'no costing file applied'],
+    costing:site?null:[acts.some(a=>a.costed)?'ok':'no',acts.some(a=>a.costed)?`${acts.filter(a=>a.costed).length} activities costed`:'no Master Manpower Costing Sheet applied'],
     dpr:[recent?'ok':'no',`${recent} reports in the last 7 days`],
     weekly:[lastUpd&&lastUpd>=addDays(ASOF,-8)?'ok':lastUpd?'warn':'no',lastUpd?`last data date ${fmtDY(lastUpd)}`:'no weekly update loaded'],
     pos:site?null:(()=>{const n=SUBS.reduce((t,s)=>t+posOf(s,p.id).length,0);return [n?'ok':'no',n?`${n} purchase orders`:'none recorded']})(),
     longlead:[acts.some(a=>a.cls==='PRC')?'ok':'no',`${acts.filter(a=>a.cls==='PRC').length} procurement activities tracked`],
-    budget:site?null:[acts.some(a=>a.costed)?'ok':'no',acts.some(a=>a.costed)?`budget ${sar(acts.reduce((t,a)=>t+(+a.bcost||0),0))}`:'no costing file applied'],
+    budget:site?null:[acts.some(a=>a.costed)?'ok':'no',acts.some(a=>a.costed)?`budget ${sar(acts.reduce((t,a)=>t+(+a.bcost||0),0))}`:'no Master Manpower Costing Sheet applied'],
     invoices:site?null:(()=>{const t=invTotals(p.id);return [t.n?'ok':'no',t.n?`${t.n} invoices, last ${t.last?fmtDY(t.last):'undated'}`:'no register loaded']})(),
     claims:[p.eot&&p.eot.status&&p.eot.status!=='Not applicable'?'ok':'no',p.eot&&p.eot.status?`extension of time: ${p.eot.status}`:'no claim recorded'],
     tcc:(()=>{const m=ms('TCC');return [m&&m.act?'ok':'no',m?(m.act?`achieved ${fmtDY(m.act)}`:`forecast ${fmtDY(m.fc||m.plan)}`):'no TCC milestone']})(),
@@ -1947,12 +1947,12 @@ function renderCdash(){
   $('#view').innerHTML=`${crumb()}
   <div class="g g-kpi">
     ${kpi('Contract value',sar(sum(r=>r.contract)),'Original contracts in scope')}
-    ${kpi('Budget, costing file',R.some(r=>r.budget!=null)?sar(sum(r=>r.budget)):'—',`${R.filter(r=>r.budget!=null).length} of ${R.length} projects costed`)}
+    ${kpi('Budget, Master Manpower Costing Sheet',R.some(r=>r.budget!=null)?sar(sum(r=>r.budget)):'—',`${R.filter(r=>r.budget!=null).length} of ${R.length} projects costed`)}
     ${kpi('Cost performance',e.ac?fmt(e.cpi,2):'—','CPI on measured labour scope',e.ac?light(e.cpi):'')}
     ${kpi('Invoiced, submitted',sar(sum(r=>r.t.submitted)),`collected ${sar(sum(r=>r.t.collected))}`)}
   </div>
   <section class="panel"><div class="card-head"><h2>Cost position by project</h2><span class="small muted">SAR · data date ${fmtDY(ASOF)} · each figure stands alone; none is added to another</span></div>
-    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Contract</th><th class="n">Budget (costing file)</th><th>Budget revisions</th><th class="n">Earned value</th><th class="n">Actual cost, labour</th><th>Commitments</th><th>Accruals</th><th class="n">Forecast cost (EAC)</th><th class="n">CPI</th><th class="n">Invoiceable</th><th class="n">Invoiced</th><th class="n">Collected</th></tr></thead><tbody>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Contract</th><th class="n">Budget (Master Manpower Costing Sheet)</th><th>Budget revisions</th><th class="n">Earned value</th><th class="n">Actual cost, labour</th><th>Commitments</th><th>Accruals</th><th class="n">Forecast cost (EAC)</th><th class="n">CPI</th><th class="n">Invoiceable</th><th class="n">Invoiced</th><th class="n">Collected</th></tr></thead><tbody>
     ${R.map(r=>`<tr class="click" data-projopen="${esc(r.p.id)}" tabindex="0" title="Open the project overview"><td style="min-width:170px"><b>${esc(r.p.short)}</b><span class="t2">${esc(lcDef(lcCurrent(r.p.id).stage_no).name)}</span></td>
       <td class="n">${r.contract?sar(r.contract):'—'}</td><td class="n">${r.budget!=null?sar(r.budget):'<span class="muted">not loaded</span>'}</td><td>${(()=>{const c=lastCostRel(r.p.id);return c?`${sar(+c.figures.supplements_approved)}<span class="t2">approved supplements, ${esc(perLabel('month',c.period))} report</span>`:NT})()}</td>
       <td class="n">${r.acts.length?sar(r.k.e.ev):'—'}</td><td class="n">${r.acts.length?sar(r.k.e.ac):'—'}</td><td>${(()=>{const c=lastCostRel(r.p.id);return c?`${sar(+c.figures.commitment)}<span class="t2">${esc(perLabel('month',c.period))} report</span>`:NT})()}</td><td>${NT}</td>
@@ -1961,7 +1961,7 @@ function renderCdash(){
     </tbody></table></div>
     <p class="small muted" style="margin:10px 0 0">Earned value, actual cost, forecast and CPI cover labour and subcontract work measured through daily reports, at trade and purchase-order rates; they are not SAP actual cost. Budget supplements and commitments come from the last released monthly cost report, where there is one; accruals are not tracked in ProTrackAI yet and are shown as such rather than estimated. Formulas: guide section 9 and the Finance formula reference.</p></section>
   <section class="panel"><div class="card-head"><h2>Source reconciliation</h2><span class="small muted">ProTrackAI totals against the last accepted source file</span></div>
-    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Costing file</th><th class="n">File total accepted</th><th class="n">Budget in ProTrackAI</th><th>Result</th><th>Invoice register</th><th class="n">File total accepted</th><th class="n">Register in ProTrackAI</th><th>Result</th></tr></thead><tbody>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Master Manpower Costing Sheet</th><th class="n">File total accepted</th><th class="n">Budget in ProTrackAI</th><th>Result</th><th>Invoice register</th><th class="n">File total accepted</th><th class="n">Register in ProTrackAI</th><th>Result</th></tr></thead><tbody>
     ${R.map(r=>`<tr><td><b>${esc(r.p.short)}</b></td>
       <td>${r.cb?`${batchNo(r.cb)}<span class="t2">${esc(r.cb.file_name||'')}</span>`:'<span class="muted">no batch recorded</span>'}</td>
       <td class="n">${r.cb&&r.cb.total_accepted!=null?sar(+r.cb.total_accepted):'—'}</td><td class="n">${r.budget!=null?sar(r.budget):'—'}</td>
@@ -1970,7 +1970,7 @@ function renderCdash(){
       <td class="n">${r.ib&&r.ib.total_accepted!=null?sar(+r.ib.total_accepted):'—'}</td><td class="n">${r.t.n?sar(r.t.submitted):'—'}</td>
       <td>${r.ib&&r.ib.total_accepted!=null?reconCell(+r.ib.total_accepted,r.t.submitted):'<span class="muted">—</span>'}</td></tr>`).join('')}
     </tbody></table></div>
-    <p class="small muted" style="margin:10px 0 0">A costing file may cover only part of a project's activities, and activities costed by an earlier file keep their budget, so "Differs" on the costing side is a prompt to check, not necessarily an error. Batches come from the Import centre.</p></section>
+    <p class="small muted" style="margin:10px 0 0">A Master Manpower Costing Sheet may cover only part of a project's activities, and activities costed by an earlier file keep their budget, so "Differs" on the costing side is a prompt to check, not necessarily an error. Batches come from the Import centre.</p></section>
   <section class="panel"><div class="card-head"><h2>Cash-flow forecast</h2>${PLANNED('Planned')}</div><p class="small muted" style="margin:0">Planned once commitments and the invoicing schedule are tracked.</p></section>`;
 }
 
@@ -4485,7 +4485,7 @@ const RIGHTS=[
   ['planning.manage','Load baselines, weekly progress, updated schedules and the internal weightage','Planning',['plan']],
   ['report.internal.prepare','Prepare internal and client reports','Planning',['plan']],
   ['report.internal.approve','Approve internal and client reports (of projects in access)','Planning',[]],
-  ['costing.manage','Load costing files and invoice registers','Cost',['costing','pm']],
+  ['costing.manage','Load the Master Manpower Costing Sheet and invoice registers','Cost',['costing','pm']],
   ['money.view','See cost and billing figures','Cost',['exec','rm','pf','plan','costing','pm','ro']],
   ['report.cost.prepare','Prepare monthly cost reports','Cost',['costing']],
   ['report.cost.approve','Approve monthly cost reports','Cost',[]],
@@ -4899,7 +4899,8 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.7';
+const APP_VERSION='3.7.1';
+const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'xr',label:'Executive report (released)'},{v:'exec',label:'Live summary (working data)'}]},
@@ -4911,7 +4912,7 @@ const DOMAINS=[
     {v:'rep',rep:'basecmp',label:'Baseline comparison'},{v:'rep',rep:'p6upd',label:'P6 progress update'},
     {plan:'Governed baseline register'},{plan:'Look-ahead and alerts'}]},
   {k:'cost',label:'Cost Control',ic:'eva',items:[
-    {v:'cdash',label:'Cost Control dashboard'},{v:'eva',label:'Earned value and EAC'},{v:'base',sec:'cost',label:'Costing file'},{v:'rep',rep:'unitrate',label:'Unit rate analysis'},
+    {v:'cdash',label:'Cost Control dashboard'},{v:'eva',label:'Earned value and EAC'},{v:'base',sec:'cost',label:'Master Manpower Costing Sheet'},{v:'rep',rep:'unitrate',label:'Unit rate analysis'},
     {v:'cdash',sec:'recon',label:'Cost reconciliation'},{v:'rel',sec:'cost',label:'Monthly cost report'},{v:'logs',sec:'supp',label:'Budget supplements'},{plan:'Accruals'}]},
   {k:'daily',label:'Daily Reports',ic:'dpr',items:[
     {v:'dpr',label:'Daily reports'},{v:'new',label:'New report'},{v:'rep',rep:'timing',label:'Report handling time'}]},
@@ -4931,7 +4932,7 @@ const DOMAINS=[
   {k:'admin',label:'Administration',ic:'admin',items:[
     {v:'admin',tab:'users',label:'Users and access'},{v:'admin',tab:'rights',label:'Roles and rights'},{v:'admin',tab:'roles',label:'Role access'},{v:'admin',tab:'matrix',label:'Approval matrix'},
     {v:'admin',tab:'mail',label:'Approval email'},{v:'admin',tab:'projects',label:'Projects and terms'},{v:'admin',tab:'system',label:'System and date basis'}]}];
-const NAV_SEC={recon:/Source reconciliation/i,p6:/Baseline management|baseline/i,cost:/Costing file/i,po:/purchase orders/i,inv:/Invoice register/i,actions:/Critical items/i};
+const NAV_SEC={recon:/Source reconciliation/i,p6:/Baseline management|baseline/i,cost:/Master Manpower Costing Sheet/i,po:/purchase orders/i,inv:/Invoice register/i,actions:/Critical items/i};
 function navItemOk(it,views){
   if(it.plan)return PLAN_ROLES.includes(state.role);
   if(it.action==='rasa')return true;
@@ -5012,7 +5013,7 @@ function projLifecycle(p,k){
     {n:4,name:'Planning & set-up',items:[
       it('Baseline loaded',acts.length?'ok':'no',acts.length?`${fmt(acts.length)} activities`:'import the P6 or Excel baseline'),
       it('Schedule quality checked',dc?(dcScore>=80?'ok':'warn'):'no',dc?`DCMA ${dcScore}%`:'runs on XER import'),
-      site?null:it('Costing file applied',costed?'ok':'no',costed?'budget quantities and rates':'costing engineer to upload'),
+      site?null:it('Master Manpower Costing Sheet applied',costed?'ok':'no',costed?'budget quantities and rates':'costing engineer to upload'),
       site?null:it('Payment terms set',p.billing?'ok':'no',p.billing?'':'defaults in use'),
       it('Approval matrix assigned',unassigned?'warn':'ok',unassigned?`${unassigned} not assigned`:'every foreman and engineer'),
       site?null:it('Subcontract POs entered',hasPO?'ok':'no')].filter(Boolean)},
@@ -5852,7 +5853,7 @@ function renderPerf(){
     ${scopeProjects().map(p=>{const d=(DB.dcma||{})[p.id];if(!d)return `<tr><td>${esc(p.short)}</td><td colspan="13" class="muted small">No XER imported</td></tr>`;
       return `<tr><td>${esc(p.short)}</td>${[1,2,3,4,5,6,7,8,9,10,11,14].map(n=>{const c=d.checks.find(x=>x.no===n);return `<td class="n" title="${esc(c.name+': '+c.val)}">${c.pass===null?'<span class="muted">·</span>':c.pass?'<span class="g-c">✓</span>':'<span class="r-c">✗</span>'}</td>`}).join('')}<td class="n"><b>${pct(dcmaScore(d.checks),0)}</b></td></tr>`}).join('')}
     </tbody></table></div><p class="small muted">1 Logic · 2 Leads · 3 Lags · 4 Relationship types · 5 Hard constraints · 6 High float · 7 Negative float · 8 High duration · 9 Invalid dates · 10 Resources · 11 Missed tasks · 14 Baseline execution index.</p>`:'<p class="muted">No planning engineers assigned in this scope.</p>'}
-  if(state.perfTab==='costing'){const r=costerRows();body=r.length?`<table class="tbl"><thead><tr><th>Costing engineer</th><th class="n">Activities costed</th><th class="n">Costing uploads</th><th class="n">Rows rejected</th><th class="n">Upload quality</th><th class="n">Invoice status, weeks on time</th><th class="n">Timeliness</th><th>Last register</th><th class="n">Score</th></tr></thead><tbody>
+  if(state.perfTab==='costing'){const r=costerRows();body=r.length?`<table class="tbl"><thead><tr><th>Costing engineer</th><th class="n">Activities costed</th><th class="n">Costing sheet uploads</th><th class="n">Rows rejected</th><th class="n">Upload quality</th><th class="n">Invoice status, weeks on time</th><th class="n">Timeliness</th><th>Last register</th><th class="n">Score</th></tr></thead><tbody>
     ${r.map(x=>`<tr><td><b>${esc(x.name)}</b><span class="t2">${esc(x.projects)}</span></td>
       <td class="n">${pct(x.coverage,0)}</td><td class="n">${x.uploads}</td><td class="n ${x.bad?'a-c':''}">${x.bad}${x.warn?`<span class="t2">${x.warn} flagged</span>`:''}</td>
       <td class="n">${x.quality==null?'—':`<b class="${x.quality>=0.95?'g-c':x.quality>=0.85?'a-c':'r-c'}">${pct(x.quality,0)}</b>`}</td>
@@ -6427,7 +6428,7 @@ function rasaEv(kinds,extra){
       if(R.size)L.push(`${fmt(R.size)} daily report${R.size>1?'s':''} dated ${fmtDY(D[0])} to ${fmtDY(D[D.length-1])} (${fmt(ap)} approved, ${fmt(R.size-ap)} submitted or reviewed and counted before approval)`);else M.push('no submitted daily reports in this scope')}
     if(k==='baseline'){const a=scopeActs(),b=last('baseline');if(a.length)L.push(`the baseline, ${fmt(a.length)} activities${b?`, last loaded ${fat(b.at_time)} in ${batchNo(b)}`:''}`);else M.push('no baseline loaded')}
     if(k==='evm')L.push(`earned value at the data date, ${fmtDY(ASOF)}`);
-    if(k==='costing'){const b=last('costing');L.push(b?`the costing file ${b.file_name||''} (${batchNo(b)}, ${fat(b.at_time)})`:'the costing data held in ProTrackAI (no costing batch recorded in this scope)')}
+    if(k==='costing'){const b=last('costing');L.push(b?`the Master Manpower Costing Sheet ${b.file_name||''} (${batchNo(b)}, ${fat(b.at_time)})`:'the costing data held in ProTrackAI (no costing batch recorded in this scope)')}
     if(k==='invoices'){const b=last('invoices');L.push(b?`the invoice register ${b.file_name||''} (${batchNo(b)}, ${fat(b.at_time)})`:'the invoice register held in ProTrackAI')}
     if(k==='terms')L.push('the contract billing terms in Settings → Projects and terms, with price weighting from the P6 baseline');
     if(k==='rates')L.push('dated trade cost rates and subcontract purchase-order rates');
@@ -7405,36 +7406,36 @@ async function buildDeck(){
   }catch(err){msg('Could not build the presentation: '+(err.message||err))}
 }
 
-/* ---------- costing file: budgeted quantity, rate and cost per activity ---------- */
+/* ---------- Master Manpower Costing Sheet (was: costing file): budgeted quantity, rate and cost per activity ---------- */
 const CHEAD={id:/activity ?id|task ?code|^id$/i,name:/description|activity ?name|^name$/i,qty:/budget.*(qty|quantity)|^quantity$/i,uom:/uom|unit(?! rate)/i,
   rate:/unit ?rate|rate ?per|budget.*rate/i,cost:/budget.*cost|^cost$|amount/i,mh:/manhour|budget.*(mh|hours)|labou?r ?hours/i,gang:/gang|crew ?code/i,rev:/revision|remark|note/i,
   cur:/^curr|currency/i,proj:/^project\b|project ?(no|code|number|id)|^job/i};
 async function costingTemplate(){
   const pid=impPid();if(!pid)return;
   const acts=ACTS.filter(a=>a.p===pid);
-  if(!acts.length)return toast('Import the P6 baseline first, then the costing file maps onto it');
+  if(!acts.length)return toast('Import the P6 baseline first, then the Master Manpower Costing Sheet maps onto it');
   try{
     await loadLib(LIBS.xlsx);
     const head=['Activity ID','Description','Budget quantity','UOM','Budget unit rate (SAR)','Budget cost (SAR)','Budget manhours','Gang code (optional)','Revision or remark'];
     const body=acts.map(a=>[a.id,a.name,'',a.uom==='mh'||a.uom==='%'?'':a.uom,'','',Math.round(a.bmh),'','']);
-    const ws=XLSX.utils.aoa_to_sheet([[`ProTrack costing file, ${projById(pid).short} (${pid})`],
+    const ws=XLSX.utils.aoa_to_sheet([[`Master Manpower Costing Sheet, ${projById(pid).short} (${pid})`],
       ['One row per activity ID. Required: budget quantity and UOM. Fill unit rate and cost as well, or leave budget cost blank and ProTrack computes quantity x rate.'],
       ['Budget manhours are pre-filled from the P6 labour loading; change them only if the costing budget differs. Gang code and remark are optional: leave the gang code blank unless your estimating department uses standard crew codes, as ProTrack does not use it yet.'],
       ['Several rows may share an activity ID; they are summed. Activity IDs not in the baseline are rejected at upload, and the preview lists them.'],[],head,...body]);
     ws['!cols']=head.map((h,i)=>({wch:i===1?46:Math.max(14,h.length+3)}));
     ws['!rows']=[{hpx:20},{hpx:16},{hpx:16},{hpx:16},{hpx:6},{hpx:20}];
-    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Costing');
-    await saveFile(`ProTrack_costing_${pid}_${ASOF}.xlsx`,new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Manpower Costing');
+    await saveFile(`Master_Manpower_Costing_Sheet_${pid}_${ASOF}.xlsx`,new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
   }catch(e){toast('Could not build the template: '+(e.message||'check your connection'))}
 }
 async function handleCostFile(file){
-  const box=$('#costBox');box.innerHTML='<p class="muted">Reading the costing file…</p>';
+  const box=$('#costBox');box.innerHTML='<p class="muted">Reading the Master Manpower Costing Sheet…</p>';
   const pid=impPid();
   const fail=(msg,detail)=>{box.innerHTML=`<div class="warn-box"><b>${esc(msg)}</b>${detail||''}</div>
-    <p class="small muted">Use <b>Download costing template</b> above, which arrives with this project's activity IDs already filled in, then add your columns to it.</p>`};
+    <p class="small muted">Use <b>Download the sheet template</b> above, which arrives with this project's activity IDs already filled in, then add your columns to it.</p>`};
   if(!pid)return fail('Choose a project first.');
   const acts=ACTS.filter(a=>a.p===pid);
-  if(!acts.length)return fail('This project has no baseline yet.','The costing file matches on activity ID, so import the P6 baseline first.');
+  if(!acts.length)return fail('This project has no baseline yet.','The Master Manpower Costing Sheet matches on activity ID, so import the P6 baseline first.');
   try{
     try{await loadLib(LIBS.xlsx)}catch(e){return fail('The spreadsheet library could not load.','Reading Excel needs an internet connection the first time. Check the connection and try again, or save the file as CSV.')}
     const buf=await file.arrayBuffer();
@@ -7548,19 +7549,19 @@ function runCostingLocal(C,pid,ok){
   DB.costing[pid]={file:C.file,at:stamp(),by:me().name,n:applied,cost:ok.reduce((t,r)=>t+r.cost,0),qtyRows:ok.length,missing:C.missing};
   DB.costHist=DB.costHist||{};(DB.costHist[pid]=DB.costHist[pid]||[]).unshift({at:stamp(),by:me().name,file:C.file,rows:C.rows.length,
     ok:ok.length,bad:C.rows.filter(r=>r.err).length,warn:C.rows.filter(r=>r.warn).length,acts:C.acts,missing:C.missing});
-  logChange(`Applied costing file ${C.file} to ${p.short}: ${applied} activities, budget ${sar(ok.reduce((t,r)=>t+r.cost,0))}`);
+  logChange(`Applied Master Manpower Costing Sheet ${C.file} to ${p.short}: ${applied} activities, budget ${sar(ok.reduce((t,r)=>t+r.cost,0))}`);
 }
 function costingHTML(pid){
   const c=(DB.costing||{})[pid],acts=ACTS.filter(a=>a.p===pid),costed=acts.filter(a=>a.costed).length;
   const bc=acts.reduce((t,a)=>t+(+a.bcost||0),0),pw=acts.reduce((t,a)=>t+(+a.pw||0),0),mh=acts.reduce((t,a)=>t+(+a.bmh||0),0);
-  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Costing file</h2>
-    <div class="actions" style="margin:0"><button class="btn" type="button" data-costtpl>Download costing template</button><label class="btn primary" for="costfile">Upload costing file</label><input id="costfile" type="file" accept=".xlsx,.xls,.csv" hidden></div></div>
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Master Manpower Costing Sheet</h2>
+    <div class="actions" style="margin:0"><button class="btn" type="button" data-costtpl>Download the sheet template</button><label class="btn primary" for="costfile">Upload the Master Manpower Costing Sheet</label><input id="costfile" type="file" accept=".xlsx,.xls,.csv" hidden></div></div>
     <p class="small muted" style="margin:0 0 12px">The costing engineer maps budgeted quantity, unit, unit rate and cost to each P6 activity ID, so planning does not have to load quantities into P6. Price weighting stays with the schedule; cost stays here. Only the activity ID, quantity and unit are required; the gang code column is optional and can be left blank.</p>
     <div class="g g-kpi" style="margin-bottom:6px">
-      <div class="panel kpi"><div class="l">Activities costed</div><div class="v">${costed} of ${acts.length}</div><div class="s">${c?`${esc(c.file)}<br>${esc(c.by)}, ${esc(c.at)}`:'No costing file applied yet'}</div></div>
-      <div class="panel kpi"><div class="l">Budget cost</div><div class="v">${bc?sar(bc):'—'}</div><div class="s">From the costing file</div></div>
+      <div class="panel kpi"><div class="l">Activities costed</div><div class="v">${costed} of ${acts.length}</div><div class="s">${c?`${esc(c.file)}<br>${esc(c.by)}, ${esc(c.at)}`:'No Master Manpower Costing Sheet applied yet'}</div></div>
+      <div class="panel kpi"><div class="l">Budget cost</div><div class="v">${bc?sar(bc):'—'}</div><div class="s">From the Master Manpower Costing Sheet</div></div>
       <div class="panel kpi"><div class="l">Price weight</div><div class="v">${pw?fmt(pw):'—'}</div><div class="s">From the P6 weighting resource</div></div>
-      <div class="panel kpi"><div class="l">Budget manhours</div><div class="v">${fmt(mh)}</div><div class="s">Labour resources, or the costing file where given</div></div>
+      <div class="panel kpi"><div class="l">Budget manhours</div><div class="v">${fmt(mh)}</div><div class="s">Labour resources, or the Master Manpower Costing Sheet where given</div></div>
     </div>
     <div id="costBox"></div></section>`;
 }
@@ -7655,7 +7656,7 @@ function renderBaseline(){
   const acts=pid?ACTS.filter(a=>a.p===pid):[],cnt=k=>acts.filter(a=>clsOf(a)===k).length;
   const set=state.bset||'ORG';
   document.getElementById('view').innerHTML=`${crumb()}
-  ${canBaseline()?'':`<section class="panel"><div class="card-head"><h2>Costing and invoicing</h2></div><div class="fields"><label class="field">Project<select data-bproj>${opt(ps.map(p=>[p.id,p.short]),pid)}</select></label></div><p class="small muted" style="margin:0">Upload the costing file and the weekly invoice register, and keep the subcontractor purchase orders for your projects. Schedule baselines are loaded by planning.</p></section>`}
+  ${canBaseline()?'':`<section class="panel"><div class="card-head"><h2>Costing and invoicing</h2></div><div class="fields"><label class="field">Project<select data-bproj>${opt(ps.map(p=>[p.id,p.short]),pid)}</select></label></div><p class="small muted" style="margin:0">Upload the Master Manpower Costing Sheet and the weekly invoice register, and keep the subcontractor purchase orders for your projects. Schedule baselines are loaded by planning.</p></section>`}
   <section class="panel" ${canBaseline()?'':'hidden'}><div class="card-head" style="flex-wrap:wrap"><h2>Baseline management</h2>
     ${pid&&state.role==='sa'?`<button class="btn sm danger" type="button" data-delproj="${pid}">Delete project ${esc(projById(pid).short)}</button>`:''}</div>
     <p class="small muted" style="margin:0 0 12px">Load the schedule that progress is measured against. The original baseline is the contract plan and drives every report. Revised and recovery baselines are stored alongside it for comparison, and never change earned progress.</p>
@@ -8142,7 +8143,7 @@ const REPORTS={
         {label:'Earned price',data:ps.flatMap(x=>x.b.rows.filter(r=>r.price).map(r=>Math.round(r.gross/1e3))),backgroundColor:pal.bar},
         {label:'Billable now',data:ps.flatMap(x=>x.b.rows.filter(r=>r.price).map(r=>Math.round(r.billable/1e3))),backgroundColor:pal.accent}]},
         options:{scales:{y:{beginAtZero:true,title:{display:true,text:'SAR thousands'}}}}}),
-      notes:`Gross billable ${sar(gross)}, retention held ${sar(held)}, net invoiceable ${sar(net)}. Price comes from the P6 weighting resource loaded by planning, which carries the client price schedule; cost and manhours from the costing file are not used here. Each phase bills on price progress up to its cap, with the balance released when its milestone is achieved. Where a contract also deducts a separate retention from each invoice, it is shown as its own line; if the phase split is the only holdback, retention stays at zero. Advance payment is recovered as a percentage of each invoice until it is fully repaid. Payment terms are set per project in Settings.`}}},
+      notes:`Gross billable ${sar(gross)}, retention held ${sar(held)}, net invoiceable ${sar(net)}. Price comes from the P6 weighting resource loaded by planning, which carries the client price schedule; cost and manhours from the Master Manpower Costing Sheet are not used here. Each phase bills on price progress up to its cap, with the balance released when its milestone is achieved. Where a contract also deducts a separate retention from each invoice, it is shown as its own line; if the phase split is the only holdback, retention stays at zero. Advance payment is recovered as a percentage of each invoice until it is fully repaid. Payment terms are set per project in Settings.`}}},
   cash:{sheet:'Invoicing and collection',title:'Invoicing and collection against invoiceable',desc:'Invoice register, shortfalls and outstanding collection',build(){
     const rows=[];
     scopeProjects().forEach(p=>{
@@ -8165,10 +8166,10 @@ const REPORTS={
         backgroundColor:rows.map(r=>r.step==='Preparation'?pal.bar:r.step==='Review'?pal.accent:pal.green)}]},
         options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,title:{display:true,text:'Minutes per report'}}}}}),
       notes:`Average time per report: preparation ${fmtDur(tot('Preparation'))}, review ${fmtDur(tot('Review'))}, approval ${fmtDur(tot('Approval'))}. The clock starts when the foreman opens the new report form and stops when he saves or submits; it resumes on a saved draft. Review time runs while the site engineer has a submitted report open, and approval time while the site manager or project manager has a reviewed one open; each stops at the action taken. Time with the tab in the background is not counted.`}}},
-  mhrec:{sheet:'Budget manhour check',title:'Budget manhour reconciliation, P6 against costing',desc:'Where the schedule and the costing file disagree on hours',build(){
+  mhrec:{sheet:'Budget manhour check',title:'Budget manhour reconciliation, P6 against costing',desc:'Where the schedule and the Master Manpower Costing Sheet disagree on hours',build(){
     const rows=scopeActs().map(a=>{const p6=+a.p6mh||0,cf=+a.costmh||0,used=+a.bmh||0;
       return {proj:projById(a.p).short,id:a.id,name:a.name,cls:CLASSES[clsOf(a)],p6,cf,used,
-        src:(cf&&p6)?(projById(a.p).mhSrc||'Costing file'):(cf?'Costing file':(p6?'P6 resource loading':'None')),
+        src:mhSrcName((cf&&p6)?(projById(a.p).mhSrc||'Costing file'):(cf?'Costing file':(p6?'P6 resource loading':'None'))),
         v:p6&&cf?cf/p6-1:0,gap:cf&&p6?Math.abs(cf-p6):0};
     }).filter(r=>r.p6||r.cf).sort((x,y)=>Math.abs(y.v)-Math.abs(x.v));
     const both=rows.filter(r=>r.p6&&r.cf),only6=rows.filter(r=>r.p6&&!r.cf),onlyC=rows.filter(r=>!r.p6&&r.cf);
@@ -8176,9 +8177,9 @@ const REPORTS={
     return {cols:[C('Project','proj'),C('Activity','name'),C('Class','cls'),C('P6 manhours','p6','int'),C('Costing manhours','cf','int'),C('Difference','v','pctv'),C('In use','used','int'),C('Source of truth','src')],rows,
       chart:pal=>({type:'bar',data:{labels:both.slice(0,20).map(r=>r.id),datasets:[
         {label:'P6 resource loading',data:both.slice(0,20).map(r=>Math.round(r.p6)),backgroundColor:pal.bar},
-        {label:'Costing file',data:both.slice(0,20).map(r=>Math.round(r.cf)),backgroundColor:pal.accent}]},
+        {label:'Master Manpower Costing Sheet',data:both.slice(0,20).map(r=>Math.round(r.cf)),backgroundColor:pal.accent}]},
         options:{scales:{y:{beginAtZero:true,title:{display:true,text:'Manhours'}}}}}),
-      notes:`P6 total ${fmt(T6)} manhours, costing file total ${fmt(TC)}, in use ${fmt(TU)}. ${both.length} activities are in both, ${only6.length} only in P6, ${onlyC.length} only in the costing file. The budget of record is set per project in Settings; the other figure is kept as a cross-check and never silently overwritten. Differences above 25% are flagged when the costing file is uploaded.`}}},
+      notes:`P6 total ${fmt(T6)} manhours, Master Manpower Costing Sheet total ${fmt(TC)}, in use ${fmt(TU)}. ${both.length} activities are in both, ${only6.length} only in P6, ${onlyC.length} only in the Master Manpower Costing Sheet. The budget of record is set per project in Settings; the other figure is kept as a cross-check and never silently overwritten. Differences above 25% are flagged when the Master Manpower Costing Sheet is uploaded.`}}},
   p6upd:{sheet:'P6 progress update',title:'Progress update for Primavera P6',desc:'Actual dates, physical % and units to load back into P6',build(){
     const rows=p6Rows();
     return {cols:[C('Project','proj'),C('Activity ID','id'),C('Activity','name'),C('Class','cls'),C('Status','status'),C('Physical %','pct','pct'),C('Actual start','as','date'),C('Actual finish','af','date'),C('Expected finish','ff','date'),C('Remaining duration (d)','rd','int'),C('Actual labour units','actMH','int'),C('Remaining labour units','remMH','int')],rows,
@@ -8397,7 +8398,7 @@ function admDrawer(type,id){
       ${F('Finish',inp('finish',p.finish,'type="date"'))}
       ${F('Contract value (SAR M)',inp('value',p.value,'type="number" min="0" step="0.1" inputmode="decimal"'))}
       ${F('Project type',sel('ptype',PTYPES,p.ptype||'Other'))}
-      ${F('Budget manhours from',sel('mhsrc',['Costing file','P6 resource loading'],p.mhSrc||'Costing file'))}
+      ${F('Budget manhours from',sel('mhsrc',[['Costing file','Master Manpower Costing Sheet'],['P6 resource loading','P6 resource loading']],p.mhSrc||'Costing file'))}
       ${F('EOT status',sel('eotst',EOTS,(p.eot||{}).status||'Not applicable'))}
       ${F('EOT days claimed',inp('eotdays',(p.eot||{}).days||'','type="number" min="0"'))}
       ${F('EOT reference',inp('eotref',(p.eot||{}).ref||'','placeholder="e.g. EOT-02"'))}
