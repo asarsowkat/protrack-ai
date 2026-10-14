@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.7, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.7.1, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -251,10 +251,12 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <p>ProTrack turns what the site records every evening into productivity, earned value, forecast cost, invoiceable value and early warnings, and it measures the people who feed it. Its principle is one sentence: <b>quantity alone is progress; quantity together with the resources that produced it is productivity.</b> Everything follows from capturing both, once, at site.</p>
   <div class="grid2">
     <div class="card"><b>For site teams</b><span>A daily report that takes under a minute per activity, on a phone, with the productivity index shown as you type.</span></div>
-    <div class="card"><b>For planning and costing</b><span>P6 in, P6 out; a costing file for budget quantity and rate; a weekly design and procurement update; an invoice register.</span></div>
+    <div class="card"><b>For planning and costing</b><span>P6 in, P6 out; a Master Manpower Costing Sheet for budget quantity and rate; a weekly design and procurement update; an invoice register.</span></div>
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.7.1</b>
+    The costing file is now called the <b>Master Manpower Costing Sheet</b>. Nothing else changes: the same template columns, the same upload, the same figures.</div>
   <div class="note"><b>New in version 3.7</b>
     <b>Roles and rights</b> (Settings → Roles and rights): the super admin gives or removes seventeen rights for each role, chooses which screens each role sees, and creates custom roles from a built-in one. ·
     <b>Access for any role</b> (Settings → Users and access): whole regions, chosen projects or All projects, for every role, plus rights given or removed for one person. The server checks the same rights.</div>
@@ -300,7 +302,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <div class="note"><b>New in version 2.5</b>
     <b>Daily reports on the server</b>: saving, submitting, reviewing and approving now go through the server, which checks your role, your project and the approval matrix. A hidden button can no longer be forced from the browser. ·
     <b>Tamper-evident history</b>: a report's history cannot be edited or deleted, even from the database console, and each entry is sealed with the one before it. ·
-    <b>Safe imports</b>: costing files, invoice registers and baselines load all-or-nothing on the server; loading the same file twice changes nothing. ·
+    <b>Safe imports</b>: Master Manpower Costing Sheets, invoice registers and baselines load all-or-nothing on the server; loading the same file twice changes nothing. ·
     <b>Backup and restore</b> in Settings → System, and a guided <b>move to the server</b> for anything entered in a browser before this release, with a reconciliation of counts and totals. ·
     <b>No demo accounts</b> on a site connected to the server.</div>
   <div class="note"><b>New in version 2.4</b>
@@ -370,7 +372,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <tr><td><b>Regional manager</b></td><td>One or more regions</td><td>Regional oversight, sending reminders</td><td>Enter or approve data</td></tr>
       <tr><td><b>Portfolio manager</b></td><td>Exactly one region</td><td>Portfolio oversight, sending reminders</td><td>Enter or approve data</td></tr>
       <tr><td><b>Planning engineer</b></td><td>Assigned projects</td><td>P6 baselines, resource-to-trade mapping, weekly design and procurement update, P6 progress export, schedule quality</td><td>Create daily reports, approve, set rates</td></tr>
-      <tr><td><b>Costing engineer</b></td><td>Assigned projects</td><td>Costing file, invoice register, <b>subcontractor purchase orders and their rates</b> for his projects, including adding a new subcontractor</td><td>Import schedules, approve reports, set salaries or payment terms</td></tr>
+      <tr><td><b>Costing engineer</b></td><td>Assigned projects</td><td>Master Manpower Costing Sheet, invoice register, <b>subcontractor purchase orders and their rates</b> for his projects, including adding a new subcontractor</td><td>Import schedules, approve reports, set salaries or payment terms</td></tr>
       <tr><td><b>Project manager</b></td><td>Every module for his projects, including costing, invoicing and purchase orders</td><td>Delivery, cost and monthly invoicing; may review and approve; sees the whole team's performance</td><td>Import schedules, change settings</td></tr>
       <tr><td><b>Site manager</b></td><td>Daily reports, executive summary and dashboard without cost, reports granted to his role, presentation, performance of foremen and site engineers</td><td><b>Approving every daily report</b> once the site engineer has reviewed it, the same day</td><td>Create reports, see costing, change his executive layout</td></tr>
       <tr><td><b>Site engineer</b></td><td>Daily reports and new report, executive summary and dashboard without cost, reports granted to his role, his own and his foremen's performance</td><td><b>Reviewing</b> each foreman's report for accuracy</td><td>Approve, see costing, change his executive layout</td></tr>
@@ -438,7 +440,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <tr><td>Home</td><td>Executive summary</td><td>—</td></tr>
     <tr><td>Projects &amp; Handover</td><td>Project overview</td><td>Tender register, contract register, handover checklist</td></tr>
     <tr><td>Planning &amp; Scheduling</td><td>Baselines and P6 import, weekly design and procurement update, baseline comparison, P6 progress update</td><td>Governed baseline register, look-ahead and alerts</td></tr>
-    <tr><td>Cost Control</td><td>Earned value and EAC, costing file, unit rate analysis</td><td>Budget revisions, commitments and accruals, cost reconciliation</td></tr>
+    <tr><td>Cost Control</td><td>Earned value and EAC, Master Manpower Costing Sheet, unit rate analysis</td><td>Budget revisions, commitments and accruals, cost reconciliation</td></tr>
     <tr><td>Daily Reports</td><td>Daily reports, new report, report handling time</td><td>—</td></tr>
     <tr><td>Materials &amp; Procurement</td><td>Subcontract purchase orders</td><td>Material tracking, deliveries and stock</td></tr>
     <tr><td>Claims &amp; Variations</td><td>Extension of time status (on the project overview)</td><td>Variation register, claims register</td></tr>
@@ -466,7 +468,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>Dashboard</b><span>Productivity index, workforce, manhours, SPI, CPI, warnings, portfolio by region and sector, project health.</span></div>
     <div class="card"><b>Daily reports</b><span>Location, work type, WBS, activity; quantity; own labour; subcontractor companies each with one quantity and several trades; equipment; photos and remarks; live productivity with own and subcontract split. A clock records the time taken to prepare, review and approve each report.</span></div>
     <div class="card"><b>Weekly update</b><span>Design and procurement by milestone from one Excel file, validated before it is applied.</span></div>
-    <div class="card"><b>Baselines</b><span>P6 XER, XML or Excel import with branch and class pickers, DCMA check, revised and recovery sets, undo and remove, costing file, invoice register, resource mapping.</span></div>
+    <div class="card"><b>Baselines</b><span>P6 XER, XML or Excel import with branch and class pickers, DCMA check, revised and recovery sets, undo and remove, Master Manpower Costing Sheet, invoice register, resource mapping.</span></div>
     <div class="card"><b>Earned value</b><span>PV, EV, AC, SPI, CPI, EAC, VAC and the S-curve against any baseline.</span></div>
     <div class="card"><b>Reports</b><span>Sixteen reports in Excel and PDF, including reconciliation, unit rates, manpower forecast, invoiceable value, invoicing and collection, and report handling time. Site roles see only the reports the super admin grants them.</span></div>
     <div class="card"><b>Presentation</b><span>Tick the slides, download a PowerPoint built from the same numbers.</span></div>
@@ -571,7 +573,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Weekly and monthly report boxes</b> compare two reporting periods side by side, from the released progress.</li>
     <li><b>Arrange boxes</b> (people who keep a row): move boxes, add a box file, and in <b>Box settings</b> rename or hide a box. Every change is in the history.</li>
   </ol>
-  <div class="tip"><b>Records only</b>Storing a P6 file does not import it, storing a costing file does not change a budget, and storing a VO does not approve it. Use Baselines and P6 import, the monthly cost report and the change order log for those.</div>
+  <div class="tip"><b>Records only</b>Storing a P6 file does not import it, storing a Master Manpower Costing Sheet does not change a budget, and storing a VO does not approve it. Use Baselines and P6 import, the monthly cost report and the change order log for those.</div>
 </section>
 
 <section id="tender">
@@ -634,12 +636,12 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h3>Planning dashboard</h3>
   <p>Planning &amp; Scheduling → <b>Planning dashboard</b>, one row per project: current lifecycle stage, baseline (activities, when loaded, stage 6 status), DCMA score, SPI, planned and actual progress, the next milestone and its slip, overdue milestones, the last weekly engineering and procurement update (marked stale after 8 days) and late engineering or procurement items. The critical path stays with Primavera P6. A dash means the data is not in ProTrackAI yet.</p>
   <h3>Cost Control dashboard</h3>
-  <p>Cost Control → <b>Cost Control dashboard</b> shows, side by side and never added together: contract value, budget from the costing file, earned value, actual labour cost from daily reports, forecast cost, CPI, invoiceable, invoiced and collected. Approved budget revisions, commitments and accruals are shown as <b>Not tracked yet</b>, never estimated. Actual cost here is not SAP actual cost. <b>Source reconciliation</b> compares the budget and invoice register in ProTrackAI with the total of the last accepted costing file and invoice register in the Import centre.</p>
+  <p>Cost Control → <b>Cost Control dashboard</b> shows, side by side and never added together: contract value, budget from the Master Manpower Costing Sheet, earned value, actual labour cost from daily reports, forecast cost, CPI, invoiceable, invoiced and collected. Approved budget revisions, commitments and accruals are shown as <b>Not tracked yet</b>, never estimated. Actual cost here is not SAP actual cost. <b>Source reconciliation</b> compares the budget and invoice register in ProTrackAI with the total of the last accepted Master Manpower Costing Sheet and invoice register in the Import centre.</p>
 </section>
 
 <section id="imports">
   <h2>Import centre and controlled uploads</h2>
-  <p>Four files feed ProTrackAI: the <b>invoice register</b> and <b>costing file</b> (costing engineer or project manager), the <b>P6 baseline</b> and the <b>weekly engineering and procurement progress</b> (planning engineer). Every one goes through the same five steps.</p>
+  <p>Four files feed ProTrackAI: the <b>invoice register</b> and <b>Master Manpower Costing Sheet</b> (costing engineer or project manager), the <b>P6 baseline</b> and the <b>weekly engineering and procurement progress</b> (planning engineer). Every one goes through the same five steps.</p>
   <ol class="steps">
     <li><b>File check.</b> Only Excel (.xlsx, .xls), CSV, Primavera XER or P6 XML, up to 10 MB. Workbooks with macros (.xlsm) are refused before they are read; formulas and macros are never run.</li>
     <li><b>Row checks.</b> Each row is checked: the activity or invoice exists and belongs to this project (a Project column, if present, must match), the currency is SAR (if a Currency column is present), dates are real dates, numbers are numbers, and nothing appears twice. A refused row shows its reason and its row number in the sheet.</li>
@@ -698,7 +700,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <ol class="steps">
     <li><b>Every morning: Actions and approvals.</b> Approve or return lifecycle stages waiting on you (you cannot approve your own), and assign an owner and due date to each stage of your projects on the Project overview.</li>
     <li><b>Daily reports.</b> Site managers approve day to day; step in to review or approve when they are absent. Three checks: is the quantity credible for that crew, was that crew on site, is the index explainable.</li>
-    <li><b>Baselines → Costing file, Invoice register, Purchase orders</b> are open to you for your projects.</li>
+    <li><b>Baselines → Master Manpower Costing Sheet, Invoice register, Purchase orders</b> are open to you for your projects.</li>
     <li><b>Monday:</b> Dashboard, Executive summary → Project view, Reports → Early warnings, Manpower histogram, EAC.</li>
     <li><b>Monthly:</b> make sure an invoice goes in <b>every month</b> until invoicing reaches 80% of the contract value. Performance → Project managers shows your monthly invoicing record; months with nothing submitted are listed by name.</li>
     <li><b>Before the review meeting:</b> Presentation → pick the slides → download.</li>
@@ -720,7 +722,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 
   <h3 id="s-cost">Costing engineer — at award, at each budget revision, every week</h3>
   <ol class="steps">
-    <li><b>Baselines → project → Costing file → Download template.</b> It carries every activity ID.</li>
+    <li><b>Baselines → project → Master Manpower Costing Sheet → Download template.</b> It carries every activity ID.</li>
     <li><b>Fill budget quantity and unit</b> (required), unit rate and cost, and manhours if the costing budget differs from P6. Leave the gang code blank unless you use standard crew codes.</li>
     <li><b>Upload,</b> read the preview: matched, rejected, missing, and manhour differences over 25%. Fix rejected rows at source and re-upload rather than accepting partial files.</li>
     <li><b>Purchase orders — Baselines → your project → Subcontractor purchase orders.</b> For each subcontractor working on the project: choose the company, or <b>New subcontractor</b> to add one; enter PO number, basis (Measured or Manpower supply), date and value; <b>Add purchase order</b>.</li>
@@ -928,7 +930,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <tr><td>Unit rate analysis</td><td>Budget against actual per unit, and forecast to complete</td></tr>
       <tr><td>Invoiceable value</td><td>After phase caps, releases, retention and advance</td></tr>
       <tr><td>Invoicing and collection</td><td>Each invoice, shortfalls, outstanding</td></tr>
-      <tr><td>Budget manhour reconciliation</td><td>P6 against the costing file</td></tr>
+      <tr><td>Budget manhour reconciliation</td><td>P6 against the Master Manpower Costing Sheet</td></tr>
       <tr><td>Early warnings</td><td>Thresholds breached, with the action</td></tr>
       <tr><td>Report handling time</td><td>How long each person takes to prepare, review and approve</td></tr>
       <tr><td>P6 progress update</td><td>File to load back into Primavera</td></tr>
@@ -971,7 +973,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <p>RASA's figures always match the tiles: both measure at the data date, the last day with approved reports. On a phone, RASA steps aside when it points, and <b>Back to RASA</b> returns to the conversation.</p>
   <h3 id="rasa-rules">How RASA's answers are governed</h3>
   <ul>
-    <li><b>Based on.</b> Under every answer and insight RASA lists its sources: the daily reports used (how many, their dates, how many are approved and how many are submitted or reviewed and counted before approval), the baseline and when it was loaded, the costing file or invoice register batch, the billing terms, the weekly update, and so on. Then come the scope and the data date. Anything it would have needed but ProTrackAI does not hold is listed under <b>Not available</b>.</li>
+    <li><b>Based on.</b> Under every answer and insight RASA lists its sources: the daily reports used (how many, their dates, how many are approved and how many are submitted or reviewed and counted before approval), the baseline and when it was loaded, the Master Manpower Costing Sheet or invoice register batch, the billing terms, the weekly update, and so on. Then come the scope and the data date. Anything it would have needed but ProTrackAI does not hold is listed under <b>Not available</b>.</li>
     <li><b>No evidence.</b> If ProTrackAI holds no data for a question, RASA says <i>No evidence in ProTrackAI</i> and what is missing. It never says "everything is fine" about a project with no baseline or reports. SAP actual cost, commitments, accruals, budget revisions, cash-flow forecasts, variations, claims, materials, safety and weather are named as not tracked.</li>
     <li><b>Only what you can open.</b> RASA answers from the projects in your access and current scope. A project outside your access is refused. A project in your access but outside the current scope is pointed to the Scope menu. Foremen, site engineers and site managers get no cost, budget or billing figures from RASA, and since version 2.9 the server does not send their browser the invoice rows or the invoice and costing import batches.</li>
     <li><b>No outside AI with company data.</b> Signed in to the ProTrack server, RASA answers only from ProTrackAI records and no project data is sent to any outside AI service; a question it cannot answer from the records gets "No evidence". Only the demo page, on sample data inside claude.ai, may pass a question to the language model, and that answer is labelled <i>Language-model answer</i> and must be checked in Reports.</li>
@@ -1022,7 +1024,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <ul>
     <li>Only submitted, reviewed and approved reports count; drafts and rejected reports never reach a dashboard.</li>
     <li>Construction progress only from daily reports; engineering and procurement only from the weekly update.</li>
-    <li>Price only from P6; cost only from the costing file. Each project names which file owns budget manhours.</li>
+    <li>Price only from P6; cost only from the Master Manpower Costing Sheet. Each project names which file owns budget manhours.</li>
     <li>Rates and PO rates are dated; a change never restates a filed report.</li>
     <li>One purchase order per subcontractor per project; a second one for the same company is refused.</li>
     <li>Re-baselining moves the plan, never earned progress; every import can be undone.</li>
@@ -1037,7 +1039,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>On the server: an approved report cannot be changed or deleted by anyone, and a project that has approved reports cannot be deleted.</li>
     <li>On the server: report history and the change log can only be added to. Each history entry is sealed with the one before it, so any alteration is detectable.</li>
     <li>On the server: one report per foreman per day; no future dates; the same activity once per report; no more than 24 hours a day per worker.</li>
-    <li>On the server: loading the same costing file, invoice register or baseline again changes nothing; a failed row is refused and listed, never half-applied.</li>
+    <li>On the server: loading the same Master Manpower Costing Sheet, invoice register or baseline again changes nothing; a failed row is refused and listed, never half-applied.</li>
     <li>Every upload is a numbered batch with the file's fingerprint; refused rows must be acknowledged by name before the rest is saved, and a failed upload never changes the last good data.</li>
     <li>Only Excel, CSV, XER and P6 XML files up to 10 MB are accepted; workbooks with macros are refused.</li>
   </ul>
@@ -1052,7 +1054,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h4>The timer shows zero or stops</h4><p>It pauses while the app is in the background and resets if you leave the form without saving. Save as draft to keep the time.</p>
   <h4>Productivity reads very high</h4><p>A subcontractor quantity is entered without their workers and hours. The form warns in amber.</p>
   <h4>DCMA shows float as not assessed</h4><p>The XER was exported without scheduling. Press F9 in P6, then export again.</p>
-  <h4>A project shows zero everywhere</h4><p>No baseline yet, or the costing file and labour loading are both missing, so there is no planned rate.</p>
+  <h4>A project shows zero everywhere</h4><p>No baseline yet, or the Master Manpower Costing Sheet and labour loading are both missing, so there is no planned rate.</p>
   <h4>Invoiced is higher than invoiceable</h4><p>Either invoicing is ahead of certified progress, or the payment terms or price weighting are not set. Check the terms on the project.</p>
   <h4>A subcontractor line says "estimated"</h4><p>That company has no purchase order on the project, or no rate for that activity or trade. The project's costing engineer adds it on the Baselines page.</p>
   <h4>"Invalid API key" at sign-in</h4><p>The key in <code>config.js</code> is incomplete or from another project. Copy the anon key again with the copy icon.</p>

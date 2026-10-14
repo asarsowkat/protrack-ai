@@ -88,9 +88,9 @@ scoped to the projects their account may see.
    (XER, XML or Excel). This creates the activities.
 3. **Baselines → P6 labour resources mapped to trades** — map the schedule's
    resources to ProTrack trades, once per project.
-4. **Baselines → Costing file** — the costing engineer downloads the template,
+4. **Baselines → Master Manpower Costing Sheet** — the costing engineer downloads the template,
    which arrives pre-filled with every activity ID, adds budget quantity, unit,
-   unit rate, cost and manhours, and uploads it. The costing file never creates
+   unit rate, cost and manhours, and uploads it. The Master Manpower Costing Sheet never creates
    activities; it matches on activity ID.
 5. **Settings → Trades and rates, and Subcontractors** — salaries with dated
    history, and one purchase order per project per vendor.
@@ -146,7 +146,7 @@ Production needs:
 - Construction progress comes only from daily reports; engineering and
   procurement only from the weekly milestone update.
 - **Price** comes only from the P6 weighting resource and drives invoicing;
-  **cost, quantity and manhours** come only from the costing file and drive
+  **cost, quantity and manhours** come only from the Master Manpower Costing Sheet and drive
   budget analysis. Each project names which file owns budget manhours.
 - Trade rates and purchase order rates are dated, so a pay rise or a PO
   amendment never restates a report already filed.
@@ -167,6 +167,10 @@ Production needs:
 - `live.html` is the real app, connected to the ProTrack server, for the team. Password-reset and approval-email links that land on the main address are sent on to `live.html`.
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
+
+## Version 3.7.1
+
+- The costing file is renamed **Master Manpower Costing Sheet** throughout the app, the template download and the guides; saved values and the database are unchanged. See RELEASE-NOTES-v3.7.1.md
 
 ## Version 3.7
 

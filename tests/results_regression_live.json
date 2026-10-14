@@ -1,6 +1,6 @@
 {
- "run_at": "2026-10-13 23:54",
- "app": "/home/claude/p15/site/live.html?date=live",
+ "run_at": "2026-10-14 07:47",
+ "app": "/home/claude/p16/site/live.html?date=live",
  "results": [
   {
    "area": "Auth",
@@ -124,7 +124,7 @@
   },
   {
    "area": "Reports",
-   "check": "report histo builds (0.48 s)",
+   "check": "report histo builds (0.3 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -148,7 +148,7 @@
   },
   {
    "area": "Reports",
-   "check": "report recon builds (0.0 s)",
+   "check": "report recon builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -160,7 +160,7 @@
   },
   {
    "area": "Reports",
-   "check": "report invoice builds (0.0 s)",
+   "check": "report invoice builds (0.01 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -172,7 +172,7 @@
   },
   {
    "area": "Reports",
-   "check": "report timing builds (0.01 s)",
+   "check": "report timing builds (0.02 s)",
    "result": "PASS",
    "detail": ""
   },
@@ -190,7 +190,7 @@
   },
   {
    "area": "Reports",
-   "check": "report warn builds (0.05 s)",
+   "check": "report warn builds (0.08 s)",
    "result": "PASS",
    "detail": ""
   },
