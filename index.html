@@ -749,6 +749,7 @@ label.btn{display:inline-block}
 @media (max-width:1100px){.pgrid2{grid-template-columns:1fr}.pkpis{grid-template-columns:repeat(2,minmax(0,1fr))}.lc-strip{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:760px){.g-row{grid-template-columns:96px 1fr 70px}.pgrid3{grid-template-columns:1fr}.fins{grid-template-columns:1fr 1fr}.lc-grid{grid-template-columns:1fr 1fr}.lc-strip{display:flex;overflow-x:auto}.lc-chip{flex:0 0 170px}.g-today{display:none}.ptitle{font-size:18px}}
 
+.xrsecs{list-style:none;padding:0;margin:0;display:grid;gap:4px;max-width:640px}.xrsec{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 8px;border:1px solid var(--line);border-radius:8px}.xrsec .chk{border:0;padding:4px 0}.xrmv{display:inline-flex;gap:4px}.xrmv .iconbtn{width:30px;height:30px}
 </style>
 </head>
 <body>
@@ -765,7 +766,7 @@ label.btn{display:inline-block}
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8.4</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.8.5</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1326,7 +1327,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDocs();await cloudLoadRights();await cloudLoadMat();
+    await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDocs();await cloudLoadRights();await cloudLoadMat();await cloudLoadLayouts();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -2546,7 +2547,8 @@ function relFormPayload(){
       if(differs)overrides.push({field:key,label:l,computed:cv==null?null:cv,value:val,reason:(f.elements['r_'+key]?.value||'').trim()})});
     ['next_ms_text','next_ms_date','baseline_finish'].forEach(x=>{figures[x]=comp[x]});
     ['summary','issues','recovery','next'].forEach(x=>{const el=f.elements['n_'+x];if(el)nar[x]=el.value.trim()});
-    RD_IN.forEach(x=>{const el=f.elements['d_'+x];if(!el)return;const v=el.value.trim();figures[x]=v===''?null:RD_NUM.includes(x)?+v:v})}
+    RD_IN.forEach(x=>{const el=f.elements['d_'+x];if(!el)return;const v=el.value.trim();figures[x]=v===''?null:RD_NUM.includes(x)?+v:v});
+    Object.assign(figures,relMatSnap(f.dataset.pid))}   /* v3.8.5: Material Tracking as released */
   else{if(f.querySelector('#crTable'))Object.assign(figures,crFormRead(f));[...(f.querySelector('#crTable')?[]:COST_IN),...INV_IN].forEach(([key])=>{const el=f.elements['c_'+key];if(el)figures[key]=el.value.trim()===''?null:+el.value});const el=f.elements.n_summary;if(el)nar.summary=el.value.trim()}
   return {figures,overrides,narrative:nar,data_date:ASOF};
 }
@@ -2628,9 +2630,156 @@ async function relUploadGo(btn){
 }
 
 /* ---------- Executive report: released versions only ---------- */
+/* ---------- v3.8.5: customisable executive report, and Material Tracking in both executive views ----------
+   Layouts. The super admin sets a default for everyone, and may set one for a role (built-in or custom). Each person
+   may save their own layout, and reset it to go back to the default. Order: the person's own → their role's default →
+   the company default → the built-in one. On the server: role_config (one row per role key, '*' for everyone;
+   exec_layout.xr and exec_layout.exec) is read by everyone and written by super admins only (row security), and
+   user_prefs (one row per person; prefs.xr and prefs.exec) is read and written by that person only. Demo: this browser.
+   Material Tracking. Each progress release carries a snapshot of the project's monitored materials (counts by delivery
+   status, the delayed ones and the schedule data date), taken when it is saved and frozen when it is submitted, so the
+   released executive report shows materials as released, never live figures. */
+const LY_ALL='*';
+const lyDefaults=()=>DB.layoutDefaults||(DB.layoutDefaults={});
+const lyKey=()=>(me()&&me().id)||'local';
+const lyMine=()=>{DB.uprefs=DB.uprefs||{};return DB.uprefs[lyKey()]||(DB.uprefs[lyKey()]={})};
+const lyRoleOpts=view=>[[LY_ALL,'Everyone (company default)'],...RIGHT_ROLES.filter(r=>r!=='foreman'&&(view!=='exec'||!SITE_ROLES.includes(r))).map(r=>[r,ROLES[r]||r]),
+  ...appRoles().filter(r=>r.active!==false&&(view!=='exec'||!SITE_ROLES.includes(r.base_role))).map(r=>[r.key,r.name+' (custom role)'])];
+const lyRoleName=k=>k===LY_ALL?'everyone':roleKeyName(k);
+function lyDefaultFor(view){const u=me(),D=lyDefaults(),keys=[...new Set([u&&roleKeyOf(u),u&&u.role,state.role].filter(Boolean))];
+  for(const k of keys)if(D[k]&&D[k][view])return {L:D[k][view],src:'role',role:k};
+  if(D[LY_ALL]&&D[LY_ALL][view])return {L:D[LY_ALL][view],src:'all'};
+  return {L:null,src:'builtin'}}
+const lySrcText=s=>s.src==='mine'?'your own layout':s.src==='role'?`the default for ${roleKeyName(s.role)}, set by the super admin`:s.src==='all'?'the company default, set by the super admin':'the standard layout';
+async function cloudLoadLayouts(){
+  try{const rc=await selAll('role_config','role,exec_layout',null,['role']);DB.layoutDefaults={};
+    rc.forEach(r=>{const x=r.exec_layout||{},o={};if(x.xr)o.xr=x.xr;if(x.exec)o.exec=x.exec;if(o.xr||o.exec)DB.layoutDefaults[r.role]=Object.assign(o,{at:r.updated_at||null})});
+    const {data,error}=await SB.from('user_prefs').select('prefs').eq('user_id',me().id);if(error)throw error;
+    const P=(data&&data[0]&&data[0].prefs)||{},k=me().id;DB.uprefs=DB.uprefs||{};DB.uprefs[k]=P.xr?{xr:P.xr}:{};
+    DB.prefs=DB.prefs||{};if(P.exec)DB.prefs[k]=Object.assign(P.exec,{own:true});else delete DB.prefs[k];
+    DB.layoutErr=null}
+  catch(e){DB.layoutErr=srvMsg(e)}}
+async function lyPushMine(){if(!CLOUD_ME)return true;const k=me().id,m=lyMine(),ep=(DB.prefs||{})[k],prefs={};
+  if(m.xr)prefs.xr=m.xr;if(ep&&execOwn(ep))prefs.exec=ep;
+  const {error}=await SB.from('user_prefs').upsert({user_id:k,prefs,updated_at:new Date().toISOString()});
+  if(error){lyPushMine.err=srvMsg(error);return false}return true}
+async function lySaveMine(view,L){const m=lyMine();if(L)m[view]=L;else delete m[view];save();const ok=await lyPushMine();return ok}
+async function lySaveDefault(rk,view,L){lySaveDefault.err='';
+  if(state.role!=='sa'){lySaveDefault.err='Only the super admin sets defaults';return false}
+  if(CLOUD_ME){try{const {data,error:e1}=await SB.from('role_config').select('role,exec_layout').eq('role',rk);if(e1)throw e1;
+      const nx=Object.assign({},(data&&data[0]&&data[0].exec_layout)||{});if(L)nx[view]=L;else delete nx[view];
+      const row={exec_layout:nx,updated_by:me().id,updated_at:new Date().toISOString()};
+      const r=data&&data.length?await SB.from('role_config').update(row).eq('role',rk).select('role'):await SB.from('role_config').insert({role:rk,reports:[],...row}).select('role');
+      if(r.error)throw r.error;if(!r.data||!r.data.length)throw new Error('The server refused the change');
+      await cloudLoadLayouts()}catch(e){lySaveDefault.err=srvMsg(e);return false}}
+  else{const D=lyDefaults(),cur=D[rk]||{};if(L)cur[view]=L;else delete cur[view];cur.at=new Date().toISOString();D[rk]=cur}
+  save();return true}
+
+/* ---- the released executive report: tiles and sections the person can show, hide and order ---- */
+const XR_TILES=[['released','Projects released'],['progress','Progress, released'],['spi','Schedule, SPI'],['eac','EAC / VAC',1],['billing','Invoiced / collected',1],['attention','Projects needing attention'],['matlate','Materials delayed'],['matdel','Materials delivered']];
+const XR_SECS=[['region','By region'],['sector','By sector'],['critical','Critical projects'],['billing','Billing and collection',1],['vostatus','Change order and claim status',1],['progress','Progress by project'],['mat','Material tracking'],['cost','Cost by project',1],['volog','Change orders and claims by project',1],['supp','Budget supplements by category',1]];
+const XR_STD={pt:'month',tiles:['released','progress','spi','eac','billing','attention','matlate'],secs:XR_SECS.map(s=>s[0])};
+function xrNorm(L){L=L||{};const kt=new Set(L.kt||XR_TILES.map(x=>x[0])),ks=new Set(L.ks||XR_SECS.map(x=>x[0]));
+  const tiles=(Array.isArray(L.tiles)?L.tiles:XR_STD.tiles).filter((t,i,a)=>XR_TILES.some(x=>x[0]===t)&&a.indexOf(t)===i),secs=(Array.isArray(L.secs)?L.secs:XR_STD.secs).filter((s,i,a)=>XR_SECS.some(x=>x[0]===s)&&a.indexOf(s)===i);
+  XR_STD.tiles.forEach(t=>{if(!kt.has(t)&&!tiles.includes(t))tiles.push(t)});XR_STD.secs.forEach(s=>{if(!ks.has(s)&&!secs.includes(s))secs.push(s)});
+  return {pt:L.pt==='week'?'week':'month',tiles,secs}}
+const xrPack=L=>({...xrNorm(L),kt:XR_TILES.map(x=>x[0]),ks:XR_SECS.map(x=>x[0])});
+function xrLayoutSrc(){const m=lyMine().xr;if(m)return {L:xrNorm(m),src:'mine'};const d=lyDefaultFor('xr');return {...d,L:xrNorm(d.L)}}
+const xrLayout=()=>state.xrEdit&&state.xrDraft?xrNorm(state.xrDraft):xrLayoutSrc().L;
+const XR_TILE_L={'Projects released':'released','Progress, released':'progress','Schedule, SPI':'spi','EAC / VAC':'eac','Invoiced / collected':'billing','Projects needing attention':'attention'};
+function xrApplyLayout(){const B=$('#xrBody');if(!B)return;const L=xrLayout();
+  B.querySelectorAll(':scope > .g-kpi > .kpi:not([data-xrt])').forEach(e=>{const l=(e.querySelector('.l')||{}).textContent;if(XR_TILE_L[l])e.dataset.xrt=XR_TILE_L[l]});
+  const g=B.querySelector(':scope > .g-kpi');if(g){const T=[...g.querySelectorAll('[data-xrt]')];T.forEach(e=>e.remove());L.tiles.forEach(id=>{const e=T.find(x=>x.dataset.xrt===id);if(e)g.appendChild(e)});if(!g.children.length)g.hidden=true}
+  const S=[...B.querySelectorAll(':scope > [data-xrs]')],note=S.filter(e=>e.dataset.xrs==='_note');S.forEach(e=>e.remove());
+  L.secs.forEach(id=>S.filter(x=>x.dataset.xrs===id).forEach(e=>B.appendChild(e)));note.forEach(e=>B.appendChild(e))}
+const xrTile=(id,html)=>html.replace('<div class="panel kpi"',`<div class="panel kpi" data-xrt="${id}"`);
+function xrCustomHTML(){
+  const s=xrLayoutSrc();
+  if(!state.xrEdit)return `<div class="actions" style="margin:8px 0 0;align-items:center"><button class="btn sm" type="button" data-xrcust="1">Customise this report</button><span class="small muted" id="xrSrc">Showing ${esc(lySrcText(s))}.</span></div>`;
+  const D=xrNorm(state.xrDraft),money=rasaMoneyOk(),sa=state.role==='sa',defs=Object.entries(lyDefaults()).filter(([,v])=>v.xr);
+  const rest=XR_SECS.map(x=>x[0]).filter(x=>!D.secs.includes(x)),lab=id=>{const x=XR_SECS.find(y=>y[0]===id);return x[1]+(x[2]?' <span class="muted small">(cost; shown to people who see cost, monthly)</span>':'')};
+  const row=(id,on,i,n)=>`<li class="xrsec"><label class="chk"><input type="checkbox" data-xrls="${id}" ${on?'checked':''}><span>${lab(id)}</span></label>${on?`<span class="xrmv"><button class="iconbtn" type="button" data-xrlmv="${id}|-1" aria-label="Move up" ${i===0?'disabled':''}>↑</button><button class="iconbtn" type="button" data-xrlmv="${id}|1" aria-label="Move down" ${i===n-1?'disabled':''}>↓</button></span>`:''}</li>`;
+  return `<section class="panel" id="xrCustom" style="margin-top:10px"><div class="card-head" style="flex-wrap:wrap"><h2>Customise the executive report</h2>
+    <div class="actions" style="margin:0"><button class="btn sm primary" type="button" data-xrlsave>Save as my layout</button>${lyMine().xr?'<button class="btn sm" type="button" data-xrlreset>Reset to the default</button>':''}<button class="btn sm" type="button" data-xrcust="0">Cancel</button></div></div>
+    <p class="small muted" style="margin:0 0 10px">Now based on ${esc(lySrcText(s))}. Changes show at once; <b>Save as my layout</b> keeps them for your account${CLOUD_ME?' on the server, on every device':' in this browser'}. Other people keep theirs.</p>
+    <div class="fields">${F('Report shown first',sel('xrlpt',[['month','Monthly'],['week','Weekly']],D.pt))}</div>
+    <h3>Tiles</h3><div class="checks" style="max-height:none">${XR_TILES.map(([k,l,m])=>`<label class="chk"><input type="checkbox" data-xrlt="${k}" ${D.tiles.includes(k)?'checked':''}><span>${esc(l)}${m?' <span class="muted small">(cost)</span>':''}</span></label>`).join('')}</div>
+    <h3>Sections, in order</h3><ul class="xrsecs">${D.secs.map((id,i)=>row(id,true,i,D.secs.length)).join('')}${rest.map(id=>row(id,false)).join('')}</ul>
+    ${sa?`<div class="rdcard" style="margin-top:12px"><h3>Default for others <span class="muted small">super admin</span></h3>
+      <p class="small muted" style="margin:0 0 8px">People who have not saved their own layout see the default for their role, or else the company default. Their own layout always wins until they reset it.</p>
+      <div class="fields">${F('Save this layout as the default for',`<select id="xrlRole">${lyRoleOpts('xr').map(([k,l])=>`<option value="${esc(k)}">${esc(l)}</option>`).join('')}</select>`)}</div>
+      <div class="actions"><button class="btn sm primary" type="button" data-xrldef="save">Save as default</button><button class="btn sm" type="button" data-xrldef="del">Remove that default</button></div>
+      <p class="small" style="margin:8px 0 0">Defaults set: ${defs.length?defs.map(([k,v])=>`<b>${esc(k===LY_ALL?'Everyone':roleKeyName(k))}</b>${v.at?` <span class="muted">${esc(String(v.at).slice(0,10))}</span>`:''}`).join(' · '):'none; everyone sees the standard layout'}.</p></div>`:''}
+  </section>`;
+}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-xrcust],[data-xrlmv],[data-xrlsave],[data-xrlreset],[data-xrldef]');if(!t)return;const ds=t.dataset;
+  if(ds.xrcust!==undefined){state.xrEdit=ds.xrcust==='1';state.xrDraft=state.xrEdit?xrPack(xrLayoutSrc().L):null;render();return}
+  const D=state.xrDraft;if(!D)return;
+  if(ds.xrlmv){const [id,d]=ds.xrlmv.split('|'),i=D.secs.indexOf(id),j=i+(+d);if(i<0||j<0||j>=D.secs.length)return;[D.secs[i],D.secs[j]]=[D.secs[j],D.secs[i]];render();return}
+  if('xrlsave' in ds){t.disabled=true;const ok=await lySaveMine('xr',xrPack(D));t.disabled=false;if(!ok)return toast('Not saved: '+(lyPushMine.err||''));state.xrEdit=false;state.xrDraft=null;toast('Saved as your layout');render();return}
+  if('xrlreset' in ds){const ok=await lySaveMine('xr',null);if(!ok)return toast('Not saved: '+(lyPushMine.err||''));state.xrEdit=false;state.xrDraft=null;toast(`Back to ${lySrcText(xrLayoutSrc())}`);render();return}
+  if(ds.xrldef){const rk=($('#xrlRole')||{}).value||LY_ALL;t.disabled=true;const ok=await lySaveDefault(rk,'xr',ds.xrldef==='save'?xrPack(D):null);t.disabled=false;
+    if(!ok)return toast('Not saved: '+lySaveDefault.err);toast(ds.xrldef==='save'?`Saved as the default for ${lyRoleName(rk)}`:`Default for ${lyRoleName(rk)} removed`);render()}});
+document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;const D=state.xrDraft;if(!D)return;
+  if(t.matches('[data-xrlt]')){D.tiles=t.checked?D.tiles.concat([t.dataset.xrlt]):D.tiles.filter(x=>x!==t.dataset.xrlt);render();return}
+  if(t.matches('[data-xrls]')){D.secs=t.checked?D.secs.concat([t.dataset.xrls]):D.secs.filter(x=>x!==t.dataset.xrls);render();return}
+  if(t.name==='xrlpt'){D.pt=t.value;state.xrPt=t.value;state.xrPer=null;render()}});
+
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-exldef]');if(!t)return;
+  const rk=($('#exlRole')||{}).value||LY_ALL,P=execPrefs(),L={kpis:P.kpis,group:P.group,cols:P.cols,second:P.second||'',hideBilling:!!P.hideBilling,hideMat:!!P.hideMat};
+  t.disabled=true;const ok=await lySaveDefault(rk,'exec',t.dataset.exldef==='save'?L:null);t.disabled=false;
+  if(!ok)return toast('Not saved: '+lySaveDefault.err);toast(t.dataset.exldef==='save'?`Saved as the default for ${lyRoleName(rk)}`:`Default for ${lyRoleName(rk)} removed`);render()});
+
+/* ---- Material Tracking as released with a progress report ---- */
+function relMatSnap(pid){
+  if(!mtSetup(pid))return {};let R;try{R=mtMaterials(pid).filter(r=>r.selected)}catch(e){return {}}
+  const K=mtKPIs(R),dd=R.map(r=>r.dd).filter(Boolean).map(d=>String(d).slice(0,10)).sort().pop()||null;
+  const L=R.filter(r=>r.delayed).map(r=>({m:r.material,st:r.proc,d:Math.max(0,...r.acts.filter(a=>a.late).map(a=>a.bf?diffDays(a.bf,a.cf&&a.cf>a.bf?a.cf:(dd&&dd>a.bf?dd:a.bf)):0))})).sort((a,b)=>b.d-a.d||a.m.localeCompare(b.m));
+  let txt='';for(const x of L){const s=`${x.m} (${x.st}${x.d?`, +${x.d} d`:''})`;if((txt?txt.length+2:0)+s.length>290){txt+=`; and ${L.length-txt.split('; ').length} more`;break}txt+=(txt?'; ':'')+s}
+  return {mat_n:K.total,mat_dv:K.dv,mat_ds:K.ds,mat_nd:K.nd,mat_late:K.late,mat_late_text:txt||null,mat_dd_date:dd}}
+const hasMatF=f=>f&&f.mat_n!=null&&f.mat_n!=='';
+function matTilesHTML(f){const n=+f.mat_n||0;return `<div class="g g-kpi">${kpi('Materials monitored',fmt(n),f.mat_dd_date?`schedule data date ${fmtDY(f.mat_dd_date)}`:'')}${kpi('Delivered',fmt(+f.mat_dv||0),n?`${pct((+f.mat_dv||0)/n,0)} of monitored`:'','g')}
+  ${kpi('Delivery started',fmt(+f.mat_ds||0),'part delivered')}${kpi('Not delivered',fmt(+f.mat_nd||0),'')}${kpi('Delayed',fmt(+f.mat_late||0),'forecast late, or past the baseline finish',+f.mat_late?'r':'')}</div>`}
+function relMatPanelHTML(pid,r,f,editable){
+  const F2=editable?relMatSnap(pid):f;
+  if(!hasMatF(F2))return `<div class="rdcard"><h3>Material tracking</h3><p class="small muted" style="margin:0">${editable||!r?`Material Tracking is not set up for this project, so this release carries no materials. Set it up in Materials &amp; Procurement → Material tracking.`:'This release carries no Material Tracking (released before version 3.8.5, or not set up for this project).'}</p></div>`;
+  return `<div class="rdcard"><h3>Material tracking <span class="muted small">monitored materials</span></h3>${matTilesHTML(F2)}
+    <p class="small" style="margin:6px 0 0"><b>Delayed.</b> ${esc(F2.mat_late_text||'None')}</p>
+    <p class="small muted" style="margin:6px 0 0">${editable?'Taken from Material tracking when you save, and frozen when you submit. The executive report shows what is released here.':'As released with this report.'}${canMatView()?' <button class="link" type="button" data-go="mat">Open Material tracking</button>':''}</p></div>`}
+function xrMatHTML(L,t,per){
+  const R=L.filter(x=>x.pr&&hasMatF(x.f)),S=k=>R.reduce((s,x)=>s+(+x.f[k]||0),0),c=v=>fmt(+v||0);
+  return `<section class="panel" data-xrs="mat"><div class="card-head"><h2>Material tracking</h2><span class="small muted">As released with each progress report for ${esc(perLabel(t,per))} · monitored materials, at the release's schedule data date</span></div>
+    ${R.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Monitored</th><th class="n">Delivered</th><th class="n">Delivery started</th><th class="n">Not delivered</th><th class="n">Delayed</th><th>Delayed materials</th><th>Data date</th></tr></thead><tbody>
+      ${L.filter(x=>x.pr).map(x=>{const f=x.f;if(!hasMatF(f))return `<tr><td><b>${esc(x.p.short)}</b></td><td colspan="7" class="muted small">No Material Tracking in this release</td></tr>`;
+        return `<tr><td><b>${esc(x.p.short)}</b><span class="t2">${esc(pcode(x.p))}</span></td><td class="n">${c(f.mat_n)}</td><td class="n">${c(f.mat_dv)}</td><td class="n">${c(f.mat_ds)}</td><td class="n">${c(f.mat_nd)}</td><td class="n ${+f.mat_late?'r-c':''}"><b>${c(f.mat_late)}</b></td><td class="small" style="min-width:220px">${esc(f.mat_late_text||'—')}</td><td class="small">${f.mat_dd_date?fmtDY(f.mat_dd_date):'—'}</td></tr>`}).join('')}
+      <tr><td><b>Total</b></td><td class="n"><b>${c(S('mat_n'))}</b></td><td class="n"><b>${c(S('mat_dv'))}</b></td><td class="n"><b>${c(S('mat_ds'))}</b></td><td class="n"><b>${c(S('mat_nd'))}</b></td><td class="n ${S('mat_late')?'r-c':''}"><b>${c(S('mat_late'))}</b></td><td></td><td></td></tr>
+      </tbody></table></div>`:NOEV(`No progress release for ${perLabel(t,per)} carries Material Tracking yet.`,'Releases saved from version 3.8.5 on carry it for projects with Material Tracking set up.')}</section>`}
+function xrMatTiles(L){const R=L.filter(x=>x.pr&&hasMatF(x.f)),S=k=>R.reduce((s,x)=>s+(+x.f[k]||0),0),n=S('mat_n');
+  return xrTile('matlate',kpi('Materials delayed',R.length?fmt(S('mat_late')):'—',R.length?`of ${fmt(n)} monitored, ${R.length} project${R.length>1?'s':''}`:'Not in these releases',R.length&&S('mat_late')?'r':''))
+    +xrTile('matdel',kpi('Materials delivered',R.length?fmt(S('mat_dv')):'—',R.length&&n?`${pct(S('mat_dv')/n,0)} of ${fmt(n)} monitored`:'Not in these releases'))}
+function xrMatProjHTML(pr){
+  if(!pr)return '';const f=pr.figures||{};
+  return `<section class="panel"><div class="card-head"><h2>Material tracking</h2><span class="small muted">As released with this progress report</span></div>
+    ${hasMatF(f)?`${matTilesHTML(f)}<p class="small" style="margin:6px 0 0"><b>Delayed.</b> ${esc(f.mat_late_text||'None')}</p>`:'<p class="muted small">This release carries no Material Tracking (released before version 3.8.5, or not set up for this project).</p>'}</section>`}
+
+/* ---- the working executive summary: Material Tracking live, from the latest updated schedule ---- */
+function execMat(ks){const out=[];ks.forEach(k=>{if(!mtSetup(k.p.id))return;let R=[];try{R=mtMaterials(k.p.id).filter(r=>r.selected)}catch(e){}if(R.length)out.push({p:k.p,R,K:mtKPIs(R),snap:relMatSnap(k.p.id)})});return out}
+function execMatHTML(M){
+  const S=k=>M.reduce((s,x)=>s+(x.K[k]||0),0);
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Material tracking</h2><span class="small muted">Live, monitored materials, from the latest updated schedule${canMatView()?' · <button class="link" type="button" data-go="mat">Open Material tracking</button>':''}</span></div>
+    ${M.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Monitored</th><th class="n">Delivered</th><th class="n">Delivery started</th><th class="n">Not delivered</th><th class="n">Delayed</th><th>Most delayed</th><th>Data date</th></tr></thead><tbody>
+      ${M.map(x=>`<tr class="click" data-escope="${esc(x.p.id)}"><td><b>${esc(x.p.short)}</b><span class="t2">${esc(pcode(x.p))}</span></td><td class="n">${fmt(x.K.total)}</td><td class="n">${fmt(x.K.dv)}</td><td class="n">${fmt(x.K.ds)}</td><td class="n">${fmt(x.K.nd)}</td><td class="n ${x.K.late?'r-c':''}"><b>${fmt(x.K.late)}</b></td><td class="small" style="min-width:200px">${esc((x.snap.mat_late_text||'—').split('; ').slice(0,2).join('; '))}</td><td class="small">${x.snap.mat_dd_date?fmtDY(x.snap.mat_dd_date):'—'}</td></tr>`).join('')}
+      ${M.length>1?`<tr><td><b>Total</b></td><td class="n"><b>${fmt(S('total'))}</b></td><td class="n"><b>${fmt(S('dv'))}</b></td><td class="n"><b>${fmt(S('ds'))}</b></td><td class="n"><b>${fmt(S('nd'))}</b></td><td class="n ${S('late')?'r-c':''}"><b>${fmt(S('late'))}</b></td><td></td><td></td></tr>`:''}
+      </tbody></table></div>`:NOEV('Material Tracking is not set up for the projects in this scope.','It is set up from the original baseline import or the next weekly updated schedule.')}</section>`}
+
+/* ---- demo: the sample releases carry the materials of the two sample projects ---- */
+function seedV385(){if(CLOUD||DB.v385Seeded)return;
+  relRows().filter(r=>r.kind==='planning'&&r.figures&&!hasMatF(r.figures)&&mtSetup(r.project_id)).forEach(r=>Object.assign(r.figures,relMatSnap(r.project_id)));
+  DB.v385Seeded=true;save()}
+
 function renderXr(){
   if(!canXr()){go('dash');return}
-  const t=state.xrPt||'month',money=rasaMoneyOk(),ps=scopeProjects().filter(p=>p.status!=='Cancelled');
+  const t=state.xrPt||xrLayout().pt,money=rasaMoneyOk(),ps=scopeProjects().filter(p=>p.status!=='Cancelled');
   const rels=relRows().filter(r=>relVisible(r)&&r.status==='Released'&&SCOPE.has(r.project_id)&&r.period_type===t);
   const pers=[...new Set(rels.map(r=>r.period))].sort().reverse();
   const per=state.xrPer&&pers.includes(state.xrPer)?state.xrPer:pers[0];
@@ -2647,11 +2796,12 @@ function renderXr(){
   const voRows=vo.flatMap(x=>x.rows.map(r=>({...r,p:x.p}))),suRows=su.flatMap(x=>x.rows.map(r=>({...r,p:x.p})));
   const pctc=v=>v==null||v===''?'—':fmt(+v,1)+'%';
   const top=`${crumb()}
-  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Executive report · ${esc(perLabel(t,per))}</h2><span class="small muted">Released versions only, approved by the Head of Planning and Cost Control. Live daily reports are not used.</span></div>${head}</section>`;
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Executive report · ${esc(perLabel(t,per))}</h2><span class="small muted">Released versions only, approved by the Head of Planning and Cost Control. Live daily reports are not used.</span></div>${head}${tab==='sum'?xrCustomHTML():''}</section>`;
   if(tab==='proj'){$('#view').innerHTML=top+xrProjectHTML(t,per);return}
-  $('#view').innerHTML=`${top}
+  $('#view').innerHTML=`${top}<div id="xrBody">
   ${xrSummaryHTML(t,per)}
-  <section class="panel"><div class="card-head"><h2>Progress by project</h2><span class="small muted">Released by planning</span></div>
+  ${xrMatHTML(xrRows(t,per),t,per)}
+  <section class="panel" data-xrs="progress"><div class="card-head"><h2>Progress by project</h2><span class="small muted">Released by planning</span></div>
     <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Planned</th><th class="n">Actual</th><th class="n">SPI</th><th class="n">Design</th><th class="n">Procurement</th><th>Forecast finish</th><th>Release</th></tr></thead><tbody>
     ${rows.map(({p,pr})=>{if(!pr)return `<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}</span></td><td colspan="7" class="muted small">Not released for ${esc(perLabel(t,per))}</td></tr>`;const f=pr.figures;
       return `<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}</span></td><td class="n">${pctc(f.planned_pct)}</td><td class="n"><b>${pctc(f.actual_pct)}</b>${(pr.overrides||[]).some(o=>o.field==='actual_pct')?'<span class="t2" title="Changed by the planning engineer, with a reason">reviewed</span>':''}</td>
@@ -2660,21 +2810,22 @@ function renderXr(){
         <td class="small">rev ${pr.rev}<span class="t2">${esc(who(pr.approved_by))}, ${esc(tStamp(pr.approved_at).slice(0,10))}</span></td></tr>`}).join('')}
     </tbody></table></div>
     ${rows.some(x=>x.pr&&(x.pr.narrative||{}).issues)?`<h3>Key issues</h3><ul>${rows.filter(x=>x.pr&&(x.pr.narrative||{}).issues).map(x=>`<li><b>${esc(x.p.short)}</b>: ${esc(x.pr.narrative.issues)}${x.pr.narrative.next?` <span class="muted">Next: ${esc(x.pr.narrative.next)}</span>`:''}</li>`).join('')}</ul>`:''}</section>
-  ${t==='month'&&money?`<section class="panel"><div class="card-head"><h2>Cost by project</h2><span class="small muted">Released by costing · SAR${T.n?` · approved budget ${sar(T.budget_current)}, actual ${sar(T.actual)}, commitments ${sar(T.commitment)}`:''}</span></div>
+  ${t==='month'&&money?`<section class="panel" data-xrs="cost"><div class="card-head"><h2>Cost by project</h2><span class="small muted">Released by costing · SAR${T.n?` · approved budget ${sar(T.budget_current)}, actual ${sar(T.actual)}, commitments ${sar(T.commitment)}`:''}</span></div>
     <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Rev-0 budget</th><th class="n">Approved supplements (log)</th><th class="n">Current budget</th><th class="n">Actual to date</th><th class="n">Commitments</th><th class="n">EAC</th><th class="n">VAC</th><th>Release</th></tr></thead><tbody>
     ${rows.map(({p,cr})=>{if(!cr)return `<tr><td><b>${esc(p.short)}</b></td><td colspan="8" class="muted small">Not released for ${esc(perLabel('month',per))}</td></tr>`;const f=cr.figures;
       return `<tr><td><b>${esc(p.short)}</b></td><td class="n">${sar(+f.budget_rev0)}</td><td class="n">${sar(+f.supplements_approved)}</td><td class="n">${sar(+f.budget_current)}</td><td class="n">${sar(+f.actual)}</td><td class="n">${sar(+f.commitment)}</td><td class="n"><b>${sar(+f.eac)}</b></td><td class="n ${+f.vac<0?'r-c':'g-c'}">${sar(+f.vac)}</td><td class="small">rev ${cr.rev}<span class="t2">${esc(who(cr.approved_by))}</span></td></tr>`}).join('')}
     </tbody></table></div></section>
-  <section class="panel"><div class="card-head"><h2>Change orders and claims by project</h2><span class="small muted">Logs uploaded up to ${esc(perLabel('month',per))}</span></div>
+  <section class="panel" data-xrs="volog"><div class="card-head"><h2>Change orders and claims by project</h2><span class="small muted">Logs uploaded up to ${esc(perLabel('month',per))}</span></div>
     ${voRows.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Type</th><th class="n">Items</th><th class="n">Estimated price</th><th class="n">Expected price</th><th class="n">Approved by client</th><th class="n">Rev-0 budget change</th></tr></thead><tbody>
       ${vo.flatMap(x=>['VO','Claim'].map(k=>{const L=x.rows.filter(r=>r.kind===k);if(!L.length)return '';const ap=L.filter(r=>/approved/i.test(r.client_status||'')&&!/partial/i.test(r.client_status||''));
         return `<tr><td>${esc(x.p.short)}<span class="t2">${batchNo(x.b)}, ${esc(perLabel('month',x.b.source_period))}</span></td><td>${k==='VO'?'Change orders':'Claims'}</td><td class="n">${L.length}</td><td class="n">${sar(L.reduce((t,r)=>t+(+r.est_price||0),0))}</td><td class="n">${sar(L.reduce((t,r)=>t+(+r.expected_price||0),0))}</td><td class="n">${ap.length} · ${sar(ap.reduce((t,r)=>t+(+r.expected_price||+r.est_price||0),0))}</td><td class="n">${sar(L.reduce((t,r)=>t+(+r.rev0_change||0),0))}</td></tr>`})).join('')}
       </tbody></table></div>`:NOEV('No change order and claim log has been uploaded for these projects up to this month.')}</section>
-  <section class="panel"><div class="card-head"><h2>Budget supplements by category</h2><span class="small muted">Approved and pending, from the latest log up to ${esc(perLabel('month',per))}</span></div>
+  <section class="panel" data-xrs="supp"><div class="card-head"><h2>Budget supplements by category</h2><span class="small muted">Approved and pending, from the latest log up to ${esc(perLabel('month',per))}</span></div>
     ${suRows.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Category</th><th class="n">Approved</th><th class="n">Pending or other</th><th class="n">Items</th></tr></thead><tbody>
       ${SUPP_CATS.map(c=>{const L=suRows.filter(r=>r.category===c);if(!L.length)return '';const ap=L.filter(r=>/^approved$/i.test(r.approval_status||''));return `<tr><td>${esc(c)}</td><td class="n">${sar(ap.reduce((t,r)=>t+(+r.amount||0),0))}</td><td class="n">${sar(L.filter(r=>!/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))}</td><td class="n">${L.length}</td></tr>`}).join('')}
       <tr><td><b>Total</b></td><td class="n"><b>${sar(suRows.filter(r=>/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))}</b></td><td class="n">${sar(suRows.filter(r=>!/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))}</td><td class="n">${suRows.length}</td></tr>
-      </tbody></table></div>`:NOEV('No budget supplement log has been uploaded for these projects up to this month.')}</section>`:t==='week'?'<p class="small muted">Weekly reports carry progress only; cost is released monthly.</p>':''}`;
+      </tbody></table></div>`:NOEV('No budget supplement log has been uploaded for these projects up to this month.')}</section>`:t==='week'?'<p class="small muted" data-xrs="_note">Weekly reports carry progress only; cost is released monthly.</p>':''}</div>`;
+  xrApplyLayout();
 }
 
 /* ---------- Change order and claim log, budget supplement log ---------- */
@@ -3090,10 +3241,10 @@ function xrSummaryHTML(t,per){
     ${kpi('Schedule, SPI',A.spi!=null?fmt(A.spi,2):'—','Released, weighted by value',A.spi!=null?light(A.spi):'')}
     ${money?kpi('EAC / VAC',A.nc?sar(A.eac):'—',A.nc?`VAC <span class="${A.vac<0?'r-c':'g-c'}">${sar(A.vac)}</span> on budget ${sar(A.budget)}`:'',A.nc&&A.vac<0?'r':''):''}
     ${money?kpi('Invoiced / collected',A.billed?sar(A.inv):'—',A.billed?`collected ${sar(A.coll)}, outstanding ${sar(Math.max(0,A.appr-A.coll))}`:'No billing in the released cost reports'):''}
-    ${kpi('Projects needing attention',`${A.crit} of ${A.n}`,`${A.issues} open issues released${A.eh?`, ${A.eh} extremely high`:''}`,A.crit?'r':'')}</div>
-  <section class="panel"><div class="card-head"><h2>By region</h2><span class="small muted">Released versions for ${esc(perLabel(t,per))}</span></div>${xrGroupTable(L,'region',money)}</section>
-  <section class="panel"><div class="card-head"><h2>By sector</h2></div>${xrGroupTable(L,'sector',money)}</section>
-  <section class="panel"><div class="card-head"><h2>Critical projects</h2><span class="small muted">Released SPI under 0.95${money?', a negative VAC':''}, a finish more than 30 days after baseline, or an extremely high open issue</span></div>
+    ${kpi('Projects needing attention',`${A.crit} of ${A.n}`,`${A.issues} open issues released${A.eh?`, ${A.eh} extremely high`:''}`,A.crit?'r':'')}${xrMatTiles(L)}</div>
+  <section class="panel" data-xrs="region"><div class="card-head"><h2>By region</h2><span class="small muted">Released versions for ${esc(perLabel(t,per))}</span></div>${xrGroupTable(L,'region',money)}</section>
+  <section class="panel" data-xrs="sector"><div class="card-head"><h2>By sector</h2></div>${xrGroupTable(L,'sector',money)}</section>
+  <section class="panel" data-xrs="critical"><div class="card-head"><h2>Critical projects</h2><span class="small muted">Released SPI under 0.95${money?', a negative VAC':''}, a finish more than 30 days after baseline, or an extremely high open issue</span></div>
     <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Region and sector</th><th class="n">Actual</th><th class="n">SPI</th>${money?'<th class="n">VAC</th>':''}<th>Why</th><th>Main issue</th><th></th></tr></thead><tbody>
     ${crit.map(x=>{const top=x.iss[0];return `<tr><td><b>${esc(x.p.short)}</b><span class="t2">${esc(pcode(x.p))}</span></td><td class="small">${esc(regName(x.p))}<span class="t2">${esc(secById(x.p.sector)?.name||'')}</span></td>
       <td class="n">${x.pr?pct((+x.f.actual_pct||0)/100,0)+`<span class="t2">plan ${pct((+x.f.planned_pct||0)/100,0)}</span>`:'—'}</td><td class="n ${x.f.spi!=null?light(+x.f.spi)+'-c':''}">${x.f.spi!=null?fmt(+x.f.spi,2):'—'}</td>
@@ -3101,14 +3252,14 @@ function xrSummaryHTML(t,per){
       <td class="small" style="min-width:200px">${top?`<b>${esc(top.impact||'')}</b> ${esc(String(top.description).slice(0,140))}${top.action_by?`<span class="t2">Action by ${esc(top.action_by)}${top.forecast_target||top.planned_target?', target '+fmtDY(top.forecast_target||top.planned_target):''}</span>`:''}`:esc((x.pr&&x.pr.narrative||{}).issues||'—')}</td>
       <td class="n"><button class="btn sm" type="button" data-xrproj="${esc(x.p.id)}">Project view</button></td></tr>`}).join('')||`<tr><td colspan="8" class="muted">No project meets the critical thresholds in the released versions.</td></tr>`}
     </tbody></table></div></section>
-  ${money?`<section class="panel"><div class="card-head"><h2>Billing and collection</h2><span class="small muted">As saved in the released cost reports · SAR</span></div>
+  ${money?`<section class="panel" data-xrs="billing"><div class="card-head"><h2>Billing and collection</h2><span class="small muted">As saved in the released cost reports · SAR</span></div>
     <div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th class="n">Invoiceable</th><th class="n">Invoiced</th><th class="n">Approved</th><th class="n">Collected</th><th class="n">Not yet invoiced</th><th class="n">Outstanding</th></tr></thead><tbody>
     ${L.map(x=>{const c=x.c;if(!c||c.inv_submitted==null)return `<tr><td><b>${esc(x.p.short)}</b></td><td colspan="6" class="muted small">${c?'No billing figures in this cost report':'Cost report not released for '+esc(perLabel('month',per))}</td></tr>`;
       return `<tr><td><b>${esc(x.p.short)}</b></td><td class="n">${sar(+c.inv_invoiceable||0)}</td><td class="n">${sar(+c.inv_submitted||0)}</td><td class="n">${sar(+c.inv_approved||0)}</td><td class="n">${sar(+c.inv_collected||0)}</td>
         <td class="n ${(+c.inv_invoiceable||0)-(+c.inv_submitted||0)>1?'a-c':''}">${sar(Math.max(0,(+c.inv_invoiceable||0)-(+c.inv_submitted||0)))}</td><td class="n">${sar(Math.max(0,(+c.inv_approved||0)-(+c.inv_collected||0)))}</td></tr>`}).join('')}
     ${A.billed?`<tr><td><b>Total</b></td><td class="n"><b>${sar(A.invable)}</b></td><td class="n"><b>${sar(A.inv)}</b></td><td class="n"><b>${sar(A.appr)}</b></td><td class="n"><b>${sar(A.coll)}</b></td><td class="n"><b>${sar(Math.max(0,A.invable-A.inv))}</b></td><td class="n"><b>${sar(Math.max(0,A.appr-A.coll))}</b></td></tr>`:''}
     </tbody></table></div></section>
-  <section class="panel"><div class="card-head"><h2>Change order and claim status</h2><span class="small muted">Client approval status, from the logs up to ${esc(perLabel('month',per))}</span></div>
+  <section class="panel" data-xrs="vostatus"><div class="card-head"><h2>Change order and claim status</h2><span class="small muted">Client approval status, from the logs up to ${esc(perLabel('month',per))}</span></div>
     ${vo.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Status with client</th><th class="n">Change orders</th><th class="n">VO expected price</th><th class="n">Claims</th><th class="n">Claim expected price</th></tr></thead><tbody>
       ${STS.map(s=>{const V=vo.filter(r=>r.kind==='VO'&&stOf(r)===s),C=vo.filter(r=>r.kind==='Claim'&&stOf(r)===s);if(!V.length&&!C.length)return '';
         return `<tr><td>${esc(s)}</td><td class="n">${V.length}</td><td class="n">${sar(V.reduce((t,r)=>t+(+r.expected_price||0),0))}</td><td class="n">${C.length}</td><td class="n">${sar(C.reduce((t,r)=>t+(+r.expected_price||0),0))}</td></tr>`}).join('')}
@@ -3131,6 +3282,7 @@ function xrProjectHTML(t,per){
     ${kpi('Workforce',f.workforce!=null?fmt(+f.workforce):'—',f.productivity_pct!=null?`productivity ${pc(f.productivity_pct)}`:'')}</div>
   <section class="panel"><h2>Planning engineer's comments</h2><p><b>Summary.</b> ${esc(nar.summary||'—')}</p><p><b>Key issues.</b> ${esc(nar.issues||'—')}</p>${nar.recovery?`<p><b>Recovery actions.</b> ${esc(nar.recovery)}</p>`:''}<p><b>Next period.</b> ${esc(nar.next||'—')}</p>${nar.mgmt?`<p><b>Management remarks.</b> ${esc(nar.mgmt)}</p>`:''}
     ${(pr.overrides||[]).length?`<p class="small muted">Figures changed by the planning engineer: ${(pr.overrides||[]).map(o=>`${esc(o.label||o.field)} ${esc(String(o.computed??'—'))} → ${esc(String(o.value??'—'))} (${esc(o.reason)})`).join('; ')}.</p>`:''}</section>${xrDashHTML(f)}`:''}
+  ${xrMatProjHTML(pr)}
   <section class="panel"><div class="card-head"><h2>Issues and bottlenecks</h2><span class="small muted">${pr?`Open issues saved with the release (${iss.length})`:'Released with the progress release'}</span></div>
     ${pr?(iss.length?`<div class="scroll"><table class="tbl"><thead><tr><th>No</th><th>Type</th><th>Owner</th><th>Issue</th><th>Impact</th><th>Priority</th><th>Action by</th><th>Target</th><th>Schedule impact</th></tr></thead><tbody>
       ${iss.map(x=>`<tr><td><b>${esc(x.no)}</b></td><td class="small">${esc(x.type||'—')}</td><td class="small">${esc(x.owner||'—')}${x.sub_owner?`<span class="t2">${esc(x.sub_owner)}</span>`:''}</td><td class="small" style="min-width:220px">${esc(x.description)}${x.action_required?`<span class="t2">Required: ${esc(x.action_required)}</span>`:''}</td>
@@ -3937,7 +4089,7 @@ function openPlanRelease(pid,t,per){
   const di=(k,l,type,extra)=>F(l,`<input name="d_${k}" ${type==='date'?'type="date"':type==='num'?'type="number" min="0" step="any" inputmode="decimal"':''} value="${esc(f[k]??'')}" ${dis} ${extra||''} data-rdin>`);
   const calc=(l,v,s,cls)=>`<div class="rcalc ${cls||''}"><span class="l">${l}</span><b data-rdc>${v}</b>${s?`<span class="t2">${s}</span>`:''}</div>`;
   const dl=(k)=>{const v=f[k];return v==null?'—':`${v>0?'+':''}${v} days`},lt=(k,rk)=>msLight(f[k],rk&&f[rk]);
-  const TABS=[['overview','Overview'],['ms','Milestones'],['prog','Progress'],['mp','Manpower'],['en','Energization'],['notes','Release notes'],['appr','Approval']];
+  const TABS=[['overview','Overview'],['ms','Milestones'],['prog','Progress'],['mp','Manpower'],['en','Energization'],['mat','Materials'],['notes','Release notes'],['appr','Approval']];
   const show=k=>tab===k?'':'hidden';
   $('#sheet').innerHTML=`<div class="rdhead"><div><h2 style="margin:0">Internal report · ${esc(perLabel(t,per))}</h2><span class="small muted">${esc(pcode(p))} · ${esc(p.name)} · data date ${fmtDY((r&&r.data_date)||ASOF)}</span></div>
       ${r?`<span class="st ${r.status==='Released'?'Approved':r.status==='Submitted'?'Reviewed':'Draft'}">${esc(r.status==='Submitted'?(needRev?'Awaiting PM review':'Awaiting approval'):relReturned(r)?'Returned':r.status)} · rev ${r.rev}</span>`:'<span class="st Draft">New</span>'}
@@ -3999,6 +4151,7 @@ function openPlanRelease(pid,t,per){
         ${di('energ_date','Forecast / actual energization date','date')}
         ${F('Remarks for energization',`<input name="d_energ_remarks_text" maxlength="300" value="${esc(f.energ_remarks_text||'')}" ${dis} data-rdin>`)}</div></div></div>
     </section>
+    <section class="rdpanel" data-rdp="mat" ${show('mat')}>${relMatPanelHTML(pid,r,f,editable)}</section>
     <section class="rdpanel" data-rdp="notes" ${show('notes')}><div class="rdgrid">
       ${[['summary','Progress summary'],['issues','Key issues / risks'],['recovery','Recovery actions'],['next',t==='week'?'Next week target':'Next month target']].map(([k,l])=>`<div class="rdcard"><h3>${l}</h3><textarea name="n_${k}" rows="4" ${dis}>${esc(nar[k]||'')}</textarea></div>`).join('')}
       <div class="rdcard"><h3>Management remarks</h3>${canDecide||relCanReview(open)?`<textarea id="relMgmt" rows="3" placeholder="Added by the approver with the approval">${esc(nar.mgmt||'')}</textarea>`:`<p class="small">${esc(nar.mgmt||'Added by the approver when the release is approved.')}</p>`}</div></div>
@@ -5270,7 +5423,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.8.4';
+const APP_VERSION='3.8.5';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
@@ -7177,7 +7330,9 @@ const KPI_DEFS=[
   ['shortsub','Under-billed vs invoiceable',g=>({v:sar(Math.max(0,g.b.inv-g.b.sub)),s:'Earned but not yet invoiced',c:g.b.inv-g.b.sub>1?'r':'g'})],
   ['shortappr','Short of invoiceable after approval',g=>({v:sar(Math.max(0,g.b.inv-g.b.ap)),s:'Claimed but not certified',c:g.b.inv-g.b.ap>1?'a':'g'})],
   ['outstanding','Outstanding collection',g=>({v:sar(Math.max(0,g.b.ap-g.b.co)),s:'Approved but not received',c:g.b.ap-g.b.co>1?'a':'g'})],
-  ['advance','Advance recovered',g=>({v:sar(g.ks.reduce((t,k)=>t+billing(k.p,ASOF).recovered,0)),s:'Against the advance payment'})]
+  ['advance','Advance recovered',g=>({v:sar(g.ks.reduce((t,k)=>t+billing(k.p,ASOF).recovered,0)),s:'Against the advance payment'})],
+  ['matlate','Materials delayed',g=>{const M=g.mat||(g.mat=execMat(g.ks)),n=M.reduce((t,x)=>t+x.K.total,0),l=M.reduce((t,x)=>t+x.K.late,0);return {v:M.length?fmt(l):'—',s:M.length?`of ${fmt(n)} monitored materials`:'Material Tracking not set up',c:l?'r':''}}],
+  ['matdel','Materials delivered',g=>{const M=g.mat||(g.mat=execMat(g.ks)),n=M.reduce((t,x)=>t+x.K.total,0),d=M.reduce((t,x)=>t+x.K.dv,0);return {v:M.length?fmt(d):'—',s:M.length&&n?`${pct(d/n,0)} of ${fmt(n)} monitored`:'Material Tracking not set up'}}]
 ];
 const COL_DEFS=[
   ['n','Projects','n',r=>r.ks.length],
@@ -7190,18 +7345,24 @@ const COL_DEFS=[
   ['approved','Approved','sar',r=>r.b.ap],['collected','Collected','sar',r=>r.b.co],
   ['shortsub','Under-billed','sar',r=>Math.max(0,r.b.inv-r.b.sub)],
   ['shortappr','Short vs approved','sar',r=>Math.max(0,r.b.inv-r.b.ap)],
-  ['outstanding','Outstanding','sar',r=>Math.max(0,r.b.ap-r.b.co)]
+  ['outstanding','Outstanding','sar',r=>Math.max(0,r.b.ap-r.b.co)],
+  ['matlate','Materials delayed','n',r=>execMat(r.ks).reduce((t,x)=>t+x.K.late,0)]
 ];
-const DEF_PREFS={kpis:['projects','complete','spi','cpi','prod','crit'],group:'region',
+const OLD_DEF_KPIS=['projects','complete','spi','cpi','prod','crit'];
+const DEF_PREFS={kpis:['projects','complete','spi','cpi','prod','crit','matlate'],group:'region',
   cols:['n','value','bar','spi','cpi','prod','crit'],second:'sector'};
-function execPrefs(){
-  if(SITE_ROLES.includes(state.role))return siteExecPrefs();
-  DB.prefs=DB.prefs||{};
-  const key=(me()&&me().id)||'local';
-  DB.prefs[key]=Object.assign(JSON.parse(JSON.stringify(DEF_PREFS)),DB.prefs[key]||{});
-  return DB.prefs[key];
+/* v3.8.5: the person's own layout, or else the default the super admin set for their role or for everyone */
+const execSig=x=>JSON.stringify({g:x.group,c:x.cols,s:x.second||'',b:!!x.hideBilling,m:!!x.hideMat});
+const execOwn=x=>!!x&&(x.own===true||!((JSON.stringify(x.kpis)===JSON.stringify(DEF_PREFS.kpis)||JSON.stringify(x.kpis)===JSON.stringify(OLD_DEF_KPIS))&&execSig(x)===execSig(DEF_PREFS)));
+function execPrefsSrc(){
+  if(SITE_ROLES.includes(state.role))return {P:siteExecPrefs(),src:'site'};
+  DB.prefs=DB.prefs||{};const x=DB.prefs[lyKey()];
+  if(execOwn(x))return {P:Object.assign(JSON.parse(JSON.stringify(DEF_PREFS)),x),src:'mine'};
+  const d=lyDefaultFor('exec');return {P:Object.assign(JSON.parse(JSON.stringify(DEF_PREFS)),JSON.parse(JSON.stringify(d.L||{}))),src:d.src,role:d.role};
 }
-function savePrefs(){save();render()}
+function execPrefs(){return execPrefsSrc().P}
+function execPrefsEdit(){DB.prefs=DB.prefs||{};const k=lyKey();if(!execOwn(DB.prefs[k]))DB.prefs[k]=JSON.parse(JSON.stringify(execPrefs()));DB.prefs[k].own=true;return DB.prefs[k]}
+function savePrefs(){save();render();if(CLOUD_ME&&!SITE_ROLES.includes(state.role))lyPushMine().then(ok=>{if(!ok)toast('Your layout was not saved on the server: '+lyPushMine.err)})}
 function billOfSet(ks){
   return ks.map(k=>billPosition(k.p)).reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.t.submitted,
     ap:t.ap+x.t.approved,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
@@ -7231,19 +7392,24 @@ function execTable(ks,by,cols){
 function execCustomHTML(){
   const P=execPrefs();
   if(SITE_ROLES.includes(state.role))return '';
-  if(!state.execEdit)return `<button class="btn sm" type="button" data-execedit="1">Customise this view</button>`;
+  if(!state.execEdit)return `<div class="actions" style="margin:0;align-items:center"><button class="btn sm" type="button" data-execedit="1">Customise this view</button><span class="small muted" id="execSrc">Showing ${esc(lySrcText(execPrefsSrc()))}.</span></div>`;
   return `<section class="panel"><div class="card-head"><h2>Customise the executive summary</h2>
     <div class="actions" style="margin:0"><button class="btn sm" type="button" data-execreset>Reset to default</button><button class="btn sm primary" type="button" data-execedit="0">Done</button></div></div>
-    <p class="small muted" style="margin:0 0 10px">Your choice is remembered for your own account. Other people keep their own layout.</p>
+    <p class="small muted" style="margin:0 0 10px">Now showing ${esc(lySrcText(execPrefsSrc()))}. A change is kept as your own layout${CLOUD_ME?', on the server':''}; other people keep theirs. <b>Reset to default</b> goes back to the default.</p>
     <h3>Tiles</h3>
     <div class="checks" style="max-height:none">${KPI_DEFS.map(([k,lbl])=>`<label class="chk"><input type="checkbox" data-kpi="${k}" ${P.kpis.includes(k)?'checked':''}><span>${esc(lbl)}</span></label>`).join('')}</div>
     <div class="fields" style="margin-top:12px">
       ${F('Group the breakdown by',sel('egroup',[['region','Region'],['sector','Sector'],['city','City'],['project','Project']],P.group))}
       ${F('Second table',sel('esecond',[['','None'],['region','Region'],['sector','Sector'],['city','City'],['project','Project']],P.second||''))}
       ${F('Billing panel',sel('ebill',[['','Show'],['1','Hide']],P.hideBilling?'1':''))}
+      ${F('Material tracking panel',sel('emat',[['','Show'],['1','Hide']],P.hideMat?'1':''))}
     </div>
     <h3>Breakdown columns</h3>
     <div class="checks" style="max-height:none">${COL_DEFS.map(c=>`<label class="chk"><input type="checkbox" data-ecol="${c[0]}" ${P.cols.includes(c[0])?'checked':''}><span>${esc(c[1])}</span></label>`).join('')}</div>
+    ${state.role==='sa'?`<div class="rdcard" style="margin-top:12px"><h3>Default for others <span class="muted small">super admin</span></h3>
+      <p class="small muted" style="margin:0 0 8px">People who have not changed their own layout see the default for their role, or else the company default. Site engineers and site managers keep the layout set in Settings → Role access.</p>
+      <div class="fields">${F('Save this layout as the default for',`<select id="exlRole">${lyRoleOpts('exec').map(([k,l])=>`<option value="${esc(k)}">${esc(l)}</option>`).join('')}</select>`)}</div>
+      <div class="actions"><button class="btn sm primary" type="button" data-exldef="save">Save as default</button><button class="btn sm" type="button" data-exldef="del">Remove that default</button></div></div>`:''}
   </section>`;
 }
 
@@ -7297,6 +7463,7 @@ function execSummary(){
   <section class="panel"><div class="card-head"><h2>By ${P.group==='project'?'project':P.group}</h2><span class="small muted">Tap a row to focus the whole system on it</span></div>
     ${execTable(ks,P.group,P.cols)}</section>
   ${P.second?`<section class="panel"><h2>By ${P.second==='project'?'project':P.second}</h2>${execTable(ks,P.second,P.cols)}</section>`:''}
+  ${P.hideMat?'':execMatHTML(ctx.mat||(ctx.mat=execMat(ks)))}
   ${(()=>{const B=ks.map(k=>billPosition(k.p)).filter(x=>x.b.contract||x.t.n);
     if(!B.length||P.hideBilling)return '';
     const T=ctx.b,gapS=T.inv-T.sub,gapA=T.inv-T.ap,out=T.ap-T.co;
@@ -9267,7 +9434,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV385();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=canExec()?'exec':(state.role==='foreman'?'dpr':'dash');showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');
@@ -9610,7 +9777,7 @@ document.addEventListener('click',e=>{
     if(po){po.rates.splice(+ix,1);logChange(`Removed a rate from ${po.no}, ${sb.name}`);applyMaster();save();render()}return}
   if(ds.basepo){state.basePo=state.basePo===ds.basepo?null:ds.basepo;render();return}
   if(ds.nudge){notifyTeam(ds.nudge);return}
-  if('execreset' in ds){const key=(me()&&me().id)||'local';DB.prefs=DB.prefs||{};DB.prefs[key]=JSON.parse(JSON.stringify(DEF_PREFS));state.execEdit=false;savePrefs();return}
+  if('execreset' in ds){DB.prefs=DB.prefs||{};delete DB.prefs[lyKey()];state.execEdit=false;savePrefs();return}
   if('invtpl' in ds){invoiceTemplate();return}
   if('invgo' in ds){runInvoices();return}
   if('invcancel' in ds){state.inv=null;$('#invBox').innerHTML='';$('#invfile').value='';return}
@@ -9710,11 +9877,12 @@ document.addEventListener('change',e=>{const el=e.target;
     const c=g.crew[+el.dataset.k];if(!c)return;
     c[el.dataset.f]=el.dataset.f==='cat'?el.value:(+el.value||0);
     updateSummary();return}
-  if(el.matches('[data-kpi]')){const P=execPrefs();P.kpis=el.checked?P.kpis.concat([el.dataset.kpi]):P.kpis.filter(k=>k!==el.dataset.kpi);savePrefs();return}
-  if(el.matches('[data-ecol]')){const P=execPrefs();P.cols=el.checked?P.cols.concat([el.dataset.ecol]):P.cols.filter(k=>k!==el.dataset.ecol);savePrefs();return}
-  if(el.name==='egroup'){execPrefs().group=el.value;savePrefs();return}
-  if(el.name==='esecond'){execPrefs().second=el.value;savePrefs();return}
-  if(el.name==='ebill'){execPrefs().hideBilling=el.value==='1';savePrefs();return}
+  if(el.matches('[data-kpi]')){const P=execPrefsEdit();P.kpis=el.checked?P.kpis.concat([el.dataset.kpi]):P.kpis.filter(k=>k!==el.dataset.kpi);savePrefs();return}
+  if(el.matches('[data-ecol]')){const P=execPrefsEdit();P.cols=el.checked?P.cols.concat([el.dataset.ecol]):P.cols.filter(k=>k!==el.dataset.ecol);savePrefs();return}
+  if(el.name==='egroup'){execPrefsEdit().group=el.value;savePrefs();return}
+  if(el.name==='esecond'){execPrefsEdit().second=el.value;savePrefs();return}
+  if(el.name==='ebill'){execPrefsEdit().hideBilling=el.value==='1';savePrefs();return}
+  if(el.name==='emat'){execPrefsEdit().hideMat=el.value==='1';savePrefs();return}
   if(el.matches('[data-mailcfg]')){mailCfg()[el.dataset.mailcfg]=el.checked;logChange(`Approval email: ${el.dataset.mailcfg==='on'?(el.checked?'switched on':'switched off'):'site roles by discipline '+(el.checked?'on':'off')}`);save();return}
   if(el.matches('[data-mailrole]')){const c=mailCfg(),k=el.dataset.mailrole;c.roles=el.checked?[...new Set(c.roles.concat(k))]:c.roles.filter(x=>x!==k);save();return}
   if(el.matches('[data-mx]')&&CLOUD_ME){const [pid,kind,uid]=el.dataset.mx.split(':'),u=userById(uid),t=userById(el.value),to=el.value;el.disabled=true;

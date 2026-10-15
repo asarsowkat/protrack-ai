@@ -41,9 +41,9 @@ with sync_playwright() as p:
     J(f"state.rdTab='overview';openRelease('{PID}','planning','month','{MON}')"); pg.wait_for_timeout(400)
     ck('Full screen', 'a monthly progress release opens full screen, not as a half-width panel', J("document.querySelector('#sheet').classList.contains('full')") and J("document.querySelector('#sheet').getBoundingClientRect().width") >= 1400, J("document.querySelector('#sheet').getBoundingClientRect().width"))
     tabs = J("[...document.querySelectorAll('#sheet [data-rdtab]')].map(b=>b.textContent.trim())")
-    ck('Full screen', 'tabs: Overview, Milestones, Progress, Manpower, Energization, Release notes, Approval', tabs == ['Overview', 'Milestones', 'Progress', 'Manpower', 'Energization', 'Release notes', 'Approval'], tabs)
+    ck('Full screen', 'tabs: Overview, Milestones, Progress, Manpower, Energization, Materials (v3.8.5), Release notes, Approval', tabs == ['Overview', 'Milestones', 'Progress', 'Manpower', 'Energization', 'Materials', 'Release notes', 'Approval'], tabs)
     ok = True
-    for k in ['overview', 'ms', 'prog', 'mp', 'en', 'notes', 'appr']:
+    for k in ['overview', 'ms', 'prog', 'mp', 'en', 'mat', 'notes', 'appr']:
         pg.click(f'#sheet [data-rdtab="{k}"]'); pg.wait_for_timeout(120)
         vis = J("[...document.querySelectorAll('#sheet [data-rdp]')].filter(s=>!s.hidden).map(s=>s.dataset.rdp)")
         ok = ok and vis == [k]

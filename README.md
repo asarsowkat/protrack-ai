@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.8.5
+
+- Executive report (released) customisable: super admin defaults (everyone or per role), each person's own layout; Material tracking in the released report and the live summary. See RELEASE-NOTES-v3.8.5.md
+
 ## Version 3.8.4
 
 - Engineering and procurement progress from the weekly updated P6 schedule; the separate E&P Excel upload is retired. See RELEASE-NOTES-v3.8.4.md
