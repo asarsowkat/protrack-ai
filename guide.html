@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.8.4, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.8.5, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -256,6 +256,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
+  <div class="note"><b>New in version 3.8.5</b>
+    The <b>Executive report (released)</b> can be customised: the super admin sets the default for everyone or for a role, and each person can save their own layout. <b>Material tracking</b> is in the released report (as released with each progress report) and in the live summary.</div>
   <div class="note"><b>New in version 3.8.4</b>
     Engineering and procurement progress comes from the <b>weekly updated P6 schedule</b>: no separate E&amp;P Excel upload. <b>E&amp;P progress</b> (Planning &amp; Scheduling) shows it per activity, and reporting compliance checks the updated schedule.</div>
   <div class="note"><b>New in version 3.8.3</b>
@@ -550,6 +552,17 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Project view</b>: one project's released progress, the planning engineer's comments with recovery actions and management remarks, the released milestones, external progress, energization and manpower, the issues saved with the release, cost and billing, change orders, claims and supplements, and its release history.</li>
   </ul>
   <p>Below the summary, it shows per project the released progress with key issues. For a month it also shows the released cost (approved budget, actual, commitments, EAC, VAC), change orders and claims, and budget supplements by category. A project without a release for that period shows <i>Not released</i>; live figures are never filled in. Weekly reports carry progress only. Foremen, site engineers and site managers see no cost figures. <b>Live summary (working data)</b> is the previous executive summary, for the people preparing the releases.</p>
+  <h3>Customising the executive report and the live summary</h3>
+  <ul>
+    <li><b>Your own layout.</b> Executive report → Summary → <b>Customise this report</b>: tick the tiles and sections you want, move sections up or down, and choose whether Monthly or Weekly opens first. Changes show at once; <b>Save as my layout</b> keeps them for your account, on the server, on every device. <b>Reset to the default</b> goes back to the default. The live summary works the same way with <b>Customise this view</b>.</li>
+    <li><b>Defaults, set by the super admin.</b> In the same panel the super admin can save the layout as the default for everyone (company default) or for one role, built-in or custom. People who have not saved their own layout see the default for their role, or else the company default, or else the standard layout. The page says which one is shown.</li>
+    <li>Cost sections and tiles appear only for people who see cost, and only in monthly reports. Site engineers and site managers keep the live summary set in Settings → Role access.</li>
+  </ul>
+  <h3>Material tracking in the executive views</h3>
+  <ul>
+    <li><b>Executive report (released):</b> a <b>Material tracking</b> section (per project: monitored, delivered, delivery started, not delivered, delayed, and which materials are delayed) and the tiles <b>Materials delayed</b> and <b>Materials delivered</b>. The figures are those released with each progress report: the release takes a snapshot of Material tracking when it is saved and freezes it when it is submitted (Internal Reporting → <b>Materials</b> tab). Releases from before version 3.8.5 carry none and say so.</li>
+    <li><b>Live summary:</b> a <b>Material tracking</b> panel with the live status of the monitored materials, a <b>Materials delayed</b> tile and a column for the breakdown table.</li>
+  </ul>
   <h3>Change order and claim log, budget supplement log</h3>
   <p>The costing engineer or costing coordinator uploads both every month for each project (<b>Claims &amp; Variations → Change order and claim log</b>, <b>Cost Control → Budget supplements</b>). Download the template, fill it in, choose the month and upload. Rows with a missing reference, a wrong type or category, a number that is not a number or a bad date are refused, and you confirm them by ticking the box before the rest is saved. Each upload is a numbered batch, and the same file for the same month is not loaded twice. Every month's log is kept and can be shown later.</p>
   <p><b>Change order and claim log columns:</b> reference, type (VO or Claim), description, submission status and date, client approval status, estimated price, estimated cost, expected price to be approved, price and cost considered internally, change in Rev-0 budget, internal workflow status, overall approval status with the client, remarks.</p>
