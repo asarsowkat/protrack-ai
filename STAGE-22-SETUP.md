@@ -11,7 +11,7 @@ This takes about 8 minutes. **Do not** upload a new `config.js`. The v24 update 
 3. In a new empty tab, run this check. Copy only the line, without the ``` marks:
 
    ```sql
-   select (select count(*) from pg_proc where proname in ('delay_corr_act','delay_corr_features','pt_dly_corr_link','pt_dly_file_can','pt_dly_corr_guard')) + (select count(*) from storage.buckets where id = 'delay-docs' and not public) + (select count(*) from pg_policies where policyname in ('dc_read','protrack_delay_docs_read','protrack_delay_docs_add')) + (select count(*) from pg_trigger where tgname = 'trg_dly_corr_guard') as installed;
+   select (select count(*) from pg_proc where proname in ('delay_corr_act','delay_corr_features','pt_dly_corr_link','pt_dly_file_can','pt_dly_corr_guard')) + (select count(*) from storage.buckets where id = 'delay-docs' and not public) + (select count(*) from pg_policies where (tablename = 'delay_corr' and policyname = 'dc_read') or policyname in ('protrack_delay_docs_read','protrack_delay_docs_add')) + (select count(*) from pg_trigger where tgname = 'trg_dly_corr_guard') as installed;
    ```
 
    Expect **10**: five functions, the private bucket, three access rules and the trigger.
