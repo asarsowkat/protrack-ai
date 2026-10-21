@@ -20,6 +20,17 @@ The live forecast for Riyadh Metro was within budget (about 94.8%), so the July 
 
 **A browser that already holds the old sample** gets the July version taken again when the page opens, once. This happens only if the version is still the untouched sample with the Forecast Overrun. Reset demo data gives the same result.
 
+## The user guide (guide.html), brought up to v3.28.2
+
+`guide.html` now covers every release from v3.9 to v3.28.2:
+
+- **Section 4, roles and access:** every role; the head office positions (Head of Planning and Cost Control, costing coordinator, planning section manager); and two tables read from the app itself, the screens each role sees and the 27 rights each role has.
+- **Section 5, the menu domain by domain:** all 13 domains. Each has a table of its screens (what it is for, who sees it, who changes it), followed by the full how-to. New how-tos include the Project list, Project Visual, the Live summary, the client report, baselines and the comparison reports, the cost dashboards, the costing sheet, unit rates, budget supplements, subcontract POs, the invoice register, payment terms, extension of time, BOQ Engine (all twelve sections), the Settings tabs and the release strategy.
+- **Section 6, step by step:** all twelve roles and positions. Read-only, the Head, the costing coordinator and the planning section manager are new.
+- **Version notes:** the missing ones (3.22.1 to 3.28.2) are filled in, and about 120 out-of-date statements are corrected.
+
+The guide was checked against the app's code by an independent review. Its corrections are in.
+
 ## Server files: v18 fixed, every rollback safe to run
 
 Two fixes to the `supabase/` files. Nothing changes in the app.
