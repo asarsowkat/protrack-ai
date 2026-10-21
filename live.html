@@ -869,7 +869,7 @@ tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,13
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.30</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.30.1</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -3396,7 +3396,9 @@ function renderSupp(){
       +(pid1&&suppCanEdit(pid1)?`<div class="actions" style="justify-content:center"><button class="btn primary" type="button" data-suppver="${esc(pid1)}">Start the ${MMMYY(curMonth())} log here</button></div>`:''):`
     <div class="g g-kpi">${kpi('Supplement',sar(T.supp),'Negative amounts, not change orders')}${kpi('Savings',sar(T.sav),'Positive amounts, not change orders')}${kpi('VO Cost',sar(T.vocost),'Change orders, user field not Cont. Value')}${kpi('VO Price',sar(T.voprice),'Change orders, user field Cont. Value')}
       ${kpi('Net value',sar(T.net),'Impact on the gross margin',T.net<0?'r':T.net>0?'g':'')}${kpi('Budget change',sar(T.budget),'For the cost report: supplements and VO costs add, savings take away')}</div>
-    <div class="card-head" style="margin-top:8px;flex-wrap:wrap"><h3 style="margin:0">${rows.length} row${rows.length===1?'':'s'}</h3><div class="actions" style="margin:0">${canEd?(G?`<button class="btn sm" type="button" data-suppgadd>Add row</button><button class="btn sm primary" type="button" data-suppgsave>Save</button><button class="btn sm" type="button" data-suppgcancel>Cancel</button>`:`<button class="btn sm primary" type="button" data-suppgrid>Edit in the grid</button><button class="btn sm" type="button" data-suppgrid="add">Add rows</button>`):''}${!G&&pid1&&suppCanEdit(pid1)&&latestOf(pid1)&&latestOf(pid1).source_period<curMonth()?`<button class="btn sm" type="button" data-suppver="${esc(pid1)}">Start the ${MMMYY(curMonth())} version</button>`:''}<button class="btn sm" type="button" data-suppexp>Export to Excel</button></div></div>
+    <div class="card-head" style="margin-top:8px;flex-wrap:wrap"><h3 style="margin:0">${rows.length} row${rows.length===1?'':'s'}</h3><div class="actions" style="margin:0">${canEd?(G?`<button class="btn sm" type="button" data-suppgadd>Add row</button><button class="btn sm primary" type="button" data-suppgsave>Save</button><button class="btn sm" type="button" data-suppgcancel>Cancel</button>`:`<button class="btn sm primary" type="button" data-suppgrid>Edit in the grid</button><button class="btn sm" type="button" data-suppgrid="add">Add rows</button>`)
+      :canLogUpload()&&!pid1?`<button class="btn sm primary" type="button" data-suppgrid="pick" title="The grid edits one project's log">Edit in the grid</button>`
+      :pid1&&suppCanEdit(pid1)&&latestOf(pid1)&&per!==latestOf(pid1).source_period?`<span class="small muted">Only the latest version (${MMMYY(latestOf(pid1).source_period)}) is edited</span>`:''}${!G&&pid1&&suppCanEdit(pid1)&&latestOf(pid1)&&latestOf(pid1).source_period<curMonth()?`<button class="btn sm" type="button" data-suppver="${esc(pid1)}">Start the ${MMMYY(curMonth())} version</button>`:''}<button class="btn sm" type="button" data-suppexp>Export to Excel</button></div></div>
     ${G?`<p class="small muted" style="margin:4px 0 8px">Editing the <b>${MMMYY(G.per)}</b> log of <b>${esc(projById(G.pid).short)}</b>, every row of it (the filters apply again when you leave the grid). Type in the cells and choose the user field and the category from their lists: the unified category and the four columns follow. The amount is the impact on the gross margin: negative for a supplement or a VO cost, positive for a saving or a VO price. <b>Enter</b> goes to the row below; a range copied from Excel can be pasted from any cell (columns in the grid's order); ✕ deletes a row. Nothing is saved until <b>Save</b>.</p>${suppGridHTML(G)}`:`
     <div class="scroll"><table class="tbl supptbl"><thead><tr>${multi&&!f.pid?'<th>Project</th>':''}<th>Version</th><th>No</th><th>WF date</th><th>User field</th><th>Category</th><th>Unified category</th><th>Description</th><th class="n">Supplement</th><th class="n">Savings</th><th class="n">VO Cost</th><th class="n">VO Price</th><th class="n">Net value</th><th>WBS Group</th><th>WBS ID</th><th>WBS Description</th><th>Linked VO / claim</th><th>Remarks</th></tr></thead><tbody>
       ${rows.map(r=>`<tr>${multi&&!f.pid?`<td><b>${esc(r.p.short)}</b><span class="t2">${esc(pcode(r.p))}</span></td>`:''}<td>${MMMYY(r.b.source_period)}</td><td><b>${esc(r.supp_no)}</b>${r.old?'<span class="t2">before v3.29</span>':''}</td><td>${r.supp_date?fmtDY(r.supp_date):'—'}</td>
@@ -3467,6 +3469,7 @@ document.addEventListener('keydown',e=>{const t=e.target,G=state.suppGrid;if(!G|
 document.addEventListener('input',e=>{const t=e.target;if(t.matches&&t.matches('input[data-suppf]')){suppState()[t.dataset.suppf]=t.value;clearTimeout(renderSupp.t);renderSupp.t=setTimeout(()=>{const s=t.selectionStart;render();const n=document.querySelector('input[data-suppf="q"]');if(n){n.focus();try{n.setSelectionRange(s,s)}catch(x){}}},250)}});
 document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-suppgrid],[data-suppgadd],[data-suppgdel],[data-suppgsave],[data-suppgcancel],[data-suppver],[data-suppexp],[data-suppclear]');if(!t)return;const d=t.dataset,D=suppData(),pid=D.f.pid||(D.ps[0]||{}).id;
+  if(d.suppgrid==='pick'){toast('Choose one project first (Project, above): the grid edits the log of one project');const p=$('[data-suppf="pid"]');if(p){p.focus();p.scrollIntoView({block:'center'})}return}
   if('suppgrid' in d){suppGridOpen(pid,d.suppgrid==='add');return}
   if('suppgadd' in d){suppGridAdd();return}
   if(d.suppgdel){const G=state.suppGrid,r=G&&G.rows.find(x=>x.k===d.suppgdel);if(!r)return;if(!r.id)G.rows=G.rows.filter(x=>x!==r);else r.del=!r.del;render();return}
@@ -8080,7 +8083,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.30';
+const APP_VERSION='3.30.1';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
@@ -8384,7 +8387,7 @@ function renderNav(){
   const L=T[state.lang];const views=NAV_ALL.filter(navOn);NAV_VIEWS=views;
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
   $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=`<button type="button" data-mnav aria-label="Open the full menu">${icon('menu')}<span>Menu</span></button>`+views.filter(v=>!['boq','pv','mat','po','inv','mmcs','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','dly','cout','rs','xr'].includes(v)).map(b).join('');
-  $('#pageTitle').textContent=state.view==='logs'&&state.logTab==='supp'?'Budget supplements':L[state.view];
+  $('#pageTitle').textContent=state.view==='logs'&&(state.navSec==='supp'||(!state.navSec&&state.logTab==='supp'))?'Budget supplements':L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
   $('#scope').value=state.scope;

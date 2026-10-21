@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.30.1
+
+- The budget supplement grid is easy to find: with all projects in scope, **Edit in the grid** asks for one project and puts the cursor in the Project box; the page is titled *Budget supplements*. See [RELEASE-NOTES-v3.30.1.md](RELEASE-NOTES-v3.30.1.md).
+
 ## Version 3.30
 
 - Budget supplements edited like Excel: **Edit in the grid** turns a project's latest log into cells, with drop-downs for the user field and the category; the unified category and Supplement, Savings, VO Cost, VO Price and Net value follow as you type; rows are added, deleted or pasted from Excel, checked, and saved with their history. A project without a log starts it on the screen, so the Excel upload is optional. No server change (it uses v35's supp_update). `tests/supplements_demo.js` now has 51 checks. See [RELEASE-NOTES-v3.30.md](RELEASE-NOTES-v3.30.md).

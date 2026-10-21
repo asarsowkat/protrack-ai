@@ -143,6 +143,10 @@
       click('[data-suppgsave]');await wait(250);const Ln=suppLatestAny(nolog.id);
       ok('48. A project without a log starts it here, with no file: an empty grid, a row typed and saved',st&&Ln.b&&Ln.b.source_period===curMonth()&&Ln.rows.length===1&&Ln.rows[0].supp_no==='BS-01',{st,b:Ln.b&&Ln.b.file_name,n:Ln.rows.length})}
     else ok('48. A project without a log starts it here, with no file',false,'every project has a log');
+    /* v3.30.1: the grid is found from the view of every project, and the page says where it is */
+    as(co.id);state.suppGrid=null;state.suppF=null;state.navSec='supp';go('logs');await wait(200);const pick=document.querySelector('[data-suppgrid="pick"]');
+    ok('49. With all projects in scope, Edit in the grid is shown and asks for one project',!!pick&&$('[data-suppf="pid"]').value===''&&(pick.click(),!state.suppGrid)&&document.activeElement===$('[data-suppf="pid"]'));
+    ok('50. The menu item Budget supplements titles the page Budget supplements',$('#pageTitle').textContent==='Budget supplements',$('#pageTitle').textContent);
   }catch(x){ok('The checks ran to the end',false,x.message+' '+(x.stack||'').split('\n')[1])}
   finally{window.saveFile=keepSave;window.confirm=keepConfirm;window.prompt=keepPrompt;try{localStorage.setItem(KEY,KEYDATA)}catch(x){}}
   console.table(res);const f=res.filter(r=>r.result==='FAIL').length;console.log(`Budget supplements: ${res.length-f} passed, ${f} failed. Restoring the demo data and reloading…`);
