@@ -31,7 +31,7 @@ This takes about 5 minutes. **Do not** upload a new `config.js`. It needs the v2
 
 - As the costing engineer or costing coordinator, open **Cost Control → Logs → Budget supplements**, pick a project and press **Download the template**. Fill a row with a user field and a category of the list and upload it as this month's log.
 - The row shows in one of Supplement, Savings, VO Cost or VO Price, and the **Net value** is its amount. A row with a category that is not in the list is refused with the reason.
-- **Add a supplement**, change it and remove it (give a reason): each change is listed under *Changes on this screen*.
+- **Edit in the grid** (v3.30): change an amount, add a row with **Add row**, delete one with ✕, then **Save** (give a reason for the deletion): each change is listed under *Changes on this screen*.
 - As the super admin, choose *All projects in scope* and filter by region or unified category.
 
 ## To undo

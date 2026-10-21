@@ -750,6 +750,7 @@ body.pvnoscroll{overflow:hidden}
 .boqsteps{columns:2 260px;margin:0;padding:0;list-style:none;font-size:13px}.boqsteps li{display:flex;gap:8px;align-items:baseline;margin:3px 0;break-inside:avoid}
 .boqsteps li span{flex:none;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);display:inline-grid;place-items:center;font-size:11px}.boqsteps li.done span{background:#1f8a4c;color:#fff;border-color:transparent}
 .boqasset{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0}.boqasset-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.suppgrid td{padding:3px 4px;vertical-align:middle}.suppgrid input,.suppgrid select{width:100%;min-width:90px;padding:4px 6px;font:inherit;font-size:13px}.suppgrid input.n{text-align:right}.suppgrid select{min-width:150px}.suppgrid input[type="date"]{min-width:135px}.suppgrid tr.gdel td{opacity:.5;text-decoration:line-through}.suppgrid tr.gdel td:last-child{opacity:1;text-decoration:none}.suppgrid td[data-gc="chk"]{min-width:140px}
 tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,138,.12)}
 .boqbar{height:6px;border-radius:3px;background:var(--line);min-width:80px;overflow:hidden}.boqbar i{display:block;height:100%;background:var(--brand,#24508a)}
 .boqview{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:12px;margin-top:8px}@media(max-width:1280px){.boqview{grid-template-columns:1fr}}
@@ -868,7 +869,7 @@ tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,13
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.29</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.30</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -3025,7 +3026,7 @@ function voCheck(x){
   if(x.wf_no&&String(x.wf_no).length>40)return 'the WF number is longer than 40 characters';
   return ''}
 /* v3.29: the columns of the supplement log, in the order they are matched (a header is used once) */
-const SU_HEAD={supp_no:/supp.*no|^ref|^no\.?$|number/i,version:/version/i,supp_date:/date/i,user_field:/user.?field/i,unified:/unified/i,category:/categ/i,wbs_group:/wbs.*group/i,wbs_id:/wbs.*(id|code)|^wbs$/i,wbs_description:/wbs.*desc/i,description:/descr/i,amount:/^amount|net value|impact/i,v_supp:/^supplements?\b(?!.*no)/i,v_sav:/^savings?\b/i,v_voc:/vo.?cost/i,v_vop:/vo.?price/i,linked_ref:/link|claim ref/i,remarks:/remark|comment/i};
+const SU_HEAD={project:/^project$/i,pe:/^pe\s*(no|number|code)\b/i,supp_no:/^supp\w*\.?\s*(no|number)\b|^ref|^no\.?$|^number$/i,version:/version/i,supp_date:/date/i,user_field:/^user.?field(?!.*desc)/i,unified:/unified/i,category:/categ/i,wbs_group:/wbs.*group/i,wbs_id:/wbs.*(id|code)|^wbs$/i,wbs_description:/wbs.*desc/i,description:/^descr/i,amount:/^amount|net value|impact/i,v_supp:/^supplements?\b(?!.*no)/i,v_sav:/^savings?\b/i,v_voc:/vo.?cost/i,v_vop:/vo.?price/i,linked_ref:/link|claim ref/i,remarks:/remark|comment/i};
 async function logTemplate(){
   const vo=state.logTab!=='supp';
   if(!vo)return suppTemplate();
@@ -3045,6 +3046,7 @@ function logParse(aoa,vo){
   Object.entries(H).forEach(([k,re])=>{const i=head.findIndex((h,j)=>!used.has(j)&&re.test(h));if(i>=0){col[k]=i;used.add(i)}});
   const rows=[],seen=new Set();
   aoa.slice(hi+1).filter(r=>r.some(c=>String(c??'').trim())).forEach((r,i)=>{const g=k=>col[k]==null?'':r[col[k]],x={row:i+1};
+    if(!vo&&!String(g('supp_no')??'').trim()&&r.some(c=>/^total$/i.test(String(c??'').trim())))return;   /* the Total row of an exported log */
     Object.keys(H).forEach(k=>{x[k]=g(k)});
     const ref=String(x[vo?'ref_no':'supp_no']||'').trim().toUpperCase();x[vo?'ref_no':'supp_no']=ref;let err='';
     if(!ref)err='reference number missing';else if(seen.has(ref))err=`reference ${ref} appears twice in the file`;
@@ -3055,7 +3057,7 @@ function logParse(aoa,vo){
       x.wf_no=String(x.wf_no??'').trim()||null;if(!err)err=voCheck(x);if(voHas(x.internal_price))x.price_internal=voBasis(x);
       const d=cellIso(x.submitted_on);x.submitted_on=d==='bad'?null:d||null;if(d==='bad'&&!err)err='the submission date is not a valid date';
       if(!err&&!['VO','Claim'].includes(x.kind))err='type must be VO or Claim'}
-    else{const sn=suppNormalize(x,null),v=suppVer(x.version);Object.keys(x).forEach(k=>{if(k!=='row')delete x[k]});Object.assign(x,sn.row);x._ver=v;if(!err)err=sn.err}
+    else{const sn=suppNormalize(x,null),v=suppVer(x.version),pj=[x.project,x.pe].map(c=>String(c??'').trim()).filter(Boolean);Object.keys(x).forEach(k=>{if(k!=='row')delete x[k]});Object.assign(x,sn.row);x._ver=v;x._proj=pj;if(!err)err=sn.err}
     ['submission_status','client_status','price_internal','cost_internal','internal_wf','overall_status','approval_status','description','remarks','linked_ref'].forEach(k=>{if(k in x)x[k]=String(x[k]??'').trim()||null});
     if(!err)seen.add(ref);x.err=err;rows.push(x)});
   return {rows};
@@ -3064,19 +3066,20 @@ async function handleLogFile(file){
   const vo=state.logTab!=='supp',pid=state.logPid;
   try{await loadLib(LIBS.xlsx);const buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true}),aoa=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,blankrows:false});
     const r=logParse(aoa,vo);if(r.error){state.logUp={error:r.error,file:file.name};render();return}
-    if(!vo){const per=($('#logMonth')?.value||curMonth()).trim();r.rows.forEach(x=>{if(!x.err&&x._ver&&x._ver!==per)x.err=`the version ${MMMYY(x._ver)} is not the month of this log (${MMMYY(per)})`})}
+    if(!vo){const per=($('#logMonth')?.value||curMonth()).trim();r.rows.forEach(x=>{if(!x.err&&x._ver&&x._ver!==per)x.err=`the version ${MMMYY(x._ver)} is not the month of this log (${MMMYY(per)})`;if(!x.err)x.err=suppProjErr(x,pid)})}
     state.logUp={file:file.name,rows:r.rows,period:($('#logMonth')?.value)||curMonth(),hash:await sha256Hex(buf),ack:false};render()}
   catch(e){state.logUp={error:'That file could not be read: '+(e.message||''),file:file.name};render()}
 }
 async function logGo(btn){
   const U=state.logUp,vo=state.logTab!=='supp',pid=state.logPid;if(!U||!U.rows)return;
   U.period=($('#logMonth')?.value||U.period||'').trim();U.ack=!!$('#logAck')?.checked;
-  if(!vo){let n=0;U.rows.forEach(r=>{if(!r.err&&r._ver&&r._ver!==U.period){r.err=`the version ${MMMYY(r._ver)} is not the month of this log (${MMMYY(U.period)})`;n++}});if(n){render();return toast(`${n} row${n===1?' has':'s have'} another version than the month of this log: see the refused rows`)}}
+  if(!vo){let n=0;U.rows.forEach(r=>{if(!r.err&&r._ver&&r._ver!==U.period){r.err=`the version ${MMMYY(r._ver)} is not the month of this log (${MMMYY(U.period)})`;n++}else if(!r.err&&suppProjErr(r,pid)){r.err=suppProjErr(r,pid);n++}});if(n){render();return toast(`${n} row${n===1?' is':'s are'} for another version or project than this log: see the refused rows`)}}
   const bad=U.rows.filter(r=>r.err),good=U.rows.filter(r=>!r.err),k=vo?'volog':'supplements';
   if(!periodOk(U.period,'month'))return toast('The month must look like 2026-09');if(U.period>curMonth())return toast('The log month cannot be after the current month');
   if(!canLogUpload())return toast('Only the costing engineer or costing coordinator uploads logs');if(!accessIds().includes(pid))return toast('You do not have access to this project');
   if(bad.length&&!U.ack)return toast('Tick the box to confirm the refused rows first.');
-  btn.disabled=true;const clean=U.rows.map(({row,err,_ver,...x})=>x);
+  if(!vo){const gone=suppGone(pid,U.period,good);if(gone.length&&!confirm(`This file replaces the ${MMMYY(U.period)} log of ${projById(pid).short}. ${gone.length} row${gone.length===1?' of that log is':'s of that log are'} not in it and will leave the log: ${gone.slice(0,10).join(', ')}${gone.length>10?'…':''}. Upload it?`))return}
+  btn.disabled=true;const clean=U.rows.map(({row,err,_ver,_proj,...x})=>x);
   if(CLOUD_ME){let r;try{r=await rpc('log_import',{p:{kind:k,project_id:pid,period:U.period,file_name:U.file,hash:U.hash,rows:clean,ack:U.ack}})}catch(e){btn.disabled=false;toast('The server refused this: '+srvMsg(e));return}
     try{await cloudLoadInvoices();await cloudLoadReleases()}catch(e){}state.logUp=null;save();render();toast(r.duplicate?'This is the same file as the last one loaded for that month, so nothing changed.':`${r.accepted} rows saved as a new ${vo?'change order and claim':'supplement'} log for ${perLabel('month',U.period)}`);return}
   const last=(DB.batches||[]).filter(b=>b.kind===k&&b.project_id===pid&&b.status==='committed').sort((a,b)=>(b.seq||0)-(a.seq||0))[0];
@@ -3086,7 +3089,7 @@ async function logGo(btn){
   const b=logBatch({kind:k,project_id:pid,file_name:U.file,file_hash:U.hash,source_period:U.period,rows_total:U.rows.length,rows_accepted:good.length,rows_rejected:bad.length,total_source:tot,total_accepted:tot,
     recon_status:bad.length?'Accepted with difference':'Matched',recon_accepted_by:bad.length?me().name:null,detail:{rejected:bad.map(r=>({row:r.row,ref:r[vo?'ref_no':'supp_no'],error:r.err}))}});
   const key=vo?'coLog':'suppLog';DB[key]=DB[key]||[];let id=DB[key].reduce((m,r)=>Math.max(m,+r.id||0),0);
-  good.forEach(({row,err,_ver,...x})=>DB[key].push({id:++id,batch_id:b.id,project_id:pid,period:U.period,...x}));
+  good.forEach(({row,err,_ver,_proj,...x})=>DB[key].push({id:++id,batch_id:b.id,project_id:pid,period:U.period,...x}));
   logChange(`${projById(pid).short}: ${vo?'change order and claim':'budget supplement'} log for ${perLabel('month',U.period)} uploaded (${good.length} rows)`);
   state.logUp=null;save();render();toast(`${good.length} rows saved as a new ${vo?'change order and claim':'supplement'} log for ${perLabel('month',U.period)}`);
 }
@@ -3231,6 +3234,11 @@ function suppCheck(x){
   if([x.description,x.wbs_description,x.remarks].some(v=>v&&String(v).length>2000))return 'a text is longer than 2,000 characters';
   if(x.linked_ref&&String(x.linked_ref).length>60)return 'the linked VO or claim is longer than 60 characters';
   return ''}
+/* v3.29.1: a row whose Project or PE number column names another project than the log's ('' when it fits or is blank) */
+function suppProjErr(x,pid){const P=projById(pid);if(!P||!x._proj||!x._proj.length)return '';const ok=[P.short,pcode(P),P.id,P.name].map(v=>String(v||'').trim().toLowerCase());
+  return x._proj.every(v=>ok.includes(v.toLowerCase()))?'':`this row is for project ${x._proj[0]}, not ${P.short}`}
+/* the supplement numbers of a version's log that a new upload of that version leaves out (it replaces the log) */
+function suppGone(pid,per,good){const L=suppLatest(pid,per);if(!L.b||L.b.source_period!==per)return [];const keep=new Set(good.map(r=>String(r.supp_no||'').toUpperCase()));return L.rows.map(r=>String(r.supp_no||'').toUpperCase()).filter(n=>n&&!keep.has(n))}
 /* a row read from a file or typed on the screen → the stored row ('' error when it is fine) */
 function suppNormalize(x,per){
   const t=k=>{const v=String(x[k]??'').replace(/\s+/g,' ').trim();return v||null};
@@ -3272,30 +3280,103 @@ function suppGroupHTML(title,L,key,label){
   return `<h3>${esc(title)}</h3><div class="scroll"><table class="tbl"><thead><tr><th>${esc(label)}</th><th class="n">Supplement</th><th class="n">Savings</th><th class="n">VO Cost</th><th class="n">VO Price</th><th class="n">Net value</th><th class="n">Items</th></tr></thead><tbody>
     ${G.map(g=>{const T=suppTotals(L.filter(r=>(r[key]||'—')===g));return `<tr><td>${esc(g)}${key==='uf'&&g!=='—'?`<span class="t2">${esc(suppUfDesc(g))}</span>`:''}</td><td class="n">${suppMoney(T.supp)}</td><td class="n">${suppMoney(T.sav)}</td><td class="n">${suppMoney(T.vocost)}</td><td class="n">${suppMoney(T.voprice)}</td><td class="n"><b>${sar(T.net)}</b></td><td class="n">${T.n}</td></tr>`}).join('')}
     </tbody></table></div>`}
-function suppFormHTML(pid,r){
-  const L=suppLists(),v=k=>esc(r&&r[k]!=null?r[k]:''),ufo=L.uf.map(([c,d])=>[c,`${c} · ${d}`]),cato=L.cats.map(([c,u])=>[c,`${c} → ${u}`]);
-  const opts=(o,cur)=>`<option value="">Choose…</option>`+o.map(([a,b])=>`<option value="${esc(a)}" ${a===cur?'selected':''}>${esc(b)}</option>`).join('');
-  return `<div class="impbox"><h3 style="margin-top:0">${r?`Change ${esc(r.supp_no)}`:'Add a supplement'} · ${esc(projById(pid).short)}, ${esc(MMMYY(suppLatestAny(pid).b?.source_period||curMonth()))} log</h3>
-    <form id="suppForm" data-pid="${esc(pid)}" data-id="${r?r.id:''}" novalidate><div class="fields">
-      ${F('Supplement no',`<input name="supp_no" maxlength="40" value="${v('supp_no')}" placeholder="BS-07">`)}
-      ${F('WF date',`<input name="supp_date" type="date" max="${TODAY}" value="${v('supp_date')}">`)}
-      ${F('User field',`<select name="user_field">${opts(ufo,r&&r.user_field)}</select>`)}
-      ${F('Category',`<select name="category">${opts(cato,r&&r.category)}</select>`)}
-      ${F('Amount (SAR)',`<input name="amount" type="number" step="1" value="${v('amount')}" placeholder="− supplement or VO cost, + saving or VO price">`)}
-      ${F('Linked VO / claim',`<input name="linked_ref" maxlength="60" value="${v('linked_ref')}">`)}
-      ${F('WBS Group',`<input name="wbs_group" maxlength="100" value="${v('wbs_group')}">`)}
-      ${F('WBS ID',`<input name="wbs_id" maxlength="100" value="${v('wbs_id')}">`)}
-      ${F('WBS Description',`<input name="wbs_description" maxlength="2000" value="${v('wbs_description')}">`,true)}
-      ${F('Description',`<input name="description" maxlength="2000" value="${v('description')}">`,true)}
-      ${F('Remarks',`<input name="remarks" maxlength="2000" value="${v('remarks')}">`,true)}</div>
-      <p class="small muted" style="margin:4px 0">The amount is the impact on the gross margin: negative for a supplement or a VO cost, positive for a saving or a VO price. The unified category follows the category; a change order with the user field Cont. Value is a VO price, any other change order a VO cost.</p>
-      <p class="err" id="suppErr"></p><div class="actions" style="margin:0"><button class="btn primary" type="button" data-suppsave>${r?'Save':'Add'}</button><button class="btn" type="button" data-suppcancel>Cancel</button></div></form></div>`}
+/* v3.30: the latest log of a project edited in a grid, like Excel: every cell typed in place, drop-downs for the user field
+   and the category (the unified category and the four value columns follow), rows added or deleted, a range pasted from
+   Excel. Save checks every row first, then sends the changes one by one (supp_update on the server, each kept in the
+   history); a change the server refuses stops the save, and the rows not saved stay in the grid to fix. */
+const SUPP_GRID_KEYS=['supp_no','supp_date','user_field','category','description','amount','wbs_group','wbs_id','wbs_description','linked_ref','remarks'];
+const suppGridBlank=()=>Object.fromEntries(SUPP_GRID_KEYS.map(k=>[k,'']));
+let suppGridSeq=0;
+/* the grid of a project's latest log: every row of it, whatever the filters */
+function suppGridOpen(pid,addRow){
+  const L=suppLatestAny(pid);if(!L.b){toast('Start the log first');return}
+  const rows=L.rows.map(r=>({k:'g'+(++suppGridSeq),id:r.id,old:!suppNew(r),del:false,o:r,v:Object.fromEntries(SUPP_GRID_KEYS.map(k=>[k,r[k]==null?'':String(r[k])]))}));
+  if(addRow||!rows.length)rows.push({k:'g'+(++suppGridSeq),id:null,old:false,del:false,o:null,v:suppGridBlank()});
+  state.suppGrid={pid,batch:L.b.id,per:L.b.source_period,rows};render();
+  setTimeout(()=>{const t=document.querySelector(`#suppGrid tr[data-gr="${rows[rows.length-1].k}"] [data-gk="supp_no"]`);if(addRow&&t)t.focus()},0)}
+/* a date as typed or pasted: 2026-10-05, 05/10/2026 (day first) or 5-Oct-26 → ISO ('' blank, the text itself when unreadable) */
+function suppDateIn(s){s=String(s??'').trim();if(!s)return '';let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  m=s.match(/^(\d{1,2})[\s\-]([A-Za-z]{3})[A-Za-z]*[\s\-](\d{2}|\d{4})$/);if(m){const i=MON.findIndex(x=>x.toLowerCase()===m[2].toLowerCase());if(i>=0)return `${m[3].length===2?'20'+m[3]:m[3]}-${String(i+1).padStart(2,'0')}-${m[1].padStart(2,'0')}`}
+  return s}
+/* each row of the grid: the stored row it would be, its error, whether it is blank or changed */
+function suppGridEval(G){
+  const out=G.rows.map(r=>{const v={...r.v,amount:String(r.v.amount??'').trim().replace(/^\((.*)\)$/,'-$1'),supp_date:suppDateIn(r.v.supp_date)};
+    const blank=!r.id&&SUPP_GRID_KEYS.every(k=>!String(r.v[k]??'').trim());if(blank||r.del)return {r,blank,n:null,err:'',changed:false};
+    if(r.old)return {r,blank:false,n:null,err:'',changed:false};
+    const {row,err}=suppNormalize(v,null),changed=!r.id||Object.keys(SUPP_FIELD_N).some(k=>String(r.o[k]??'')!==String(row[k]??''));
+    return {r,blank:false,n:row,err,srv:r.srv||'',changed}});
+  const seen={};out.forEach(e=>{if(e.n&&!e.err&&e.n.supp_no){if(seen[e.n.supp_no])e.err=`${e.n.supp_no} is twice in the log`;seen[e.n.supp_no]=1}});
+  G.rows.filter(r=>r.old&&!r.del).forEach(r=>{const no=String(r.o.supp_no||'').toUpperCase();const e=out.find(x=>x.n&&x.n.supp_no===no&&!x.err);if(e)e.err=`${no} is already in the log`});
+  return out}
+const suppGridDirty=G=>!!G&&suppGridEval(G).some(e=>(e.r.del&&e.r.id)||(e.n&&e.changed)||(!e.r.id&&!e.blank));
+function suppGridCalc(e){if(e.r.old)return suppView(e.r.o);if(!e.n||e.n.amount==null)return null;return suppView(e.n)}
+function suppGridState(e){return e.r.del?'deleted when saved':e.blank?'':e.err||e.srv||(!e.r.id?'new':e.changed?'changed':'')}
+const suppGridBad=e=>!!(e.err||e.srv);
+function suppGridHTML(G){
+  const L=suppLists(),E=suppGridEval(G),ufs=L.uf.map(([c,d])=>[c,`${c} · ${d}`]),cats=L.cats.map(([c,u])=>[c,`${c} → ${u}`]);
+  const sel=(k,cur,opts,dis)=>{const has=!cur||opts.some(([a])=>a===cur);return `<select data-gk="${k}" ${dis}><option value=""></option>${has?'':`<option value="${esc(cur)}" selected>${esc(cur)} (not in the list)</option>`}${opts.map(([a,b])=>`<option value="${esc(a)}" ${a===cur?'selected':''}>${esc(b)}</option>`).join('')}</select>`};
+  const inp=(k,v,dis,x='')=>`<input data-gk="${k}" value="${esc(v)}" ${dis} ${x}>`;
+  return `<div class="scroll"><table class="tbl supptbl suppgrid" id="suppGrid"><thead><tr><th>No</th><th>WF date</th><th>User field</th><th>Category</th><th>Unified category</th><th>Description</th><th class="n">Amount (SAR)</th><th class="n">Supplement</th><th class="n">Savings</th><th class="n">VO Cost</th><th class="n">VO Price</th><th class="n">Net value</th><th>WBS Group</th><th>WBS ID</th><th>WBS Description</th><th>Linked VO / claim</th><th>Remarks</th><th>Check</th><th></th></tr></thead><tbody>
+    ${E.map(e=>{const r=e.r,v=r.v,dis=r.old||r.del?'disabled':'',c=suppGridCalc(e),st=suppGridState(e);
+      return `<tr data-gr="${r.k}" class="${r.del?'gdel':suppGridBad(e)?'rowwarn':''}">
+        <td>${inp('supp_no',v.supp_no,dis,'maxlength="40" placeholder="BS-07" style="min-width:80px"')}</td>
+        <td>${inp('supp_date',suppDateIn(v.supp_date),dis,`type="date" max="${TODAY}"`)}</td>
+        <td>${sel('user_field',v.user_field,ufs,dis)}</td><td>${sel('category',v.category,cats,dis)}</td>
+        <td data-gc="uni">${esc(c?c.uni:(v.category&&suppUni(suppCat(v.category)))||'')}</td>
+        <td>${inp('description',v.description,dis,'maxlength="2000" style="min-width:180px"')}</td>
+        <td>${inp('amount',v.amount,dis,'inputmode="decimal" class="n" placeholder="−250000" style="min-width:100px"')}</td>
+        ${['supp','sav','vocost','voprice'].map(k=>`<td class="n" data-gc="${k}">${c?suppMoney(c[k]):''}</td>`).join('')}<td class="n" data-gc="net"><b>${c?sar(c.net):''}</b></td>
+        <td>${inp('wbs_group',v.wbs_group,dis,'maxlength="100"')}</td><td>${inp('wbs_id',v.wbs_id,dis,'maxlength="100"')}</td><td>${inp('wbs_description',v.wbs_description,dis,'maxlength="2000" style="min-width:160px"')}</td>
+        <td>${inp('linked_ref',v.linked_ref,dis,'maxlength="60"')}</td><td>${inp('remarks',v.remarks,dis,'maxlength="2000" style="min-width:160px"')}</td>
+        <td data-gc="chk" class="small ${suppGridBad(e)?'r-c':'muted'}">${esc(r.old&&!r.del?'before v3.29: change it by uploading the log again':st)}</td>
+        <td><button class="btn sm ${r.del?'':'danger'}" type="button" data-suppgdel="${r.k}" aria-label="${r.del?'Keep':'Delete'} row ${esc(v.supp_no||'')}">${r.del?'Keep':'✕'}</button></td></tr>`}).join('')}
+    <tr data-gtot><td colspan="7"><b>Total</b> <span class="small muted" data-gc="cnt"></span></td>${['supp','sav','vocost','voprice','net'].map(k=>`<td class="n" data-gc="t${k}"></td>`).join('')}<td colspan="7"></td></tr>
+    </tbody></table></div>`}
+/* the computed cells after a change, without drawing the inputs again (the cursor stays where it is) */
+function suppGridRefresh(){
+  const G=state.suppGrid,tb=$('#suppGrid');if(!G||!tb)return;const E=suppGridEval(G),T={supp:0,sav:0,vocost:0,voprice:0,net:0};let n=0;
+  E.forEach(e=>{const tr=tb.querySelector(`tr[data-gr="${e.r.k}"]`);if(!tr)return;const c=suppGridCalc(e),set=(k,h)=>{const td=tr.querySelector(`[data-gc="${k}"]`);if(td)td.innerHTML=h};
+    set('uni',esc(c?c.uni:(e.r.v.category&&suppUni(suppCat(e.r.v.category)))||''));['supp','sav','vocost','voprice'].forEach(k=>set(k,c?suppMoney(c[k]):''));set('net',c?`<b>${sar(c.net)}</b>`:'');
+    const td=tr.querySelector('[data-gc="chk"]');if(td&&!(e.r.old&&!e.r.del)){td.textContent=suppGridState(e);td.className='small '+(suppGridBad(e)?'r-c':'muted')}
+    tr.className=e.r.del?'gdel':suppGridBad(e)?'rowwarn':'';
+    if(c&&!e.r.del&&!e.blank&&(c.old?c.counts:true)){n++;Object.keys(T).forEach(k=>T[k]+=+c[k]||0)}});
+  Object.keys(T).forEach(k=>{const td=tb.querySelector(`[data-gc="t${k}"]`);if(td)td.innerHTML=k==='net'?`<b>${sar(T[k])}</b>`:suppMoney(T[k])});
+  const cn=tb.querySelector('[data-gc="cnt"]');if(cn)cn.textContent=`${n} row${n===1?'':'s'}`;
+  const sv=$('[data-suppgsave]'),k=E.filter(e=>(e.r.del&&e.r.id)||(e.n&&e.changed&&!e.blank)).length;if(sv)sv.textContent=k?`Save ${k} change${k===1?'':'s'}`:'Save'}
+function suppGridAdd(){const G=state.suppGrid;if(!G)return;const r={k:'g'+(++suppGridSeq),id:null,old:false,del:false,o:null,v:suppGridBlank()};G.rows.push(r);render();
+  setTimeout(()=>{const t=document.querySelector(`#suppGrid tr[data-gr="${r.k}"] [data-gk="supp_no"]`);if(t)t.focus()},0);return r}
+/* a range copied from Excel, pasted from the cell it lands on: columns in the grid's order (No, WF date, User field, Category,
+   Description, Amount, WBS Group, WBS ID, WBS Description, Linked VO / claim, Remarks); rows are added as needed */
+function suppGridPaste(k0,key,text){
+  const G=state.suppGrid,lines=String(text).replace(/\r/g,'').replace(/\n+$/,'').split('\n').map(l=>l.split('\t'));let i=G.rows.findIndex(r=>r.k===k0),j0=SUPP_GRID_KEYS.indexOf(key);if(i<0||j0<0)return 0;let n=0;
+  lines.forEach(cells=>{while(i<G.rows.length&&(G.rows[i].old||G.rows[i].del))i++;if(i>=G.rows.length)G.rows.push({k:'g'+(++suppGridSeq),id:null,old:false,del:false,o:null,v:suppGridBlank()});
+    const r=G.rows[i];cells.forEach((c,j)=>{const k=SUPP_GRID_KEYS[j0+j];if(!k)return;let v=String(c??'').trim();if(k==='user_field')v=suppUF(v)||v;if(k==='category')v=suppCat(v)||v;if(k==='supp_date')v=suppDateIn(v);r.v[k]=v});n++;i++});
+  render();return n}
+async function suppGridSave(){
+  const G=state.suppGrid;if(!G)return;const E=suppGridEval(G),bad=E.filter(e=>e.err&&!e.r.del);
+  if(bad.length){suppGridRefresh();return toast(`${bad.length} row${bad.length===1?' needs':'s need'} fixing first: see the Check column`)}
+  const ops=[...E.filter(e=>e.r.del&&e.r.id).map(e=>({action:'remove',e})),...E.filter(e=>!e.r.del&&e.r.id&&e.n&&e.changed).map(e=>({action:'edit',e})),...E.filter(e=>!e.r.del&&!e.r.id&&e.n).map(e=>({action:'add',e}))];
+  if(!ops.length){state.suppGrid=null;render();return toast('Nothing changed')}
+  let why='';const rm=ops.filter(o=>o.action==='remove');
+  if(rm.length){why=prompt(`Delete ${rm.map(o=>o.e.r.o.supp_no).join(', ')} from the ${MMMYY(G.per)} log? Give the reason (it is kept in the history).`);if(why==null)return;why=why.trim();if(why.length<5)return toast('Give the reason for deleting (at least 5 characters)')}
+  const done={add:0,edit:0,remove:0};let fail=null;
+  for(const o of ops){const r=o.e.r,a={action:o.action,project_id:G.pid,...(r.id?{id:r.id}:{}),...(o.action==='remove'?{reason:why}:{values:o.e.n})};
+    try{const x=CLOUD_ME?await rpc('supp_update',{p:a}):suppActLocal(a);done[o.action]++;delete r.srv;
+      if(o.action==='remove')G.rows=G.rows.filter(y=>y!==r);else{const row=(x&&x.row)||{...o.e.n,id:r.id};r.id=row.id;r.o={...(r.o||{}),...row}}}
+    catch(e){fail={r,msg:CLOUD_ME?srvMsg(e):e.message};r.srv=fail.msg;break}}
+  if(CLOUD_ME){try{await cloudLoadReleases();await cloudLoadSuppLists()}catch(e){}}save();
+  const said=[done.add&&`${done.add} added`,done.edit&&`${done.edit} changed`,done.remove&&`${done.remove} deleted`].filter(Boolean).join(', ');
+  if(fail){render();return toast(`${said?`Saved: ${said}. `:''}${fail.r.v.supp_no||'A row'} was not saved: ${fail.msg}. Fix it and save again.`)}
+  state.suppGrid=null;render();toast(`Saved: ${said}`)}
 function renderSupp(){
   {const ps0=scopeProjects(),f0=suppState();if(!state.logPid||!ps0.some(p=>p.id===state.logPid))state.logPid=f0.pid||(ps0[0]||{}).id}
   const D=suppData(),{f,ps,multi,months,per,rows,logs}=D,U=state.logUp,T=suppTotals(rows),one=!multi||!!f.pid,pid1=one?(f.pid||(ps[0]||{}).id):null;
   const opt=(arr,v)=>[['','All'],...arr].map(([a,b])=>`<option value="${esc(a)}" ${a===(v||'')?'selected':''}>${esc(b)}</option>`).join('');
   const L=suppLists(),regs=[...new Set(ps.map(p=>p.region))].map(r=>[r,regById(r)?.name||r]),secs=[...new Set(ps.map(p=>p.sector))].map(s=>[s,secById(s)?.name||s]),pts=[...new Set(ps.map(p=>p.ptype||'').filter(Boolean))].map(x=>[x,x]);
-  const latestOf=pid=>suppLatestAny(pid).b,ed=state.suppEdit,canEd=pid1&&suppCanEdit(pid1)&&latestOf(pid1)&&latestOf(pid1).source_period===per;
+  const latestOf=pid=>suppLatestAny(pid).b,canEd=pid1&&suppCanEdit(pid1)&&latestOf(pid1)&&latestOf(pid1).source_period===per;
+  if(state.suppGrid&&(state.suppGrid.pid!==pid1||!canEd||latestOf(pid1).id!==state.suppGrid.batch))state.suppGrid=null;
+  const G=state.suppGrid;
   const tab=(v,l)=>`<button type="button" class="chip" data-logtab="${v}" aria-pressed="${v==='supp'}">${l}</button>`;
   const filtered=f.reg||f.sec||f.pt||f.cat||f.uf||f.uni||f.q;
   $('#view').innerHTML=`${crumb()}
@@ -3311,22 +3392,23 @@ function renderSupp(){
       ${F('Unified category',`<select data-suppf="uni">${opt(suppUnis().map(u=>[u,u]),f.uni)}</select>`)}
       ${F('Search',`<input data-suppf="q" value="${esc(f.q)}" placeholder="No, description, WBS, project">`)}</div>
     <p class="small muted" style="margin:6px 0 10px">${per?`Version <b>${MMMYY(per)}</b>: for each project, its log for that month, or its latest log before it (${logs.length} of ${D.shown.length} project${D.shown.length===1?'':'s'} have one). Each month's log is kept.${D.hid?` ${D.hid} row${D.hid===1?'':'s'} of a log from before v3.29 not approved by WF ${D.hid===1?'is':'are'} not shown.`:''}`:'No budget supplement log uploaded for these projects yet.'}${filtered?' · <button class="link" type="button" data-suppclear>Clear filters</button>':''}${state.role==='sa'?' · <button class="link" type="button" data-go="admin" data-atab="supplists">Edit the user fields and categories</button>':''}</p>
-    ${!per?NOEV('No budget supplement log uploaded for these projects yet.',canLogUpload()?'Upload one below, or add rows once the first version exists.':'The costing engineer or costing coordinator uploads it monthly.'):`
+    ${!per?NOEV('No budget supplement log for these projects yet.',canLogUpload()?(pid1&&suppCanEdit(pid1)?'Start it here and type the rows in the grid, or upload a file below.':'Choose one project to start its log here, or upload a file below.'):'The costing engineer or costing coordinator keeps it monthly.')
+      +(pid1&&suppCanEdit(pid1)?`<div class="actions" style="justify-content:center"><button class="btn primary" type="button" data-suppver="${esc(pid1)}">Start the ${MMMYY(curMonth())} log here</button></div>`:''):`
     <div class="g g-kpi">${kpi('Supplement',sar(T.supp),'Negative amounts, not change orders')}${kpi('Savings',sar(T.sav),'Positive amounts, not change orders')}${kpi('VO Cost',sar(T.vocost),'Change orders, user field not Cont. Value')}${kpi('VO Price',sar(T.voprice),'Change orders, user field Cont. Value')}
       ${kpi('Net value',sar(T.net),'Impact on the gross margin',T.net<0?'r':T.net>0?'g':'')}${kpi('Budget change',sar(T.budget),'For the cost report: supplements and VO costs add, savings take away')}</div>
-    <div class="card-head" style="margin-top:8px;flex-wrap:wrap"><h3 style="margin:0">${rows.length} row${rows.length===1?'':'s'}</h3><div class="actions" style="margin:0">${canEd?`<button class="btn sm primary" type="button" data-suppadd>Add a supplement</button>`:''}${pid1&&suppCanEdit(pid1)&&latestOf(pid1)&&latestOf(pid1).source_period<curMonth()?`<button class="btn sm" type="button" data-suppver="${esc(pid1)}">Start the ${MMMYY(curMonth())} version</button>`:''}<button class="btn sm" type="button" data-suppexp>Export to Excel</button></div></div>
-    ${ed&&(ed==='new'||rows.some(r=>r.id===ed))&&canEd?suppFormHTML(pid1,ed==='new'?null:rows.find(r=>r.id===ed)):''}
-    <div class="scroll"><table class="tbl supptbl"><thead><tr>${multi&&!f.pid?'<th>Project</th>':''}<th>Version</th><th>No</th><th>WF date</th><th>User field</th><th>Category</th><th>Unified category</th><th>Description</th><th class="n">Supplement</th><th class="n">Savings</th><th class="n">VO Cost</th><th class="n">VO Price</th><th class="n">Net value</th><th>WBS Group</th><th>WBS ID</th><th>WBS Description</th><th>Linked VO / claim</th><th>Remarks</th>${canEd?'<th></th>':''}</tr></thead><tbody>
-      ${rows.map(r=>`<tr${ed===r.id?' class="rowwarn"':''}>${multi&&!f.pid?`<td><b>${esc(r.p.short)}</b><span class="t2">${esc(pcode(r.p))}</span></td>`:''}<td>${MMMYY(r.b.source_period)}</td><td><b>${esc(r.supp_no)}</b>${r.old?'<span class="t2">before v3.29</span>':''}</td><td>${r.supp_date?fmtDY(r.supp_date):'—'}</td>
+    <div class="card-head" style="margin-top:8px;flex-wrap:wrap"><h3 style="margin:0">${rows.length} row${rows.length===1?'':'s'}</h3><div class="actions" style="margin:0">${canEd?(G?`<button class="btn sm" type="button" data-suppgadd>Add row</button><button class="btn sm primary" type="button" data-suppgsave>Save</button><button class="btn sm" type="button" data-suppgcancel>Cancel</button>`:`<button class="btn sm primary" type="button" data-suppgrid>Edit in the grid</button><button class="btn sm" type="button" data-suppgrid="add">Add rows</button>`):''}${!G&&pid1&&suppCanEdit(pid1)&&latestOf(pid1)&&latestOf(pid1).source_period<curMonth()?`<button class="btn sm" type="button" data-suppver="${esc(pid1)}">Start the ${MMMYY(curMonth())} version</button>`:''}<button class="btn sm" type="button" data-suppexp>Export to Excel</button></div></div>
+    ${G?`<p class="small muted" style="margin:4px 0 8px">Editing the <b>${MMMYY(G.per)}</b> log of <b>${esc(projById(G.pid).short)}</b>, every row of it (the filters apply again when you leave the grid). Type in the cells and choose the user field and the category from their lists: the unified category and the four columns follow. The amount is the impact on the gross margin: negative for a supplement or a VO cost, positive for a saving or a VO price. <b>Enter</b> goes to the row below; a range copied from Excel can be pasted from any cell (columns in the grid's order); ✕ deletes a row. Nothing is saved until <b>Save</b>.</p>${suppGridHTML(G)}`:`
+    <div class="scroll"><table class="tbl supptbl"><thead><tr>${multi&&!f.pid?'<th>Project</th>':''}<th>Version</th><th>No</th><th>WF date</th><th>User field</th><th>Category</th><th>Unified category</th><th>Description</th><th class="n">Supplement</th><th class="n">Savings</th><th class="n">VO Cost</th><th class="n">VO Price</th><th class="n">Net value</th><th>WBS Group</th><th>WBS ID</th><th>WBS Description</th><th>Linked VO / claim</th><th>Remarks</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr>${multi&&!f.pid?`<td><b>${esc(r.p.short)}</b><span class="t2">${esc(pcode(r.p))}</span></td>`:''}<td>${MMMYY(r.b.source_period)}</td><td><b>${esc(r.supp_no)}</b>${r.old?'<span class="t2">before v3.29</span>':''}</td><td>${r.supp_date?fmtDY(r.supp_date):'—'}</td>
         <td>${r.uf?`${esc(r.uf)}<span class="t2">${esc(suppUfDesc(r.uf))}</span>`:'—'}</td><td>${esc(r.cat||'—')}${!r.old&&r.cat&&!suppCat(r.cat)?'<span class="t2 a-c">not in the list</span>':''}</td><td>${esc(r.uni)}</td><td class="small">${esc(r.description||'')}${r.old&&!r.counts?`<span class="t2">${esc(r.approval_status||'not approved')}: not counted</span>`:''}</td>
         <td class="n">${suppMoney(r.supp)}</td><td class="n">${suppMoney(r.sav)}</td><td class="n">${suppMoney(r.vocost)}</td><td class="n">${suppMoney(r.voprice)}</td><td class="n"><b>${sar(r.net)}</b></td>
-        <td class="small">${esc(r.wbs_group||'—')}</td><td class="small">${esc(r.wbs_id||'—')}</td><td class="small">${esc(r.wbs_description||'—')}</td><td>${esc(r.linked_ref||'—')}</td><td class="small">${esc(r.remarks||'')}</td>
-        ${canEd?`<td style="white-space:nowrap">${r.old?'':`<button class="btn sm" type="button" data-suppedit="${r.id}">${ed===r.id?'Close':'Change'}</button> <button class="btn sm danger" type="button" data-suppdel="${r.id}" aria-label="Remove ${esc(r.supp_no)}">Remove</button>`}</td>`:''}</tr>`).join('')||`<tr><td colspan="20" class="muted">No row matches the filters.</td></tr>`}
-      ${rows.length?`<tr><td colspan="${multi&&!f.pid?8:7}"><b>Total</b></td><td class="n"><b>${suppMoney(T.supp)}</b></td><td class="n"><b>${suppMoney(T.sav)}</b></td><td class="n"><b>${suppMoney(T.vocost)}</b></td><td class="n"><b>${suppMoney(T.voprice)}</b></td><td class="n"><b>${sar(T.net)}</b></td><td colspan="${canEd?6:5}"></td></tr>`:''}
-    </tbody></table></div>
-    ${rows.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px">${suppGroupHTML('By unified category',rows,'uni','Unified category')}${suppGroupHTML('By user field',rows,'uf','User field')}</div>`:''}
+        <td class="small">${esc(r.wbs_group||'—')}</td><td class="small">${esc(r.wbs_id||'—')}</td><td class="small">${esc(r.wbs_description||'—')}</td><td>${esc(r.linked_ref||'—')}</td><td class="small">${esc(r.remarks||'')}</td></tr>`).join('')||`<tr><td colspan="20" class="muted">No row matches the filters.</td></tr>`}
+      ${rows.length?`<tr><td colspan="${multi&&!f.pid?8:7}"><b>Total</b></td><td class="n"><b>${suppMoney(T.supp)}</b></td><td class="n"><b>${suppMoney(T.sav)}</b></td><td class="n"><b>${suppMoney(T.vocost)}</b></td><td class="n"><b>${suppMoney(T.voprice)}</b></td><td class="n"><b>${sar(T.net)}</b></td><td colspan="5"></td></tr>`:''}
+    </tbody></table></div>`}
+    ${rows.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px"><div>${suppGroupHTML('By unified category',rows,'uni','Unified category')}</div><div>${suppGroupHTML('By user field',rows,'uf','User field')}</div></div>`:''}
     ${(()=>{if(!pid1)return '';const H=(DB.suppAudit||[]).filter(a=>a.project_id===pid1).slice(0,20);return H.length?`<h3>Changes on this screen</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.supp_no)}</b> ${esc(a.action)}${a.changes&&a.changes.length?': '+esc(a.changes.map(([k,o,n])=>`${SUPP_FIELD_N[k]||k} ${o==null||o===''?'—':o} → ${n==null||n===''?'—':n}`).join('; ')):''}${a.reason?` · ${esc(a.reason)}`:''} <span class="muted small">${esc(a.by)}, ${esc(tStamp(a.at))}</span></li>`).join('')}</ul>`:''})()}`}</section>
-  ${canLogUpload()?`<section class="panel"><div class="card-head"><h2>Upload a month's log</h2><span class="small muted">The whole log of one project for one version; all-or-nothing; earlier months are kept</span></div>
+  ${canLogUpload()?`<section class="panel"><div class="card-head"><h2>Upload a month's log</h2><span class="small muted">Optional: the grid above does the same. The whole log of one project for one version; all-or-nothing; earlier months are kept</span></div>
+    <p class="small muted" style="margin:0 0 8px">To change a log in Excel: choose the project, <b>Export to Excel</b>, change, add or delete rows, and upload the file again for the same version. It replaces that version's log (the earlier upload stays in Import history); ProTrackAI lists the rows that leave the log before saving. The same file twice changes nothing.</p>
     <div class="fields">${F('Project',sel('logproj',ps.map(p=>[p.id,`${p.short} (${pcode(p)})`]),state.logPid||pid1||(ps[0]||{}).id,'data-logproj'))}${F('Version (month of this log)',`<input id="logMonth" value="${esc((U&&U.period)||curMonth())}" placeholder="2026-09">`)}</div>
     <div class="actions" style="margin:0"><button class="btn" type="button" data-logtpl>Download template</button><label class="btn primary" for="logfile">Choose file</label><input id="logfile" type="file" accept=".xlsx,.xls,.csv" hidden></div>
     ${U&&U.error?`<div class="warn-box" style="margin-top:10px"><b>${esc(U.error)}</b></div>`:''}
@@ -3334,6 +3416,7 @@ function renderSupp(){
       ${U.rows.some(r=>r.err)?`<div class="scroll"><table class="tbl"><thead><tr><th>Row</th><th>No</th><th>Refused because</th></tr></thead><tbody>${U.rows.filter(r=>r.err).map(r=>`<tr class="rowwarn"><td>${r.row}</td><td>${esc(r.supp_no||'')}</td><td class="r-c">${esc(r.err)}</td></tr>`).join('')}</tbody></table></div>
         <label class="chk"><input type="checkbox" id="logAck"><span>I have checked the refused rows; save the others</span></label>`:''}
       <div class="actions"><button class="btn primary" type="button" data-loggo ${U.rows.some(r=>!r.err)?'':'disabled'}>Save ${U.rows.filter(r=>!r.err).length} rows</button><button class="btn" type="button" data-logcancel>Cancel</button></div>`:''}</section>`:''}`;
+  if(G)suppGridRefresh();
 }
 const SUPP_FIELD_N={supp_no:'No',supp_date:'WF date',user_field:'User field',category:'Category',description:'Description',amount:'Amount',wbs_group:'WBS Group',wbs_id:'WBS ID',wbs_description:'WBS Description',linked_ref:'Linked VO / claim',remarks:'Remarks'};
 /* the changes on the screen, to the latest log of a project (the same rules and rights as supp_update on the server) */
@@ -3371,23 +3454,28 @@ async function suppExport(){
     const T=suppTotals(D.rows),ws=XLSX.utils.aoa_to_sheet([[`ProTrack budget supplement log, version ${MMMYY(D.per)}`],[`${D.rows.length} rows · net value (impact on the gross margin) ${T.net} · budget change for the cost report ${T.budget} · SAR`],[],head,...body,['Total','','','','','','','','','','','','',T.supp,T.sav,T.vocost,T.voprice,T.net]]);
     ws['!cols']=head.map(h=>({wch:Math.max(12,h.length+2)}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Supplements');
     await saveFile(`ProTrack_budget_supplements_${MMMYY(D.per)}.xlsx`,xlsxBlob(wb))}catch(e){toast('Could not build the file: '+(e.message||''))}}
-function suppFormValues(){const f=$('#suppForm');if(!f)return null;const g=n=>f.elements[n]?f.elements[n].value:'';return Object.fromEntries(['supp_no','supp_date','user_field','category','amount','linked_ref','wbs_group','wbs_id','wbs_description','description','remarks'].map(k=>[k,g(k)]))}
-document.addEventListener('change',e=>{const t=e.target;if(t.matches&&t.matches('[data-suppf]')&&t.tagName==='SELECT'){const f=suppState();f[t.dataset.suppf]=t.value;if(t.dataset.suppf==='pid'){state.suppEdit=null;if(t.value)state.logPid=t.value}render()}});
+document.addEventListener('change',e=>{const t=e.target;if(t.matches&&t.matches('[data-suppf]')&&t.tagName==='SELECT'){const f=suppState(),k=t.dataset.suppf;
+  if((k==='pid'||k==='per')&&state.suppGrid){if(suppGridDirty(state.suppGrid)&&!confirm('Leave the grid? The changes not saved are lost.')){render();return}state.suppGrid=null}
+  f[k]=t.value;if(k==='pid'&&t.value)state.logPid=t.value;render()}});
+/* the cells of the grid: typed, chosen, pasted, Enter and the arrows */
+document.addEventListener('input',e=>{const t=e.target,G=state.suppGrid;if(!G||!t.matches||!t.matches('#suppGrid [data-gk]'))return;const r=G.rows.find(x=>x.k===t.closest('tr').dataset.gr);if(!r)return;r.v[t.dataset.gk]=t.value;delete r.srv;suppGridRefresh()});
+document.addEventListener('paste',e=>{const t=e.target,G=state.suppGrid;if(!G||!t.matches||!t.matches('#suppGrid [data-gk]'))return;const x=(e.clipboardData||window.clipboardData)?.getData('text')||'';if(!/[\t\n]/.test(x.replace(/\n+$/,'')))return;
+  e.preventDefault();const n=suppGridPaste(t.closest('tr').dataset.gr,t.dataset.gk,x);toast(`${n} row${n===1?'':'s'} pasted: check them, then Save`)});
+document.addEventListener('keydown',e=>{const t=e.target,G=state.suppGrid;if(!G||!t.matches||!t.matches('#suppGrid [data-gk]'))return;const down=e.key==='Enter'||(e.key==='ArrowDown'&&t.tagName==='INPUT'&&t.type!=='date'),up=e.key==='ArrowUp'&&t.tagName==='INPUT'&&t.type!=='date';if(!down&&!up)return;
+  e.preventDefault();const tr=t.closest('tr'),k=t.dataset.gk;let n=up?tr.previousElementSibling:tr.nextElementSibling;if(down&&e.key==='Enter'&&(!n||n.hasAttribute('data-gtot'))){suppGridAdd();setTimeout(()=>{const l=[...document.querySelectorAll('#suppGrid tr[data-gr]')].pop();l&&l.querySelector(`[data-gk="${k}"]`)?.focus()},0);return}
+  const c=n&&n.querySelector(`[data-gk="${k}"]`);if(c)c.focus()});
 document.addEventListener('input',e=>{const t=e.target;if(t.matches&&t.matches('input[data-suppf]')){suppState()[t.dataset.suppf]=t.value;clearTimeout(renderSupp.t);renderSupp.t=setTimeout(()=>{const s=t.selectionStart;render();const n=document.querySelector('input[data-suppf="q"]');if(n){n.focus();try{n.setSelectionRange(s,s)}catch(x){}}},250)}});
 document.addEventListener('click',async e=>{
-  const t=e.target.closest('[data-suppadd],[data-suppedit],[data-suppdel],[data-suppsave],[data-suppcancel],[data-suppver],[data-suppexp],[data-suppclear]');if(!t)return;const d=t.dataset,D=suppData(),pid=D.f.pid||(D.ps[0]||{}).id;
-  if('suppadd' in d){state.suppEdit='new';render();return}
-  if(d.suppedit){const id=+d.suppedit;state.suppEdit=state.suppEdit===id?null:id;render();return}
-  if('suppcancel' in d){state.suppEdit=null;render();return}
+  const t=e.target.closest('[data-suppgrid],[data-suppgadd],[data-suppgdel],[data-suppgsave],[data-suppgcancel],[data-suppver],[data-suppexp],[data-suppclear]');if(!t)return;const d=t.dataset,D=suppData(),pid=D.f.pid||(D.ps[0]||{}).id;
+  if('suppgrid' in d){suppGridOpen(pid,d.suppgrid==='add');return}
+  if('suppgadd' in d){suppGridAdd();return}
+  if(d.suppgdel){const G=state.suppGrid,r=G&&G.rows.find(x=>x.k===d.suppgdel);if(!r)return;if(!r.id)G.rows=G.rows.filter(x=>x!==r);else r.del=!r.del;render();return}
+  if('suppgsave' in d){t.disabled=true;try{await suppGridSave()}finally{t.disabled=false}return}
+  if('suppgcancel' in d){if(suppGridDirty(state.suppGrid)&&!confirm('Leave the grid? The changes not saved are lost.'))return;state.suppGrid=null;render();return}
   if('suppclear' in d){Object.assign(suppState(),{reg:'',sec:'',pt:'',cat:'',uf:'',uni:'',q:''});render();return}
   if('suppexp' in d){suppExport();return}
-  if(d.suppver){const per=curMonth();if(!confirm(`Start the ${MMMYY(per)} version of the log for ${projById(d.suppver).short}? It begins as a copy of the latest log; you then change it here or upload the month's file.`))return;
-    const r=await suppAct({action:'version',project_id:d.suppver,period:per});if(r){suppState().per=per;render();toast(`${MMMYY(per)} version started`)}return}
-  if(d.suppdel){const r=D.rows.find(x=>x.id===+d.suppdel);if(!r)return;const why=prompt(`Remove ${r.supp_no} from the ${MMMYY(r.period)} log? Give the reason (it is kept in the history).`);if(why==null)return;
-    const x=await suppAct({action:'remove',project_id:r.project_id,id:r.id,reason:why});if(x){state.suppEdit=null;render();toast(`${r.supp_no} removed`)}return}
-  if('suppsave' in d){const f=$('#suppForm'),id=f.dataset.id?+f.dataset.id:null,v=suppFormValues(),er=$('#suppErr');t.disabled=true;
-    if(!CLOUD_ME){try{const x=suppActLocal({action:id?'edit':'add',project_id:f.dataset.pid,id,values:v});state.suppEdit=null;render();toast(id?(x.changed?`${x.row.supp_no} saved`:'Nothing changed'):`${x.row.supp_no} added`)}catch(x){t.disabled=false;if(er)er.textContent=x.message}return}
-    const x=await suppAct({action:id?'edit':'add',project_id:f.dataset.pid,id,values:v});t.disabled=false;if(x){state.suppEdit=null;render();toast('Saved')}else if(er)er.textContent='Not saved: see the message at the bottom of the screen.';return}
+  if(d.suppver){const per=curMonth(),had=!!suppLatestAny(d.suppver).b;if(!confirm(had?`Start the ${MMMYY(per)} version of the log for ${projById(d.suppver).short}? It begins as a copy of the latest log; you then change it in the grid or upload the month's file.`:`Start the ${MMMYY(per)} log for ${projById(d.suppver).short}? It begins empty; you type the rows in the grid or upload a file.`))return;
+    const r=await suppAct({action:'version',project_id:d.suppver,period:per});if(r){Object.assign(suppState(),{pid:d.suppver,per});state.logPid=d.suppver;suppGridOpen(d.suppver,!had);toast(`${MMMYY(per)} ${had?'version':'log'} started`)}return}
 });
 /* ---------- Settings → Supplement lists (super admin) ---------- */
 function suppListCheck(L){
@@ -7992,7 +8080,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.29';
+const APP_VERSION='3.30';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
