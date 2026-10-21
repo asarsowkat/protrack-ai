@@ -168,6 +168,14 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.29
+
+- Budget supplements by user field and category (Cost Control → Logs → Budget supplements): each WF-approved supplement has its version (MMM-YY), WF date, user field, category and unified category, WBS group, ID and description, and remarks; its amount goes to Supplement, Savings, VO Cost or VO Price, and the net value is their sum. One project or every project in scope, one version, filters by region, sector, project type, category, user field and unified category; add, change and remove on the screen or upload the Excel template. The super admin keeps the lists in Settings → Supplement lists. Server update v35 (STAGE-29-SETUP.md). New suite `tests/supplements_demo.js` (37 checks). See [RELEASE-NOTES-v3.29.md](RELEASE-NOTES-v3.29.md).
+
+## Version 3.28.3
+
+- Cost and billing figures only with the right to see them: without *See cost and billing figures* (site engineers and site managers by default, foremen always), the Full report pack holds only the reports the person may open, the EAC, Unit rate, Invoiceable value and Invoicing reports stay closed, other reports leave out BAC, CPI and contract value, and the Live summary, Dashboard, presentation, early warnings and daily report form show no cost figure. New suite `tests/money_view_demo.js` (28 checks). See [RELEASE-NOTES-v3.28.3.md](RELEASE-NOTES-v3.28.3.md).
+
 ## Version 3.28.2
 
 - Demo page fix: Riyadh Metro's sample July cash-out version is taken on the v3.21 sample data, so it no longer counts the old other line and the cost report heads both; it is within budget (95.0%) instead of a Forecast Overrun of about 186%. A browser holding the old sample is updated once when the page opens. Server files: `schema-update-v18.sql` runs again (two functions were quoted with `$` instead of `$$`), and every rollback (v4 to v34) is safe to run even if its update was never applied: it then changes nothing and says so. Detail in [RELEASE-NOTES-v3.28.2.md](RELEASE-NOTES-v3.28.2.md).

@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.28.2, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.29, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -314,7 +314,11 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.28.2</b>
+<div class="note" id="whatsnew"><b>New in version 3.29</b>
+    <b>Budget supplements by user field and category</b> (<a href="#f-supp">Cost Control → Budget supplements</a>). Each WF-approved supplement has its version (MMM-YY), WF date, user field, category and the unified category it maps to, WBS group, ID and description, and remarks. Its amount goes to <b>Supplement</b>, <b>Savings</b>, <b>VO Cost</b> or <b>VO Price</b>, and the <b>net value</b> is their sum, the impact on the gross margin. One project or every project in scope, for one version, with filters by region, sector, project type, category, user field and unified category. Rows are added, changed and removed on the screen, or uploaded with the Excel template. The super admin keeps the lists in <b>Settings → Supplement lists</b>. On the server: <code>schema-update-v35.sql</code> (STAGE-29-SETUP).</div>
+  <div class="note"><b>New in version 3.28.3</b>
+    <b>Cost and billing figures only with the right to see them.</b> Without <i>See cost and billing figures</i> (site engineers and site managers by default; foremen never) nothing shows a cost or billing figure: the Full report pack holds only the reports you may open; the EAC, Unit rate analysis, Invoiceable value and Invoicing and collection reports cannot be opened even when ticked for the role; the other reports leave out the labour budget, CPI and contract value; the Live summary, its project view and the Dashboard show no CPI, EAC, VAC, earned value in SAR or contract value; early warnings and bottlenecks leave out the cost warning; the presentation offers no cost slides and no CPI card; the new report form shows no labour cost and a subcontractor line shows its PO number without rate or cost.</div>
+  <div class="note"><b>New in version 3.28.2</b>
     <b>This guide</b> covers every menu domain screen by screen (<a href="#features">section 5</a>) and every role step by step (<a href="#steps">section 6</a>), with the screens and rights of each role read from the app (<a href="#screens-by-role">section 4</a>). · <b>Demo page:</b> Riyadh Metro's sample July cash-out version is within budget (95.0%), no longer a false 186% overrun. · <b>Server files:</b> <code>schema-update-v18.sql</code> runs again, every rollback is safe to run even if its update was never applied, and <code>check-v18-v34.sql</code> checks that the updates v18 to v34 are installed.</div>
   <div class="note"><b>New in version 3.28.1</b>
     <b>Project list:</b> bid position (L1 or L2), tender stage, NOA date, client and expected value, with a tender stage filter and summary. Four SAMPLE tenders on the demo page. A project reports from the first full week or month after its NOA, so a new award never re-opens a closed period. RASA's cash-inflow answer skips projects without a contract value.</div>
@@ -662,7 +666,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   </ul>
   <p>A <b>section planning manager</b> sets the internal report list for their region in Planning &amp; Scheduling → Internal Reporting (<i>Report email for your region</i>); a region without its own list uses the default.</p>
 <h3 id="f-settings">Settings tabs (super admin)</h3>
-<p>Settings opens with a row of tabs: Projects, Users and access, Roles and rights, Role access, Approval matrix, Email, System, Trades and rates, Subcontractors, Regions, Cities, Sectors, Delay register lists, Release strategy and Change log. Every change is logged.</p>
+<p>Settings opens with a row of tabs: Projects, Users and access, Roles and rights, Role access, Approval matrix, Email, System, Trades and rates, Subcontractors, Regions, Cities, Sectors, Delay register lists, Supplement lists, Release strategy and Change log. Every change is logged.</p>
 <div class="scroll"><table><thead><tr><th>Tab</th><th>What you do there</th></tr></thead><tbody>
   <tr><td><b>Projects</b> (menu: Projects and terms)</td><td><b>Create project</b>, <b>Edit</b> (code, status, name, short name, sector, region, city, dates, contract value, project type, budget manhours source, EOT, Project Visual set-up, project team, milestones, billing and payment terms) and <b>Import projects from Excel</b>. See <a href="#billing">Billing and collection</a> for payment terms.</td></tr>
   <tr><td><b>Users and access</b></td><td>See <a href="#f-users">Users and access</a>.</td></tr>
@@ -672,6 +676,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <tr><td><b>Subcontractors</b></td><td>Every subcontractor and its purchase orders across all projects, for review or correction. Costing engineers keep them in Materials &amp; Procurement → Subcontract purchase orders.</td></tr>
   <tr><td><b>Regions</b>, <b>Cities</b>, <b>Sectors</b></td><td>Master data with codes; a region has its regional manager. An item in use cannot be deleted.</td></tr>
   <tr><td><b>Delay register lists</b></td><td>See <a href="#delays">Delay events register</a>.</td></tr>
+  <tr><td><b>Supplement lists</b></td><td>The user fields and the categories, with the unified category each maps to, of the budget supplement log. See <a href="#f-supp">Budget supplements</a>.</td></tr>
   <tr><td><b>Release strategy</b></td><td>See <a href="#f-golive">Release strategy</a>.</td></tr>
   <tr><td><b>Change log</b></td><td>Every settings change, with who and when.</td></tr>
 </tbody></table></div>
@@ -697,7 +702,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 <h3 id="f-system">System and date basis</h3>
 <ul>
   <li><b>Date basis:</b> the mode in use (live: today; demo: fixed 22 Sept 2026), ProTrackAI's today, the data date (last full day) and where this browser keeps its data. <b>Switch to live mode</b> or <b>Switch to demo mode</b>; each mode keeps its own data and the page reloads. If <code>DATE_MODE</code> is set in config.js the switch is not offered; the demo page always uses the demo date.</li>
-  <li><b>Version:</b> ProTrackAI v3.28.2, whether the server is connected, the RASA and outside-AI policy, and when data was last loaded from the server.</li>
+  <li><b>Version:</b> ProTrackAI v3.29, whether the server is connected, the RASA and outside-AI policy, and when data was last loaded from the server.</li>
   <li><b>Backup and restore</b> and <b>Browser data waiting for the server</b>: see <a href="#backup">Backup and restore</a> and <a href="#move">Moving browser data to the server</a>.</li>
 </ul>
 <p class="note">Demo page only: <b>Reset demo data</b>, at the bottom of the menu, drops your changes and reloads the sample data. It is not shown on a site connected to the server.</p>
@@ -731,7 +736,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <tr><td><a href="#d-reports">Reports &amp; Dashboards</a></td><td>Dashboard, All reports, Performance, Presentation</td><td>—</td></tr>
     <tr><td><a href="#d-rasa">RASA AI Assistant</a></td><td>RASA</td><td>—</td></tr>
     <tr><td><a href="#d-imports">Imports &amp; Integrations</a></td><td>Import centre, Primavera P6 (XER, XML), Excel templates</td><td>SAP ECC Excel exports (needs a sample export and Finance approval); S/4HANA connector (disabled until IT, SAP, Cybersecurity and Finance approve)</td></tr>
-    <tr><td><a href="#d-admin">Administration</a></td><td>Users and access, Roles and rights, Role access, Approval matrix, Approval email, Projects and terms, System and date basis, Delay register lists, Release strategy</td><td>—</td></tr>
+    <tr><td><a href="#d-admin">Administration</a></td><td>Users and access, Roles and rights, Role access, Approval matrix, Approval email, Projects and terms, System and date basis, Delay register lists, Supplement lists, Release strategy</td><td>—</td></tr>
   </tbody></table></div>
   <p>Below, each domain lists its screens in menu order: what each is for, who sees it before the super admin changes anything, who changes what is on it, and where it is explained in full.</p>
 <h3 id="d-home">Home</h3>
@@ -780,7 +785,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <tr><td><b>Cost Control → Unit rate analysis</b></td><td>Original against actual manhours and cost per unit, and the cost still to come at the actual rate</td><td>Super admin, management, planning, costing, project managers, read-only; site roles only if granted in Role access</td><td>Nobody (report)</td><td><a href="#f-unitrate">Unit rate analysis</a></td></tr>
   <tr><td><b>Cost Control → Cost reconciliation</b></td><td>Opens the Cost Control dashboard at Source reconciliation: budget and invoice register against the last accepted file</td><td>As the Cost Control dashboard</td><td>Nobody (worked out)</td><td><a href="#f-costdash">Cost Control dashboard</a></td></tr>
   <tr><td><b>Cost Control → Monthly cost report</b></td><td>The company-format cost report by WBS head, prepared monthly and approved before management sees it</td><td>Super admin, costing engineers </td><td>Prepared by costing engineers and the costing coordinator; approved by the Head of Planning and Cost Control or a super admin</td><td><a href="#releases">Released reporting</a></td></tr>
-  <tr><td><b>Cost Control → Budget supplements</b></td><td>The monthly budget supplement log; approved supplements feed the cost report</td><td>Super admin, management, planning, costing, project managers, read-only</td><td>Costing engineers, the costing coordinator (right <i>Upload change order, claim and budget supplement logs</i>)</td><td><a href="#f-supp">Budget supplements</a></td></tr>
+  <tr><td><b>Cost Control → Budget supplements</b></td><td>The monthly budget supplement log by user field, category and unified category; its budget change feeds the cost report</td><td>Super admin, management, planning, costing, project managers, read-only</td><td>Costing engineers, the costing coordinator (right <i>Upload change order, claim and budget supplement logs</i>): upload, or add, change and remove rows of the latest log</td><td><a href="#f-supp">Budget supplements</a></td></tr>
   <tr><td>Accruals</td><td>Planned</td><td>—</td><td>—</td><td>—</td></tr>
 </tbody></table></div>
 
@@ -874,6 +879,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <tr><td><b>Administration → Projects and terms</b></td><td>Create and edit projects, their team, milestones and payment terms; import projects from Excel</td><td>Super admin</td><td>Super admin</td><td><a href="#f-settings">Settings tabs</a></td></tr>
   <tr><td><b>Administration → System and date basis</b></td><td>Demo or live date, version, server connection, backup and restore, browser data waiting for the server</td><td>Super admin</td><td>Super admin</td><td><a href="#f-system">System</a></td></tr>
   <tr><td><b>Administration → Delay register lists</b></td><td>The seven drop-down lists of the delay events register</td><td>Super admin</td><td>Super admin</td><td><a href="#delays">Delay events register</a></td></tr>
+  <tr><td><b>Administration → Supplement lists</b></td><td>The user fields and categories of the budget supplement log, with each category's unified category</td><td>Super admin</td><td>Super admin</td><td><a href="#f-supp">Budget supplements</a></td></tr>
   <tr><td><b>Administration → Release strategy</b></td><td>Modules in go-live stages, live up to which stage, hide not-live modules from the menu; document text for RASA</td><td>Super admin</td><td>Super admin</td><td><a href="#f-golive">Release strategy</a></td></tr>
 </tbody></table></div>
 <p class="note">Settings also has tabs that are not in the menu: Trades and rates, Subcontractors, Regions, Cities, Sectors and Change log. See <a href="#f-settings">Settings tabs</a>.</p>
@@ -1072,10 +1078,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <tr><td>Gross margin</td><td>Contract value − the column total, for every budget column and for EAC, with the percentage. The contract value per column (v3.17): Tender (A) and Rev-0 (B1) on the <b>original contract value</b>; revised Rev-0 (B2), current budget (D) and EAC (I) on the <b>internal revised contract value</b>; previous version (C) on the <b>previous month's contract value</b> (its released cost report)</td></tr>
   </tbody></table>
   <p><b>Fill from Excel:</b> in the report, press <b>Fill from Excel (company format)</b> and choose your monthly sheet. Lines are matched by user field code (SM, DE …) or WBS head name; the header (TCC, POC), the column months and the contract value are read too. If the file's Overall row does not equal the sum of its lines, ProTrackAI says so. Check the figures, then save. <b>Export to Excel</b> gives the same layout for a released report. Older reports by totals only still open as before, with a button to switch to the company format.</p>
-  <p>Totals used elsewhere in ProTrackAI keep their meaning: current budget = Σ D, forecast to complete = F + H, EAC = actual + forecast to complete, VAC = current budget − EAC. The approved supplements in the budget supplement log are shown beside the report for reconciliation.</p>
+  <p>Totals used elsewhere in ProTrackAI keep their meaning: current budget = Σ D, forecast to complete = F + H, EAC = actual + forecast to complete, VAC = current budget − EAC. The budget change of the budget supplement log (v3.29: supplements and VO costs add, savings take away, contract value rows are not budget) is shown beside the report for reconciliation.</p>
 <h4>Checks on the cost report</h4>
 <ul>
-  <li><b>Budget check (v3.26.1):</b> when the current budget (D) differs from the revised Rev-0 (B2, or Rev-0 where B2 is blank) plus the approved supplements of the budget supplement log, a warning row appears under the table. Record the supplement in the log, or correct D. It does not stop the report.</li>
+  <li><b>Budget check (v3.26.1):</b> when the current budget (D) differs from the revised Rev-0 (B2, or Rev-0 where B2 is blank) plus the budget change of the budget supplement log, a warning row appears under the table. Record the supplement in the log, or correct D. It does not stop the report.</li>
   <li><b>Justification:</b> a WBS line with a supplement or saving (J ≠ 0) needs its justification before <b>Submit for approval</b>.</li>
   <li><b>Upload figures</b> (several projects, totals only) is refused for a month already drafted by WBS head.</li>
   <li><b>Export to Excel (company format)</b> is offered once the report is submitted or released. With no contract value, the margin is left blank, not negative.</li>
@@ -1100,7 +1106,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <li><b>Change order and claim status</b> by client status.</li>
   <li><b>Progress by project:</b> planned, actual, SPI, design, procurement, forecast finish and the release (revision, approver, date), with the key issues below. "reviewed" under actual means the planning engineer changed the computed figure, with a reason.</li>
   <li><b>Material tracking</b> (v3.9): the material status saved with each internal report when it was approved.</li>
-  <li><b>Cost by project</b>, <b>Change orders and claims by project</b>, <b>Budget supplements by category</b>.</li>
+  <li><b>Cost by project</b>, <b>Change orders and claims by project</b>, <b>Budget supplements by unified category</b> (supplement, savings, VO cost, VO price, net value and the budget change).</li>
 </ul>
 <p>Billing, contract value, change order, cost and supplement sections and the EAC / VAC, contract value and invoiced tiles appear only in monthly reports and only to people who see cost figures. Weekly reports carry progress only.</p>
 <h4>Which projects are listed (v3.22.2)</h4>
@@ -1150,18 +1156,30 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 </ul>
 <p>"Not approved" and "Pending approval" never count as client approved (v3.26.1), and a rejected item counts nowhere. Every change is listed under <b>Updates to the log</b> with who and when. A log in the earlier layout (Yes / No / Partial) still loads.</p>
 <p><b>Contract value.</b> Revised contract value (internal) = original + price considered internally, where each item counts at its client approved price once the client approves, else at the price management approved internally. It is the contract value of internal reports, the executive report, the dashboards, the Project overview and the monthly cost report, and the gross margin is measured on it. Client reports show original + approved by the client only. Each approved report keeps the breakdown it was approved with; a later upload never changes it.</p>
-<p><b>Budget supplement categories:</b> Project execution, Under estimate, External factor, Saudization, Finance, Claims, Change order. Only <i>Approved</i> supplements are added to the budget in the cost report.</p>
+<p><b>Budget supplements</b> have their own columns, lists and screen since v3.29: see <a href="#f-supp">Budget supplements</a>.</p>
 <p class="note">On the ProTrack server, <b>Update</b> needs the v20 database update (STAGE-16-SETUP); until then the screen says so, and you update the prices by uploading the log with those columns.</p>
   <h3>Billing to date in the cost report</h3>
   <p>The monthly cost report has a <b>Billing to date</b> section: invoiceable, invoiced, approved and collected. As at the end of the report's month, ProTrackAI fills it in from the invoice register and the invoiceable value; change the figures if yours differ. It is optional and is not used in EAC or VAC. The executive report's billing and collection table shows these saved figures.</p>
 <h3 id="f-supp">Budget supplements</h3>
-<p><b>Cost Control → Budget supplements</b> opens the budget supplement log of a project (the same page as the change order and claim log, on its Budget supplements tab).</p>
+<p><b>Cost Control → Budget supplements</b> opens the budget supplement log (the same page as the change order and claim log, on its Budget supplements tab). Only supplements approved by their WF are recorded: there is no approval status.</p>
+<p><b>Columns:</b> version (MMM-YY), supplement number, WF date, user field, category, unified category, description, <b>Supplement</b>, <b>Savings</b>, <b>VO Cost</b>, <b>VO Price</b>, <b>Net value</b>, WBS group, WBS ID, WBS description, linked VO or claim, remarks.</p>
+<div class="scroll"><table><thead><tr><th>The row</th><th>Its amount goes to</th></tr></thead><tbody>
+  <tr><td>Unified category <i>Change Order</i>, user field <i>Cont. Value</i></td><td><b>VO Price</b> (contract value)</td></tr>
+  <tr><td>Unified category <i>Change Order</i>, any other user field</td><td><b>VO Cost</b></td></tr>
+  <tr><td>Any other category, negative amount</td><td><b>Supplement</b></td></tr>
+  <tr><td>Any other category, positive amount</td><td><b>Savings</b></td></tr>
+</tbody></table></div>
+<p>The amount is the impact on the gross margin: negative for a supplement or a VO cost, positive for a saving or a VO price. <b>Net value</b> = Supplement + Savings + VO Cost + VO Price. <b>Budget change</b> for the cost report = −(the net value of the rows whose user field is not Cont. Value): a supplement or a VO cost raises the budget, a saving lowers it, and a VO price is contract value, not budget.</p>
 <ol class="steps">
-  <li><b>Choose the project</b>, and the month under <i>Log as uploaded for</i>; every month's upload is kept.</li>
-  <li><b>Read the cards:</b> approved supplements (added to the Rev-0 budget in the cost report), pending or other (not added until approved), and the number of supplements. The table lists number, date, description, category, linked VO or claim, approval and amount, with the approved total by category.</li>
-  <li><b>Upload this month's log</b> (costing engineer or costing coordinator): give the month, <b>Download template</b> or choose your file. Refused rows are listed with the reason; tick <i>I have checked the refused rows; save the others</i>, then save. The upload is all-or-nothing, a month in the future is refused, and you need access to the project.</li>
+  <li><b>Choose the project and the version.</b> With access to more than one project (a super admin, management, a regional manager…) you can choose <i>All projects in scope</i>: a Project column is added. For each project the screen shows its log for the version chosen, or its latest log before it; every month's log is kept.</li>
+  <li><b>Filter:</b> region, sector and project type (with many projects), category, user field, unified category, and a search over number, description, WBS, linked VO, remarks and project. <b>Clear filters</b> resets them.</li>
+  <li><b>Read the tiles:</b> Supplement, Savings, VO Cost, VO Price, Net value and Budget change of the rows shown. <b>Export to Excel</b> writes these rows.</li>
+  <li><b>Change the latest log on the screen</b> (costing engineer or costing coordinator): <b>Add a supplement</b>, or <b>Change</b> or <b>Remove</b> a row (a removal asks for the reason). The unified category follows the category. Every change is listed under <i>Changes on this screen</i>, with who and when. Earlier versions are read-only. <b>Start the MMM-YY version</b> copies the latest log into this month's version, to change from there.</li>
+  <li><b>Or upload this month's log:</b> give the month, <b>Download the template</b> (a <i>Supplements</i> sheet with example rows and a <i>Lists</i> sheet) or choose your file. The file may give one <i>Amount</i> or <i>Net value</i> column, or the four value columns, which are added up. A row is refused, with the reason, when its user field or category is not in the list, its version is not the month of the log, its WF date is missing, wrong or in the future, or a text is too long. Tick <i>I have checked the refused rows; save the others</i>, then save. A month in the future is refused, and you need access to the project.</li>
 </ol>
-<p>Categories: Project execution, Under estimate, External factor, Saudization, Finance, Claims, Change order. Only <i>Approved</i> supplements count in the cost report. Reporting status tracks the month's log (optional by default).</p>
+<p><b>The lists</b> (<b>Settings → Supplement lists</b>, super admin): 19 user fields (SM Site Management, DE Design, TEC Testing, MTRL / MAN / INSTL for electrical, mechanical and civil, CONT Contingency, SAD Saudization, FNE Financing, PC ITEMS Prime Cost, PROV. SUM Provisional Sum, Cont. Value Contract Value, MGT.RES Management Reserve) and 24 categories, each mapping to one of 11 unified categories (Project Execution, Under Estimation, Change Order, External Factors, Savings, Claim, Finance, Contract Extension Cost, Saudization, Tender Budet, Contract Value). The super admin adds an item with <b>Add</b>, removes one with ✕, or goes <b>Back to the standard list</b>; each change is saved at once. Cont. Value cannot be removed, and a code cannot appear twice. A row keeps a value removed from its list, shown as <i>not in the list</i>.</p>
+<p><b>Logs from before v3.29</b> (no user field) show <i>before v3.29</i>, their category in today's list, and only their approved rows; their approved amounts are added to the budget as before. They are not changed on the screen. Reporting status tracks the month's log (optional by default).</p>
+<p class="note">On the ProTrack server this needs the v35 database update (STAGE-29-SETUP). Until then the screen says so, the server takes only a log in the earlier layout, and rows cannot be changed on the screen.</p>
 <h2 id="issues">Issue register</h2>
 <p><b>Projects &amp; Handover → Issue register</b> holds the issues and bottlenecks that P6 and ProTrackAI's own figures do not show, with the columns of the company issue log: data date, issue owner and sub owner, issue type, start date, description, impact (Extremely High, High, Medium, Low), action taken, action required, priority by client and internal priority (A, B, C), action by, planned and forecast targets, status, closure date, remarks, schedule impact and cost impact.</p>
 <table><thead><tr><th>Who</th><th>Can</th></tr></thead><tbody>
@@ -2176,7 +2194,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 </ul>
 <p>RASA's <b>Show me</b> points at the tiles of the Dashboard and the Live summary.</p>
 <h3 id="f-all-reports">All reports</h3>
-<p><b>Reports &amp; Dashboards → All reports</b> lists the reports you may open. Each follows the scope and sector at the top and <i>Measure against</i> (the baseline), previews on screen, and downloads as <b>Excel</b> or <b>PDF</b>. The P6 progress update downloads as XER, P6 XML or Excel for P6 instead. <b>Full report pack</b> saves the reports in one workbook, one sheet each.</p>
+<p><b>Reports &amp; Dashboards → All reports</b> lists the reports you may open. Each follows the scope and sector at the top and <i>Measure against</i> (the baseline), previews on screen, and downloads as <b>Excel</b> or <b>PDF</b>. The P6 progress update downloads as XER, P6 XML or Excel for P6 instead. <b>Full report pack</b> saves the reports you may open in one workbook, one sheet each.</p>
 <div class="scroll"><table>
   <thead><tr><th>Report</th><th>Answers</th><th>Site engineer</th><th>Site manager</th><th>Also in the menu</th></tr></thead>
   <tbody>
@@ -2198,9 +2216,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <tr><td>Early warnings</td><td>Thresholds breached, with the action</td><td>Yes</td><td>Yes</td><td>—</td></tr>
   </tbody>
 </table></div>
-<p><b>Who may open them:</b> super admin, executive, regional and portfolio managers, planning and costing engineers, project managers and read-only users see all sixteen for the projects in their access. Site engineers and site managers see the reports marked above, unless the super admin changes them in <b>Settings → Role access</b>. Foremen see no reports. The Project list hides the expected value from site roles. </p>
+<p><b>Who may open them:</b> super admin, executive, regional and portfolio managers, planning and costing engineers, project managers and read-only users see all sixteen for the projects in their access. Site engineers and site managers see the reports marked above, unless the super admin changes them in <b>Settings → Role access</b>. Foremen see no reports. Without the right to see cost and billing figures, the four cost and billing reports (EAC, Unit rate analysis, Invoiceable value, Invoicing and collection) stay closed even when ticked for the role, and the other reports, their Excel and PDF and the Full report pack leave out the cost and billing columns: the labour budget (BAC), CPI, the contract value and the Project list's expected value. </p>
 <h3 id="f-presentation">Presentation</h3>
-<p><b>Reports &amp; Dashboards → Presentation</b> builds a PowerPoint from the same numbers as the reports, for the scope at the top. Super admin, executive, regional and portfolio managers, planning and costing engineers, project managers and site managers use it.</p>
+<p><b>Reports &amp; Dashboards → Presentation</b> builds a PowerPoint from the same numbers as the reports, for the scope at the top. Super admin, executive, regional and portfolio managers, planning and costing engineers, project managers and site managers use it. Without the right to see cost and billing figures, the Unit rate analysis, Estimate at completion and Invoiceable value slides are not offered, the KPI slide shows the progress variance instead of CPI, and the tables leave out the cost columns.</p>
 <ol class="steps">
   <li><b>Set the title, subtitle, presenter and rows per table</b> (6, 8, 12 or 20), and whether charts come through as pictures.</li>
   <li><b>Tick the slides</b>, up to fifteen: KPIs, project health, S-curve, progress by region and sector, productivity, manpower, quantity reconciliation, unit rate analysis, EAC, invoiceable value, milestones and EOT, early warnings, bottlenecks, foreman performance, and an empty actions slide. <b>Select all</b> or <b>Clear all</b>. KPIs, health, S-curve, productivity, manpower, EAC, warnings and actions are ticked to start with. A cover and a closing slide are always added.</li>

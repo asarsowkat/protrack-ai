@@ -868,7 +868,7 @@ tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,13
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.28.2</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.29</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -2571,7 +2571,9 @@ function contractRowsHTML(c,eac){if(!c||c.orig==null)return '<tr><td colspan="2"
 function contractClientRowsHTML(c){if(!c||c.orig==null)return '<tr><td colspan="2" class="muted">No contract value on the project.</td></tr>';
   return `<tr><td>Original contract value</td><td class="n">${sar(c.orig)}</td></tr><tr><td>Change orders and claims approved by the client<span class="t2">${c.nAppr} item${c.nAppr===1?'':'s'}</span></td><td class="n">${sar(c.appr)}</td></tr>
     <tr><td><b>Revised contract value</b><span class="t2">original + approved by the client</span></td><td class="n"><b>${sar(c.rev_client)}</b></td></tr>`}
-const suppApproved=(pid,per)=>suppLatest(pid,per).rows.filter(r=>String(r.approval_status||'').toLowerCase()==='approved').reduce((t,r)=>t+(+r.amount||0),0);
+/* v3.29: the budget change of the log (suppView): −(net value of the rows that are not Cont. Value); a log from before v3.29
+   adds its approved amounts, as before */
+const suppApproved=(pid,per)=>suppLatest(pid,per).rows.reduce((t,r)=>t+suppView(r).budget,0);
 function costCompute(pid,per,f){const s=suppApproved(pid,per),bud=(+f.budget_rev0||0)+s,eac=(+f.actual||0)+(+f.ftc||0);
   const c=contractOf(pid,per);return Object.assign({},f,{supplements_approved:s,budget_current:bud,eac,vac:bud-eac,contract:c,contract_value:c.rev_int})}
 function relCostDefaults(pid,per){
@@ -2769,7 +2771,7 @@ function openRelease(pid,k,t,per){
     body=`${crFillNow&&crFillNow.file?`<div class="note"><b>Filled from ${esc(crFillNow.file)}.</b> Check the figures, then save or submit.${(crFillNow.warn||[]).length?`<span class="t2 a-c">${esc(crFillNow.warn.join('; '))}</span>`:''}</div>`:''}
       ${r&&isWbs(r.figures)&&r.status!=='Draft'?`<div class="actions" style="margin:0 0 8px"><button class="btn sm" type="button" data-crexp="${esc(pid)}|${esc(per)}|${esc(r.id)}">Export to Excel (company format)</button></div>`:''}
       ${crFormHTML(pid,per,fw,editable)}
-      <p class="small muted">Approved budget supplements in the log up to ${esc(perLabel('month',per))}: ${sar(suppApproved(pid,per))}${sl.b?` (${batchNo(sl.b)})`:''}; current budget − revised Rev-0 = ${sar(bud-r0)}. The current budget (D) is entered as approved; the log is shown for reconciliation.</p>
+      <p class="small muted">Budget change from the supplement log up to ${esc(perLabel('month',per))} (supplements and VO costs add, savings take away, contract value rows are not budget): ${sar(suppApproved(pid,per))}${sl.b?` (${batchNo(sl.b)})`:''}; current budget − revised Rev-0 = ${sar(bud-r0)}. The current budget (D) is entered as approved; the log is shown for reconciliation.</p>
       ${relInvFields(pid,fw,editable,per)}
       ${F('Comments',`<textarea name="n_summary" rows="2" ${editable?'':'disabled'}>${esc(nar.summary||'')}</textarea>`,true)}`;
   }else{
@@ -2907,7 +2909,7 @@ async function relUploadGo(btn){
    on the server (schema-update-v18.sql: xr_layout_default, written by super admins only, and xr_layouts, one row per
    person) in DB.xrCloud. */
 const XR_SECS=[['kpis','Headline tiles',0],['region','By region',0],['sector','By sector',0],['crit','Critical projects',0],['bill','Billing and collection',1],['contract','Contract value and margin',1],['vostat','Change order and claim status',1],
-  ['prog','Progress by project',0],['mat','Material tracking',0],['cost','Cost by project',1],['volog','Change orders and claims by project',1],['supp','Budget supplements by category',1]];
+  ['prog','Progress by project',0],['mat','Material tracking',0],['cost','Cost by project',1],['volog','Change orders and claims by project',1],['supp','Budget supplements by unified category',1]];
 const XR_TILES=[['np','Projects released',0],['prog','Progress, released',0],['spi','Schedule, SPI',0],['eac','EAC / VAC',1],['cv','Contract value, internal',1],['inv','Invoiced / collected',1],['crit','Projects needing attention',0],['mat','Materials delivered',0]];
 const xrBuiltIn=()=>({secs:XR_SECS.map(([k])=>({k,on:true})),tiles:XR_TILES.map(([k])=>({k,on:true}))});
 function xrNorm(l){const b=xrBuiltIn();if(!l)return b;
@@ -3000,11 +3002,8 @@ function renderXr(){
       ${vo.flatMap(x=>['VO','Claim'].map(k=>{const L=x.rows.filter(r=>r.kind===k);if(!L.length)return '';const ap=L.filter(r=>!voRejected(r)&&voHas(r.client_price)),ci=L.reduce((t,r)=>t+voConsidered(r).v,0);
         return `<tr><td>${esc(x.p.short)}<span class="t2">${batchNo(x.b)}, ${esc(perLabel('month',x.b.source_period))}</span></td><td>${k==='VO'?'Change orders':'Claims'}</td><td class="n">${L.length}</td><td class="n">${sar(L.reduce((t,r)=>t+(+r.est_price||0),0))}</td><td class="n">${sar(L.reduce((t,r)=>t+(+r.expected_price||0),0))}</td><td class="n">${ap.length} · ${sar(ap.reduce((t,r)=>t+(+r.client_price||0),0))}</td><td class="n">${sar(ci)}</td><td class="n">${sar(L.reduce((t,r)=>t+(+r.rev0_change||0),0))}</td></tr>`})).join('')}
       </tbody></table></div>`:NOEV('No change order and claim log has been uploaded for these projects up to this month.')}</section>`;
-  S.supp=`  <section class="panel"><div class="card-head"><h2>Budget supplements by category</h2><span class="small muted">Approved and pending, from the latest log up to ${esc(perLabel('month',per))}</span></div>
-    ${suRows.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Category</th><th class="n">Approved</th><th class="n">Pending or other</th><th class="n">Items</th></tr></thead><tbody>
-      ${SUPP_CATS.map(c=>{const L=suRows.filter(r=>r.category===c);if(!L.length)return '';const ap=L.filter(r=>/^approved$/i.test(r.approval_status||''));return `<tr><td>${esc(c)}</td><td class="n">${sar(ap.reduce((t,r)=>t+(+r.amount||0),0))}</td><td class="n">${sar(L.filter(r=>!/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))}</td><td class="n">${L.length}</td></tr>`}).join('')}
-      <tr><td><b>Total</b></td><td class="n"><b>${sar(suRows.filter(r=>/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))}</b></td><td class="n">${sar(suRows.filter(r=>!/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))}</td><td class="n">${suRows.length}</td></tr>
-      </tbody></table></div>`:NOEV('No budget supplement log has been uploaded for these projects up to this month.')}</section>`}
+  S.supp=`  <section class="panel"><div class="card-head"><h2>Budget supplements by unified category</h2><span class="small muted">From the latest log up to ${esc(perLabel('month',per))}: supplements, savings and change orders approved by their WF</span></div>
+    ${suRows.length?(()=>{const V=suRows.map(r=>suppView(r)).filter(r=>r.counts);return suppGroupHTML('',V,'uni','Unified category').replace('<h3></h3>','')+`<p class="small muted" style="margin:6px 0 0">Net value is the impact on the gross margin. Budget change for the cost reports: ${sar(suppSum(V,'budget'))}.</p>`})():NOEV('No budget supplement log has been uploaded for these projects up to this month.')}</section>`}
   const body=lay.secs.filter(x=>x.on).map(x=>S[x.k]||'').join('');
   $('#view').innerHTML=`${top}${edit?xrEditHTML():''}${body||'<section class="panel"><p class="muted">Every section of this report is hidden. Choose Customise this report to show some.</p></section>'}${t==='week'?'<p class="small muted">Weekly reports carry progress only; cost is released monthly.</p>':''}`;
 }
@@ -3025,9 +3024,11 @@ function voCheck(x){
   if(x.wf_date&&x.wf_date>TODAY)return 'the WF date is in the future';
   if(x.wf_no&&String(x.wf_no).length>40)return 'the WF number is longer than 40 characters';
   return ''}
-const SU_HEAD={supp_no:/ref|supp.*no|number|^no\.?$/i,supp_date:/date/i,description:/descr/i,amount:/amount|value|sar/i,category:/categ/i,linked_ref:/link|vo|claim ref/i,approval_status:/approv|status/i,remarks:/remark|comment/i};
+/* v3.29: the columns of the supplement log, in the order they are matched (a header is used once) */
+const SU_HEAD={supp_no:/supp.*no|^ref|^no\.?$|number/i,version:/version/i,supp_date:/date/i,user_field:/user.?field/i,unified:/unified/i,category:/categ/i,wbs_group:/wbs.*group/i,wbs_id:/wbs.*(id|code)|^wbs$/i,wbs_description:/wbs.*desc/i,description:/descr/i,amount:/^amount|net value|impact/i,v_supp:/^supplements?\b(?!.*no)/i,v_sav:/^savings?\b/i,v_voc:/vo.?cost/i,v_vop:/vo.?price/i,linked_ref:/link|claim ref/i,remarks:/remark|comment/i};
 async function logTemplate(){
   const vo=state.logTab!=='supp';
+  if(!vo)return suppTemplate();
   try{await loadLib(LIBS.xlsx);
     const head=vo?['Ref no','Type (VO or Claim)','Description','Submission status','Submission date','Client approval status','Estimated price','Estimated cost','Expected price to be approved','Client approved price','Price considered internally (SAR)','Internal WF no','Internal WF date','Cost considered internally','Change in Rev-0 budget','Internal WF status','Overall approval status with client','Remarks']
       :['Supplement no','Date','Description','Amount (SAR)','Category','Linked VO / claim','Approval status','Remarks'];
@@ -3054,9 +3055,7 @@ function logParse(aoa,vo){
       x.wf_no=String(x.wf_no??'').trim()||null;if(!err)err=voCheck(x);if(voHas(x.internal_price))x.price_internal=voBasis(x);
       const d=cellIso(x.submitted_on);x.submitted_on=d==='bad'?null:d||null;if(d==='bad'&&!err)err='the submission date is not a valid date';
       if(!err&&!['VO','Claim'].includes(x.kind))err='type must be VO or Claim'}
-    else{const n=cellNum(x.amount);x.amount=n;if(!err&&(n==null||Number.isNaN(n)))err='amount missing or not a number';
-      const c=SUPP_CATS.find(c=>c.toLowerCase()===String(x.category||'').trim().toLowerCase());x.category=c||String(x.category||'').trim();if(!err&&!c)err='category must be one of: '+SUPP_CATS.join(', ');
-      const d=cellIso(x.supp_date);x.supp_date=d==='bad'?null:d||null;if(d==='bad'&&!err)err='the date is not a valid date'}
+    else{const sn=suppNormalize(x,null),v=suppVer(x.version);Object.keys(x).forEach(k=>{if(k!=='row')delete x[k]});Object.assign(x,sn.row);x._ver=v;if(!err)err=sn.err}
     ['submission_status','client_status','price_internal','cost_internal','internal_wf','overall_status','approval_status','description','remarks','linked_ref'].forEach(k=>{if(k in x)x[k]=String(x[k]??'').trim()||null});
     if(!err)seen.add(ref);x.err=err;rows.push(x)});
   return {rows};
@@ -3065,17 +3064,19 @@ async function handleLogFile(file){
   const vo=state.logTab!=='supp',pid=state.logPid;
   try{await loadLib(LIBS.xlsx);const buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true}),aoa=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,blankrows:false});
     const r=logParse(aoa,vo);if(r.error){state.logUp={error:r.error,file:file.name};render();return}
+    if(!vo){const per=($('#logMonth')?.value||curMonth()).trim();r.rows.forEach(x=>{if(!x.err&&x._ver&&x._ver!==per)x.err=`the version ${MMMYY(x._ver)} is not the month of this log (${MMMYY(per)})`})}
     state.logUp={file:file.name,rows:r.rows,period:($('#logMonth')?.value)||curMonth(),hash:await sha256Hex(buf),ack:false};render()}
   catch(e){state.logUp={error:'That file could not be read: '+(e.message||''),file:file.name};render()}
 }
 async function logGo(btn){
   const U=state.logUp,vo=state.logTab!=='supp',pid=state.logPid;if(!U||!U.rows)return;
   U.period=($('#logMonth')?.value||U.period||'').trim();U.ack=!!$('#logAck')?.checked;
+  if(!vo){let n=0;U.rows.forEach(r=>{if(!r.err&&r._ver&&r._ver!==U.period){r.err=`the version ${MMMYY(r._ver)} is not the month of this log (${MMMYY(U.period)})`;n++}});if(n){render();return toast(`${n} row${n===1?' has':'s have'} another version than the month of this log: see the refused rows`)}}
   const bad=U.rows.filter(r=>r.err),good=U.rows.filter(r=>!r.err),k=vo?'volog':'supplements';
   if(!periodOk(U.period,'month'))return toast('The month must look like 2026-09');if(U.period>curMonth())return toast('The log month cannot be after the current month');
   if(!canLogUpload())return toast('Only the costing engineer or costing coordinator uploads logs');if(!accessIds().includes(pid))return toast('You do not have access to this project');
   if(bad.length&&!U.ack)return toast('Tick the box to confirm the refused rows first.');
-  btn.disabled=true;const clean=U.rows.map(({row,err,...x})=>x);
+  btn.disabled=true;const clean=U.rows.map(({row,err,_ver,...x})=>x);
   if(CLOUD_ME){let r;try{r=await rpc('log_import',{p:{kind:k,project_id:pid,period:U.period,file_name:U.file,hash:U.hash,rows:clean,ack:U.ack}})}catch(e){btn.disabled=false;toast('The server refused this: '+srvMsg(e));return}
     try{await cloudLoadInvoices();await cloudLoadReleases()}catch(e){}state.logUp=null;save();render();toast(r.duplicate?'This is the same file as the last one loaded for that month, so nothing changed.':`${r.accepted} rows saved as a new ${vo?'change order and claim':'supplement'} log for ${perLabel('month',U.period)}`);return}
   const last=(DB.batches||[]).filter(b=>b.kind===k&&b.project_id===pid&&b.status==='committed').sort((a,b)=>(b.seq||0)-(a.seq||0))[0];
@@ -3085,7 +3086,7 @@ async function logGo(btn){
   const b=logBatch({kind:k,project_id:pid,file_name:U.file,file_hash:U.hash,source_period:U.period,rows_total:U.rows.length,rows_accepted:good.length,rows_rejected:bad.length,total_source:tot,total_accepted:tot,
     recon_status:bad.length?'Accepted with difference':'Matched',recon_accepted_by:bad.length?me().name:null,detail:{rejected:bad.map(r=>({row:r.row,ref:r[vo?'ref_no':'supp_no'],error:r.err}))}});
   const key=vo?'coLog':'suppLog';DB[key]=DB[key]||[];let id=DB[key].reduce((m,r)=>Math.max(m,+r.id||0),0);
-  good.forEach(({row,err,...x})=>DB[key].push({id:++id,batch_id:b.id,project_id:pid,period:U.period,...x}));
+  good.forEach(({row,err,_ver,...x})=>DB[key].push({id:++id,batch_id:b.id,project_id:pid,period:U.period,...x}));
   logChange(`${projById(pid).short}: ${vo?'change order and claim':'budget supplement'} log for ${perLabel('month',U.period)} uploaded (${good.length} rows)`);
   state.logUp=null;save();render();toast(`${good.length} rows saved as a new ${vo?'change order and claim':'supplement'} log for ${perLabel('month',U.period)}`);
 }
@@ -3121,6 +3122,7 @@ function renderLogs(){
   if(!canLogsView()){$('#view').innerHTML='<section class="panel"><p>The change order, claim and budget supplement logs are for costing, project managers and management.</p></section>';return}
   if(['vo','supp'].includes(state.navSec)){state.logTab=state.navSec;state.navSec=null}
   const vo=state.logTab!=='supp',k=vo?'volog':'supplements',ps=scopeProjects();
+  if(!vo){renderSupp();return}   /* v3.29: the budget supplement log has its own screen */
   if(!state.logPid||!ps.some(p=>p.id===state.logPid))state.logPid=(ps[0]||{}).id;const pid=state.logPid;
   const bs=(DB.batches||[]).filter(b=>b.kind===k&&b.project_id===pid&&b.status==='committed');const months=[...new Set(bs.map(b=>b.source_period))].sort().reverse();
   const per=state.logPer&&months.includes(state.logPer)?state.logPer:months[0];
@@ -3172,6 +3174,287 @@ function renderLogs(){
         <label class="chk"><input type="checkbox" id="logAck"><span>I have checked the refused rows; save the others</span></label>`:''}
       <div class="actions"><button class="btn primary" type="button" data-loggo ${U.rows.some(r=>!r.err)?'':'disabled'}>Save ${U.rows.filter(r=>!r.err).length} rows</button><button class="btn" type="button" data-logcancel>Cancel</button></div>`:''}</section>`:''}`;
 }
+
+/* ---------- v3.29: the budget supplement log, by user field and category ----------
+   Every row is a supplement approved by its WF: one signed amount, its impact on the gross margin. ProTrackAI puts it in
+   one of four columns: VO Price when the unified category is Change Order and the user field is Cont. Value, VO Cost for
+   any other change order, else Supplement (a negative amount) or Savings (a positive one). Net value = the sum of the four.
+   The user field (the cost report head, or Cont. Value for the contract value) and the category come from lists the super
+   admin keeps in Settings → Supplement lists; the unified category follows the category. The version is the month of the
+   log (MMM-YY): each month's log is kept, and a report shows one version. Budget change for the cost report =
+   −(net value of the rows that are not Cont. Value): a supplement or a VO cost raises the budget, a saving lowers it, and
+   a VO price is contract value, not budget. Logs uploaded before v3.29 (no user field) keep their rule: their approved
+   amounts are added to the budget. On the server (schema-update-v35.sql, STAGE-29-SETUP): the new columns of
+   budget_supplements, supp_lists, supp_lists_set, supp_update, supp_audit and log_import. */
+const SUPP_CONT='Cont. Value',SUPP_CO='Change Order';
+const SUPP_UF_DEF=[['SM','Site Management'],['DE','Design'],['TEC','Testing'],['MTRL.ELC','Electrical Material'],['MAN.ELC','Electrical Manpower'],['INSTL.ELC','Electrical inst'],
+  ['MTRL.MECH','Mechanical Material'],['MAN.MECH','Mechanical Manpower'],['INSTL.MECh','Mechanical inst'],['MTRL.CVL','Civil Material'],['MAN.CVL','Civil Manpower'],['INSTL.CVL','Civil Equip'],
+  ['CONT','Contingency'],['SAD','Saudization'],['FNE','Financing'],['PC ITEMS','Prime Cost'],['PROV. SUM','Provisional Sum'],['Cont. Value','Contract Value'],['MGT.RES','Management Reserve']];
+const SUPP_CAT_DEF=[['Project Execution','Project Execution'],['Saudization','Project Execution'],['Under Estimation','Under Estimation'],['Change Order','Change Order'],['Client/External','External Factors'],
+  ['Savings','Savings'],['Cont-Under Est.','Under Estimation'],['Cont-Proj. Exe','Project Execution'],['Claim','Claim'],['Cont-Change Order','Change Order'],['CHANGE ORDER','Change Order'],
+  ['Cont-Savings','Savings'],['MGT.RES | Savings','Savings'],['Cont-Claim','Claim'],['Mgmt Res-Proj Exe','Project Execution'],['Finance','Finance'],['Contract Extension Cost','Contract Extension Cost'],
+  ['Cont-Cont. Ext.','Contract Extension Cost'],['Cont-Ext. Fac.','External Factors'],['External Factors','External Factors'],['Mgmt Res-Under Est.','Under Estimation'],['Tender Budet','Tender Budet'],
+  ['Cont-SZN','Saudization'],['Contract Value','Contract Value']];
+/* the categories of logs uploaded before v3.29, and their place in today's list */
+const SUPP_OLD_CAT={'Project execution':'Project Execution','Under estimate':'Under Estimation','External factor':'External Factors','Saudization':'Saudization','Finance':'Finance','Claims':'Claim','Change order':'Change Order'};
+const suppLists=()=>{const L=DB.suppLists||{};return {uf:Array.isArray(L.uf)&&L.uf.length?L.uf:SUPP_UF_DEF,cats:Array.isArray(L.cats)&&L.cats.length?L.cats:SUPP_CAT_DEF}};
+/* a value of a list, as the list writes it: exact first, else the first one that differs only in case */
+const suppPick=(list,v)=>{const s=String(v??'').replace(/\s+/g,' ').trim();if(!s)return null;return list.find(x=>x===s)||list.find(x=>x.toLowerCase()===s.toLowerCase())||null};
+const suppUF=v=>suppPick(suppLists().uf.map(x=>x[0]),v);
+const suppCat=v=>suppPick(suppLists().cats.map(x=>x[0]),v);
+const suppUni=c=>{const x=suppLists().cats.find(y=>y[0]===c);return x?x[1]:null};
+const suppUfDesc=c=>(suppLists().uf.find(x=>x[0]===c)||[])[1]||'';
+const suppUnis=()=>[...new Set(suppLists().cats.map(x=>x[1]))];
+const suppNew=r=>r.user_field!=null&&String(r.user_field)!=='';
+const MMMYY=p=>p?`${MON[+p.slice(5,7)-1]}-${p.slice(2,4)}`:'';
+/* 'Aug-26', 'Aug 2026', 'August 2026', '2026-08' or a date → 2026-08 ('' when blank, 'bad' when unreadable) */
+function suppVer(v){if(v instanceof Date)return isoOfDate(v).slice(0,7);const s=String(v??'').trim();if(!s)return '';
+  let m=s.match(/^(\d{4})-(\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}`;
+  m=s.match(/^([A-Za-z]{3})[A-Za-z]*[\s\-\/']*(\d{2}|\d{4})$/);if(m){const i=MON.findIndex(x=>x.toLowerCase()===m[1].toLowerCase());if(i>=0)return `${m[2].length===2?'20'+m[2]:m[2]}-${String(i+1).padStart(2,'0')}`}
+  return 'bad'}
+/* a row as the log shows it: its user field, category, unified category, the four columns, net value and budget change */
+function suppView(r){
+  const old=!suppNew(r),cat=old?(SUPP_OLD_CAT[r.category]||r.category):r.category,uni=old?(suppUni(cat)||cat):(r.unified_category||suppUni(cat)||'—');
+  const amt=old?-(+r.amount||0):(+r.amount||0),uf=old?null:r.user_field,counts=old?/^approved$/i.test(r.approval_status||''):true;
+  const o={...r,old,cat,uni,uf,amt,counts,supp:0,sav:0,vocost:0,voprice:0,net:amt};
+  if(uni===SUPP_CO){if(uf===SUPP_CONT)o.voprice=amt;else o.vocost=amt}else if(amt<0)o.supp=amt;else o.sav=amt;
+  o.budget=counts&&uf!==SUPP_CONT?-amt:0;return o}
+const suppSum=(L,k)=>L.reduce((t,r)=>t+(+r[k]||0),0);
+/* the checks on a row, on the screen and in a file (the same as on the server) */
+function suppCheck(x){
+  if(!x.supp_no)return 'supplement number missing';if(String(x.supp_no).length>40)return 'the supplement number is longer than 40 characters';
+  if(!x.supp_date)return 'the WF date is missing';if(!isoOk(x.supp_date))return 'the WF date is not a valid date';if(x.supp_date>TODAY)return 'the WF date is in the future';
+  if(!x.user_field)return 'the user field must be one of the list (Settings → Supplement lists)';
+  if(!x.category)return 'the category must be one of the list (Settings → Supplement lists)';
+  if(x.amount==null||!isFinite(x.amount))return 'the amount is missing or not a number';
+  if([x.wbs_group,x.wbs_id].some(v=>v&&String(v).length>100))return 'a WBS group or WBS ID is longer than 100 characters';
+  if([x.description,x.wbs_description,x.remarks].some(v=>v&&String(v).length>2000))return 'a text is longer than 2,000 characters';
+  if(x.linked_ref&&String(x.linked_ref).length>60)return 'the linked VO or claim is longer than 60 characters';
+  return ''}
+/* a row read from a file or typed on the screen → the stored row ('' error when it is fine) */
+function suppNormalize(x,per){
+  const t=k=>{const v=String(x[k]??'').replace(/\s+/g,' ').trim();return v||null};
+  const n={supp_no:String(x.supp_no||'').trim().toUpperCase()||null,user_field:suppUF(x.user_field),category:suppCat(x.category),description:t('description'),
+    wbs_group:t('wbs_group'),wbs_id:t('wbs_id'),wbs_description:t('wbs_description'),linked_ref:t('linked_ref'),remarks:t('remarks'),approval_status:'Approved'};
+  const d=cellIso(x.supp_date);n.supp_date=d==='bad'?'x':d||null;
+  let a=cellNum(x.amount);
+  if((a==null)&&['v_supp','v_sav','v_voc','v_vop'].some(k=>cellNum(x[k])!=null)){a=['v_supp','v_sav','v_voc','v_vop'].reduce((s,k)=>{const v=cellNum(x[k]);return s+(v==null||Number.isNaN(v)?0:v)},0);
+    if(['v_supp','v_sav','v_voc','v_vop'].some(k=>Number.isNaN(cellNum(x[k]))))a=NaN}
+  n.amount=a==null||Number.isNaN(a)?null:a;n.unified_category=n.category?suppUni(n.category):null;
+  let err='';if(String(x.user_field||'').trim()&&!n.user_field)err=`user field "${String(x.user_field).trim()}" is not in the list`;
+  if(!err&&String(x.category||'').trim()&&!n.category)err=`category "${String(x.category).trim()}" is not in the list`;
+  if(!err&&d==='bad')err='the WF date is not a valid date';
+  if(!err&&Number.isNaN(a))err='the amount is not a number';
+  if(!err){const v=suppVer(x.version);if(v==='bad')err='the version is not a month (use MMM-YY, for example Aug-26)';else if(v&&per&&v!==per)err=`the version ${MMMYY(v)} is not the month of this log (${MMMYY(per)})`}
+  if(!err)err=suppCheck(n);return {row:n,err}}
+/* the projects and rows of the screen: one version, the filters */
+function suppState(){return state.suppF||(state.suppF={pid:'',per:'',reg:'',sec:'',pt:'',cat:'',uf:'',uni:'',q:''})}
+function suppData(){
+  const f=suppState(),ps=scopeProjects(),multi=ps.length>1;
+  if(!multi)f.pid=(ps[0]||{}).id||'';else if(f.pid&&!ps.some(p=>p.id===f.pid))f.pid='';
+  const shown=ps.filter(p=>(!f.pid||p.id===f.pid)&&(!f.reg||p.region===f.reg)&&(!f.sec||p.sector===f.sec)&&(!f.pt||(p.ptype||'')===f.pt));
+  const ids=new Set(shown.map(p=>p.id)),months=[...new Set((DB.batches||[]).filter(b=>b.kind==='supplements'&&b.status==='committed'&&ids.has(b.project_id)).map(b=>b.source_period))].sort().reverse();
+  const per=f.per&&months.includes(f.per)?f.per:months[0]||'';
+  const logs=per?shown.map(p=>({p,...suppLatest(p.id,per)})).filter(x=>x.b):[];
+  const q=f.q.trim().toLowerCase();
+  const all=logs.flatMap(x=>x.rows.map(r=>({...suppView(r),p:x.p,b:x.b}))),hid=all.filter(r=>!r.counts).length;
+  /* only supplements approved by their WF: a row of a log from before v3.29 that was not approved is left out */
+  const rows=all.filter(r=>r.counts&&(!f.cat||r.cat===f.cat)&&(!f.uf||r.uf===f.uf)&&(!f.uni||r.uni===f.uni)
+    &&(!q||[r.supp_no,r.description,r.wbs_group,r.wbs_id,r.wbs_description,r.linked_ref,r.remarks,r.p.short,pcode(r.p)].some(v=>String(v||'').toLowerCase().includes(q))));
+  return {f,ps,multi,shown,months,per,logs,rows,hid}}
+/* the latest log of a project, whatever its month: the only one changed on the screen */
+const suppLatestAny=pid=>suppLatest(pid,'9999-12');
+const suppCanEdit=pid=>canLogUpload()&&accessIds().includes(pid)&&(!CLOUD_ME||DB.suppCloud);
+function suppTotals(L){return {supp:suppSum(L,'supp'),sav:suppSum(L,'sav'),vocost:suppSum(L,'vocost'),voprice:suppSum(L,'voprice'),net:suppSum(L,'net'),budget:suppSum(L,'budget'),n:L.length}}
+const suppMoney=v=>v?sar(v):'—';
+function suppGroupHTML(title,L,key,label){
+  const net=g=>suppTotals(L.filter(r=>(r[key]||'—')===g)).net,G=[...new Set(L.map(r=>r[key]||'—'))].sort((a,b)=>net(a)-net(b)||a.localeCompare(b));
+  return `<h3>${esc(title)}</h3><div class="scroll"><table class="tbl"><thead><tr><th>${esc(label)}</th><th class="n">Supplement</th><th class="n">Savings</th><th class="n">VO Cost</th><th class="n">VO Price</th><th class="n">Net value</th><th class="n">Items</th></tr></thead><tbody>
+    ${G.map(g=>{const T=suppTotals(L.filter(r=>(r[key]||'—')===g));return `<tr><td>${esc(g)}${key==='uf'&&g!=='—'?`<span class="t2">${esc(suppUfDesc(g))}</span>`:''}</td><td class="n">${suppMoney(T.supp)}</td><td class="n">${suppMoney(T.sav)}</td><td class="n">${suppMoney(T.vocost)}</td><td class="n">${suppMoney(T.voprice)}</td><td class="n"><b>${sar(T.net)}</b></td><td class="n">${T.n}</td></tr>`}).join('')}
+    </tbody></table></div>`}
+function suppFormHTML(pid,r){
+  const L=suppLists(),v=k=>esc(r&&r[k]!=null?r[k]:''),ufo=L.uf.map(([c,d])=>[c,`${c} · ${d}`]),cato=L.cats.map(([c,u])=>[c,`${c} → ${u}`]);
+  const opts=(o,cur)=>`<option value="">Choose…</option>`+o.map(([a,b])=>`<option value="${esc(a)}" ${a===cur?'selected':''}>${esc(b)}</option>`).join('');
+  return `<div class="impbox"><h3 style="margin-top:0">${r?`Change ${esc(r.supp_no)}`:'Add a supplement'} · ${esc(projById(pid).short)}, ${esc(MMMYY(suppLatestAny(pid).b?.source_period||curMonth()))} log</h3>
+    <form id="suppForm" data-pid="${esc(pid)}" data-id="${r?r.id:''}" novalidate><div class="fields">
+      ${F('Supplement no',`<input name="supp_no" maxlength="40" value="${v('supp_no')}" placeholder="BS-07">`)}
+      ${F('WF date',`<input name="supp_date" type="date" max="${TODAY}" value="${v('supp_date')}">`)}
+      ${F('User field',`<select name="user_field">${opts(ufo,r&&r.user_field)}</select>`)}
+      ${F('Category',`<select name="category">${opts(cato,r&&r.category)}</select>`)}
+      ${F('Amount (SAR)',`<input name="amount" type="number" step="1" value="${v('amount')}" placeholder="− supplement or VO cost, + saving or VO price">`)}
+      ${F('Linked VO / claim',`<input name="linked_ref" maxlength="60" value="${v('linked_ref')}">`)}
+      ${F('WBS Group',`<input name="wbs_group" maxlength="100" value="${v('wbs_group')}">`)}
+      ${F('WBS ID',`<input name="wbs_id" maxlength="100" value="${v('wbs_id')}">`)}
+      ${F('WBS Description',`<input name="wbs_description" maxlength="2000" value="${v('wbs_description')}">`,true)}
+      ${F('Description',`<input name="description" maxlength="2000" value="${v('description')}">`,true)}
+      ${F('Remarks',`<input name="remarks" maxlength="2000" value="${v('remarks')}">`,true)}</div>
+      <p class="small muted" style="margin:4px 0">The amount is the impact on the gross margin: negative for a supplement or a VO cost, positive for a saving or a VO price. The unified category follows the category; a change order with the user field Cont. Value is a VO price, any other change order a VO cost.</p>
+      <p class="err" id="suppErr"></p><div class="actions" style="margin:0"><button class="btn primary" type="button" data-suppsave>${r?'Save':'Add'}</button><button class="btn" type="button" data-suppcancel>Cancel</button></div></form></div>`}
+function renderSupp(){
+  {const ps0=scopeProjects(),f0=suppState();if(!state.logPid||!ps0.some(p=>p.id===state.logPid))state.logPid=f0.pid||(ps0[0]||{}).id}
+  const D=suppData(),{f,ps,multi,months,per,rows,logs}=D,U=state.logUp,T=suppTotals(rows),one=!multi||!!f.pid,pid1=one?(f.pid||(ps[0]||{}).id):null;
+  const opt=(arr,v)=>[['','All'],...arr].map(([a,b])=>`<option value="${esc(a)}" ${a===(v||'')?'selected':''}>${esc(b)}</option>`).join('');
+  const L=suppLists(),regs=[...new Set(ps.map(p=>p.region))].map(r=>[r,regById(r)?.name||r]),secs=[...new Set(ps.map(p=>p.sector))].map(s=>[s,secById(s)?.name||s]),pts=[...new Set(ps.map(p=>p.ptype||'').filter(Boolean))].map(x=>[x,x]);
+  const latestOf=pid=>suppLatestAny(pid).b,ed=state.suppEdit,canEd=pid1&&suppCanEdit(pid1)&&latestOf(pid1)&&latestOf(pid1).source_period===per;
+  const tab=(v,l)=>`<button type="button" class="chip" data-logtab="${v}" aria-pressed="${v==='supp'}">${l}</button>`;
+  const filtered=f.reg||f.sec||f.pt||f.cat||f.uf||f.uni||f.q;
+  $('#view').innerHTML=`${crumb()}
+  ${CLOUD_ME&&DB.relMissing?`<div class="warn-box" style="margin-bottom:14px">The logs need the v9 database update (see STAGE-6-SETUP). <span class="small">${esc(DB.relMissing)}</span></div>`:''}
+  ${CLOUD_ME&&DB.suppListsMissing?`<div class="warn-box" style="margin-bottom:14px">The supplement log's user fields, unified categories, WBS columns and changes on this screen need the v35 database update (see STAGE-29-SETUP). Until it runs, the server takes only a log in the earlier layout (its seven categories, no user field) and rows cannot be changed on this screen. <span class="small">${esc(DB.suppListsMissing)}</span></div>`:''}
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Budget supplement log</h2><div class="chips" role="group">${tab('vo','Change orders and claims')}${tab('supp','Budget supplements')}</div></div>
+    <div class="fields">
+      ${F('Project',`<select data-suppf="pid">${multi?`<option value="" ${f.pid?'':'selected'}>All projects in scope (${ps.length})</option>`:''}${ps.map(p=>`<option value="${esc(p.id)}" ${p.id===f.pid?'selected':''}>${esc(p.short)} (${esc(pcode(p))})</option>`).join('')}</select>`)}
+      ${F('Version',months.length?`<select data-suppf="per">${months.map(m=>`<option value="${m}" ${m===per?'selected':''}>${MMMYY(m)}</option>`).join('')}</select>`:'<input disabled value="No log yet">')}
+      ${multi?F('Region',`<select data-suppf="reg">${opt(regs,f.reg)}</select>`)+F('Sector',`<select data-suppf="sec">${opt(secs,f.sec)}</select>`)+F('Project type',`<select data-suppf="pt">${opt(pts,f.pt)}</select>`):''}
+      ${F('Category',`<select data-suppf="cat">${opt(L.cats.map(([c])=>[c,c]),f.cat)}</select>`)}
+      ${F('User field',`<select data-suppf="uf">${opt(L.uf.map(([c,d])=>[c,`${c} · ${d}`]),f.uf)}</select>`)}
+      ${F('Unified category',`<select data-suppf="uni">${opt(suppUnis().map(u=>[u,u]),f.uni)}</select>`)}
+      ${F('Search',`<input data-suppf="q" value="${esc(f.q)}" placeholder="No, description, WBS, project">`)}</div>
+    <p class="small muted" style="margin:6px 0 10px">${per?`Version <b>${MMMYY(per)}</b>: for each project, its log for that month, or its latest log before it (${logs.length} of ${D.shown.length} project${D.shown.length===1?'':'s'} have one). Each month's log is kept.${D.hid?` ${D.hid} row${D.hid===1?'':'s'} of a log from before v3.29 not approved by WF ${D.hid===1?'is':'are'} not shown.`:''}`:'No budget supplement log uploaded for these projects yet.'}${filtered?' · <button class="link" type="button" data-suppclear>Clear filters</button>':''}${state.role==='sa'?' · <button class="link" type="button" data-go="admin" data-atab="supplists">Edit the user fields and categories</button>':''}</p>
+    ${!per?NOEV('No budget supplement log uploaded for these projects yet.',canLogUpload()?'Upload one below, or add rows once the first version exists.':'The costing engineer or costing coordinator uploads it monthly.'):`
+    <div class="g g-kpi">${kpi('Supplement',sar(T.supp),'Negative amounts, not change orders')}${kpi('Savings',sar(T.sav),'Positive amounts, not change orders')}${kpi('VO Cost',sar(T.vocost),'Change orders, user field not Cont. Value')}${kpi('VO Price',sar(T.voprice),'Change orders, user field Cont. Value')}
+      ${kpi('Net value',sar(T.net),'Impact on the gross margin',T.net<0?'r':T.net>0?'g':'')}${kpi('Budget change',sar(T.budget),'For the cost report: supplements and VO costs add, savings take away')}</div>
+    <div class="card-head" style="margin-top:8px;flex-wrap:wrap"><h3 style="margin:0">${rows.length} row${rows.length===1?'':'s'}</h3><div class="actions" style="margin:0">${canEd?`<button class="btn sm primary" type="button" data-suppadd>Add a supplement</button>`:''}${pid1&&suppCanEdit(pid1)&&latestOf(pid1)&&latestOf(pid1).source_period<curMonth()?`<button class="btn sm" type="button" data-suppver="${esc(pid1)}">Start the ${MMMYY(curMonth())} version</button>`:''}<button class="btn sm" type="button" data-suppexp>Export to Excel</button></div></div>
+    ${ed&&(ed==='new'||rows.some(r=>r.id===ed))&&canEd?suppFormHTML(pid1,ed==='new'?null:rows.find(r=>r.id===ed)):''}
+    <div class="scroll"><table class="tbl supptbl"><thead><tr>${multi&&!f.pid?'<th>Project</th>':''}<th>Version</th><th>No</th><th>WF date</th><th>User field</th><th>Category</th><th>Unified category</th><th>Description</th><th class="n">Supplement</th><th class="n">Savings</th><th class="n">VO Cost</th><th class="n">VO Price</th><th class="n">Net value</th><th>WBS Group</th><th>WBS ID</th><th>WBS Description</th><th>Linked VO / claim</th><th>Remarks</th>${canEd?'<th></th>':''}</tr></thead><tbody>
+      ${rows.map(r=>`<tr${ed===r.id?' class="rowwarn"':''}>${multi&&!f.pid?`<td><b>${esc(r.p.short)}</b><span class="t2">${esc(pcode(r.p))}</span></td>`:''}<td>${MMMYY(r.b.source_period)}</td><td><b>${esc(r.supp_no)}</b>${r.old?'<span class="t2">before v3.29</span>':''}</td><td>${r.supp_date?fmtDY(r.supp_date):'—'}</td>
+        <td>${r.uf?`${esc(r.uf)}<span class="t2">${esc(suppUfDesc(r.uf))}</span>`:'—'}</td><td>${esc(r.cat||'—')}${!r.old&&r.cat&&!suppCat(r.cat)?'<span class="t2 a-c">not in the list</span>':''}</td><td>${esc(r.uni)}</td><td class="small">${esc(r.description||'')}${r.old&&!r.counts?`<span class="t2">${esc(r.approval_status||'not approved')}: not counted</span>`:''}</td>
+        <td class="n">${suppMoney(r.supp)}</td><td class="n">${suppMoney(r.sav)}</td><td class="n">${suppMoney(r.vocost)}</td><td class="n">${suppMoney(r.voprice)}</td><td class="n"><b>${sar(r.net)}</b></td>
+        <td class="small">${esc(r.wbs_group||'—')}</td><td class="small">${esc(r.wbs_id||'—')}</td><td class="small">${esc(r.wbs_description||'—')}</td><td>${esc(r.linked_ref||'—')}</td><td class="small">${esc(r.remarks||'')}</td>
+        ${canEd?`<td style="white-space:nowrap">${r.old?'':`<button class="btn sm" type="button" data-suppedit="${r.id}">${ed===r.id?'Close':'Change'}</button> <button class="btn sm danger" type="button" data-suppdel="${r.id}" aria-label="Remove ${esc(r.supp_no)}">Remove</button>`}</td>`:''}</tr>`).join('')||`<tr><td colspan="20" class="muted">No row matches the filters.</td></tr>`}
+      ${rows.length?`<tr><td colspan="${multi&&!f.pid?8:7}"><b>Total</b></td><td class="n"><b>${suppMoney(T.supp)}</b></td><td class="n"><b>${suppMoney(T.sav)}</b></td><td class="n"><b>${suppMoney(T.vocost)}</b></td><td class="n"><b>${suppMoney(T.voprice)}</b></td><td class="n"><b>${sar(T.net)}</b></td><td colspan="${canEd?6:5}"></td></tr>`:''}
+    </tbody></table></div>
+    ${rows.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px">${suppGroupHTML('By unified category',rows,'uni','Unified category')}${suppGroupHTML('By user field',rows,'uf','User field')}</div>`:''}
+    ${(()=>{if(!pid1)return '';const H=(DB.suppAudit||[]).filter(a=>a.project_id===pid1).slice(0,20);return H.length?`<h3>Changes on this screen</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.supp_no)}</b> ${esc(a.action)}${a.changes&&a.changes.length?': '+esc(a.changes.map(([k,o,n])=>`${SUPP_FIELD_N[k]||k} ${o==null||o===''?'—':o} → ${n==null||n===''?'—':n}`).join('; ')):''}${a.reason?` · ${esc(a.reason)}`:''} <span class="muted small">${esc(a.by)}, ${esc(tStamp(a.at))}</span></li>`).join('')}</ul>`:''})()}`}</section>
+  ${canLogUpload()?`<section class="panel"><div class="card-head"><h2>Upload a month's log</h2><span class="small muted">The whole log of one project for one version; all-or-nothing; earlier months are kept</span></div>
+    <div class="fields">${F('Project',sel('logproj',ps.map(p=>[p.id,`${p.short} (${pcode(p)})`]),state.logPid||pid1||(ps[0]||{}).id,'data-logproj'))}${F('Version (month of this log)',`<input id="logMonth" value="${esc((U&&U.period)||curMonth())}" placeholder="2026-09">`)}</div>
+    <div class="actions" style="margin:0"><button class="btn" type="button" data-logtpl>Download template</button><label class="btn primary" for="logfile">Choose file</label><input id="logfile" type="file" accept=".xlsx,.xls,.csv" hidden></div>
+    ${U&&U.error?`<div class="warn-box" style="margin-top:10px"><b>${esc(U.error)}</b></div>`:''}
+    ${U&&U.rows?`<p style="margin-top:10px"><b>${esc(U.file)}</b>: ${U.rows.length} rows, ${U.rows.filter(r=>!r.err).length} ready, ${U.rows.filter(r=>r.err).length} refused, for ${esc(projById(state.logPid)?.short||'')}.</p>
+      ${U.rows.some(r=>r.err)?`<div class="scroll"><table class="tbl"><thead><tr><th>Row</th><th>No</th><th>Refused because</th></tr></thead><tbody>${U.rows.filter(r=>r.err).map(r=>`<tr class="rowwarn"><td>${r.row}</td><td>${esc(r.supp_no||'')}</td><td class="r-c">${esc(r.err)}</td></tr>`).join('')}</tbody></table></div>
+        <label class="chk"><input type="checkbox" id="logAck"><span>I have checked the refused rows; save the others</span></label>`:''}
+      <div class="actions"><button class="btn primary" type="button" data-loggo ${U.rows.some(r=>!r.err)?'':'disabled'}>Save ${U.rows.filter(r=>!r.err).length} rows</button><button class="btn" type="button" data-logcancel>Cancel</button></div>`:''}</section>`:''}`;
+}
+const SUPP_FIELD_N={supp_no:'No',supp_date:'WF date',user_field:'User field',category:'Category',description:'Description',amount:'Amount',wbs_group:'WBS Group',wbs_id:'WBS ID',wbs_description:'WBS Description',linked_ref:'Linked VO / claim',remarks:'Remarks'};
+/* the changes on the screen, to the latest log of a project (the same rules and rights as supp_update on the server) */
+function suppActLocal(a){
+  const fail=t=>{throw new Error(t)},pid=a.project_id,p=projById(pid);if(!p)fail('Unknown project');
+  if(!canLogUpload())fail('Only the costing engineer or costing coordinator changes the log');if(!accessIds().includes(pid))fail('You do not have access to this project');
+  const L=suppLatestAny(pid);DB.suppLog=DB.suppLog||[];DB.suppAudit=DB.suppAudit||[];const u=me(),at=new Date().toISOString();
+  const log=(row,action,changes,reason)=>DB.suppAudit.unshift({id:'SUA'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),row_id:row.id,project_id:pid,supp_no:row.supp_no,period:row.period,action,changes:changes||[],reason:reason||null,by:u.name,by_id:u.id,at});
+  if(a.action==='version'){const per=a.period;if(!periodOk(per,'month'))fail('The version must be a month such as 2026-09');if(per>curMonth())fail('The version cannot be after the current month');
+    if(L.b&&L.b.source_period>=per)fail(`The latest log is already ${MMMYY(L.b.source_period)}`);
+    const b=logBatch({kind:'supplements',project_id:pid,file_name:L.b?`Copy of the ${MMMYY(L.b.source_period)} log (on screen)`:'Started on screen',file_hash:'screen-'+Date.now().toString(36),source_period:per,rows_total:L.rows.length,rows_accepted:L.rows.length,rows_rejected:0,total_source:suppSum(L.rows,'amount'),total_accepted:suppSum(L.rows,'amount'),recon_status:'Matched',detail:{copied_from:L.b?L.b.id:null}});
+    let id=DB.suppLog.reduce((m,r)=>Math.max(m,+r.id||0),0);L.rows.forEach(({id:_,batch_id,period,...r})=>DB.suppLog.push({...r,id:++id,batch_id:b.id,project_id:pid,period:per}));
+    logChange(`${p.short}: budget supplement log, ${MMMYY(per)} version started${L.b?` from ${MMMYY(L.b.source_period)}`:''}`);save();return {batch:b}}
+  if(!L.b)fail('This project has no supplement log yet: upload one first');
+  if(a.action==='remove'){const r=L.rows.find(x=>x.id===a.id);if(!r)fail('That row is not in the latest log');const why=String(a.reason||'').trim();if(why.length<5)fail('Give the reason for removing it');
+    DB.suppLog=DB.suppLog.filter(x=>x!==r);log(r,'removed',[],why.slice(0,300));logChange(`${p.short}: budget supplement ${r.supp_no} removed from the ${MMMYY(r.period)} log (${why})`);save();return {removed:r}}
+  const {row,err}=suppNormalize(a.values||{},null);if(err)fail(err[0].toUpperCase()+err.slice(1));
+  if(L.rows.some(x=>x.supp_no===row.supp_no&&x.id!==a.id))fail(`${row.supp_no} is already in the log`);
+  if(a.action==='add'){const id=DB.suppLog.reduce((m,r)=>Math.max(m,+r.id||0),0)+1,n={id,batch_id:L.b.id,project_id:pid,period:L.b.source_period,...row};DB.suppLog.push(n);
+    log(n,'added',[['amount',null,n.amount]]);logChange(`${p.short}: budget supplement ${n.supp_no} added to the ${MMMYY(n.period)} log`);save();return {row:n}}
+  if(a.action==='edit'){const r=L.rows.find(x=>x.id===a.id);if(!r)fail('That row is not in the latest log');if(!suppNew(r))fail('A row logged before v3.29 is changed by uploading the log again');
+    const ch=Object.keys(SUPP_FIELD_N).filter(k=>String(r[k]??'')!==String(row[k]??'')).map(k=>[k,r[k]??null,row[k]??null]);if(!ch.length)return {row:r,changed:false};
+    Object.assign(r,row);log(r,'changed',ch);logChange(`${p.short}: budget supplement ${r.supp_no} changed (${ch.map(c=>SUPP_FIELD_N[c[0]]).join(', ')})`);save();return {row:r,changed:true}}
+  fail('Unknown action')}
+async function suppAct(a){
+  if(CLOUD_ME){if(!DB.suppCloud){toast('Changes on this screen need the v35 database update (see STAGE-29-SETUP)');return null}
+    let r;try{r=await rpc('supp_update',{p:a})}catch(e){toast('The server refused this: '+srvMsg(e));return null}
+    try{await cloudLoadReleases();await cloudLoadSuppLists()}catch(e){}save();return r||true}
+  try{return suppActLocal(a)}catch(e){toast(e.message);return null}}
+async function suppExport(){
+  const D=suppData();if(!D.rows.length){toast('No row to export');return}
+  try{await loadLib(LIBS.xlsx);
+    const head=['Project','PE number','Region','Sector','Project type','Version','Supplement no','WF date','User field','User field description','Category','Unified category','Description','Supplement','Savings','VO Cost','VO Price','Net value','WBS Group','WBS ID','WBS Description','Linked VO / claim','Remarks'];
+    const body=D.rows.map(r=>[r.p.short,pcode(r.p),regById(r.p.region)?.name||'',secById(r.p.sector)?.name||'',r.p.ptype||'',MMMYY(r.b.source_period),r.supp_no,r.supp_date||'',r.uf||'',r.uf?suppUfDesc(r.uf):'',r.cat||'',r.uni||'',r.description||'',r.supp||0,r.sav||0,r.vocost||0,r.voprice||0,r.net,r.wbs_group||'',r.wbs_id||'',r.wbs_description||'',r.linked_ref||'',r.remarks||'']);
+    const T=suppTotals(D.rows),ws=XLSX.utils.aoa_to_sheet([[`ProTrack budget supplement log, version ${MMMYY(D.per)}`],[`${D.rows.length} rows · net value (impact on the gross margin) ${T.net} · budget change for the cost report ${T.budget} · SAR`],[],head,...body,['Total','','','','','','','','','','','','',T.supp,T.sav,T.vocost,T.voprice,T.net]]);
+    ws['!cols']=head.map(h=>({wch:Math.max(12,h.length+2)}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Supplements');
+    await saveFile(`ProTrack_budget_supplements_${MMMYY(D.per)}.xlsx`,xlsxBlob(wb))}catch(e){toast('Could not build the file: '+(e.message||''))}}
+function suppFormValues(){const f=$('#suppForm');if(!f)return null;const g=n=>f.elements[n]?f.elements[n].value:'';return Object.fromEntries(['supp_no','supp_date','user_field','category','amount','linked_ref','wbs_group','wbs_id','wbs_description','description','remarks'].map(k=>[k,g(k)]))}
+document.addEventListener('change',e=>{const t=e.target;if(t.matches&&t.matches('[data-suppf]')&&t.tagName==='SELECT'){const f=suppState();f[t.dataset.suppf]=t.value;if(t.dataset.suppf==='pid'){state.suppEdit=null;if(t.value)state.logPid=t.value}render()}});
+document.addEventListener('input',e=>{const t=e.target;if(t.matches&&t.matches('input[data-suppf]')){suppState()[t.dataset.suppf]=t.value;clearTimeout(renderSupp.t);renderSupp.t=setTimeout(()=>{const s=t.selectionStart;render();const n=document.querySelector('input[data-suppf="q"]');if(n){n.focus();try{n.setSelectionRange(s,s)}catch(x){}}},250)}});
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-suppadd],[data-suppedit],[data-suppdel],[data-suppsave],[data-suppcancel],[data-suppver],[data-suppexp],[data-suppclear]');if(!t)return;const d=t.dataset,D=suppData(),pid=D.f.pid||(D.ps[0]||{}).id;
+  if('suppadd' in d){state.suppEdit='new';render();return}
+  if(d.suppedit){const id=+d.suppedit;state.suppEdit=state.suppEdit===id?null:id;render();return}
+  if('suppcancel' in d){state.suppEdit=null;render();return}
+  if('suppclear' in d){Object.assign(suppState(),{reg:'',sec:'',pt:'',cat:'',uf:'',uni:'',q:''});render();return}
+  if('suppexp' in d){suppExport();return}
+  if(d.suppver){const per=curMonth();if(!confirm(`Start the ${MMMYY(per)} version of the log for ${projById(d.suppver).short}? It begins as a copy of the latest log; you then change it here or upload the month's file.`))return;
+    const r=await suppAct({action:'version',project_id:d.suppver,period:per});if(r){suppState().per=per;render();toast(`${MMMYY(per)} version started`)}return}
+  if(d.suppdel){const r=D.rows.find(x=>x.id===+d.suppdel);if(!r)return;const why=prompt(`Remove ${r.supp_no} from the ${MMMYY(r.period)} log? Give the reason (it is kept in the history).`);if(why==null)return;
+    const x=await suppAct({action:'remove',project_id:r.project_id,id:r.id,reason:why});if(x){state.suppEdit=null;render();toast(`${r.supp_no} removed`)}return}
+  if('suppsave' in d){const f=$('#suppForm'),id=f.dataset.id?+f.dataset.id:null,v=suppFormValues(),er=$('#suppErr');t.disabled=true;
+    if(!CLOUD_ME){try{const x=suppActLocal({action:id?'edit':'add',project_id:f.dataset.pid,id,values:v});state.suppEdit=null;render();toast(id?(x.changed?`${x.row.supp_no} saved`:'Nothing changed'):`${x.row.supp_no} added`)}catch(x){t.disabled=false;if(er)er.textContent=x.message}return}
+    const x=await suppAct({action:id?'edit':'add',project_id:f.dataset.pid,id,values:v});t.disabled=false;if(x){state.suppEdit=null;render();toast('Saved')}else if(er)er.textContent='Not saved: see the message at the bottom of the screen.';return}
+});
+/* ---------- Settings → Supplement lists (super admin) ---------- */
+function suppListCheck(L){
+  if(!Array.isArray(L.uf)||!L.uf.length)return 'The user field list needs at least one item';if(!Array.isArray(L.cats)||!L.cats.length)return 'The category list needs at least one item';
+  if(L.uf.length>100||L.cats.length>100)return 'A list has at most 100 items';
+  if(L.uf.some(([c,d])=>!c||c.length>40||String(d||'').length>200))return 'A user field needs a code of up to 40 characters and a description of up to 200';
+  if(L.cats.some(([c,u])=>!c||!u||c.length>100||u.length>100))return 'A category and its unified category are each up to 100 characters';
+  const dup=a=>a.find((x,i)=>a.indexOf(x)!==i);const du=dup(L.uf.map(x=>x[0].toLowerCase()));if(du)return `The user field "${du}" is twice in the list`;const dc=dup(L.cats.map(x=>x[0]));if(dc)return `The category "${dc}" is twice in the list`;
+  if(!L.uf.some(x=>x[0]===SUPP_CONT))return 'Cont. Value stays in the user field list: it marks the contract value rows (VO price, not budget)';
+  return ''}
+async function suppListsSet(L,what){
+  if(state.role!=='sa'){toast('Only a super admin changes the lists');return false}
+  const clean={uf:L.uf.map(([c,d])=>[String(c||'').replace(/\s+/g,' ').trim(),String(d||'').replace(/\s+/g,' ').trim()]),cats:L.cats.map(([c,u])=>[String(c||'').replace(/\s+/g,' ').trim(),String(u||'').replace(/\s+/g,' ').trim()])};
+  const bad=suppListCheck(clean);if(bad){toast(bad);return false}
+  if(CLOUD_ME){if(DB.suppListsMissing){toast('The lists need the v35 database update (see STAGE-29-SETUP)');return false}
+    try{await rpc('supp_lists_set',{p:clean})}catch(e){toast('The server refused this: '+srvMsg(e));return false}try{await cloudLoadSuppLists()}catch(e){}}
+  else DB.suppLists=clean;
+  logChange(`Supplement lists: ${what}`);save();render();toast('Lists saved');return true}
+const suppListUse=(k,v)=>(DB.suppLog||[]).filter(r=>suppNew(r)&&r[k]===v).length;
+function suppListsAdminHTML(){
+  const L=suppLists(),chU=JSON.stringify(L.uf)!==JSON.stringify(SUPP_UF_DEF),chC=JSON.stringify(L.cats)!==JSON.stringify(SUPP_CAT_DEF),unis=suppUnis();
+  return `${CLOUD_ME&&DB.suppListsMissing?`<div class="warn-box" style="margin-bottom:12px">The lists are kept on the server after the v35 database update (see STAGE-29-SETUP). Until then the standard lists are used and cannot be changed. <span class="small">${esc(DB.suppListsMissing)}</span></div>`:''}
+  <p class="small muted" style="margin:0 0 12px">The user fields and categories of Cost Control → Budget supplements. The unified category of a row follows its category. A value outside the lists is refused, on the screen and on upload. A row keeps a value removed from its list, shown as <i>not in the list</i>. <b>Cont. Value</b> stays: it marks the contract value rows (a change order with Cont. Value is a VO price, not budget).</p>
+  <div class="dlylists">
+    <div class="dlylist"><div class="card-head" style="margin:0 0 4px"><h3 style="margin:0">User fields</h3><span class="small muted">${L.uf.length} items${chU?' · changed':''}</span></div>
+      <ol class="dlyli">${L.uf.map(([c,d],i)=>{const u=suppListUse('user_field',c);return `<li><span><b>${esc(c)}</b> ${esc(d)}${u?` <span class="muted small">· ${u} row${u===1?'':'s'}</span>`:''}</span><span class="dlylibtn">${c===SUPP_CONT?'':`<button class="btn sm" type="button" data-suppli="uf:del:${i}" aria-label="Remove ${esc(c)}">✕</button>`}</span></li>`}).join('')}</ol>
+      <div class="dlyladd"><input id="suppl_ufc" maxlength="40" placeholder="Code, e.g. MAN.MECH" aria-label="New user field code"><input id="suppl_ufd" maxlength="200" placeholder="Description" aria-label="New user field description"><button class="btn sm primary" type="button" data-suppladd="uf">Add</button></div>
+      ${chU?'<button class="link small" type="button" data-supplreset="uf">Back to the standard list</button>':''}</div>
+    <div class="dlylist"><div class="card-head" style="margin:0 0 4px"><h3 style="margin:0">Categories and their unified category</h3><span class="small muted">${L.cats.length} items, ${unis.length} unified${chC?' · changed':''}</span></div>
+      <ol class="dlyli">${L.cats.map(([c,u],i)=>{const n=suppListUse('category',c);return `<li><span>${esc(c)} → <b>${esc(u)}</b>${n?` <span class="muted small">· ${n} row${n===1?'':'s'}</span>`:''}</span><span class="dlylibtn"><button class="btn sm" type="button" data-suppli="cats:del:${i}" aria-label="Remove ${esc(c)}">✕</button></span></li>`}).join('')}</ol>
+      <div class="dlyladd"><input id="suppl_cat" maxlength="100" placeholder="Category" aria-label="New category"><input id="suppl_uni" maxlength="100" list="suppl_unis" placeholder="Unified category" aria-label="Its unified category"><datalist id="suppl_unis">${unis.map(u=>`<option value="${esc(u)}">`).join('')}</datalist><button class="btn sm primary" type="button" data-suppladd="cats">Add</button></div>
+      ${chC?'<button class="link small" type="button" data-supplreset="cats">Back to the standard list</button>':''}</div></div>`}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-suppli],[data-suppladd],[data-supplreset]');if(!t)return;const d=t.dataset,L=suppLists(),N={uf:[...L.uf.map(x=>[...x])],cats:[...L.cats.map(x=>[...x])]};
+  if(d.suppli){const [k,,i]=d.suppli.split(':'),x=N[k][+i];if(!x)return;const u=suppListUse(k==='uf'?'user_field':'category',x[0]);
+    if(!confirm(`Remove "${x[0]}" from the ${k==='uf'?'user fields':'categories'}?${u?` ${u} row${u===1?' keeps it':'s keep it'}, shown as not in the list.`:''}`))return;N[k].splice(+i,1);suppListsSet(N,`${k==='uf'?'user field':'category'} "${x[0]}" removed`);return}
+  if(d.suppladd==='uf'){const c=String($('#suppl_ufc')?.value||'').trim(),de=String($('#suppl_ufd')?.value||'').trim();if(!c){toast('Type the code first');return}N.uf.push([c,de]);suppListsSet(N,`user field "${c}" added`);return}
+  if(d.suppladd==='cats'){const c=String($('#suppl_cat')?.value||'').trim(),u=String($('#suppl_uni')?.value||'').trim();if(!c||!u){toast('Type the category and its unified category');return}N.cats.push([c,u]);suppListsSet(N,`category "${c}" → ${u} added`);return}
+  if(d.supplreset){const k=d.supplreset;if(!confirm('Go back to the standard list? Items added are removed; rows keep their values.'))return;N[k]=(k==='uf'?SUPP_UF_DEF:SUPP_CAT_DEF).map(x=>[...x]);suppListsSet(N,`${k==='uf'?'user fields':'categories'} back to the standard list`)}});
+/* on the ProTrack server (v35): the lists, the history of the changes on the screen, and whether supp_update is there */
+async function cloudLoadSuppLists(){
+  try{const r=await selAll('supp_lists','*',null,['id']);DB.suppLists=r[0]&&r[0].cfg?r[0].cfg:null;DB.suppListsMissing=false;DB.suppCloud=true}
+  catch(e){DB.suppLists=null;DB.suppListsMissing=srvMsg(e);DB.suppCloud=false}
+  try{DB.suppAudit=(await selAll('supp_audit','*',null,['id'])).map(a=>({...a,by:a.by_name})).sort((a,b)=>String(b.at).localeCompare(String(a.at)))}catch(e){DB.suppAudit=[]}}
+/* v3.29 demo: the sample logs in today's layout: user field, category, WF date, WBS, signed amounts (clearly sample) */
+function seedV329(){
+  if(CLOUD||DB.v329Seeded)return;const M={'BS-01':['INSTL.ELC','Change Order','Electrical','WBS-ELC-03','Cable installation, VO-001 scope',-1],'BS-02':['SAD','Saudization','Site Management','WBS-SM-01','Site management, Saudization',-1],'BS-03':['MTRL.ELC','Under Estimation','Electrical','WBS-ELC-01','Electrical material, cables',-1]};
+  (DB.batches||[]).filter(b=>b.kind==='supplements'&&/\(sample\)/.test(b.file_name||'')).forEach(b=>{const L=(DB.suppLog||[]).filter(r=>r.batch_id===b.id&&!suppNew(r));if(!L.length)return;let id=DB.suppLog.reduce((m,r)=>Math.max(m,+r.id||0),0);
+    L.forEach(r=>{const m=M[r.supp_no];if(!m)return;Object.assign(r,{user_field:m[0],category:m[1],unified_category:suppUni(m[1]),wbs_group:m[2],wbs_id:m[3],wbs_description:m[4]+' (sample)',amount:m[5]*Math.abs(+r.amount||0),approval_status:'Approved',supp_date:r.supp_date||`${b.source_period}-15`})});
+    const vo=L.find(r=>r.supp_no==='BS-01'),base=vo?Math.abs(+vo.amount||0):0;
+    if(base){DB.suppLog.push({id:++id,batch_id:b.id,project_id:b.project_id,period:b.source_period,supp_no:'BS-04',supp_date:`${b.source_period}-18`,description:'Contract value of VO-001 (sample)',user_field:SUPP_CONT,category:'Change Order',unified_category:SUPP_CO,amount:Math.round(base*1.22/1000)*1000,wbs_group:'Contract',wbs_id:'WBS-CV',wbs_description:'Contract value (sample)',linked_ref:'VO-001',approval_status:'Approved',remarks:null});
+      DB.suppLog.push({id:++id,batch_id:b.id,project_id:b.project_id,period:b.source_period,supp_no:'BS-05',supp_date:`${b.source_period}-20`,description:'Saving on site facilities (sample)',user_field:'SM',category:'Savings',unified_category:'Savings',amount:Math.round(base*0.25/1000)*1000,wbs_group:'Site Management',wbs_id:'WBS-SM-02',wbs_description:'Site facilities (sample)',linked_ref:null,approval_status:'Approved',remarks:null})}
+    const n=DB.suppLog.filter(r=>r.batch_id===b.id);b.rows_total=b.rows_accepted=n.length;b.total_source=b.total_accepted=suppSum(n,'amount')});
+  DB.v329Seeded=true;save()}
+
+/* the template: the columns of the log, and the lists of the moment on a second sheet */
+async function suppTemplate(){
+  try{await loadLib(LIBS.xlsx);const L=suppLists(),per=($('#logMonth')?.value||curMonth()).trim();
+    const head=['Supplement no','Version (MMM-YY)','WF date','User field','Category','Description','Amount (SAR)','WBS Group','WBS ID','WBS Description','Linked VO / claim','Remarks'];
+    const eg=[['BS-01',MMMYY(per),per+'-05','MAN.ELC','Under Estimation','Additional electrical manpower',-250000,'Electrical','WBS-ELC-02','Electrical manpower','',''],
+      ['BS-02',MMMYY(per),per+'-08','SM','Savings','Saving on site facilities',80000,'Site Management','WBS-SM-02','Site facilities','',''],
+      ['BS-03',MMMYY(per),per+'-12','INSTL.ELC','Change Order','Cost of VO-001',-300000,'Electrical','WBS-ELC-03','Cable installation','VO-001',''],
+      ['BS-04',MMMYY(per),per+'-12','Cont. Value','Change Order','Contract value of VO-001',420000,'Contract','WBS-CV','Contract value','VO-001','']];
+    const ws=XLSX.utils.aoa_to_sheet([['ProTrack budget supplement log'],['One row per supplement approved by its WF. Amount = the impact on the gross margin: negative for a supplement or a VO cost, positive for a saving or a VO price. ProTrackAI puts it in Supplement, Savings, VO Cost or VO Price, and works out the unified category from the category (sheet Lists). Version: the month of this log.'],[],head,...eg]);
+    ws['!cols']=head.map(h=>({wch:Math.max(14,h.length+2)}));
+    const n=Math.max(L.uf.length,L.cats.length),lists=XLSX.utils.aoa_to_sheet([['User field','Description','','Category','Unified category'],...Array.from({length:n},(_,i)=>[(L.uf[i]||[])[0]||'',(L.uf[i]||[])[1]||'','',(L.cats[i]||[])[0]||'',(L.cats[i]||[])[1]||''])]);
+    lists['!cols']=[{wch:14},{wch:24},{wch:2},{wch:26},{wch:26}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Supplements');XLSX.utils.book_append_sheet(wb,lists,'Lists');
+    await saveFile('ProTrack_budget_supplements_template.xlsx',xlsxBlob(wb))}catch(e){toast('Could not build the template: '+(e.message||''))}}
 
 /* ---------- demo data: clearly sample releases and logs (never on the server) ---------- */
 /* v3.11 sample values: VO-001 approved by the client at its expected price; VO-002 considered internally in full and
@@ -3621,7 +3904,7 @@ function delayActLocal(p){
 async function cloudLoadDelays(){
   try{const [d,a]=await Promise.all([selAll('delay_events','*',null,['project_id','ref']),selAll('delay_audit','*',null,['id'])]);DB.delays=d;DB.dlyAudit=a;DB.dlyMissing=false}
   catch(e){DB.delays=[];DB.dlyAudit=[];DB.dlyMissing=srvMsg(e)}
-  await cloudLoadDlyLists();await cloudLoadDlyCorr();
+  await cloudLoadDlyLists();await cloudLoadDlyCorr();await cloudLoadSuppLists();
 }
 async function delayAct(p){
   delayAct.err='';
@@ -4247,7 +4530,7 @@ function xrProjectHTML(t,per){
     ${vl.rows.length?`<h3>Change orders and claims (${esc(perLabel('month',vl.b.source_period))} log)</h3><div class="scroll"><table class="tbl"><thead><tr><th>Ref</th><th>Type</th><th>Description</th><th>Client</th><th class="n">Expected price</th><th class="n">Approved by client</th><th class="n">Considered internally</th><th class="n">Rev-0 change</th><th>Overall</th></tr></thead><tbody>
       ${vl.rows.map(r=>`<tr><td><b>${esc(r.ref_no)}</b></td><td>${esc(r.kind)}</td><td class="small">${esc(r.description||'')}</td><td class="small">${esc(r.client_status||'—')}</td><td class="n">${r.expected_price!=null?sar(+r.expected_price):'—'}</td>
         <td class="n">${voHas(r.client_price)?sar(+r.client_price):'—'}</td><td class="n">${(()=>{const k=voConsidered(r);return k.v?sar(k.v)+(k.src==='wf'?`<span class="t2">${esc(r.wf_no)}, ${fmtDY(r.wf_date)}</span>`:''):'—'})()}</td><td class="n">${r.rev0_change!=null?sar(+r.rev0_change):'—'}</td><td class="small">${esc(r.overall_status||'—')}</td></tr>`).join('')}</tbody></table></div>`:''}
-    ${sl.rows.length?`<h3>Budget supplements (${esc(perLabel('month',sl.b.source_period))} log)</h3><p class="small">${SUPP_CATS.map(cat=>{const v=sl.rows.filter(r=>r.category===cat);return v.length?`${esc(cat)}: ${sar(v.filter(r=>/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))} approved${v.some(r=>!/^approved$/i.test(r.approval_status||''))?`, ${sar(v.filter(r=>!/^approved$/i.test(r.approval_status||'')).reduce((t,r)=>t+(+r.amount||0),0))} pending`:''}`:''}).filter(Boolean).join(' · ')}</p>`:''}</section>`:''}
+    ${sl.rows.length?suppGroupHTML(`Budget supplements (${MMMYY(sl.b.source_period)} log)`,sl.rows.map(r=>suppView(r)).filter(r=>r.counts),'uni','Unified category'):''}</section>`:''}
   <section class="panel"><h2>Release history</h2><ul class="audit">${hist.map(r=>`<li><b>${esc(REL_KIND[r.kind])}</b> ${esc(perLabel(r.period_type,r.period))}, rev ${r.rev} <span class="muted small">${esc(r.status)}, approved ${esc(tStamp(r.approved_at).slice(0,10))} by ${esc(who(r.approved_by))}</span></li>`).join('')||'<li class="muted">Nothing released yet.</li>'}</ul></section>`;
 }
 
@@ -7709,7 +7992,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.28.2';
+const APP_VERSION='3.29';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
@@ -7743,7 +8026,7 @@ const DOMAINS=[
     {plan:'SAP ECC Excel exports',note:'Planned: needs a sample export and Finance approval'},{plan:'S/4HANA connector',note:'Disabled until IT, SAP, Cybersecurity and Finance approve'}]},
   {k:'admin',label:'Administration',ic:'admin',items:[
     {v:'admin',tab:'users',label:'Users and access'},{v:'admin',tab:'rights',label:'Roles and rights'},{v:'admin',tab:'roles',label:'Role access'},{v:'admin',tab:'matrix',label:'Approval matrix'},
-    {v:'admin',tab:'mail',label:'Approval email'},{v:'admin',tab:'projects',label:'Projects and terms'},{v:'admin',tab:'system',label:'System and date basis'},{v:'admin',tab:'dlylists',label:'Delay register lists'},{v:'admin',tab:'golive',label:'Release strategy'}]}];
+    {v:'admin',tab:'mail',label:'Approval email'},{v:'admin',tab:'projects',label:'Projects and terms'},{v:'admin',tab:'system',label:'System and date basis'},{v:'admin',tab:'dlylists',label:'Delay register lists'},{v:'admin',tab:'supplists',label:'Supplement lists'},{v:'admin',tab:'golive',label:'Release strategy'}]}];
 const NAV_SEC={recon:/Source reconciliation/i,p6:/Baseline management|baseline/i,actions:/Critical items/i};
 function navItemOk(it,views){
   if(it.plan)return PLAN_ROLES.includes(state.role)&&(!it.needs||views.includes(it.needs));   /* v3.24: a planned item of a module shows only with the module */
@@ -8013,7 +8296,7 @@ function renderNav(){
   const L=T[state.lang];const views=NAV_ALL.filter(navOn);NAV_VIEWS=views;
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
   $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=`<button type="button" data-mnav aria-label="Open the full menu">${icon('menu')}<span>Menu</span></button>`+views.filter(v=>!['boq','pv','mat','po','inv','mmcs','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','dly','cout','rs','xr'].includes(v)).map(b).join('');
-  $('#pageTitle').textContent=L[state.view];
+  $('#pageTitle').textContent=state.view==='logs'&&state.logTab==='supp'?'Budget supplements':L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
   $('#scope').value=state.scope;
@@ -8112,7 +8395,7 @@ function renderDash(){
   const ticks=acts.filter(isCon).map(a=>({name:a.name,pi:agg(w7.filter(d=>d.act===a.id)).pi})).filter(t=>t.pi);
   const rows=acts.filter(isCon).map(a=>actStats(a,all)).sort((x,y)=>x.g.pi-y.g.pi);
   const dlt=p7.pi-prev.pi;
-  const fcs=scopeProjects().map(p=>({p,f:forecast(p)}));
+  const fcs=scopeProjects().map(p=>({p,f:forecast(p)})),site=isSiteRole();
   const fm=foremanRows().slice();
   const cdates=chartDates(),series=cdates.map(d=>agg(all.filter(x=>x.date===d))),warn=warnings();
   document.getElementById('view').innerHTML=`${crumb()}
@@ -8127,7 +8410,7 @@ function renderDash(){
   <section class="g g-kpi">
     <div class="panel kpi" data-kpi="heads"><div class="l">Workforce on site</div><div class="v">${fmt(today.heads)}</div><div class="s">Reported ${lastDate?fmtD(lastDate):'—'}, own crews and subcontractors</div>${sparkline(series.map(o=>o.heads))}</div>
     <div class="panel kpi" data-kpi="prod"><div class="l">Manhours, 30 days</div><div class="v">${fmt(p30.mh)}</div><div class="s">Earned ${fmt(p30.earned)} (${pct(p30.pi)}), overtime ${pct(p30.mh?p30.ot/p30.mh:0,0)}</div>${sparkline(series.map(o=>o.mh),{color:'var(--bar)',fillOp:.35})}</div>
-    <div class="panel kpi" data-kpi="spi"><div class="l">Schedule (SPI)</div><div class="gaugerow">${gauge(e.spi,'SPI')}<div class="s">EV ${sar(e.ev)}<br>PV ${sar(e.pv)}<br>${e.sv>=0?'Ahead':'Behind'} by ${sar(Math.abs(e.sv))}</div></div></div>
+    <div class="panel kpi" data-kpi="spi"><div class="l">Schedule (SPI)</div><div class="gaugerow">${gauge(e.spi,'SPI')}<div class="s">${isSiteRole()?`Done ${pct(e.bac?e.ev/e.bac:0,0)}<br>Plan ${pct(e.bac?e.pv/e.bac:0,0)}<br>${e.sv>=0?'Ahead of plan':'Behind plan'}`:`EV ${sar(e.ev)}<br>PV ${sar(e.pv)}<br>${e.sv>=0?'Ahead':'Behind'} by ${sar(Math.abs(e.sv))}`}</div></div></div>
     ${isSiteRole()?'':`<div class="panel kpi" data-kpi="cpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(e.cpi,'CPI')}<div class="s">EV ${sar(e.ev)}<br>AC ${sar(e.ac)}<br>${e.cv>=0?'Under':'Over'} by ${sar(Math.abs(e.cv))}</div></div></div>`}
     <div class="panel kpi" data-kpi="complete"><div class="l">Portfolio complete</div><div class="gaugerow">${(()=>{const P=progIds([...SCOPE],e);return `${donut(P.act,'Portfolio complete')}<div class="s">Plan ${pct(P.plan,0)} ${P.sched?'(internal weightage)':'by today'}<br>`})()}${fmt(acts.length)} activities<br>${fmt(scopeProjects().length)} project${scopeProjects().length===1?'':'s'}</div></div></div>
     <div class="panel kpi warncard ${state.role==='foreman'?'':'click'}" ${state.role==='foreman'?'':'data-go="rep" data-rep="warn"'}><div class="l">Early warnings</div>
@@ -8137,8 +8420,8 @@ function renderDash(){
   ${portfolioHTML()}
   <section class="g g-2">
     <div class="panel"><h2>Daily productivity and manhours</h2><div class="chart"><canvas id="trend" aria-label="Daily productivity index and manhours chart"></canvas></div></div>
-    <div class="panel"><h2>Project health and forecast</h2><div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Progress, planned vs actual</th><th class="n">SPI</th><th class="n">CPI</th><th class="n">Forecast finish</th><th class="n">Risk</th></tr></thead><tbody>
-      ${fcs.map(({p,f})=>{const P=progOf(p.id);return `<tr class="click" data-scope="${p.id}"><td>${esc(p.short)}<span class="t2">${esc(secById(p.sector)?.name||'')}, ${esc(cityName(p))}</span></td><td>${P?pbar(P.plan,P.act)+`<span class="t2">${pct(P.act,0)} done, plan ${pct(P.plan,0)}, ${esc(progNote(P))}</span>`:f.bac?pbar(f.pv/f.bac,f.ev/f.bac)+`<span class="t2">${pct(f.ev/f.bac,0)} done, plan ${pct(f.pv/f.bac,0)}</span>`:'<span class="muted small">No baseline</span>'}</td><td class="n ${light(P?P.spi:f.spi)}-c">${(P?P.spi:f.spi).toFixed(2)}</td><td class="n ${light(f.cpi)}-c">${f.cpi.toFixed(2)}</td><td class="n">${f.slip>900?'—':fmtDY(f.fin)}<span class="t2">${f.slip>900?'':f.slip>0?f.slip+(f.slip===1?' day late':' days late'):f.slip===0?'On baseline':Math.abs(f.slip)+(f.slip===-1?' day early':' days early')}</span></td><td class="n">${f.conf?`<b class="${f.risk>=60?'r':f.risk>=35?'a':'g'}-c">${f.risk}</b><span class="t2">${f.conf}% confidence</span>`:'<span class="muted small">No baseline</span>'}</td></tr>`}).join('')}
+    <div class="panel"><h2>Project health and forecast</h2><div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Progress, planned vs actual</th><th class="n">SPI</th>${site?'':'<th class="n">CPI</th>'}<th class="n">Forecast finish</th><th class="n">Risk</th></tr></thead><tbody>
+      ${fcs.map(({p,f})=>{const P=progOf(p.id);return `<tr class="click" data-scope="${p.id}"><td>${esc(p.short)}<span class="t2">${esc(secById(p.sector)?.name||'')}, ${esc(cityName(p))}</span></td><td>${P?pbar(P.plan,P.act)+`<span class="t2">${pct(P.act,0)} done, plan ${pct(P.plan,0)}, ${esc(progNote(P))}</span>`:f.bac?pbar(f.pv/f.bac,f.ev/f.bac)+`<span class="t2">${pct(f.ev/f.bac,0)} done, plan ${pct(f.pv/f.bac,0)}</span>`:'<span class="muted small">No baseline</span>'}</td><td class="n ${light(P?P.spi:f.spi)}-c">${(P?P.spi:f.spi).toFixed(2)}</td>${site?'':`<td class="n ${light(f.cpi)}-c">${f.cpi.toFixed(2)}</td>`}<td class="n">${f.slip>900?'—':fmtDY(f.fin)}<span class="t2">${f.slip>900?'':f.slip>0?f.slip+(f.slip===1?' day late':' days late'):f.slip===0?'On baseline':Math.abs(f.slip)+(f.slip===-1?' day early':' days early')}</span></td><td class="n">${f.conf?`<b class="${f.risk>=60?'r':f.risk>=35?'a':'g'}-c">${f.risk}</b><span class="t2">${f.conf}% confidence</span>`:'<span class="muted small">No baseline</span>'}</td></tr>`}).join('')}
     </tbody></table></div><p class="small muted">Progress and SPI use the internal weightage of the latest updated schedule where one is loaded. Forecast extends the last 14 days of earned value to the remaining budget. Risk blends SPI, CPI and the 7-day productivity index.</p></div>
   </section>
   <section class="g g-2">
@@ -8231,7 +8514,7 @@ function lineHTML(l,i,n,rep){
   </div>
   <table class="tbl"><thead><tr><th>Resource</th><th class="n">Qty</th><th class="n">Hours</th><th class="n">Overtime h</th></tr></thead><tbody>
     ${l.labour.map(x=>`<tr><td>${x.cat}</td><td class="n">${x.count}</td><td class="n">${x.reg}</td><td class="n">${x.ot}</td></tr>`).join('')}
-    ${subFlat(l).filter(u=>u.count||u.qty).map(u=>{const sc=subLineCost(u,l.act,rep&&rep.p,rep&&rep.date);const smh=(+u.count||0)*(+u.hours||0);const spi=smh&&u.qty?((+u.qty)/a.pp)/smh:0;return `<tr><td>${u.cat}<span class="t2">${esc(subById(u.sub).name)}, ${fmt(u.qty,1)} ${a.uom} executed${spi?`, index ${pct(spi,0)}`:', hours not recorded'}, ${esc(sc.basis)} = ${sar(sc.cost)}</span></td><td class="n">${u.count}</td><td class="n">${u.hours}</td><td class="n">—</td></tr>`}).join('')}
+    ${subFlat(l).filter(u=>u.count||u.qty).map(u=>{const sc=subLineCost(u,l.act,rep&&rep.p,rep&&rep.date);const smh=(+u.count||0)*(+u.hours||0);const spi=smh&&u.qty?((+u.qty)/a.pp)/smh:0;return `<tr><td>${u.cat}<span class="t2">${esc(subById(u.sub).name)}, ${fmt(u.qty,1)} ${a.uom} executed${spi?`, index ${pct(spi,0)}`:', hours not recorded'}${isSiteRole()?(sc.po?`, ${esc(sc.po)}`:''):`, ${esc(sc.basis)} = ${sar(sc.cost)}`}</span></td><td class="n">${u.count}</td><td class="n">${u.hours}</td><td class="n">—</td></tr>`}).join('')}
     ${l.equip.map(e=>`<tr><td>${e.type}<span class="t2">Equipment</span></td><td class="n">${e.qty}</td><td class="n">${e.hours}</td><td class="n">—</td></tr>`).join('')}
   </tbody></table></section>`;
 }
@@ -8430,7 +8713,7 @@ function updateSummary(){
       return `<li><a href="#line${i}"><span class="num">${i+1}</span>${esc(a.name)}</a><span>${m&&q?`<span class="tl ${light(pi)}">${pct(pi,0)}</span>`:'<span class="muted small">Incomplete</span>'}</span>
         <span class="small muted" style="grid-column:2/-1">${fmt(q,1)} ${a.uom} with ${fmt(m,1)} mh${subQ?`; own ${fmt(ownQ,1)} at ${ownPi?pct(ownPi,0):'—'}, subcontract ${fmt(subQ,1)} at ${subPi?pct(subPi,0):'—'}`:''}</span>
         ${noHours?`<span class="small a-c" style="grid-column:2/-1">Add the subcontractor's workers and hours, or productivity will read high.</span>`:''}</li>`}).join('')}</ul>
-    <dl><dt>Manhours consumed</dt><dd>${fmt(g.mh,1)}</dd><dt>Overtime share</dt><dd>${g.mh?pct(g.ot/g.mh):'—'}</dd><dt>Labour cost</dt><dd>${sar(g.cost)}</dd></dl>
+    <dl><dt>Manhours consumed</dt><dd>${fmt(g.mh,1)}</dd><dt>Overtime share</dt><dd>${g.mh?pct(g.ot/g.mh):'—'}</dd>${isSiteRole()?'':`<dt>Labour cost</dt><dd>${sar(g.cost)}</dd>`}</dl>
     <h3>Resources on this report</h3><dl>${list(trades)}${list(subs)}${list(eq)||''}</dl>
     <p class="small muted" style="margin:-4px 0 10px">A worker who moved between activities should appear on each with the hours spent there, so these counts can be higher than the gate count.</p>
     <div class="actions"><button class="btn primary" type="button" data-save="submit" ${ready?'':'aria-disabled="true"'}>${state.editing&&f.status!=='Draft'?'Save changes':'Submit for approval'}</button>${!state.editing||f.status==='Draft'?'<button class="btn" type="button" data-save="draft">Save draft</button>':''}</div>
@@ -9115,7 +9398,7 @@ const REPQ=[[/collect|outstanding|receiv|under-?billed/i,'cash'],[/invoice|billi
   [/p6 update|export to p6|xer|primavera/i,'p6upd']];
 function repSnapshot(id,max){
   try{
-    const R=REPORTS[id];if(!R)return null;const b=R.build();
+    const R=REPORTS[id];if(!R||R.money&&isSiteRole())return null;const b=R.build();
     const cut=(rows,n)=>rows.slice(0,n).map(r=>{const o={};b.cols.forEach(c=>{let v=r[c.k];if(typeof v==='number')v=Math.abs(v)>=1000?Math.round(v):+v.toFixed(3);if(v!=null&&v!=='')o[c.h]=v});return o});
     return {report:R.title,notes:b.notes,rows:cut(b.rows,max||24),extra:(b.extra||[]).map(x=>({table:x.title,rows:cut(x.rows,12)}))};
   }catch(e){return null}
@@ -10077,7 +10360,8 @@ function roleCfg(){
   ['reports','exec'].forEach(k=>{DB.roleCfg[k]=DB.roleCfg[k]||{};SITE_ROLES.forEach(r=>{if(!DB.roleCfg[k][r])DB.roleCfg[k][r]=JSON.parse(JSON.stringify(DEF_ROLECFG[k][r]))})});
   return DB.roleCfg;
 }
-const reportAllowed=id=>SITE_ROLES.includes(state.role)?roleCfg().reports[state.role].includes(id):state.role!=='foreman';
+/* v3.28.3: a cost or billing report (money:1) only with the right to see cost and billing figures, whatever the role's list says */
+const reportAllowed=id=>!(REPORTS[id]&&REPORTS[id].money&&isSiteRole())&&(SITE_ROLES.includes(state.role)?roleCfg().reports[state.role].includes(id):state.role!=='foreman');
 function siteExecPrefs(){
   const c=roleCfg().exec[state.role];
   return {kpis:c.kpis.filter(k=>!COST_KPIS.includes(k)),group:c.group||'project',second:c.second||'',
@@ -10088,7 +10372,7 @@ function roleAccessHTML(){
   return SITE_ROLES.map(r=>{const e=C.exec[r],rep=C.reports[r];
     return `<section class="panel" style="margin-bottom:16px"><h2>${ROLES[r]}</h2>
     <h3>Reports this role may open</h3>
-    <div class="checks" style="max-height:none">${Object.entries(REPORTS).map(([id,R])=>`<label class="chk"><input type="checkbox" data-rolerep="${r}:${id}" ${rep.includes(id)?'checked':''}><span>${esc(R.title)}</span></label>`).join('')}</div>
+    <div class="checks" style="max-height:none">${Object.entries(REPORTS).map(([id,R])=>`<label class="chk"><input type="checkbox" data-rolerep="${r}:${id}" ${rep.includes(id)?'checked':''}><span>${esc(R.title)}${R.money?' <span class="muted small">(cost and billing: only for people given the right to see cost and billing figures)</span>':''}</span></label>`).join('')}</div>
     <h3 style="margin-top:16px">Executive summary for this role</h3>
     <p class="small muted" style="margin:0 0 8px">People in this role cannot change it. Cost and billing figures are never offered to site roles.</p>
     <div class="checks" style="max-height:none">${KPI_DEFS.filter(([k])=>!COST_KPIS.includes(k)).map(([k,l])=>`<label class="chk"><input type="checkbox" data-rolekpi="${r}:${k}" ${e.kpis.includes(k)?'checked':''}><span>${esc(l)}</span></label>`).join('')}</div>
@@ -10129,7 +10413,7 @@ const KPI_DEFS=[
   ['projects','Projects',g=>({v:String(g.ks.length),s:`${new Set(g.ks.map(k=>k.p.region)).size} regions, ${new Set(g.ks.map(k=>k.p.sector)).size} sectors`})],
   ['value','Contract value',g=>({v:`SAR ${fmt(g.ks.reduce((t,k)=>t+(+k.p.value||0),0))}M`,s:'Signed value in scope'})],
   ['complete','Portfolio complete',g=>{const P=progIds(g.ks.map(k=>k.p.id),g.e);return {v:pct(P.act,0),s:`Plan ${pct(P.plan,0)} ${P.sched?'(internal weightage)':'by today'}`}}],
-  ['spi','Schedule, SPI',g=>{const P=progIds(g.ks.map(k=>k.p.id),g.e);return P.sched?{v:P.spi.toFixed(2),s:'Internal weightage, updated schedules',c:light(P.spi)}:{v:g.e.spi.toFixed(2),s:`${g.e.sv>=0?'Ahead':'Behind'} by ${sar(Math.abs(g.e.sv))}`,c:light(g.e.spi)}}],
+  ['spi','Schedule, SPI',g=>{const P=progIds(g.ks.map(k=>k.p.id),g.e);return P.sched?{v:P.spi.toFixed(2),s:'Internal weightage, updated schedules',c:light(P.spi)}:{v:g.e.spi.toFixed(2),s:isSiteRole()?(g.e.sv>=0?'Ahead of plan':'Behind plan'):`${g.e.sv>=0?'Ahead':'Behind'} by ${sar(Math.abs(g.e.sv))}`,c:light(g.e.spi)}}],
   ['cpi','Cost, CPI',g=>({v:g.e.cpi.toFixed(2),s:`${g.e.cv>=0?'Under':'Over'} by ${sar(Math.abs(g.e.cv))}`,c:light(g.e.cpi)})],
   ['prod','Productivity, 30 days',g=>({v:g.pi?pct(g.pi,0):'—',s:'Earned over spent manhours',c:g.pi?light(g.pi):''})],
   ['heads','Workforce',g=>({v:fmt(agg(valid().filter(d=>d.date===ASOF)).heads),s:'On the last reported day'})],
@@ -10223,8 +10507,9 @@ function projKPI(p){
   const acts=ACTS.filter(a=>a.p===p.id),e=evm(acts,ASOF),f=forecast(p),x=eacOf(f);
   const P=progOf(p.id),plan=P?P.plan:e.bac?e.pv/e.bac:0,act=P?P.act:e.bac?e.ev/e.bac:0,spi=P?P.spi:e.spi;
   const pi=agg(lines().filter(l=>l.p===p.id&&VALID.has(l.status)&&l.date>=addDays(TODAY,-30))).pi;
-  const crit=(f.spi<0.95?1:0)+(f.cpi<0.95?1:0)+(pi&&pi<0.9?1:0)+(f.slip>14&&f.slip<900?1:0);
-  return {p,acts,e,f,x,plan,act,spi,src:P?P.basis:null,sdd:P?P.dd:null,va:act-plan,pi,crit,score:(1-f.spi)+(1-f.cpi)+(pi?1-pi:0)+clamp((f.slip>900?0:f.slip)/120,0,1)};
+  /* v3.28.3: without the cost right, CPI does not flag a project (a flag would tell them the cost position) */
+  const money=!isSiteRole(),crit=(f.spi<0.95?1:0)+(money&&f.cpi<0.95?1:0)+(pi&&pi<0.9?1:0)+(f.slip>14&&f.slip<900?1:0);
+  return {p,acts,e,f,x,plan,act,spi,src:P?P.basis:null,sdd:P?P.dd:null,va:act-plan,pi,crit,score:(1-f.spi)+(money?1-f.cpi:0)+(pi?1-pi:0)+clamp((f.slip>900?0:f.slip)/120,0,1)};
 }
 function bottlenecks(p){
   const out=warnings().filter(w=>w.proj===p.short&&w.sev!=='Low').slice(0,5).map(w=>({t:w.sev,h:`${w.item}: ${w.ind} at ${w.val}`,d:w.act}));
@@ -10238,9 +10523,9 @@ function execProjects(){return PROJECTS.filter(p=>SCOPE.has(p.id))}
 function renderExecList(){
   const q=(state.execQ||'').toLowerCase();
   const rows=execProjects().map(projKPI).filter(k=>!q||k.p.id.toLowerCase().includes(q)||k.p.name.toLowerCase().includes(q)||k.p.short.toLowerCase().includes(q)||(secById(k.p.sector)?.name||'').toLowerCase().includes(q));
-  const el=$('#execList');if(!el)return;
-  el.innerHTML=rows.length?`<table class="tbl"><thead><tr><th>Project</th><th>Sector and region</th><th class="n">Plan %</th><th class="n">Actual %</th><th class="n">Var</th><th class="n">SPI</th><th class="n">CPI</th><th class="n">Productivity</th><th></th></tr></thead><tbody>
-    ${rows.map(k=>`<tr class="click" data-execp="${k.p.id}"><td><b>${esc(k.p.short)}</b><span class="t2">${esc(pcode(k.p))}, ${esc(k.p.name)}</span></td><td>${esc(secById(k.p.sector)?.name||'')}<span class="t2">${esc(regName(k.p))}</span></td><td class="n">${pct(k.plan,0)}</td><td class="n">${pct(k.act,0)}</td><td class="n">${fmtType.pctv(k.va)}</td><td class="n ${light(k.f.spi)}-c">${k.f.spi.toFixed(2)}</td><td class="n ${light(k.f.cpi)}-c">${k.f.cpi.toFixed(2)}</td><td class="n">${k.pi?tl(k.pi):'—'}</td><td class="n"><button class="btn sm" type="button" data-execp="${k.p.id}">Open</button></td></tr>`).join('')}
+  const el=$('#execList');if(!el)return;const site=isSiteRole();
+  el.innerHTML=rows.length?`<table class="tbl"><thead><tr><th>Project</th><th>Sector and region</th><th class="n">Plan %</th><th class="n">Actual %</th><th class="n">Var</th><th class="n">SPI</th>${site?'':'<th class="n">CPI</th>'}<th class="n">Productivity</th><th></th></tr></thead><tbody>
+    ${rows.map(k=>`<tr class="click" data-execp="${k.p.id}"><td><b>${esc(k.p.short)}</b><span class="t2">${esc(pcode(k.p))}, ${esc(k.p.name)}</span></td><td>${esc(secById(k.p.sector)?.name||'')}<span class="t2">${esc(regName(k.p))}</span></td><td class="n">${pct(k.plan,0)}</td><td class="n">${pct(k.act,0)}</td><td class="n">${fmtType.pctv(k.va)}</td><td class="n ${light(k.f.spi)}-c">${k.f.spi.toFixed(2)}</td>${site?'':`<td class="n ${light(k.f.cpi)}-c">${k.f.cpi.toFixed(2)}</td>`}<td class="n">${k.pi?tl(k.pi):'—'}</td><td class="n"><button class="btn sm" type="button" data-execp="${k.p.id}">Open</button></td></tr>`).join('')}
   </tbody></table>`:'<p class="muted">No project matches that search.</p>';
 }
 function renderExec(){
@@ -10253,7 +10538,7 @@ function renderExec(){
   tab==='sum'?execSummary():execProject();
 }
 function execSummary(){
-  const P=execPrefs(),ks=execProjects().map(projKPI),e=evm(scopeActs(),ASOF);
+  const P=execPrefs(),ks=execProjects().map(projKPI),e=evm(scopeActs(),ASOF),site=isSiteRole();
   const crit=ks.filter(k=>k.crit).sort((a,b)=>b.score-a.score);
   const pi=agg(valid().filter(d=>d.date>=addDays(TODAY,-30))).pi;
   const ctx={ks,e,pi,crit,b:billOfSet(ks)};
@@ -10285,9 +10570,9 @@ function execSummary(){
         <td class="n ${x.gapSub>1?'r-c':''}">${sar(Math.max(0,x.gapSub))}</td><td class="n ${x.gapAppr>1?'a-c':''}">${sar(Math.max(0,x.gapAppr))}</td><td class="n">${sar(Math.max(0,x.outstanding))}</td></tr>`).join('')}
     </tbody></table></div></section>`})()}
   ${P.hideMat||!canMatView()?'':mtExecHTML(ks.map(k=>({p:k.p,s:mtSnap(k.p.id)})),false)}
-  <section class="panel"><h2>Critical projects</h2><div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Sector and region</th><th class="n">Plan %</th><th class="n">Actual %</th><th class="n">Var</th><th class="n">CPI</th><th class="n">SPI</th><th class="n">Productivity</th><th>Main issue</th><th></th></tr></thead><tbody>
-    ${crit.map(k=>{const w=bottlenecks(k.p)[0];return `<tr class="click" data-execp="${k.p.id}"><td><b>${esc(k.p.short)}</b><span class="t2">${esc(k.p.pm)}</span></td><td>${esc(secById(k.p.sector)?.name||'')}<span class="t2">${esc(regName(k.p))}</span></td><td class="n">${pct(k.plan,0)}</td><td class="n">${pct(k.act,0)}</td><td class="n">${fmtType.pctv(k.va)}</td><td class="n ${light(k.f.cpi)}-c">${k.f.cpi.toFixed(2)}</td><td class="n ${light(k.f.spi)}-c">${k.f.spi.toFixed(2)}</td><td class="n">${k.pi?tl(k.pi):'\u2014'}</td><td class="small">${w?esc(w.h):'\u2014'}</td><td class="n"><button class="btn sm" type="button" data-execp="${k.p.id}">Open</button></td></tr>`}).join('')||'<tr><td colspan="10" class="muted">No project is below the thresholds.</td></tr>'}
-  </tbody></table></div><p class="small muted">A project is flagged when SPI or CPI is under 0.95, productivity is under 90%, or the forecast finish is more than 14 days late.</p></section>`;
+  <section class="panel"><h2>Critical projects</h2><div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Sector and region</th><th class="n">Plan %</th><th class="n">Actual %</th><th class="n">Var</th>${site?'':'<th class="n">CPI</th>'}<th class="n">SPI</th><th class="n">Productivity</th><th>Main issue</th><th></th></tr></thead><tbody>
+    ${crit.map(k=>{const w=bottlenecks(k.p)[0];return `<tr class="click" data-execp="${k.p.id}"><td><b>${esc(k.p.short)}</b><span class="t2">${esc(k.p.pm)}</span></td><td>${esc(secById(k.p.sector)?.name||'')}<span class="t2">${esc(regName(k.p))}</span></td><td class="n">${pct(k.plan,0)}</td><td class="n">${pct(k.act,0)}</td><td class="n">${fmtType.pctv(k.va)}</td>${site?'':`<td class="n ${light(k.f.cpi)}-c">${k.f.cpi.toFixed(2)}</td>`}<td class="n ${light(k.f.spi)}-c">${k.f.spi.toFixed(2)}</td><td class="n">${k.pi?tl(k.pi):'\u2014'}</td><td class="small">${w?esc(w.h):'\u2014'}</td><td class="n"><button class="btn sm" type="button" data-execp="${k.p.id}">Open</button></td></tr>`}).join('')||`<tr><td colspan="${site?9:10}" class="muted">No project is below the thresholds.</td></tr>`}
+  </tbody></table></div><p class="small muted">A project is flagged when SPI${site?' is':' or CPI is'} under 0.95, productivity is under 90%, or the forecast finish is more than 14 days late.</p></section>`;
 }
 function execProject(){
   const ps=execProjects();
@@ -10306,11 +10591,11 @@ function execProject(){
   const bn=bottlenecks(p),head=agg(V.filter(l=>l.date===V.map(x=>x.date).sort().pop()));
   $('#execBody').innerHTML=`
   <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>${esc(p.name)}</h2><button class="btn sm" type="button" data-execp="">Search another project</button></div>
-    <p class="small muted" style="margin:0">${esc(pcode(p))}, ${esc(secById(p.sector)?.name||'')}, ${esc(regName(p))} Region, ${esc(cityName(p))}. Project manager ${esc(p.pm)}, site engineer ${esc(p.eng)}. Contract value SAR ${(()=>{const c=contractOf(p.id);return c.rev_int!=null&&c.int?`${fmt(c.rev_int/1e6,1)}M internal (original ${fmt(p.value)}M)`:`${fmt(p.value)}M`})()}. ${esc(p.status)}.</p></section>
+    <p class="small muted" style="margin:0">${esc(pcode(p))}, ${esc(secById(p.sector)?.name||'')}, ${esc(regName(p))} Region, ${esc(cityName(p))}. Project manager ${esc(p.pm)}, site engineer ${esc(p.eng)}.${isSiteRole()?'':` Contract value SAR ${(()=>{const c=contractOf(p.id);return c.rev_int!=null&&c.int?`${fmt(c.rev_int/1e6,1)}M internal (original ${fmt(p.value)}M)`:`${fmt(p.value)}M`})()}.`} ${esc(p.status)}.</p></section>
   <section class="g g-kpi">
     <div class="panel kpi"><div class="l">Progress</div><div class="v">${pct(k.act,0)}</div><div class="s">Plan ${pct(k.plan,0)} by today, ${fmtType.pctv(k.va)}</div><div style="margin-top:10px">${pbar(k.plan,k.act)}</div></div>
     <div class="panel kpi"><div class="l">Schedule (SPI)</div><div class="gaugerow">${gauge(k.f.spi,'SPI')}<div class="s">Forecast finish<br><b>${k.f.fin?fmtDY(k.f.fin):'—'}</b><br>${k.f.slip>900?'':k.f.slip>0?`<span class="r-c">${k.f.slip} days late</span>`:`<span class="g-c">${Math.abs(k.f.slip)} days early</span>`}</div></div></div>
-    <div class="panel kpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(k.f.cpi,'CPI')}<div class="s">EAC ${sar(k.x.eac1)}<br>VAC ${sar(k.x.vac)}<br>${k.x.vac<0?'<span class="r-c">Overrun forecast</span>':'<span class="g-c">Within budget</span>'}</div></div></div>
+    ${isSiteRole()?'':`<div class="panel kpi"><div class="l">Cost (CPI)</div><div class="gaugerow">${gauge(k.f.cpi,'CPI')}<div class="s">EAC ${sar(k.x.eac1)}<br>VAC ${sar(k.x.vac)}<br>${k.x.vac<0?'<span class="r-c">Overrun forecast</span>':'<span class="g-c">Within budget</span>'}</div></div></div>`}
     <div class="panel kpi"><div class="l">Productivity, 30 days</div><div class="gaugerow">${gauge(k.pi||0,'Productivity',{max:1.4})}<div class="s">${fmt(head.heads)} workers on the last reported day<br>${fmt(agg(V).mh)} manhours in 30 days</div></div></div>
     ${isSiteRole()?'':`<div class="panel kpi"><div class="l">Earned value</div><div class="v" style="font-size:24px">${sar(k.e.ev)}</div><div class="s">PV ${sar(k.e.pv)}, AC ${sar(k.e.ac)}<br>BAC ${sar(k.e.bac)}, ETC ${sar(k.x.etc)}</div></div>`}
     <div class="panel kpi"><div class="l">Engineering and procurement</div><div class="v" style="font-size:24px">${(()=>{const S=engProcStats().rows.filter(r=>r.proj===p.short);return S.length?pct(S.reduce((t,r)=>t+r.bac*r.pct,0)/S.reduce((t,r)=>t+r.bac,0),0):'—'})()}</div><div class="s">${(()=>{const S=engProcStats().rows.filter(r=>r.proj===p.short);const l=S.filter(r=>r.slip>0).length;return S.length?`${S.length} items, ${l?`<span class="r-c">${l} forecast late</span>`:'<span class="g-c">none late</span>'}`:'No design or procurement items'})()}</div></div>
@@ -10634,15 +10919,17 @@ const DECK_SLIDES=[
   ['prod','Productivity','Planned against actual rates, worst first'],
   ['histo','Manpower, plan actual forecast','With the trade table'],
   ['recon','Quantity reconciliation','Own, rental and subcontract'],
-  ['unitrate','Unit rate analysis','Budget against actual per unit'],
-  ['eac','Estimate at completion','EAC, VAC and forecast finish'],
-  ['invoice','Invoiceable value','Phase caps, releases, retention'],
+  ['unitrate','Unit rate analysis','Budget against actual per unit',1],
+  ['eac','Estimate at completion','EAC, VAC and forecast finish',1],
+  ['invoice','Invoiceable value','Phase caps, releases, retention',1],
   ['miles','Milestones and EOT','Planned, forecast, actual'],
   ['warn','Early warnings','With the recommended action'],
   ['bottle','Bottlenecks and challenges','Per project, in plain words'],
   ['foremen','Foreman performance','Productivity, overtime, approval'],
   ['next','Actions and next steps','An empty slide for your own points']
 ];
+/* v3.28.3: a cost or billing slide (fourth item 1) only with the right to see cost and billing figures */
+const deckSlideOk=k=>{const s=DECK_SLIDES.find(x=>x[0]===k);return !!s&&(!s[3]||!isSiteRole())};
 const deckState=()=>state.deck||(state.deck={pick:{kpi:1,health:1,scurve:1,prod:1,histo:1,eac:1,warn:1,next:1},
   title:'',sub:'',who:me().name,charts:true,rows:8});
 /* ---------- v3.18: report sections in the presentation, and the same data as an Excel workbook ----------
@@ -10775,10 +11062,10 @@ function renderDeck(){
     <h3>Slides</h3>
     <div class="actions" style="margin:0 0 8px"><button class="btn sm" type="button" data-dall="1">Select all</button><button class="btn sm" type="button" data-dall="0">Clear all</button></div>
     <div class="checks" style="max-height:none">
-      ${DECK_SLIDES.map(([k,t,d])=>`<label class="chk"><input type="checkbox" data-dslide="${k}" ${D.pick[k]?'checked':''}><span>${esc(t)}</span><span class="muted small">${esc(d)}</span></label>`).join('')}
+      ${DECK_SLIDES.filter(([k])=>deckSlideOk(k)).map(([k,t,d])=>`<label class="chk"><input type="checkbox" data-dslide="${k}" ${D.pick[k]?'checked':''}><span>${esc(t)}</span><span class="muted small">${esc(k==='kpi'&&isSiteRole()?'Progress, SPI, productivity, workforce':d)}</span></label>`).join('')}
     </div>
     ${deckRepsHTML(D)}
-    <p class="small muted" style="margin:12px 0 0">${Object.values(D.pick).filter(Boolean).length+2} slides including the cover and the closing slide${Object.values(D.rep||{}).some(Boolean)?', then the reports you ticked (long tables run over several slides)':''}.</p>
+    <p class="small muted" style="margin:12px 0 0">${DECK_SLIDES.filter(([k])=>D.pick[k]&&deckSlideOk(k)).length+2} slides including the cover and the closing slide${Object.values(D.rep||{}).some(Boolean)?', then the reports you ticked (long tables run over several slides)':''}.</p>
     <div class="actions"><button class="btn primary" type="button" data-dgo>Download PowerPoint</button><button class="btn" type="button" data-dxl ${Object.values(D.rep||{}).some(Boolean)?'':'disabled title="Tick a report under Reports"'}>Download the reports as Excel</button></div>
     <p id="deckMsg" class="small muted"></p></section>`;
 }
@@ -10822,13 +11109,13 @@ async function buildDeck(){
     c.addText(D.sub||`Progress as of ${fmtDY(ASOF)}`,{x:0.6,y:3.1,w:8.8,h:0.4,fontSize:14,color:'A8C1E4',fontFace:'Arial'});
     c.addText(`${scopeLabel()} · ${D.who} · ${fmtDY(ASOF)}`,{x:0.6,y:4.6,w:8.8,h:0.3,fontSize:11,color:'6E87A8',fontFace:'Arial'});
     /* slides */
-    const pick=k=>D.pick[k];
+    const pick=k=>D.pick[k]&&deckSlideOk(k);
     if(pick('kpi')){
       const s=P.addSlide();head(s,'Where we stand',`${scopeLabel()}, measured against the ${BSETS[state.base].toLowerCase()}`);
       const pi=agg(valid().filter(d=>d.date>=addDays(TODAY,-7))).pi;
       const cards=[['Complete',pct(e.bac?e.ev/e.bac:0,0),`Plan ${pct(e.bac?e.pv/e.bac:0,0)}`],
         ['Schedule, SPI',e.spi.toFixed(2),e.sv>=0?'Ahead of plan':'Behind plan'],
-        ['Cost, CPI',e.cpi.toFixed(2),e.cv>=0?'Under budget':'Over budget'],
+        isSiteRole()?['Progress variance',`${e.ev>=e.pv?'+':'−'}${fmt(Math.abs(e.bac?(e.ev-e.pv)/e.bac*100:0),1)} pts`,'Actual against plan']:['Cost, CPI',e.cpi.toFixed(2),e.cv>=0?'Under budget':'Over budget'],
         ['Productivity',pi?pct(pi,0):'—','Last 7 days'],
         ['Workforce',fmt(agg(valid().filter(d=>d.date===ASOF)).heads),'On the last reported day'],
         ['Warnings',String(warnings().length),`${warnings().filter(w=>w.sev==='High').length} high`]];
@@ -14482,19 +14769,20 @@ const fmtType={
 const XZ={bar:'0.0%',int:'#,##0',dec1:'#,##0.0',dec2:'0.00',dec3:'0.000',pct:'0.0%',pcti:'0.0%',pctv:'+0.0%;-0.0%',sar:'#,##0',idx2:'0.00',days:'+0;-0;0'};
 const plainType={bar:v=>pct(v),pctv:v=>(v>=0?'+':'')+fmt(v*100,1)+' pts',idx2:v=>v?fmt(v,2):'-',pcti:v=>v?pct(v):'-',sev:v=>v,days:v=>v==null?'-':(v>0?'+':'')+fmt(v)+' d'};
 const C=(h,k,t='text')=>({h,k,t});
+const CM=(h,k,t='text')=>({h,k,t,money:1});   /* v3.28.3: a cost or billing column that is not in SAR (CPI, values in SAR M) */
 const plannedHeads=(a,d)=>(isCon(a)&&d>=bsOf(a)&&d<=bfOf(a)&&a.pp)?dpOf(a)/a.pp/8:0;
 function projEvm(ids,t=ASOF){const s=new Set(ids);return evm(ACTS.filter(a=>s.has(a.p)),t)}
 function piWin(filter,from,to){return agg(lines().filter(d=>VALID.has(d.status)&&filter(d)&&d.date>=from&&d.date<=to)).pi}
 function eacOf(e){const eac1=e.cpi?e.bac/e.cpi:0,eac2=e.cpi&&e.spi?e.ac+(e.bac-e.ev)/(e.cpi*e.spi):0;return {eac1,eac2,etc:eac1-e.ac,vac:e.bac-eac1,vacp:e.bac?(e.bac-eac1)/e.bac:0,tcpi:e.bac-e.ac?(e.bac-e.ev)/(e.bac-e.ac):0}}
 
 function warnings(){
-  const W=[],push=(sev,p,item,ind,val,thr,act)=>W.push({sev,proj:p.short,item,ind,val,thr,act});
+  const W=[],push=(sev,p,item,ind,val,thr,act)=>W.push({sev,proj:p.short,item,ind,val,thr,act}),site=isSiteRole();   /* v3.28.3: no cost warning without the cost right */
   const lastWork=(()=>{let d=ASOF;while(D(d).getUTCDay()===5)d=addDays(d,-1);return d})();
   scopeProjects().forEach(p=>{
     const acts=ACTS.filter(a=>a.p===p.id);if(!acts.length){push('Low',p,'Project setup','Baseline','Missing','Baseline loaded','Import the P6 or Excel baseline so progress can be measured.');return}
     const f=forecast(p),x=eacOf(f);
     if(f.spi<0.95)push(f.spi<0.9?'High':'Medium',p,'Whole project','Schedule (SPI)',f.spi.toFixed(2),'≥ 0.95','Review the critical path and add crews or shifts on the activities furthest behind.');
-    if(f.cpi<0.95)push(f.cpi<0.9?'High':'Medium',p,'Whole project','Cost (CPI)',f.cpi.toFixed(2),'≥ 0.95',`Forecast overrun ${sar(-x.vac)}. Check overtime, idle time and crew mix.`);
+    if(f.cpi<0.95&&!site)push(f.cpi<0.9?'High':'Medium',p,'Whole project','Cost (CPI)',f.cpi.toFixed(2),'≥ 0.95',`Forecast overrun ${sar(-x.vac)}. Check overtime, idle time and crew mix.`);
     if(f.slip>14&&f.slip<900)push(f.slip>30?'High':'Medium',p,'Whole project','Forecast finish',`${f.slip} days late`,'≤ 14 days','Agree a recovery plan with the project manager and re-baseline if needed.');
     const pw=piWin(d=>d.p===p.id,addDays(TODAY,-7),ASOF),pp=piWin(d=>d.p===p.id,addDays(TODAY,-14),addDays(TODAY,-8));
     if(pw&&pp&&pw<pp-0.05)push('Medium',p,'Whole project','Productivity trend',`${pct(pp,0)} to ${pct(pw,0)}`,'Stable or rising','Productivity fell this week. Check remarks for access, material or equipment delays.');
@@ -14551,11 +14839,11 @@ const REPORTS={
     return {cols:[C('Project','proj'),C('Activity ID','id'),C('Activity','name'),C('Class','cls'),C('Work location','area'),C('Work type','disc'),C('WBS','wbs'),C('Unit','uom'),C('Budget qty','bq','int'),C('Planned qty to date','pq','int'),C('Actual qty to date','aq','int'),C('Progress','ap','bar'),C('Planned %','pp','pct'),C('Actual %','ap','pct'),C('Variance','vp','pctv'),C('SPI','spi','idx2')],rows,
       chart:pal=>({type:'bar',data:{labels:rows.map(r=>r.id),datasets:[{label:'Planned %',data:rows.map(r=>+(r.pp*100).toFixed(1)),backgroundColor:pal.bar},{label:'Actual %',data:rows.map(r=>+(r.ap*100).toFixed(1)),backgroundColor:pal.accent}]},options:{indexAxis:rows.length>8?'y':'x',scales:{[rows.length>8?'x':'y']:{min:0,max:100,title:{display:true,text:'% complete'}}}}}),
       notes:'Planned % follows the baseline dates. Actual % is earned quantity including progress before the reporting window.'}}},
-  projprog:{sheet:'Progress by project',title:'Planned vs actual progress, project-wise',desc:'Progress, SPI and CPI for each project',build(){
+  projprog:{sheet:'Progress by project',title:'Planned vs actual progress, project-wise',get desc(){return isSiteRole()?'Progress and SPI for each project':'Progress, SPI and CPI for each project'},build(){
     const rows=scopeProjects().map(p=>{const e=projEvm([p.id]),P=progIds([p.id],e);return{proj:p.short,code:p.id,sector:secById(p.sector)?.name,region:regName(p),bac:e.bac,pp:P.plan,ap:P.act,vp:P.act-P.plan,spi:P.spi,cpi:e.cpi,pi:piWin(d=>d.p===p.id,WS,ASOF)}});
-    return {cols:[C('Project','proj'),C('Code','code'),C('Sector','sector'),C('Region','region'),C('Labour budget (BAC)','bac','sar'),C('Progress','ap','bar'),C('Planned %','pp','pct'),C('Actual %','ap','pct'),C('Variance','vp','pctv'),C('SPI','spi','idx2'),C('CPI','cpi','idx2'),C('Productivity, 30 days','pi','pcti')],rows,
+    return {cols:[C('Project','proj'),C('Code','code'),C('Sector','sector'),C('Region','region'),C('Labour budget (BAC)','bac','sar'),C('Progress','ap','bar'),C('Planned %','pp','pct'),C('Actual %','ap','pct'),C('Variance','vp','pctv'),C('SPI','spi','idx2'),CM('CPI','cpi','idx2'),C('Productivity, 30 days','pi','pcti')],rows,
       chart:pal=>({type:'bar',data:{labels:rows.map(r=>r.proj),datasets:[{label:'Planned %',data:rows.map(r=>+(r.pp*100).toFixed(1)),backgroundColor:pal.bar},{label:'Actual %',data:rows.map(r=>+(r.ap*100).toFixed(1)),backgroundColor:pal.accent}]},options:{scales:{y:{min:0,max:100,title:{display:true,text:'% complete'}}}}}),
-      notes:'Progress uses the internal weightage of the latest updated schedule where one is loaded; otherwise it is weighted by budgeted labour cost (baseline manhours at the blended rate). CPI is always cost-weighted.'}}},
+      notes:'Progress uses the internal weightage of the latest updated schedule where one is loaded; otherwise it is weighted by budgeted labour cost (baseline manhours at the blended rate).'+(isSiteRole()?'':' CPI is always cost-weighted.')+''}}},
   projlist:{sheet:'Project list',title:'Project list',desc:'Every project with its team, latest progress, next key milestone and when each report was last updated',build(){
     /* v3.28: one row per project in the scope, any status; filtered by region, sector and status */
     const fr=state.plReg||'ALL',fs=state.plSec||'ALL',fst=state.plSt||'ALL',ften=state.plTen||'ALL',all=scopeProjects(),tenOk=p=>ften==='ALL'||(ften==='pre'?plTenKey(p).startsWith('pre-'):plTenKey(p)===ften);
@@ -14574,7 +14862,7 @@ const REPORTS={
         dpr:dp,dprAge:dp?diffDays(dp,TODAY):null,wk:relTxt(w),mo:relTxt(m),co:relTxt(c)}});
     const regs=[...new Set(all.map(p=>p.region))].map(id=>[id,(regById(id)||{}).name||id]),secs=[...new Set(all.map(p=>p.sector))].filter(Boolean).map(id=>[id,(secById(id)||{}).name||id]),sts=[...new Set(['Pre-award','Active','On hold','Completed','Cancelled',...all.map(p=>p.status)])];
     const by=k=>{const o={};rows.forEach(r=>{o[r[k]]=(o[r[k]]||0)+1});return Object.entries(o).map(([g,n])=>({g,n}))};
-    return {cols:[C('Tender no','te'),C('PE number','pe'),C('Project','proj'),C('Status','status'),C('Bid position','bid'),C('Tender stage','ten'),C('NOA date','noa','date'),C('Client','client'),C('Expected value (SAR M)','exp','dec1'),C('Region','region'),C('Sector','sector'),C('Project manager','pm'),C('Scheduling engineer','plan'),C('Costing engineer','cost'),
+    return {cols:[C('Tender no','te'),C('PE number','pe'),C('Project','proj'),C('Status','status'),C('Bid position','bid'),C('Tender stage','ten'),C('NOA date','noa','date'),C('Client','client'),CM('Expected value (SAR M)','exp','dec1'),C('Region','region'),C('Sector','sector'),C('Project manager','pm'),C('Scheduling engineer','plan'),C('Costing engineer','cost'),
         C('Planned %','pp','pct'),C('Actual %','ap','pct'),C('Variance','vp','pctv'),C('SPI','spi','idx2'),C('Progress from','src'),C('Forecast finish','fin','date'),
         C('Next key milestone','ms'),C('Milestone planned','msp','date'),C('Milestone forecast or actual','msf','date'),C('Milestone status','mss'),
         C('Last daily report','dpr','date'),C('Days since','dprAge','int'),C('Last weekly report','wk'),C('Last monthly report','mo'),C('Last monthly cost report','co')],rows,
@@ -14588,7 +14876,7 @@ const REPORTS={
       notes:'Tender stage, bid position, NOA date, client and expected value come from the Tender register: L1 or L2 awaiting the NOA while pre-award; recording the NOA makes the project active. PE number: the PE number from the Tender register, or the project code where none is held. Progress uses the internal weightage of the updated schedule in force at the data date where one is loaded; otherwise earned value from the baseline and the daily reports. The next key milestone is the first contractual or intermediate milestone not yet achieved (the last one achieved when all are). Last daily report: the latest daily report submitted (not a draft). Last weekly, monthly and monthly cost reports: the latest released version, with its release date. Teams are the people with access to the project in Settings → Users and access.'}}},
   regprog:{sheet:'Progress by region',title:'Planned vs actual progress, region-wise',desc:'Portfolio roll-up for each region',build(){
     const ids=[...SCOPE];const rows=DB.master.regions.map(r=>{const x=ids.filter(id=>projById(id).region===r.id);if(!x.length)return null;const e=projEvm(x),s=new Set(x),P=progIds(x,e);return{region:r.name,rm:userById(r.manager)?.name||'Not assigned',n:x.length,value:x.reduce((t,id)=>t+(+projById(id).value||0),0),pp:P.plan,ap:P.act,vp:P.act-P.plan,spi:P.spi,cpi:e.cpi,pi:piWin(d=>s.has(d.p),addDays(TODAY,-7),ASOF)}}).filter(Boolean);
-    return {cols:[C('Region','region'),C('Regional manager','rm'),C('Projects','n','int'),C('Contract value (SAR M)','value','int'),C('Planned %','pp','pct'),C('Actual %','ap','pct'),C('Variance','vp','pctv'),C('SPI','spi','idx2'),C('CPI','cpi','idx2'),C('Productivity, 7 days','pi','pcti')],rows,
+    return {cols:[C('Region','region'),C('Regional manager','rm'),C('Projects','n','int'),CM('Contract value (SAR M)','value','int'),C('Planned %','pp','pct'),C('Actual %','ap','pct'),C('Variance','vp','pctv'),C('SPI','spi','idx2'),CM('CPI','cpi','idx2'),C('Productivity, 7 days','pi','pcti')],rows,
       chart:pal=>({type:'bar',data:{labels:rows.map(r=>r.region),datasets:[{label:'Planned %',data:rows.map(r=>+(r.pp*100).toFixed(1)),backgroundColor:pal.bar},{label:'Actual %',data:rows.map(r=>+(r.ap*100).toFixed(1)),backgroundColor:pal.accent}]},options:{scales:{y:{min:0,max:100,title:{display:true,text:'% complete'}}}}}),
       notes:'Regions include only the projects in your current scope and sector filter.'}}},
   histo:{sheet:'Manpower histogram',title:'Manpower histogram, planned, actual and forecast',desc:'Daily or weekly headcount, by trade, with a forecast at current productivity',build(){
@@ -14646,7 +14934,7 @@ const REPORTS={
     return {cols:[C('Project','proj'),C('Activity','name'),C('Unit','uom'),C('Planned rate (unit/mh)','pr','dec3'),C('Actual rate (unit/mh)','ar','dec3'),C('Productivity index','pi','pcti'),C('Actual manhours','mh','int'),C('Earned manhours','em','int'),C('Manhours gained (+) / lost (-)','gl','int'),C('Week-on-week trend','tr','pctv')],rows,
       chart:pal=>({type:'bar',data:{labels:rows.map(r=>r.name.length>22?r.name.slice(0,21)+'…':r.name),datasets:[{label:'Productivity index %',data:rows.map(r=>+(r.pi*100).toFixed(1)),backgroundColor:rows.map(r=>r.pi>1?pal.green:r.pi>=0.9?pal.amber:pal.red)},{type:'line',label:'Target 100%',data:rows.map(()=>100),borderColor:pal.green,borderDash:[6,4],pointRadius:0,borderWidth:1.5}]},options:{scales:{y:{min:50,max:140,title:{display:true,text:'Index %'}}}}}),
       notes:'Last 30 days of submitted, reviewed and approved reports. Index = earned manhours ÷ actual manhours.'}}},
-  eac:{sheet:'EAC',title:'Estimate at completion (EAC)',desc:'Forecast final cost and finish for each project',build(){
+  eac:{money:1,sheet:'EAC',title:'Estimate at completion (EAC)',desc:'Forecast final cost and finish for each project',build(){
     const rows=scopeProjects().map(p=>{const f=forecast(p),x=eacOf(f);return{proj:p.short,bac:f.bac,ev:f.ev,ac:f.ac,cpi:f.cpi,spi:f.spi,eac1:x.eac1,eac2:x.eac2,etc:x.etc,vac:x.vac,vacp:x.vacp,tcpi:x.tcpi,fin:f.fin,base:f.base,slip:f.slip>900?null:f.slip}});
     const T=rows.reduce((t,r)=>({bac:t.bac+r.bac,ev:t.ev+r.ev,ac:t.ac+r.ac,eac1:t.eac1+r.eac1,eac2:t.eac2+r.eac2}),{bac:0,ev:0,ac:0,eac1:0,eac2:0});
     if(rows.length>1)rows.push({proj:'Total',bac:T.bac,ev:T.ev,ac:T.ac,cpi:T.ac?T.ev/T.ac:0,spi:0,eac1:T.eac1,eac2:T.eac2,etc:T.eac1-T.ac,vac:T.bac-T.eac1,vacp:T.bac?(T.bac-T.eac1)/T.bac:0,tcpi:T.bac-T.ac?(T.bac-T.ev)/(T.bac-T.ac):0,fin:null,base:null,slip:null,total:true});
@@ -14677,7 +14965,7 @@ const REPORTS={
         {label:'Remaining',data:rows.map(r=>+r.rem.toFixed(1)),backgroundColor:pal.line}]},
         options:{scales:{x:{stacked:true},y:{stacked:true,title:{display:true,text:'Quantity in the activity unit'}}}}}),
       notes:`Quantities are in each activity's own unit, so the columns reconcile per row and not down the page. Own manpower is the daily report quantity less the quantity claimed by subcontractor crews. Rental manpower is a manpower supply PO, paid by manhour; subcontract is a measured PO, paid by quantity. Across the scope: ${fmt(T.own,1)} executed by own crews, ${fmt(T.rent,1)} by rental manpower, ${fmt(T.sub,1)} by measured subcontract, ${fmt(T.prior,1)} carried in at go-live, ${fmt(T.rem,1)} remaining.`}}},
-  unitrate:{sheet:'Unit rate analysis',title:'Unit rate analysis, original against actual',desc:'Manhours and cost per unit, with a revised rate for future estimating',build(){
+  unitrate:{money:1,sheet:'Unit rate analysis',title:'Unit rate analysis, original against actual',desc:'Manhours and cost per unit, with a revised rate for future estimating',build(){
     const rows=reconRows().map(r=>({...r,
       vRate:r.oRate&&r.aRate?r.aRate/r.oRate-1:0,
       vCost:r.oCost&&r.aCost?r.aCost/r.oCost-1:0,
@@ -14691,7 +14979,7 @@ const REPORTS={
         {label:'Actual cost per unit',data:rows.map(r=>+r.aCost.toFixed(2)),backgroundColor:rows.map(r=>r.aCost>r.oCost?pal.red:pal.green)}]},
         options:{scales:{y:{title:{display:true,text:'SAR per unit'}}}}}),
       notes:'Original rates come from the baseline: budget manhours and budget cost divided by the scope quantity. Actual rates come from the measured period: manhours and cost divided by the quantity executed in that period. Manhour rates cover own and rental crews, since measured subcontract quantities carry no manhours on our books. Use the actual cost per unit as the revised rate for estimating similar work, and the forecast column as the cost still to come at that rate.'}}},
-  invoice:{sheet:'Invoiceable value',title:'Invoiceable value against contract payment terms',desc:'Price progress, phase caps, milestone releases, retention and advance',build(){
+  invoice:{money:1,sheet:'Invoiceable value',title:'Invoiceable value against contract payment terms',desc:'Price progress, phase caps, milestone releases, retention and advance',build(){
     const ps=scopeProjects().map(p=>({p,b:billing(p,ASOF)})).filter(x=>x.b.contract);
     const rows=[];
     ps.forEach(({p,b})=>{
@@ -14712,7 +15000,7 @@ const REPORTS={
         {label:'Billable now',data:ps.flatMap(x=>x.b.rows.filter(r=>r.price).map(r=>Math.round(r.billable/1e3))),backgroundColor:pal.accent}]},
         options:{scales:{y:{beginAtZero:true,title:{display:true,text:'SAR thousands'}}}}}),
       notes:`Gross billable ${sar(gross)}, retention held ${sar(held)}, net invoiceable ${sar(net)}. Price comes from the P6 weighting resource loaded by planning, which carries the client price schedule; cost and manhours from the Master Manpower Costing Sheet are not used here. Each phase bills on price progress up to its cap, with the balance released when its milestone is achieved. Where a contract also deducts a separate retention from each invoice, it is shown as its own line; if the phase split is the only holdback, retention stays at zero. Advance payment is recovered as a percentage of each invoice until it is fully repaid. Payment terms are set per project in Settings.`}}},
-  cash:{sheet:'Invoicing and collection',title:'Invoicing and collection against invoiceable',desc:'Invoice register, shortfalls and outstanding collection',build(){
+  cash:{money:1,sheet:'Invoicing and collection',title:'Invoicing and collection against invoiceable',desc:'Invoice register, shortfalls and outstanding collection',build(){
     const rows=[];
     scopeProjects().forEach(p=>{
       const X=billPosition(p);if(!X.b.contract&&!X.t.n)return;
@@ -14755,7 +15043,7 @@ const REPORTS={
   warn:{sheet:'Early warnings',title:'Early warnings',desc:'Risks detected from the latest progress',build(){
     const rows=warnings(),n=s=>rows.filter(r=>r.sev===s).length;
     return {cols:[C('Severity','sev','sev'),C('Project','proj'),C('Area / activity','item'),C('Indicator','ind'),C('Current','val'),C('Threshold','thr'),C('Recommended action','act')],rows,
-      notes:`${n('High')} high, ${n('Medium')} medium and ${n('Low')} low warnings. Checks: SPI and CPI below 0.95, forecast slip over 14 days, productivity under 90%, falling weekly productivity, manpower under 85% of plan, overtime over 12%, missing daily reports and weak subcontractors.`}}}
+      notes:`${n('High')} high, ${n('Medium')} medium and ${n('Low')} low warnings. Checks: SPI${isSiteRole()?'':' and CPI'} below 0.95, forecast slip over 14 days, productivity under 90%, falling weekly productivity, manpower under 85% of plan, overtime over 12%, missing daily reports and weak subcontractors.`}}}
 };
 /* ---------- progress export back to P6 ---------- */
 function p6Rows(){
@@ -14828,6 +15116,12 @@ async function exportP6(kind){
 function tableHTML(cols,rows){return `<table class="tbl"><thead><tr>${cols.map(c=>`<th class="${c.t==='text'||c.t==='sev'||c.t==='bar'?'':'n'}">${esc(c.h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr${r.total?' class="tot"':''}>${cols.map(c=>`<td class="${c.t==='text'||c.t==='sev'||c.t==='bar'?'':'n'}">${r[c.k]==null&&c.t!=='date'&&c.t!=='days'?'—':fmtType[c.t](r[c.k],r)}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" class="muted">No data in the current scope.</td></tr>`}</tbody></table>`}
 const palette=light=>light?{accent:'#24508A',bar:'#B7C2CD',ink:'#1B252E',green:'#2E7A4C',amber:'#A26A06',red:'#B03A2B',text:'#56626C',line:'#D3D7CF'}:{accent:css('--accent'),bar:css('--bar'),ink:css('--ink'),green:css('--green'),amber:css('--amber'),red:css('--red'),text:css('--ink-2'),line:css('--line')};
 function chartCfg(cfg,pal,anim=true){cfg.options=cfg.options||{};const o=cfg.options;o.responsive=true;o.maintainAspectRatio=false;o.animation=anim?undefined:false;o.plugins={legend:{position:'bottom',labels:{color:pal.text,boxWidth:12}}};o.scales=o.scales||{};['x','y'].forEach(k=>{o.scales[k]=Object.assign({grid:{color:pal.line},ticks:{color:pal.text}},o.scales[k]||{});if(o.scales[k].title)o.scales[k].title.color=pal.text});return cfg}
+/* v3.28.3: without the right to see cost and billing figures, every report is built without its cost and billing columns
+   (SAR amounts, CPI, values in SAR M), wherever it is built: the Reports screen and its exports, the Full report pack,
+   the presentation and RASA */
+const repMoneyCol=c=>c.money||c.t==='sar';
+Object.values(REPORTS).forEach(R=>{const b=R.build;R.build=function(){const r=b.apply(this,arguments);if(!r||!isSiteRole())return r;
+  const cut=x=>({...x,cols:x.cols.filter(c=>!repMoneyCol(c))});return {...cut(r),extra:r.extra?r.extra.map(cut):r.extra}}});
 let CUR=null;
 function renderReports(){
   if(state.report&&!reportAllowed(state.report))state.report=null;
@@ -14872,7 +15166,7 @@ async function exportRep(kind){
   try{
     if(kind==='xlsx'||kind==='pack'){
       await loadLib(LIBS.xlsx);const wb=XLSX.utils.book_new();
-      const list=kind==='pack'?Object.entries(REPORTS).map(([k,r])=>[k,r.title,r.build()]):[[CUR.k,REPORTS[CUR.k].title,CUR]];
+      const list=kind==='pack'?Object.entries(REPORTS).filter(([k])=>reportAllowed(k)).map(([k,r])=>[k,r.title,r.build()]):[[CUR.k,REPORTS[CUR.k].title,CUR]];
       list.forEach(([k,t,rep])=>XLSX.utils.book_append_sheet(wb,sheetFor(XLSX,t,rep),REPORTS[k].sheet));
       await saveFile(`${fileBase(kind==='pack'?'ReportPack':CUR.k)}.xlsx`,new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
     }else{
@@ -14900,22 +15194,22 @@ function pstats(ids){
 }
 function portfolioHTML(){
   if(SCOPE.size<2)return '';
-  const ids=[...SCOPE],canR=new Set(accessIds().map(id=>projById(id).region)).size>1;
-  const cell=(v,f)=>v?`<td class="n ${light(v)}-c">${f?pct(v):v.toFixed(2)}</td>`:'<td class="n muted">—</td>';
+  const ids=[...SCOPE],canR=new Set(accessIds().map(id=>projById(id).region)).size>1,site=isSiteRole();
+  const cell=(v,f)=>v?`<td class="n ${light(v)}-c">${f?pct(v):v.toFixed(2)}</td>`:'<td class="n muted">—</td>',cpiH=site?'':'<th class="n">CPI</th>',cpiC=v=>site?'':cell(v);
   const rows=DB.master.regions.map(r=>{const x=ids.filter(id=>projById(id).region===r.id);return x.length?{r,x,...pstats(x)}:null}).filter(Boolean);
   const secs=DB.master.sectors.map(sc=>{const x=ids.filter(id=>projById(id).sector===sc.id);return x.length?{sc,x,...pstats(x)}:null}).filter(Boolean);
   return `<section class="g g-2e">
-    <div class="panel"><h2>Portfolio by region</h2><div class="scroll"><table class="tbl"><thead><tr><th>Region</th><th>Progress</th><th class="n">Projects</th><th class="n">Workforce</th><th class="n">Index</th><th class="n">SPI</th><th class="n">CPI</th></tr></thead><tbody>
-      ${rows.map(o=>`<tr ${canR?`class="click" data-scope="R:${o.r.id}"`:''}><td><b>${esc(o.r.name)}</b><span class="t2">${esc(userById(o.r.manager)?.name||'No regional manager')}, SAR ${fmt(o.value)}M</span></td><td>${o.e.bac||o.P.sched?pbar(o.P.plan,o.P.act)+`<span class="t2">${pct(o.P.act,0)} of plan ${pct(o.P.plan,0)}</span>`:'—'}</td><td class="n">${o.x.length}</td><td class="n">${fmt(o.heads)}</td>${cell(o.pi,1)}${cell(o.P.spi)}${cell(o.e.cpi)}</tr>`).join('')}
+    <div class="panel"><h2>Portfolio by region</h2><div class="scroll"><table class="tbl"><thead><tr><th>Region</th><th>Progress</th><th class="n">Projects</th><th class="n">Workforce</th><th class="n">Index</th><th class="n">SPI</th>${cpiH}</tr></thead><tbody>
+      ${rows.map(o=>`<tr ${canR?`class="click" data-scope="R:${o.r.id}"`:''}><td><b>${esc(o.r.name)}</b><span class="t2">${esc(userById(o.r.manager)?.name||'No regional manager')}${site?'':`, SAR ${fmt(o.value)}M`}</span></td><td>${o.e.bac||o.P.sched?pbar(o.P.plan,o.P.act)+`<span class="t2">${pct(o.P.act,0)} of plan ${pct(o.P.plan,0)}</span>`:'—'}</td><td class="n">${o.x.length}</td><td class="n">${fmt(o.heads)}</td>${cell(o.pi,1)}${cell(o.P.spi)}${cpiC(o.e.cpi)}</tr>`).join('')}
     </tbody></table></div></div>
-    <div class="panel"><h2>Portfolio by sector</h2><div class="scroll"><table class="tbl"><thead><tr><th>Sector</th><th>Progress</th><th class="n">Projects</th><th class="n">Workforce</th><th class="n">Index</th><th class="n">SPI</th><th class="n">CPI</th></tr></thead><tbody>
-      ${secs.map(o=>`<tr class="click" data-sector="${o.sc.id}"><td><b>${esc(o.sc.name)}</b><span class="t2">${o.x.map(id=>esc(projById(id).short)).join(', ')}</span></td><td>${o.e.bac||o.P.sched?pbar(o.P.plan,o.P.act)+`<span class="t2">${pct(o.P.act,0)} of plan ${pct(o.P.plan,0)}</span>`:'—'}</td><td class="n">${o.x.length}</td><td class="n">${fmt(o.heads)}</td>${cell(o.pi,1)}${cell(o.P.spi)}${cell(o.e.cpi)}</tr>`).join('')}
+    <div class="panel"><h2>Portfolio by sector</h2><div class="scroll"><table class="tbl"><thead><tr><th>Sector</th><th>Progress</th><th class="n">Projects</th><th class="n">Workforce</th><th class="n">Index</th><th class="n">SPI</th>${cpiH}</tr></thead><tbody>
+      ${secs.map(o=>`<tr class="click" data-sector="${o.sc.id}"><td><b>${esc(o.sc.name)}</b><span class="t2">${o.x.map(id=>esc(projById(id).short)).join(', ')}</span></td><td>${o.e.bac||o.P.sched?pbar(o.P.plan,o.P.act)+`<span class="t2">${pct(o.P.act,0)} of plan ${pct(o.P.plan,0)}</span>`:'—'}</td><td class="n">${o.x.length}</td><td class="n">${fmt(o.heads)}</td>${cell(o.pi,1)}${cell(o.P.spi)}${cpiC(o.e.cpi)}</tr>`).join('')}
     </tbody></table></div><p class="small muted">Tap a row to filter the whole site to that region or sector.</p></div>
   </section>`;
 }
 
 /* ---------- settings (super admin) ---------- */
-const ATABS={projects:'Projects',users:'Users and access',rights:'Roles and rights',roles:'Role access',matrix:'Approval matrix',mail:'Email',system:'System',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',dlylists:'Delay register lists',golive:'Release strategy',log:'Change log'};
+const ATABS={projects:'Projects',users:'Users and access',rights:'Roles and rights',roles:'Role access',matrix:'Approval matrix',mail:'Email',system:'System',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',dlylists:'Delay register lists',supplists:'Supplement lists',golive:'Release strategy',log:'Change log'};
 const NOUN={projects:'project',users:'user',trades:'trade',subs:'subcontractor',regions:'region',cities:'city',sectors:'sector'};
 function usedBy(type,id){if(type==='regions')return PROJECTS.filter(p=>p.region===id).length+DB.master.cities.filter(c=>c.region===id).length;if(type==='cities')return PROJECTS.filter(p=>p.city===id).length;if(type==='sectors')return PROJECTS.filter(p=>p.sector===id).length;return 0}
 function accessText(u){if(u.role==='sa')return 'Everything, including settings';if(u.allProjects&&u.role!=='exec')return 'All projects';const r=u.regions.map(id=>regById(id)?.name).filter(Boolean),ps=u.projects.map(id=>projById(id)?.short).filter(Boolean);return [r.length?r.join(', ')+(r.length>1?' regions':' region'):'',ps.join(', ')].filter(Boolean).join('; ')||'No access yet'}
@@ -15060,7 +15354,7 @@ document.addEventListener('change',e=>{if(e.target.id==='pjfile'&&e.target.files
 
 function renderAdmin(){
   if(state.role!=='sa'){go('dash');return}
-  const m=DB.master,t=state.adminTab,add=['log','roles','rights','matrix','mail','system','dlylists','golive'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>${t==='projects'&&state.role==='sa'?'<button class="btn" type="button" data-pjimp>Import projects from Excel</button>':''}`;
+  const m=DB.master,t=state.adminTab,add=['log','roles','rights','matrix','mail','system','dlylists','supplists','golive'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>${t==='projects'&&state.role==='sa'?'<button class="btn" type="button" data-pjimp>Import projects from Excel</button>':''}`;
   const edit=(k,id,del)=>`<td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-aedit="${k}:${id}">Edit</button>${del===undefined?'':del?` <button class="btn sm" type="button" disabled title="In use, cannot delete">In use</button>`:` <button class="btn sm danger" type="button" data-adel="${k}:${id}">Delete</button>`}</td>`;
   let body='',count=0;
   if(t==='projects'){count=PROJECTS.length;body=`<table class="tbl"><thead><tr><th>Project</th><th>Sector</th><th>Region and city</th><th>Team</th><th class="n">Activities</th><th class="n">Value</th><th>Status</th><th></th></tr></thead><tbody>${PROJECTS.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}${p.te?' · '+esc(p.te):''}, ${esc(p.name)}</span></td><td>${esc(secById(p.sector)?.name||'—')}</td><td>${esc(regName(p))}<span class="t2">${esc(cityName(p))}</span></td><td>${esc(p.pm)}<span class="t2">${esc(p.eng)}, ${p.foremen.length} foreman${p.foremen.length===1?'':'en'}</span></td><td class="n">${ACTS.filter(a=>a.p===p.id).length}</td><td class="n">SAR ${fmt(p.value)}M</td><td><span class="st ${stCls(p.status)}">${p.status}</span></td>${edit('projects',p.id,false)}</tr>`).join('')}</tbody></table>`}
@@ -15078,6 +15372,7 @@ function renderAdmin(){
   if(t==='mail'){count=(DB.outbox||[]).length;body=mailAdminHTML()}
   if(t==='system'){count='';body=systemHTML()}
   if(t==='dlylists'){count=DLY_LISTS.length+' lists';body=dlyListsAdminHTML()}
+  if(t==='supplists'){count='2 lists';body=suppListsAdminHTML()}
   if(t==='golive'){const c=glCfg();count=c.current?`live up to ${c.stages[c.current-1].name}`:'nothing live yet';body=glAdminHTML()}
   if(t==='log'){count=m.log.length;body=`<ul class="audit">${m.log.map(x=>`<li><b>${esc(x.text)}</b><br><span class="muted small">${esc(x.who)}, ${esc(x.t)}</span></li>`).join('')}</ul>`}
   document.getElementById('view').innerHTML=`<div class="crumb">Head office settings. Only the planning manager (Super Admin) can change projects, master data and user access. Every change is logged.</div>
@@ -15584,7 +15879,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBoq325();seedV3281();seedV3282();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBoq325();seedV3281();seedV3282();seedV329();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=homeView();showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');
