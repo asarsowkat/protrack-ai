@@ -46,6 +46,8 @@
 | `schema-rollback-v33.sql` | Only to undo v33. Reports save without E&P progress; keeps what was saved |
 | `schema-update-v34.sql` | **Yes, on your live project, after v13.** STAGE-28-SETUP.md. The release strategy (golive_cfg, golive_set) and the document text RASA reads (doc_text, doc_text_set, doc_text_search). Check with `select golive_features();` |
 | `schema-rollback-v34.sql` | Only to undo v34. Every module counts as live again and RASA stops quoting documents; keeps the tables |
+| `schema-update-v35.sql` | **Yes, on your live project, after v20.** STAGE-29-SETUP.md. The budget supplement log by user field and category: new columns, the lists (supp_lists, supp_lists_set), changes on the screen (supp_update, supp_audit), log_import and the budget change. Check with `select supp_features();` |
+| `schema-rollback-v35.sql` | Only to undo v35. Nobody can change rows on the screen or the lists; uploads go back to the earlier layout; keeps the columns, lists and history |
 
 **v3.26.1:** v24 (and its rollback), v27, v28, v29, v30, v32 and v33 were corrected in place after the module review (see `../REVIEW-v3.26.1.md`). None had been run on a database, so run them as they are now, in order, once.
 
