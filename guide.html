@@ -186,7 +186,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.8.5, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.28.1, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -207,6 +207,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#weightage" class="sub">Internal weightage and updated schedule</a>
   <a href="#reldash" class="sub">Internal report dashboard</a>
   <a href="#issues" class="sub">Issue register</a>
+  <a href="#rstatus" class="sub">Reporting status</a>
+  <a href="#delays" class="sub">Delay events register</a>
+  <a href="#cashout" class="sub">Cash-out forecast</a>
   <a href="#docrack" class="sub">Project document rack</a>
   <a href="#mattrack" class="sub">Material tracking</a>
   <a href="#tender">Tender register and PE numbers</a>
@@ -237,6 +240,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#reports">11. Reports and presentations</a>
   <a href="#rasa" class="sub">RASA, your project assistant</a>
   <a href="#rasa-rules" class="sub">How RASA's answers are governed</a>
+  <a href="#rasa-modules" class="sub">RASA across the modules and the release strategy</a>
   <a href="#server">12. Server and demo mode</a>
   <a href="#backup" class="sub">Backup and restore</a>
   <a href="#move" class="sub">Moving browser data to the server</a>
@@ -256,10 +260,51 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>A customisable executive summary: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-  <div class="note"><b>New in version 3.8.5</b>
-    The <b>Executive report (released)</b> can be customised: the super admin sets the default for everyone or for a role, and each person can save their own layout. <b>Material tracking</b> is in the released report (as released with each progress report) and in the live summary.</div>
+  <div class="note"><b>New in version 3.28</b>
+    <b>Project list</b> (Projects &amp; Handover, and All reports): every project with tender no, PE number, status, region, sector, project manager, scheduling and costing engineers, latest progress, next key milestone and when the daily, weekly, monthly and monthly cost reports were last updated; filters by region, sector, project status and tender stage (L1 or L2 awaiting NOA, NOA received, cancelled); Excel and an A3 PDF. RASA answers "project list", also for L1, L2, NOA or pre-award projects. A project reports from the first full week or month after its NOA.</div>
+  <div class="note"><b>New in version 3.27</b>
+    <b>Release strategy</b> (Settings, super admin): ProTrackAI goes live stage by stage. Each module is put in a stage with a planned go-live date, and the super admin says up to which stage is live; the menu can hide what is not live yet. ·
+    <b>RASA across every module</b>: besides progress and productivity, RASA now answers from the BOQ Engine, the document rack (the text of the documents, quoted with the page), the delay events register, the cash-out and cash-inflow forecasts, material tracking, subcontract purchase orders, contract values, intermediate milestones, progress by phase, E&amp;P progress and reporting status, for the modules that are live and what each person can open. · <b>"Find"</b> searches every live module by name.</div>
+  <div class="note"><b>New in version 3.22</b>
+    <b>Home → Reporting status</b>: for each week and month, which projects have released their internal report, monthly cost report, logs and invoice register, on time or late, and who prepared and approved them. Managers send reminders to the engineers and the project manager. The executive report of a period stays <b>held</b> until every active project has released, so a partial portfolio is never reported.</div>
+  <div class="note"><b>New in version 3.21</b>
+    The cash-out forecast uses the <b>PO numbers of Material tracking</b>, each with its value and payment terms: milestones tied to the material tracking stages, paid on the <b>P6 forecast</b> dates plus the payment days. The heads without POs come from the <b>monthly cost report</b> (EAC − actual), spread to the P6 forecast TCC. The reconciliation with Finance's monthly cash-out separates the timing differences (cost booked not yet paid, milestones due, retention) from what is unexplained.</div>
+  <div class="note"><b>New in version 3.20</b>
+    <b>Invoices &amp; Cash Flow → Cash-out forecast</b>: Finance's cumulative actual cash-out (imported by the super admin or the Head Office cost control coordinator), the PO payment milestones and the other cash-out lines give the forecast at completion, reconciled with the approved current budget of the released cost report. Overruns are shown and need a management review; nothing is reduced to fit the budget.</div>
+  <div class="note"><b>New in version 3.19.2</b>
+    Each delay event has <b>Correspondence and letters</b>: the planning engineer records every letter, e-mail, notice, instruction and set of minutes behind the event, with its file, and can add its reference to the register. <b>Download the chronology (Excel)</b> and <b>the EOT pack (ZIP)</b> gather them for the extension of time submission.</div>
+  <div class="note"><b>New in version 3.19.1</b>
+    The delay events register uses the <b>drop-down lists</b> of the company workbook (claim identification, status, entitlement, liability, concurrency, mitigation, claim owner). The super admin adds, removes and reorders their items in <b>Settings → Delay register lists</b>; a value outside the lists is refused.</div>
+  <div class="note"><b>New in version 3.19</b>
+    <b>Claims &amp; Variations → Delay events register</b>: every delay event of a project in the columns of the company <i>Delay Events Register</i> (claim contractual data, notice of claim, schedule impact, cost impact). Add and change events in the system or <b>upload</b> the workbook, and <b>download</b> the register in the same layout. The claim duration, notice days used, notice days against the time bar and days to the notice deadline are worked out. Planning engineers keep the register of their own projects and see only the projects in their access.</div>
+  <div class="note"><b>New in version 3.18</b>
+    <b>Presentations</b> has a <b>Reports</b> group: the internal report, productivity details, the client report, invoicing and cash flow, the cost report and the change order details, each with the parts you tick, for a month and one project or every project in scope, as slides or as an <b>Excel</b> workbook.</div>
+  <div class="note"><b>New in version 3.17</b>
+    The monthly cost report shows the <b>gross margin for every budget column</b>: tender and Rev-0 on the original contract value; revised Rev-0, current budget and EAC on the internal revised contract value; the previous version on the previous month's contract value. When an <b>internal report</b> (monthly or weekly) or a <b>monthly cost report</b> is approved, an <b>email</b> goes to the people set in Settings → Email. A section planning manager can set the internal report list for their region.</div>
+  <div class="note"><b>New in version 3.16</b>
+    The cash-inflow forecast opens with <b>Monthly invoicing</b>: by month, the <b>planned invoice</b> (original baseline), the <b>invoiceable</b> amount (actual progress), and the <b>submitted</b> and <b>approved</b> invoices from the register. KPIs for this month and to date, the number of <b>months invoiced</b>, a chart, and a <b>Download (Excel)</b> with a Monthly invoicing sheet.</div>
+  <div class="note"><b>New in version 3.15</b>
+    The <b>invoice register</b> carries each invoice's <b>phase</b> and its actual <b>submission, approval and collection dates</b>, and shows the <b>invoicing status by phase</b>. <b>Invoices &amp; Cash Flow → Cash-inflow forecast</b> is live:
+    <ul>
+      <li>a <b>new project</b> is forecast from the client baseline and the contractual payment terms;</li>
+      <li>a <b>running project</b> takes its actual invoices and collections from the register, and forecasts the balance of each phase on the latest updated schedule.</li>
+    </ul></div>
+  <div class="note"><b>New in version 3.14</b>
+    <b>Internal and client reports compare the actual progress with the baselines you tick</b>: the original, revised or recovery baseline, and the baseline assigned in the updated schedule. Each gets its planned %, variance, SPI and baseline finish, saved with the report and frozen when it is approved. Internal Reporting no longer has a Monthly cost reports tab; cost reports are in Cost Control → Monthly cost report.</div>
+  <div class="note"><b>New in version 3.13</b>
+    <b>Import projects from Excel</b> (Settings → Projects, super admin): bring 100 or more projects in at once from one sheet, one row per project, instead of creating them one by one. Every row is checked, refused rows are shown with the reason, and projects already in ProTrackAI are left unchanged.</div>
+  <div class="note"><b>New in version 3.12</b>
+    <b>Register an L1 or L2 project</b> opens as a full window and asks for our <b>bid position</b>: L1, or L2 when the client may still award us (for example on our past performance, or when it is not happy with the L1 bidder). When the <b>NOA</b> is received, the <b>costing coordinator or a super admin</b> records it with its actual date; the <b>finance WBS is released the same day to record the PBG cost</b>.</div>
+  <div class="note"><b>New in version 3.11</b>
+    The <b>change order and claim log</b> holds the <b>client approved price</b> and the <b>price considered internally</b> (full or partial, with its management WF number and date); the costing engineer updates them with <b>Update</b> or by upload. Internal reports, the executive report, the dashboards and the cost report margin use the <b>internal revised contract value</b> = original + price considered internally, with its breakdown. <b>Client reports</b> use original + approved by the client only.</div>
+  <div class="note"><b>New in version 3.10</b>
+    <b>Project Visual</b> (Home): planned and actual progress on the project's PDF drawings and route. Configure a project as a site layout, a linear route or both; upload drawings, draw zones and route sections, map P6 activities to them (suggestions with evidence, each approved by the planning engineer); follow it Live, or open the copy frozen with each approved internal report under Released; export it to PDF. Each activity counts once: its shares add up to 100% at most.</div>
+  <div class="note"><b>New in version 3.9.1</b>
+    The <b>Master Manpower Costing Sheet</b> has its own page under <b>Cost Control</b>, out of Baselines, with three buttons: <b>Download new sample template</b>, <b>Download current existing data</b> (the costing applied now, in the same sheet, to edit and upload again) and <b>Upload</b>.</div>
+  <div class="note"><b>New in version 3.9</b>
+    The <b>Executive report (released)</b> can be customised: each person shows, hides and reorders its sections and tiles, and the super admin sets the default for everyone. <b>Material tracking</b> is on the Live summary and the Executive report. The <b>Invoice register</b> has its own page under Invoices &amp; Cash Flow, and <b>Subcontract purchase orders</b> under Materials &amp; Procurement.</div>
   <div class="note"><b>New in version 3.8.4</b>
-    Engineering and procurement progress comes from the <b>weekly updated P6 schedule</b>: no separate E&amp;P Excel upload. <b>E&amp;P progress</b> (Planning &amp; Scheduling) shows it per activity, and reporting compliance checks the updated schedule.</div>
+    Engineering and procurement progress comes from the <b>weekly updated P6 schedule</b>: no separate E&amp;P Excel upload. <b>E&amp;P progress</b>, a tab of every internal and client report (v3.26), shows it per activity from the same updated schedule the report uses, and reporting compliance checks the updated schedule.</div>
   <div class="note"><b>New in version 3.8.3</b>
     On a phone or tablet, <b>Menu</b> at the bottom left opens the full menu, as on a laptop: Planning &amp; Scheduling, Cost Control, Materials &amp; Procurement, Administration and every other screen.</div>
   <div class="note"><b>New in version 3.8.2</b>
@@ -276,7 +321,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <b>Roles and rights</b> (Settings → Roles and rights): the super admin gives or removes seventeen rights for each role, chooses which screens each role sees, and creates custom roles from a built-in one. ·
     <b>Access for any role</b> (Settings → Users and access): whole regions, chosen projects or All projects, for every role, plus rights given or removed for one person. The server checks the same rights.</div>
   <div class="note"><b>New in version 3.6</b>
-    <b>Internal weightage by phase</b> (Baselines and P6 import): seven phases agreed with management, set once per project. ·
+    <b>Internal weightage by phase</b> (Baselines and P6 import): eight phases agreed with management, set once per project. ·
     <b>Updated schedule</b>: upload the updated P6 file; ProTrackAI takes the data date, % complete and milestones, and works out client and internal progress by phase. Every progress report uses the internal weightage; invoiceable uses the client weightage. ·
     <b>Internal Reporting</b> (was Progress releases) and new <b>Client Reporting</b>, both compared with the updated schedule; differences are validated by the regional planning section manager.</div>
   <div class="note"><b>New in version 3.5</b>
@@ -302,7 +347,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <b>Permission-scoped</b>: RASA answers only about projects and figures you can open, and the server no longer sends invoice and costing rows to foremen, site engineers and site managers. ·
     <b>No project data leaves ProTrackAI.</b></div>
   <div class="note"><b>New in version 2.8</b>
-    <b>Tender register</b> (Projects &amp; Handover): the costing coordinator records each L1 project from Tender's list, with TE number, client, location and expected value. ·
+    <b>Tender register</b> (Projects &amp; Handover): the costing coordinator records each L1 or L2 project from Tender's list, with TE number, bid position, client, location and expected value. ·
     <b>PE numbers</b>: ProTrackAI proposes the number and never gives one number to two live projects; a cancelled project releases its number for the next L1 project, and the history keeps both. ·
     <b>Stages 1 to 5 follow the Tender-to-SAP process</b> and are approved by the Head of Planning and Cost Control. Stage 4 is due 7 days after contract signing.</div>
   <div class="note"><b>New in version 2.7</b>
@@ -335,7 +380,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <b>Role access</b>: the super admin decides which reports site roles may open and what their executive summary shows; they never see cost. ·
     <b>Foremen</b> see only daily reports, new reports and their own performance. ·
     <b>Project managers</b> reach costing, invoices and purchase orders for their projects. ·
-    <b>Purchase orders</b> kept by the costing engineer on the Baselines page. ·
+    <b>Purchase orders</b> kept by the costing engineer in Materials &amp; Procurement → Subcontract purchase orders. ·
     <b>Manpower histogram</b> 25 times faster. · <b>RASA</b>, the new face of the assistant, with proactive insights and pointing at the dashboard.</div>
 </section>
 
@@ -369,7 +414,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <tr><td>Design and procurement milestones</td><td>Planning engineer</td><td>Weekly Excel</td><td>Engineering and procurement progress</td></tr>
       <tr><td>Budget quantity, unit, rate, cost, manhours</td><td>Costing engineer</td><td>Costing Excel</td><td>Budget analysis, unit rates, EAC</td></tr>
       <tr><td>Invoices submitted, approved, collected</td><td>Costing engineer</td><td>Invoice register</td><td>Billing and collection position</td></tr>
-      <tr><td>Subcontractor purchase orders and their rates</td><td>Costing engineer, per project</td><td>Baselines page</td><td>Subcontract cost, cost to date against PO value</td></tr>
+      <tr><td>Subcontractor purchase orders and their rates</td><td>Costing engineer, per project</td><td>Materials &amp; Procurement → Subcontract purchase orders</td><td>Subcontract cost, cost to date against PO value</td></tr>
       <tr><td>Salaries and loaded rates, payment terms</td><td>Super admin</td><td>Settings</td><td>Own labour cost, invoiceable value</td></tr>
       <tr><td>Decisions and follow-up</td><td>Executive, regional, portfolio</td><td>Executive summary, performance</td><td>Where to intervene</td></tr>
     </tbody>
@@ -445,6 +490,18 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <p>The moment a report is approved, ProTrack emails a summary to everyone with access to that project in the chosen roles: by default site engineers, site managers, project managers, portfolio managers, planning and costing engineers, executives and super admins. Site engineers and site managers receive only the reports they reviewed or approved. Recipients are blind-copied.</p>
   <p>The email carries the project, date, discipline and foreman; activities, manpower, manhours and productivity; each activity's quantity today, percent complete and index; anything below 85% productivity; site remarks; who prepared, reviewed and approved it and how long each took; and an <b>Open in ProTrack</b> button that goes straight to the report after sign-in.</p>
   <p>The super admin chooses the roles, or switches it off, in <b>Settings → Email</b>, which also lists every email with its recipients, status and a preview. Sending needs the mail function set up on the server once; until then emails are prepared and listed but not sent.</p>
+  <p><b>Report emails (v3.17).</b> When an <b>internal report</b> (monthly, and weekly unless switched off) or a <b>monthly cost report</b> is approved and released, ProTrack emails the released figures with a link that opens the report:</p>
+  <ul>
+    <li>an internal report: planned, actual, SPI, forecast finish, the baseline comparison and the narrative;</li>
+    <li>a cost report: budget, actual, EAC, VAC, commitments, the internal contract value and the gross margin.</li>
+  </ul>
+  <p>The super admin sets each list in <b>Settings → Email → Report emails</b>:</p>
+  <ul>
+    <li><b>roles:</b> everyone in the role with access to the project. The defaults are project managers, portfolio managers, regional managers, executives, and planning engineers for internal reports or costing engineers for cost reports.</li>
+    <li><b>named people</b>, on any project;</li>
+    <li><b>other addresses.</b></li>
+  </ul>
+  <p>A <b>section planning manager</b> sets the internal report list for their region in Planning &amp; Scheduling → Internal Reporting (<i>Report email for your region</i>); a region without its own list uses the default.</p>
 </section>
 
 <section id="features">
@@ -454,12 +511,13 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <table><thead><tr><th>Domain</th><th>Working today</th><th>Planned</th></tr></thead><tbody>
     <tr><td>Home</td><td>Executive summary</td><td>—</td></tr>
     <tr><td>Projects &amp; Handover</td><td>Project overview</td><td>Tender register, contract register, handover checklist</td></tr>
-    <tr><td>Planning &amp; Scheduling</td><td>Baselines and P6 import, weekly updated schedule, E&amp;P progress, baseline comparison, P6 progress update</td><td>Governed baseline register, look-ahead and alerts</td></tr>
+    <tr><td>Planning &amp; Scheduling</td><td>Baselines and P6 import, weekly updated schedule, baseline comparison, P6 progress update (E&amp;P progress is a tab of each internal and client report, v3.26)</td><td>Governed baseline register, look-ahead and alerts</td></tr>
     <tr><td>Cost Control</td><td>Earned value and EAC, Master Manpower Costing Sheet, unit rate analysis</td><td>Budget revisions, commitments and accruals, cost reconciliation</td></tr>
     <tr><td>Daily Reports</td><td>Daily reports, new report, report handling time</td><td>—</td></tr>
     <tr><td>Materials &amp; Procurement</td><td>Subcontract purchase orders</td><td>Material tracking, deliveries and stock</td></tr>
-    <tr><td>Claims &amp; Variations</td><td>Extension of time status (on the project overview)</td><td>Variation register, claims register</td></tr>
-    <tr><td>Invoices &amp; Cash Flow</td><td>Invoiceable value, invoicing and collection, invoice register</td><td>Cash-flow forecast</td></tr>
+    <tr><td>Claims &amp; Variations</td><td>Delay events register, extension of time status (on the project overview), change order and claim log</td><td>Variation register, claims register</td></tr>
+    <tr><td>Invoices &amp; Cash Flow</td><td>Invoiceable value, invoicing and collection, invoice register, cash-inflow forecast, cash-out forecast</td><td>—</td></tr>
+    <tr><td>BOQ Engine</td><td>Dashboard, project &amp; WBS setup, drawing register, drawing upload and classification, drawing review and measurement, quantity calculation register, Estimated BOQ, specifications and assumptions, revision comparison, review and approval, reports and Excel export, settings and audit history (v3.25; see BOQ-ENGINE-HANDOVER.md)</td><td>OCR for scanned sheets and a vision AI provider (not configured)</td></tr>
     <tr><td>Reports &amp; Dashboards</td><td>Dashboard, all reports, performance, presentation</td><td>—</td></tr>
     <tr><td>RASA AI Assistant</td><td>Opens RASA</td><td>—</td></tr>
     <tr><td>Imports &amp; Integrations</td><td>Primavera P6 (XER, XML), Excel templates</td><td>SAP ECC import centre; S/4HANA connector, disabled until IT, SAP, Cybersecurity and Finance approve</td></tr>
@@ -482,8 +540,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>Executive summary</b><span>Landing page for managers. Pick any of 18 tiles; group the breakdown by region, sector, city or project; choose its columns; add a billing and collection panel. Each person keeps their own layout.</span></div>
     <div class="card"><b>Dashboard</b><span>Productivity index, workforce, manhours, SPI, CPI, warnings, portfolio by region and sector, project health.</span></div>
     <div class="card"><b>Daily reports</b><span>Location, work type, WBS, activity; quantity; own labour; subcontractor companies each with one quantity and several trades; equipment; photos and remarks; live productivity with own and subcontract split. A clock records the time taken to prepare, review and approve each report.</span></div>
-    <div class="card"><b>E&amp;P progress</b><span>Design and procurement progress, status and forecast finish per activity, read from the weekly updated P6 schedule.</span></div>
-    <div class="card"><b>Baselines</b><span>P6 XER, XML or Excel import with branch and class pickers, DCMA check, revised and recovery sets, undo and remove, Master Manpower Costing Sheet, invoice register, resource mapping.</span></div>
+    <div class="card"><b>E&amp;P progress</b><span>A tab of each internal and client report: design and procurement progress, status and forecast finish per activity, from the updated P6 schedule the report uses.</span></div>
+    <div class="card"><b>Baselines</b><span>P6 XER, XML or Excel import with branch and class pickers, DCMA check, revised and recovery sets, undo and remove, resource mapping. The invoice register and the purchase orders have their own pages since v3.9, and the Master Manpower Costing Sheet since v3.9.1 (Cost Control).</span></div>
     <div class="card"><b>Earned value</b><span>PV, EV, AC, SPI, CPI, EAC, VAC and the S-curve against any baseline.</span></div>
     <div class="card"><b>Reports</b><span>Sixteen reports in Excel and PDF, including reconciliation, unit rates, manpower forecast, invoiceable value, invoicing and collection, and report handling time. Site roles see only the reports the super admin grants them.</span></div>
     <div class="card"><b>Presentation</b><span>Tick the slides, download a PowerPoint built from the same numbers.</span></div>
@@ -510,21 +568,41 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>A released version never changes. To correct one, press <b>Start a new revision</b> and give a reason. Management keeps seeing the released revision until the new one is approved; the old one is then kept as superseded.</li>
   </ol>
   <h3 id="weightage">Internal weightage and the updated schedule</h3>
-  <p>Two weightages apply to every project. The <b>client weightage</b> is the weighting in the P6 schedule agreed with the client; it drives invoiceable value. The <b>internal weightage</b> is the % of seven phases agreed with management (general works, design, material, construction, installation, testing &amp; commissioning, project close out); it drives every ProTrackAI progress figure.</p>
+  <p>Two weightages apply to every project. The <b>client weightage</b> is the weighting in the P6 schedule agreed with the client; it drives invoiceable value. The <b>internal weightage</b> is the % of eight phases agreed with management (general works, design, material, construction, installation, testing &amp; commissioning, energization, project close out); it drives every ProTrackAI progress figure.</p>
   <ol class="steps">
-    <li><b>Once per project:</b> Planning &amp; Scheduling → Baselines and P6 import → <b>Internal weightage by phase</b>: enter the seven % (total 100%) and save. A later change needs a reason and is kept in the history.</li>
+    <li><b>Once per project:</b> Planning &amp; Scheduling → Baselines and P6 import → <b>Internal weightage by phase</b>: enter the % of each phase (total 100%; energization is a phase of its own from v3.23) and save. A later change needs a reason and is kept in the history.</li>
     <li><b>Each week or month:</b> in <b>Updated schedule</b>, tick the weightage the schedule is loaded with (normally client), choose the updated XER, check the data date, the weighting resource and the phase of each main WBS branch (or a P6 activity code such as "Phase"), then save.</li>
     <li>ProTrackAI works out, at the data date: <i>phase % = Σ(weight × %) ÷ Σ weight within the phase; client % = the same over all activities; internal % = Σ(phase weightage × phase %) ÷ Σ phase weightage of the phases in the schedule</i>. Planned % follows the baseline dates (ProTrackAI's where the activity is in the baseline).</li>
     <li>Every progress figure (project overview, dashboard, executive summary, reports, RASA, internal report) then uses the internal %. Invoiceable value uses the client price weighting × the schedule's % complete. Daily reports still drive productivity and manpower.</li>
   </ol>
   <h3>Internal and client reporting</h3>
+  <p><b>Actual against baselines (v3.14).</b> In an internal report (Overview) and a client report (Overview), tick the baselines to compare the actual progress with:</p>
+  <ul>
+    <li>the <b>original baseline</b>;</li>
+    <li>the <b>revised</b> or <b>recovery baseline</b>, when loaded in Baselines and P6 import;</li>
+    <li>the <b>baseline assigned in the updated schedule</b>: the baseline project exported with the XER, or the schedule's planned dates when the file carries none.</li>
+  </ul>
+  <p>For each ticked baseline the report shows:</p>
+  <ul>
+    <li>planned progress, using the same activities and weightage as the headline (internal or client), with that baseline's dates;</li>
+    <li>actual progress, the variance (actual − planned) and SPI;</li>
+    <li>the baseline finish against the forecast finish.</li>
+  </ul>
+  <p>An activity missing from a baseline keeps its original dates and is counted. Without the updated schedule's activity rows, the earned-value plan (budget weighted) is used. The choice and the figures are saved with the report and frozen when it is approved. The client report's Excel and printed copies carry them too. Cost reports are prepared in <b>Cost Control → Monthly cost report</b>; Internal Reporting shows the internal and client reports only.</p>
+  <p><b>Intermediate milestones (v3.23).</b> Besides the contractual milestones, the planning engineer adds the intermediate milestones the project manager or the client asks for (design completion, civil start, civil completion, …) on the <b>Milestones</b> tab of an internal or client report → <b>Add a milestone</b>:</p>
+  <ul>
+    <li>a <b>WBS element</b> of the schedule: its first start or its last finish; or an <b>activity or milestone</b>, by its P6 ID;</li>
+    <li>who asked for it (project manager, client or both) and the reports it shows in (internal, client or both).</li>
+  </ul>
+  <p>The <b>baseline</b> date comes from the baseline dates of the schedule's activities; the <b>forecast</b> and <b>actual</b> from the updated P6 schedule in force at the end of the period. Delay = forecast (or actual) − baseline: green on schedule, amber 1–30 days, red over 30. The list belongs to the project and shows in every later report; each report keeps its own copy, frozen when it is approved, and the executive report (project view) and the client report's Excel and printed copies show them.</p>
+  <p><b>Progress by phase (v3.23).</b> The <b>Progress</b> tab lists every phase, general works to energization and close out, with planned and actual % from the updated P6 schedule, the variance and each phase's weighted share. The client report weights the phases by the schedule's own (client) weighting, automatically. The internal report weights them by the internal weightage set at the start of the project: overall = Σ internal weight × phase % ÷ Σ weights of the phases in the schedule. Only the site phases (construction, installation, testing, energization) are compared with the daily reports, on the activities the two share; general works, design, material and close out come from P6 only.</p>
   <p><b>Internal Reporting</b> (the progress release dashboard below) and <b>Client Reporting</b> both start from the latest updated schedule. The client report shows client-weighted progress, progress by phase, milestones, the 30-day look-ahead and your notes, and exports to Excel or prints (save as PDF); it never shows internal weightage, management remarks or cost. If you change progress or a milestone date by hand, the report says <b>Differs from the updated schedule</b>; the regional planning section manager is notified and must tick "I have checked these differences" with a note before approving.</p>
   <h3 id="reldash">The progress release dashboard</h3>
   <p>A weekly or monthly progress release opens full screen. Across the top, nine KPI cards: actual and planned progress, progress variance, SPI, forecast completion, manpower variance, TCC status, PAC status and energization, each with ▲ improving, ▼ deteriorating or ■ stable against the last released period. Below them, seven tabs:</p>
   <table><thead><tr><th>Tab</th><th>What you fill in or read</th></tr></thead><tbody>
     <tr><td>Overview</td><td>Project information (data date, project and sub project number, name, region, sector, contract value, project manager, planning engineer), milestones at a glance, internal against external progress</td></tr>
-    <tr><td>Milestones</td><td>Contractual commencement and site handover; original contractual, approved revised and external forecast TCC, PAC and FAC; internal TCC target and internal forecast. Delays are worked out</td></tr>
-    <tr><td>Progress</td><td>External planned and actual amount and % (client weightage), with variance and SPI; the internal figures ProTrackAI computes, which you change only with a reason</td></tr>
+    <tr><td>Milestones</td><td>Contractual commencement and site handover; original contractual, approved revised and external forecast TCC, PAC and FAC; internal TCC target and internal forecast. Delays are worked out. Intermediate milestones from the P6 schedule (v3.23)</td></tr>
+    <tr><td>Progress</td><td>External planned and actual amount and % (client weightage), with variance and SPI; the internal figures ProTrackAI computes, which you change only with a reason; progress by phase from the updated schedule with the internal weightage, and the site phases against the daily reports (v3.23)</td></tr>
     <tr><td>Manpower</td><td>Alfanar direct, indirect and subcontractor, planned and actual; totals, variance, utilization and productivity index</td></tr>
     <tr><td>Energization</td><td>TCC, PAC and FAC receipt dates; status (Not Started, Under Testing, Ready for Energization, Energized), date and remarks</td></tr>
     <tr><td>Release notes</td><td>Progress summary, key issues and risks, recovery actions, next week or month target; management remarks from the approver</td></tr>
@@ -541,7 +619,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <tr><td>H ETC</td><td>Entered: the cost still to come beyond actual and commitment</td></tr>
     <tr><td>I EAC</td><td>E + F + H</td></tr>
     <tr><td>J Supplement (−) / saving (+)</td><td>D − I. A line with a supplement or a saving needs a justification before the report is submitted</td></tr>
-    <tr><td>Gross margin</td><td>Contract value − the column total, for A to D and for EAC, with the percentage</td></tr>
+    <tr><td>Gross margin</td><td>Contract value − the column total, for every budget column and for EAC, with the percentage. The contract value per column (v3.17): Tender (A) and Rev-0 (B1) on the <b>original contract value</b>; revised Rev-0 (B2), current budget (D) and EAC (I) on the <b>internal revised contract value</b>; previous version (C) on the <b>previous month's contract value</b> (its released cost report)</td></tr>
   </tbody></table>
   <p><b>Fill from Excel:</b> in the report, press <b>Fill from Excel (company format)</b> and choose your monthly sheet. Lines are matched by user field code (SM, DE …) or WBS head name; the header (TCC, POC), the column months and the contract value are read too. If the file's Overall row does not equal the sum of its lines, ProTrackAI says so. Check the figures, then save. <b>Export to Excel</b> gives the same layout for a released report. Older reports by totals only still open as before, with a button to switch to the company format.</p>
   <p>Totals used elsewhere in ProTrackAI keep their meaning: current budget = Σ D, forecast to complete = F + H, EAC = actual + forecast to complete, VAC = current budget − EAC. The approved supplements in the budget supplement log are shown beside the report for reconciliation.</p>
@@ -552,20 +630,13 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Project view</b>: one project's released progress, the planning engineer's comments with recovery actions and management remarks, the released milestones, external progress, energization and manpower, the issues saved with the release, cost and billing, change orders, claims and supplements, and its release history.</li>
   </ul>
   <p>Below the summary, it shows per project the released progress with key issues. For a month it also shows the released cost (approved budget, actual, commitments, EAC, VAC), change orders and claims, and budget supplements by category. A project without a release for that period shows <i>Not released</i>; live figures are never filled in. Weekly reports carry progress only. Foremen, site engineers and site managers see no cost figures. <b>Live summary (working data)</b> is the previous executive summary, for the people preparing the releases.</p>
-  <h3>Customising the executive report and the live summary</h3>
-  <ul>
-    <li><b>Your own layout.</b> Executive report → Summary → <b>Customise this report</b>: tick the tiles and sections you want, move sections up or down, and choose whether Monthly or Weekly opens first. Changes show at once; <b>Save as my layout</b> keeps them for your account, on the server, on every device. <b>Reset to the default</b> goes back to the default. The live summary works the same way with <b>Customise this view</b>.</li>
-    <li><b>Defaults, set by the super admin.</b> In the same panel the super admin can save the layout as the default for everyone (company default) or for one role, built-in or custom. People who have not saved their own layout see the default for their role, or else the company default, or else the standard layout. The page says which one is shown.</li>
-    <li>Cost sections and tiles appear only for people who see cost, and only in monthly reports. Site engineers and site managers keep the live summary set in Settings → Role access.</li>
-  </ul>
-  <h3>Material tracking in the executive views</h3>
-  <ul>
-    <li><b>Executive report (released):</b> a <b>Material tracking</b> section (per project: monitored, delivered, delivery started, not delivered, delayed, and which materials are delayed) and the tiles <b>Materials delayed</b> and <b>Materials delivered</b>. The figures are those released with each progress report: the release takes a snapshot of Material tracking when it is saved and freezes it when it is submitted (Internal Reporting → <b>Materials</b> tab). Releases from before version 3.8.5 carry none and say so.</li>
-    <li><b>Live summary:</b> a <b>Material tracking</b> panel with the live status of the monitored materials, a <b>Materials delayed</b> tile and a column for the breakdown table.</li>
-  </ul>
+  <p><b>Material tracking</b> (v3.9) appears on both. The Live summary shows it from the latest updated schedule. The Executive report shows the material status saved with each internal report when it is approved, so it never shows unreleased data: materials tracked, delivered, delivery started, not delivered, delayed, manufacturing in progress, pending FAT and pending shipment, by project, with the delayed materials. Only monitored materials count. A <b>Materials delivered</b> tile is offered on both.</p>
+  <p><b>Customise this report</b> (v3.9): each person can show, hide and reorder the sections and headline tiles of the Summary for themselves, and <b>Reset to the default</b> at any time. The super admin chooses <b>Default for everyone</b> in the same panel to set the layout everyone sees until they customise their own; <b>Back to the standard layout</b> undoes it. Cost sections still show only in monthly reports and only to people who see cost figures, whatever the layout says. Layouts are kept with the data of this copy of ProTrackAI.</p>
   <h3>Change order and claim log, budget supplement log</h3>
   <p>The costing engineer or costing coordinator uploads both every month for each project (<b>Claims &amp; Variations → Change order and claim log</b>, <b>Cost Control → Budget supplements</b>). Download the template, fill it in, choose the month and upload. Rows with a missing reference, a wrong type or category, a number that is not a number or a bad date are refused, and you confirm them by ticking the box before the rest is saved. Each upload is a numbered batch, and the same file for the same month is not loaded twice. Every month's log is kept and can be shown later.</p>
-  <p><b>Change order and claim log columns:</b> reference, type (VO or Claim), description, submission status and date, client approval status, estimated price, estimated cost, expected price to be approved, price and cost considered internally, change in Rev-0 budget, internal workflow status, overall approval status with the client, remarks.</p>
+  <p><b>Change order and claim log columns:</b> reference, type (VO or Claim), description, submission status and date, client approval status, estimated price, estimated cost, expected price to be approved, <b>client approved price</b>, <b>price considered internally (SAR)</b>, <b>internal WF no</b> and <b>WF date</b>, cost considered internally, change in Rev-0 budget, internal workflow status, overall approval status with the client, remarks.</p>
+  <p><b>Updating the latest log (v3.11).</b> The costing engineer or costing coordinator chooses <b>Update</b> on a row to set the client approval status, the client approved price, the price considered internally with its WF number and date, and remarks. A price considered internally needs its WF number and date and cannot be more than the estimated price (below it, it is Partial; at it, Full). A client approved price needs the status Approved or Partially approved, and a rejected item counts nowhere. Every change is listed under <b>Updates to the log</b>. A log in the earlier layout (Yes / No / Partial) still loads.</p>
+  <p><b>Contract value.</b> Revised contract value (internal) = original + price considered internally, where each item counts at its client approved price once the client approves, else at the price management approved internally. It is the contract value of internal reports, the executive report, the dashboards and the monthly cost report, and the gross margin is measured on it. Client reports show original + approved by the client only. Each approved report keeps the breakdown it was approved with.</p>
   <p><b>Budget supplement categories:</b> Project execution, Under estimate, External factor, Saudization, Finance, Claims, Change order. Only <i>Approved</i> supplements are added to the budget in the cost report.</p>
   <p>The columns will be matched to your company's VO log when the sample arrives.</p>
   <h3>Billing to date in the cost report</h3>
@@ -584,6 +655,98 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Upload</b> your issue log as it is, or the template. Rows are matched to existing issues by project and description, so they are updated, not duplicated. Rows for another engineer's project, an unknown project, a missing description or a wrong impact are refused and listed; tick the box to save the rest. Text such as "NA" in a date or priority column is kept in Remarks.</li>
     <li><b>Released with progress:</b> when the Head approves a progress release, the project's open issues are saved with it and never change afterwards. The executive report shows them. The cost impact is not saved with the release.</li>
   </ol>
+  <h2 id="rstatus">Reporting status</h2>
+  <p><b>Home → Reporting status</b> follows the releases of every active project for a week or a month:</p>
+  <ul>
+    <li><b>Weekly:</b> the internal report.</li>
+    <li><b>Monthly:</b> the internal report and the monthly cost report, plus the change order and claim log, the budget supplement log and the invoice register update.</li>
+  </ul>
+  <p>Each shows its status, who prepared and approved it, and whether it is on time, late or overdue. Monthly deliverables are due on day 7 of the next month and weekly ones 2 days after the week ends; the super admin can change both.</p>
+  <ol class="steps">
+    <li><b>Hold:</b> the executive report of a period opens only when every active project has released the required deliverables (the internal report, and for a month the cost report). Until then executives see <i>Held</i> with the count; the super admin and the Head see a preview.</li>
+    <li><b>Remind:</b> the super admin, the Head, regional and portfolio managers and the section planning manager of the region remind the planning engineers (internal report) or costing engineers (cost report, logs, invoice register), always with the project manager. The reminder goes to the notifications and as an email, once a day per deliverable.</li>
+    <li><b>Exempt:</b> the super admin or the Head can exempt a project for a period, with a reason.</li>
+    <li><b>Project status (v3.22.2):</b> on-hold, completed and pre-award projects never hold the report. The executive report lists on-hold projects with their last released figures (labelled with their period), completed projects only in the periods they released, and no pre-award projects.</li>
+    <li><b>Rules:</b> the super admin sets the due dates and which deliverables are required.</li>
+  </ol>
+  <h2 id="delays">Delay events register</h2>
+  <p><b>Claims &amp; Variations → Delay events register</b> keeps every delay event of a project, with the 27 columns of the company <i>Delay Events Register</i> workbook in four groups:</p>
+  <table><thead><tr><th>Group</th><th>Columns</th></tr></thead><tbody>
+    <tr><td>Claim contractual data</td><td>Ref., claim event no., claim event name, claim identification, start date, status (Ongoing or Closed), closing date (if closed), <i>claim duration till date</i>, supporting documents ref. (from the Employer / Engineer)</td></tr>
+    <tr><td>Notice of claim data</td><td>Time bar (contractual days), notice submission date, notice documents ref. (from alfanar to the external stakeholder), <i>notice days used</i>, <i>notice days vs time bar</i>, <i>days to notice deadline</i></td></tr>
+    <tr><td>Schedule impact data</td><td>Detailed description, related / affected activities in the baseline schedule, schedule impact (days, if calculated), claim data date, entitlement type, liability party</td></tr>
+    <tr><td>Cost impact data</td><td>Prolongation cost, variation orders cost omitted and added (if calculated), concurrency flag, mitigation / recovery action, claim owner</td></tr>
+  </tbody></table>
+  <p><b>Worked out, never typed</b> (the columns in italics):</p>
+  <ul>
+    <li><b>Claim duration till date</b> = the closing date for a closed event, else today, minus the start date (calendar days).</li>
+    <li><b>Notice days used</b> = notice submission date − start date.</li>
+    <li><b>Notice days vs time bar</b> = notice days used − time bar. Above 0 (red) the notice went out after the time bar; 0 or less (green) it was in time.</li>
+    <li><b>Days to notice deadline</b> = start date + time bar − today, until the notice is dated; then <i>Notice served</i>. 0 or less red, 1 to 7 amber, more green.</li>
+  </ul>
+  <table><thead><tr><th>Who</th><th>Can</th></tr></thead><tbody>
+    <tr><td>Planning engineers</td><td>Add, change and delete the delay events of their own projects; upload and download the register (right <i>Keep the delay events register of their projects</i>)</td></tr>
+    <tr><td>Head of Planning and Cost Control, super admin</td><td>The same on any project in their access</td></tr>
+    <tr><td>Costing engineers, project managers, executives, regional and portfolio managers, read-only</td><td>See the registers of the projects in their access, and download them</td></tr>
+    <tr><td>Site engineers, site managers, foremen</td><td>No access</td></tr>
+  </tbody></table>
+  <p>Nobody sees the events of a project outside their access. The super admin can give the right to another role or person in Settings → Roles and rights.</p>
+  <p><b>Correspondence and letters (v3.19.2).</b> Each event's window has a section for the letters, e-mails, notices, site instructions, minutes and other records behind the event:</p>
+  <ul>
+    <li><b>Record:</b> the type, the direction (received from the Employer / Engineer, sent by alfanar, internal), the date, the reference, the subject, from, to and notes. A file (PDF, Office, MSG, EML, images, ZIP or drawings) is optional.</li>
+    <li><b>Add its reference to the register</b> (ticked by default): a received letter goes to <i>Supporting documents ref.</i>, a sent one to <i>Notice of claim documents ref.</i> A sent notice of claim also sets the notice submission date when the event has none. The event's rules apply.</li>
+    <li><b>Review:</b> the records are listed in date order. <b>Preview</b> and <b>Download</b> open the files.</li>
+    <li><b>Download the chronology (Excel):</b> the event, then every record in date order.</li>
+    <li><b>Download the EOT pack (ZIP):</b> the chronology and every file, numbered in date order, ready for the extension of time submission.</li>
+  </ul>
+  <p>The register's keepers record and remove letters; its readers see them. Removing a record needs a reason and keeps it in the history. An event with letters cannot be deleted until they are removed.</p>
+  <p><b>Drop-down lists (v3.19.1).</b> Seven columns take a value from a list of the company workbook:</p>
+  <ul>
+    <li><b>Event status:</b> Ongoing, Closed. This list is fixed, because it decides the closing date and the duration.</li>
+    <li><b>Entitlement:</b> EOT Only, EOT + Cost, V.O (Cost Only), V.O (Time &amp; Cost), To Be Determined.</li>
+    <li><b>Liability:</b> Employer, Engineer / PMC, SubContractor / Supplier, Neutral / Force Majeure, Joint Venture.</li>
+    <li><b>Concurrency:</b> No Concurrency, Contractor Concurrent Delay, Third Party Concurrent, Under Assessment.</li>
+    <li><b>Owner:</b> Regional Manager, Portfolio Manager, Project Manager.</li>
+    <li><b>Mitigation:</b> Notice submitted, Particulars under preparation, EOT Claim Submitted, EOT Claim Approved, Revised Schedule Submitted &amp; Approved.</li>
+    <li><b>Claim identification:</b> twelve items from Employer Delayed Approvals to Others,...</li>
+  </ul>
+  <p>How the lists work:</p>
+  <ul>
+    <li>A value outside its list is refused, in the window and on upload. The template's <b>Lists</b> sheet shows the current lists.</li>
+    <li>The <b>super admin</b> changes them in <b>Settings → Delay register lists</b>: add, remove, reorder, or go back to the workbook's list. Each item shows how many events use it.</li>
+    <li>An event keeps a value removed from its list. It shows as <i>not in the list</i> until it is changed.</li>
+    <li>Every change is in the change log.</li>
+  </ul>
+  <ol class="steps">
+    <li><b>Review:</b> the KPIs count events, notices not served (past the time bar, due within 7 days), notices served late, the schedule impact and the cost impact. <i>Delay events by project</i> shows the same per project; tap a row to filter. Filter by project, status, notice position, entitlement and liability, or search the words and letter references.</li>
+    <li><b>Add or open an event:</b> the window opens full screen with the four groups. The worked-out columns follow what you type. The event name and start date are required; dates cannot be in the future; a closed event needs its closing date; the notice cannot be dated before the event. Event numbers run <i>Event 01, Event 02…</i> per project unless you type one. Every change is kept with who, when and which fields changed; deleting needs a reason.</li>
+    <li><b>Upload:</b> choose the project, then the workbook (the company register or <b>Download template</b>). Events are matched by Claim Event No., else by name, so they are updated, not duplicated. Rows with a missing name, a bad date, a wrong status or a number used twice are refused and listed with their row; tick the box to save the rest. The same file twice in a row changes nothing. Each upload is listed in the Import centre.</li>
+    <li><b>Download the register (Excel):</b> the events shown by the filters, one sheet per project, in the company layout: the four group headings, the headers, dates as Excel dates, and the four worked-out columns as formulas, so the file stays right when edited later.</li>
+  </ol>
+  <h2 id="cashout">Cash-out forecast</h2>
+  <p><b>Invoices &amp; Cash Flow → Cash-out forecast</b> forecasts each project's cash-out against its <b>approved current budget</b>, the control limit.</p>
+  <ul>
+    <li><b>Approved current budget:</b> the <i>Approved budget</i> (Rev-0 + approved supplements) of the latest released monthly cost report. Without one, the project is <i>Budget Not Configured</i>; PO values are never used as a budget.</li>
+    <li><b>Actual:</b> Finance's cumulative cash-out per month. The month's actual is this cumulative minus the previous one; the first balance is an opening balance unless a zero opening is verified.</li>
+    <li><b>Forecast remaining:</b> the unpaid net amount of each PO payment milestone at its expected payment date, plus the remaining amount of the other cash-out lines (budgeted cash-out no PO covers).</li>
+    <li><b>Forecast at completion</b> = actual cumulative + forecast remaining. <b>Headroom</b> = budget − forecast at completion. <b>Utilization</b> = forecast at completion ÷ budget.</li>
+    <li><b>Status</b>, in this order: Budget Not Configured, Actual Overrun, Forecast Overrun, Forecast Incomplete, Reconciliation Required, Within Budget.</li>
+  </ul>
+  <ol class="steps">
+    <li><b>Import Finance actuals</b> (super admin, Head Office cost control coordinator): choose the projects and the reporting cutoff, then the file. The template, or Finance's own layout with its columns mapped once. Review the preview (new, restatement, already imported, refused). A restatement needs the correction tick and Finance's reason; the original is kept.</li>
+    <li><b>Keep the PO payment terms</b> (costing engineers): open a PO, add its milestones (% of the PO value or a fixed amount, event, dates, contractual payment days, retention, status, evidence) or use the standard 10 / 20 / 20 / 40 / 10. They must total 100%. Mark a milestone paid only with its Finance evidence. The coordinator, the Head or a super admin approves the terms; the first approved payment date is the baseline.</li>
+    <li><b>Record the other cash-out lines</b>: what Finance has paid on them to date and what remains, over which months.</li>
+    <li><b>Reconcile</b>: the actual against the plan and the forecast; the <i>unallocated actual cash-out</i> (Finance's total less the paid milestones and lines) shows what still needs reconciling. Finance's project-level figures are never shared out among POs.</li>
+    <li><b>Publish</b>: save the live forecast as a version; someone else reviews it; the Head or a super admin publishes it. A forecast over budget is published only after the management review records the decision and the action. Scenarios (optimistic, pessimistic, your own) are simulations that change nothing.</li>
+    <li><b>Report</b>: Excel or PDF for a project, Excel for the portfolio, each stating the cutoff, currency, budget revision, forecast version and time.</li>
+  </ol>
+  <p><b>Material POs and the cost report (v3.21).</b> The cash-out forecast is built from three sources:</p>
+  <ul>
+    <li><b>Material POs:</b> every PO number of Material tracking has its value and payment terms (Material tracking → <i>Payment terms</i> under the PO number). Each milestone is paid at a Material tracking stage (PO creation, FAT, delivery…), the P6 TCC or final acceptance, or a fixed date, plus the contractual payment days. The stage date is the actual once done, else the P6 forecast of the latest updated schedule. The standard schedule is 10% PO, 20% FAT, 60% delivery and 10% retention at TCC.</li>
+    <li><b>Subcontract POs:</b> as before.</li>
+    <li><b>The monthly cost report</b>, by WBS head (<i>Cost report heads</i>). Material heads go to the material POs, installation heads to the subcontract POs, and contingency, management reserve, prime cost and provisional sums are excluded. Every other head forecasts its EAC − actual, spread evenly to the P6 forecast TCC. A PO head also forecasts its ETC (not yet ordered).</li>
+  </ul>
+  <p>In <b>Reconciliation</b>, Finance's cumulative less the paid milestones and the cost booked gives the difference. Cost booked but not yet paid is a payable in the next month. Milestones due but not marked paid and retention are timing items. Only what remains is unexplained. The cash forecast at completion is cross-checked with the cost report EAC.</p>
   <h2 id="docrack">Project document rack</h2>
   <p><b>Projects &amp; Handover → Project document rack</b> (or <b>Project overview → Documents</b>) holds each project's source documents in three rows of box files. Choose the project at the top.</p>
   <table><thead><tr><th>Row</th><th>Kept by</th><th>Seen by</th></tr></thead><tbody>
@@ -622,7 +785,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <p>Statuses come from the latest updated schedule (Baselines → Updated schedule), matched by activity ID. KPIs, three charts (delivery status, by supplier, by milestone), filters, search, sorting and Excel or PDF export are above and on the table. Editing needs the right <b>Keep material tracking</b> (planning engineers and the Head by default; set in Roles and rights).</p>
 
   <h2>Tender register and PE numbers</h2>
-  <p>Projects &amp; Handover → <b>Tender register</b> lists every project in your scope with its PE number, the TE number from Tender's L1 list, client, location, expected value, status and current lifecycle stage, and below it the PE number history.</p>
+  <p>Projects &amp; Handover → <b>Tender register</b> lists every project in your scope with its PE number, the TE number from Tender's list, our bid position (L1 or L2), client, location, expected value, status, NOA and finance WBS dates and current lifecycle stage, and below it the PE number history.</p>
   <h3>Designations</h3>
   <p>The super admin ticks two designations on a person in Settings → Users and access. A designation sits on top of the person's role; it does not replace it.</p>
   <table><thead><tr><th>Designation</th><th>Can do</th></tr></thead><tbody>
@@ -631,10 +794,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   </tbody></table>
   <h3>Registering an L1 project</h3>
   <ol class="steps">
-    <li>Press <b>Register an L1 project</b> and copy the TE number, project name, region, client, location and expected value from Tender's list.</li>
+    <li>Press <b>Register an L1 or L2 project</b> (it opens as a full window) and copy the TE number, project name, region, client, location and expected value from Tender's list. Choose our <b>bid position</b>: <b>L1</b> (lowest bidder) or <b>L2</b> (second lowest; the client may still award us, for example on our past performance or when it is not happy with the L1 bidder), with an optional reason for L2. The bid position can change until the NOA is received.</li>
     <li>ProTrackAI fills in the <b>PE number</b>. It offers a number released by a cancelled project first; otherwise it offers the next in sequence. Only a super admin can type another.</li>
     <li>Press <b>Register</b>. The project appears with status <b>Pre-award</b> and its 12 stages. The costing coordinator owns stages 1 to 4, and the Heads and coordinators get access to it.</li>
-    <li>When the notice of award arrives, open the project in the register and enter the <b>award date</b>; the project becomes <b>Active</b>. When you enter the <b>contract signing date</b>, stage 4 becomes due 7 days later, unless its owner has set another date.</li>
+    <li>When the notice of award (NOA) is received, the <b>costing coordinator or a super admin</b> opens the project in the register and presses <b>Record NOA received</b> with the actual date. The project becomes <b>Active</b>, and the <b>finance WBS is released on the same date to record the PBG cost</b>; both are kept in the history and shown as evidence in stage 3. The date cannot be in the future, before the date Tender notified, or after the contract signing; correcting it needs a reason. When you enter the <b>contract signing date</b>, stage 4 becomes due 7 days later, unless its owner has set another date.</li>
   </ol>
   <h3>Rules for PE numbers</h3>
   <ul>
@@ -652,9 +815,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h2>Project lifecycle, actions and dashboards</h2>
   <h3>The twelve stages</h3>
   <table><thead><tr><th>#</th><th>Stage</th><th>Department</th><th>Required deliverables (examples)</th></tr></thead><tbody>
-    <tr><td>1</td><td>Tender L1 notification</td><td>Tendering (recorded by the costing coordinator)</td><td>TE number, project name, region, client and location recorded; expected value recorded</td></tr>
+    <tr><td>1</td><td>Tender L1 / L2 notification</td><td>Tendering (recorded by the costing coordinator)</td><td>TE number, bid position (L1 or L2), project name, region, client and location recorded; expected value recorded</td></tr>
     <tr><td>2</td><td>PE number allocation</td><td>Planning and Cost Control</td><td>PE number allocated against the TE number; Tender informed (optional)</td></tr>
-    <tr><td>3</td><td>Award, finance WBS and SAP activation</td><td>Planning and Cost Control</td><td>Notice of award; higher-level WBS created in SAP; finance WBS sent to Tender for the advance bank guarantee; SAP team activated only that WBS for actual cost; contract signed</td></tr>
+    <tr><td>3</td><td>Award, finance WBS and SAP activation</td><td>Planning and Cost Control</td><td>Notice of award; higher-level WBS created in SAP; finance WBS released on the NOA date to record the PBG (performance bank guarantee) cost; SAP team activated only that WBS for actual cost; contract signed</td></tr>
     <tr><td>4</td><td>Kick-off and handover to Planning</td><td>Tendering and Planning</td><td>Kick-off held by Tender; tender documents and the costing file with detailed breakup handed over. Due 7 days after contract signing</td></tr>
     <tr><td>5</td><td>Costing review, finance pack and SAP upload</td><td>Planning and Cost Control (costing engineer)</td><td>Site management, installation, mechanical and civil breakups checked; project brief and cash flow prepared and sent with the signed contract to Finance / Treasury; costing uploaded to SAP with the standard template</td></tr>
     <tr><td>6</td><td>Baseline preparation and approval</td><td>Planning</td><td>Baseline loaded; costing applied; submitted to and approved by the client</td></tr>
@@ -744,7 +907,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <ol class="steps">
     <li><b>Every morning: Actions and approvals.</b> Approve or return lifecycle stages waiting on you (you cannot approve your own), and assign an owner and due date to each stage of your projects on the Project overview.</li>
     <li><b>Daily reports.</b> Site managers approve day to day; step in to review or approve when they are absent. Three checks: is the quantity credible for that crew, was that crew on site, is the index explainable.</li>
-    <li><b>Baselines → Master Manpower Costing Sheet, Invoice register, Purchase orders</b> are open to you for your projects.</li>
+    <li><b>Cost Control → Master Manpower Costing Sheet</b>, <b>Invoices &amp; Cash Flow → Invoice register</b> and <b>Materials &amp; Procurement → Subcontract purchase orders</b> are open to you for your projects.</li>
     <li><b>Monday:</b> Dashboard, Executive summary → Project view, Reports → Early warnings, Manpower histogram, EAC.</li>
     <li><b>Monthly:</b> make sure an invoice goes in <b>every month</b> until invoicing reaches 80% of the contract value. Performance → Project managers shows your monthly invoicing record; months with nothing submitted are listed by name.</li>
     <li><b>Before the review meeting:</b> Presentation → pick the slides → download.</li>
@@ -758,7 +921,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Import,</b> then read the <b>DCMA check</b> on the same page and fix what fails in P6.</li>
     <li><b>Map P6 labour resources to trades,</b> once per project; create any missing trades.</li>
     <li><b>Tell costing the baseline is in.</b></li>
-    <li><b>Every week:</b> upload the updated P6 XER (Baselines and P6 import → Updated schedule). Design and procurement progress, statuses and forecast finishes come from it; check them in Planning &amp; Scheduling → E&amp;P progress. Then export the P6 progress update from Reports.</li>
+    <li><b>Every week:</b> upload the updated P6 XER (Baselines and P6 import → Updated schedule). Design and procurement progress, statuses and forecast finishes come from it; check them on the E&amp;P progress tab of the internal or client report. Then export the P6 progress update from Reports.</li>
     <li><b>At a revision:</b> load a revised or recovery set; use Measure against to report on it. Wrong file? Undo this import.</li>
     <li><b>Every week and month:</b> upload the updated schedule (Baselines and P6 import), then Internal Reporting → Open: check the figures, fill the rest, write the release notes and submit; then Client Reporting → Open: write the client notes and submit. Both go to your regional planning section manager.</li>
     <li><b>At project start:</b> set the internal weightage by phase agreed with management.</li>
@@ -766,13 +929,13 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 
   <h3 id="s-cost">Costing engineer — at award, at each budget revision, every week</h3>
   <ol class="steps">
-    <li><b>Baselines → project → Master Manpower Costing Sheet → Download template.</b> It carries every activity ID.</li>
+    <li><b>Cost Control → Master Manpower Costing Sheet → choose the project → Download new sample template.</b> It carries every activity ID. To change costing already applied, use <b>Download current existing data</b> instead: the same sheet, filled with the budget quantity, unit, rate, cost, manhours and gang code applied now.</li>
     <li><b>Fill budget quantity and unit</b> (required), unit rate and cost, and manhours if the costing budget differs from P6. Leave the gang code blank unless you use standard crew codes.</li>
     <li><b>Upload,</b> read the preview: matched, rejected, missing, and manhour differences over 25%. Fix rejected rows at source and re-upload rather than accepting partial files.</li>
-    <li><b>Purchase orders — Baselines → your project → Subcontractor purchase orders.</b> For each subcontractor working on the project: choose the company, or <b>New subcontractor</b> to add one; enter PO number, basis (Measured or Manpower supply), date and value; <b>Add purchase order</b>.</li>
+    <li><b>Purchase orders — Materials &amp; Procurement → Subcontract purchase orders → your project.</b> For each subcontractor working on the project: choose the company, or <b>New subcontractor</b> to add one; enter PO number, basis (Measured or Manpower supply), date and value; <b>Add purchase order</b>.</li>
     <li><b>Rates.</b> Click the purchase order to open it. For a measured PO add a rate per activity of this project, in its unit; for manpower supply, a rate per trade per manhour. Give each rate its effective date; a revision is a new rate with a later date, never an edit.</li>
     <li><b>Check cost to date.</b> The table shows each PO's cost so far from the daily reports and its share of the PO value, so an overrun shows before the subcontractor's invoice does.</li>
-    <li><b>Every week:</b> Invoice register → upload the <b>whole</b> register: invoice number, date, type, amount, submitted, approved, collected. The advance goes in as its own row.</li>
+    <li><b>Every week:</b> Invoices &amp; Cash Flow → Invoice register → choose the project → upload the <b>whole</b> register: invoice number, date, type, amount, submitted, approved, collected. The advance goes in as its own row.</li>
     <li><b>Monthly:</b> Reports → Unit rate analysis, Quantity reconciliation, Budget manhour reconciliation, Invoicing and collection.</li>
   </ol>
 
@@ -800,7 +963,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Settings → System, once after installing version 2.5:</b> move anything people entered in their browsers to the server (see <a href="#move">Moving browser data to the server</a>), and download a server backup every week.</li>
     <li><b>Settings → System:</b> check the version, and choose the date basis: demo (fixed 22 Sept 2026) for demonstrations, live (today) for real work. Each keeps its own data in the browser. Once real data is on the server, set <code>DATE_MODE: 'live'</code> in config.js so nobody can switch it by mistake.</li>
     <li><b>Settings → Role access:</b> for site engineers and site managers, tick the reports they may open and set the tiles, breakdown and columns of their executive summary. Cost and billing are not offered here; they follow the right <b>See cost and billing figures</b> in Roles and rights.</li>
-    <li><b>Hand purchase orders to costing.</b> Each project's costing engineer keeps its subcontractor POs on the Baselines page. Settings → Subcontractors still shows every company and PO across all projects, for review or correction.</li>
+    <li><b>Hand purchase orders to costing.</b> Each project's costing engineer keeps its subcontractor POs in Materials &amp; Procurement → Subcontract purchase orders. Settings → Subcontractors still shows every company and PO across all projects, for review or correction.</li>
     <li><b>Hand over</b> to planning and costing. Afterwards: leavers set inactive, pay rises as new dated rates, wrong baselines undone, change log reviewed.</li>
   </ol>
 </section>
@@ -930,6 +1093,11 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <div class="f"><b>Trade hourly rate = basic salary ÷ hours per month × loaded factor</b>, taken from the rate effective on the report date</div>
   <div class="f"><b>Own labour = workers × (regular + 1.5 × overtime) × trade rate</b></div>
   <div class="f"><b>Measured subcontract = quantity × PO unit rate</b> · <b>Manpower supply = workers × hours × PO manhour rate</b></div>
+  <h3>Contract value (v3.11)</h3>
+  <div class="f"><b>Considered internally (per item)</b> = client approved price once approved by the client, else the price considered internally with its WF number and date, else 0; 0 when rejected</div>
+  <div class="f"><b>Planned % against a baseline</b> = Σ weight × elapsed share of that baseline's duration at the data date ÷ Σ weight (same activities and weightage as the headline) · <b>Variance = actual − planned</b> · <b>SPI = actual ÷ planned</b></div>
+  <div class="f"><b>Revised contract value (internal) = original + Σ considered internally</b> · <b>Revised contract value (client) = original + Σ client approved price</b></div>
+  <div class="f"><b>Gross margin (internal) = revised contract value (internal) − EAC</b> · <b>Internal planned amount = revised contract value (internal) × planned %</b></div>
   <h3>Planning</h3>
   <div class="f"><b>Planned headcount = baseline daily quantity ÷ planned rate ÷ 8</b>, split by the P6 trade mix</div>
   <div class="f"><b>Forecast headcount = planned headcount × (planned rate ÷ actual rate over 21 days)</b> · <b>To mobilise = forecast − current</b></div>
@@ -957,6 +1125,58 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <tr><td>Outstanding collection</td><td>Approved − collected</td></tr>
     </tbody>
   </table>
+  <h3>Invoice register columns (v3.15)</h3>
+  <ul>
+    <li><b>Identification:</b> invoice number, invoice date, type (Progress, Advance, Retention release, Variation, Other).</li>
+    <li><b>Phase:</b> for a progress invoice, Engineering and design, Procurement and supply, Construction and installation, or Testing and commissioning.</li>
+    <li><b>Amounts and actual dates:</b> invoice amount; submitted amount and <b>submission date</b>; approved amount and <b>approval date</b>; collected amount and <b>collection date</b>; remark.</li>
+  </ul>
+  <p>A row is refused when:</p>
+  <ul>
+    <li>an approved or collected amount has no date;</li>
+    <li>it was approved before it was submitted, or collected before it was approved;</li>
+    <li>a date is in the future;</li>
+    <li>the phase is not one of the four.</li>
+  </ul>
+  <p>A register in the earlier layout (amounts only) still loads, and the invoice date is used.</p>
+  <h3>Invoicing status by phase</h3>
+  <ul>
+    <li><b>Phase value</b> = its share of the client contract value (original + changes approved by the client), by the P6 price weights.</li>
+    <li><b>Invoiceable to date</b>, from the payment terms.</li>
+    <li><b>Submitted, approved, collected:</b> the sums of the register rows for the phase.</li>
+    <li><b>Outstanding</b> = approved − collected, plus submitted not yet approved.</li>
+    <li><b>Balance to invoice</b> = phase value − submitted.</li>
+  </ul>
+  <p>Advance, retention release, variations and progress invoices without a phase are shown apart.</p>
+  <h3>Cash-inflow forecast</h3>
+  <p><b>Invoices &amp; Cash Flow → Cash-inflow forecast</b>, by project. Invoices are raised at month end and collected after the client's payment period. The payment period is set in Settings → Projects → payment terms, as <i>Client pays within (days of submission)</i>; the default is 60 days.</p>
+  <ul>
+    <li><b>New project</b> (nothing invoiced): the whole inflow is worked out from the client baseline (original baseline dates) and the payment terms:
+      <ul>
+        <li>each phase is billed on progress up to its cap, plus its releases at the milestones;</li>
+        <li>retention and advance recovery are deducted from each invoice;</li>
+        <li>the retention is released at TCC and FAC;</li>
+        <li>the advance comes at the start.</li>
+      </ul>
+      If the project has started with nothing invoiced, what the baseline earned so far is invoiced this month.</li>
+    <li><b>Running project:</b>
+      <ul>
+        <li>actual collections come from the register by their collection dates;</li>
+        <li>invoices not yet collected are forecast after the payment period (one past its period goes in this month, and is listed);</li>
+        <li>the <b>balance of each phase</b> (phase value − submitted) is invoiced as the latest updated schedule earns it: each activity moves from its progress today to complete between its forecast start and finish (or along the original baseline where it is not in the schedule; and along the original baseline from today's progress when no schedule is loaded);</li>
+        <li>an amount invoiced beyond a phase's value is set against the other phases' balance;</li>
+        <li>an advance received is recovered at the terms' rate.</li>
+      </ul></li>
+  </ul>
+  <p>The baseline plan is shown beside it, as a cumulative line and a column.</p>
+  <p><b>Monthly invoicing (v3.16)</b> comes first, for the project manager: by month, the planned invoice (what the original baseline earns under the payment terms), the invoiceable amount (the same on the actual progress), the invoices submitted and approved (register, by their dates), submitted − invoiceable, the forecast invoicing of the balance, and the cumulatives. KPIs show this month, to date, and how many past months with invoiceable value had an invoice submitted.</p>
+  <p>The page shows:</p>
+  <ul>
+    <li>KPIs: client contract value, collected, outstanding, next 3 and 12 months, balance to invoice, last inflow;</li>
+    <li>a chart;</li>
+    <li>the invoicing status by phase;</li>
+    <li>the month-by-month table, also in an Excel export (Monthly and Phases sheets).</li>
+  </ul>
 </section>
 
 <section id="reports">
@@ -981,6 +1201,16 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     </tbody>
   </table></div>
   <p><b>Presentation</b> builds a PowerPoint: tick up to fifteen slide types, set title, presenter and rows per table, choose whether charts come through as pictures, and download. The numbers are the same as the reports for the scope selected.</p>
+  <p><b>Reports in the presentation (v3.18).</b> Under <b>Reports</b>, choose the month and one project or every project in scope, then tick the reports. Each opens its parts, all ticked by default:</p>
+  <ul>
+    <li><b>Internal report:</b> headline figures, against the baselines, contract milestones, manpower, open issues, comments.</li>
+    <li><b>Productivity details:</b> by activity, by foreman, chart.</li>
+    <li><b>Client report:</b> headline figures, baselines, phases, milestones, look-ahead, client contract value, notes.</li>
+    <li><b>Invoicing and cash flow:</b> KPIs, monthly invoicing, status by phase, cash inflow, charts.</li>
+    <li><b>Cost report:</b> headline figures, WBS heads with the margin by column, billing.</li>
+    <li><b>Change order details:</b> summary, every change order and claim, contract value breakdown.</li>
+  </ul>
+  <p>Each report becomes a section of slides after the chosen slides; long tables run over several slides. <b>Download the reports as Excel</b> gives the same data, one sheet per report and project. The released report is used, else the open draft, marked DRAFT. Invoicing, cost and change orders appear only for roles that see cost figures.</p>
 
   <h3 id="rasa">RASA, your project assistant</h3>
   <p><b>RASA</b> stands for Real-time Artificial Smart Assistant. It is the face of ProTrackAI's intelligence: it answers questions from the same data as the reports, points at the figures on your screen while it explains them, and tells you what needs attention before you ask. It only ever sees the projects you have access to, and never shows cost to site roles.</p>
@@ -1018,11 +1248,27 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h3 id="rasa-rules">How RASA's answers are governed</h3>
   <ul>
     <li><b>Based on.</b> Under every answer and insight RASA lists its sources: the daily reports used (how many, their dates, how many are approved and how many are submitted or reviewed and counted before approval), the baseline and when it was loaded, the Master Manpower Costing Sheet or invoice register batch, the billing terms, the weekly update, and so on. Then come the scope and the data date. Anything it would have needed but ProTrackAI does not hold is listed under <b>Not available</b>.</li>
-    <li><b>No evidence.</b> If ProTrackAI holds no data for a question, RASA says <i>No evidence in ProTrackAI</i> and what is missing. It never says "everything is fine" about a project with no baseline or reports. SAP actual cost, commitments, accruals, budget revisions, cash-flow forecasts, variations, claims, materials, safety and weather are named as not tracked.</li>
+    <li><b>No evidence.</b> If ProTrackAI holds no data for a question, RASA says <i>No evidence in ProTrackAI</i> and what is missing. It never says "everything is fine" about a project with no baseline or reports. Accruals, material stock, safety and weather are named as not tracked; SAP figures come only from the released monthly cost reports.</li>
     <li><b>Only what you can open.</b> RASA answers from the projects in your access and current scope. A project outside your access is refused. A project in your access but outside the current scope is pointed to the Scope menu. Foremen, site engineers and site managers get no cost, budget or billing figures from RASA, and since version 2.9 the server does not send their browser the invoice rows or the invoice and costing import batches.</li>
     <li><b>No outside AI with company data.</b> Signed in to the ProTrack server, RASA answers only from ProTrackAI records and no project data is sent to any outside AI service; a question it cannot answer from the records gets "No evidence". Only the demo page, on sample data inside claude.ai, may pass a question to the language model, and that answer is labelled <i>Language-model answer</i> and must be checked in Reports.</li>
   </ul>
   <p>New questions RASA answers from the records: <i>What is waiting for me</i> (from Actions and approvals), <i>Lifecycle stages</i> (current stage, stages awaiting approval and overdue), and <i>Tender register</i> or a PE or TE number (register row, pre-award count, next PE number).</p>
+  <h3 id="rasa-modules">RASA across the modules and the release strategy (v3.27)</h3>
+  <p>RASA reads every module that is live, for what you can open: your role, your rights and your projects, exactly as each screen. It gives the screen's own figures and a button to open it.</p>
+  <table><thead><tr><th>Ask, for example</th><th>RASA answers from</th></tr></thead><tbody>
+    <tr><td>BOQ quantities · How much concrete is in the BOQ?</td><td>BOQ Engine: each package's released estimate (or the latest revision, said as not released), quantities per item category, lines not verified, drawings to verify, calculations by status</td></tr>
+    <tr><td>Contract documents · What does the contract say about retention? · What is the time bar for a notice of claim?</td><td>Project document rack: the text of the current documents you can read, quoted word for word with the document, revision and page</td></tr>
+    <tr><td>Delay events</td><td>Delay events register: ongoing and closed events, schedule impact, notices past the time bar or due within 14 days</td></tr>
+    <tr><td>Cash-out forecast · Cash-inflow forecast · Cash flow forecast</td><td>The cash-out forecast (actual, remaining, next 3 and 12 months, budget headroom) and the cash-inflow forecast; for "cash flow" both, and the net</td></tr>
+    <tr><td>Material deliveries</td><td>Material tracking: deliveries done, activities delayed, with baseline and forecast finish</td></tr>
+    <tr><td>Purchase orders · Contract value</td><td>Subcontract purchase orders; the original and revised contract value (client-approved change orders)</td></tr>
+    <tr><td>Intermediate milestones · Progress by phase · E&amp;P progress</td><td>As the internal report for the last week works them out, from the updated P6 schedule in force at its end</td></tr>
+    <tr><td>Reporting status</td><td>Which projects have released what for the last week or month, and what is overdue</td></tr>
+    <tr><td>find QOT-TL-CIV-101 · find Event 01 · where is the power transformer</td><td>A search by name of every live module: projects, activities, documents and their text, drawings, calculations, delay events, change orders, issues, materials and purchase orders</td></tr>
+  </tbody></table>
+  <p><b>Document text.</b> When a file is uploaded to the document rack, its text is read in the browser (PDF text layer, Word, Excel, CSV, TXT, XER, XML) and kept for RASA; the document shows <i>RASA: text read, N pages</i>. A scanned PDF or a picture has no text layer: RASA says so and cannot quote it. Documents uploaded before v3.27 are read with <b>Read the text now</b> on the document, or for all of them in Settings → Release strategy. Only the people who keep the box (or a super admin) read a document's text, and only those who can read the document see it. RASA quotes; it does not interpret contract terms.</p>
+  <p><b>Release strategy</b> (Settings → Release strategy, super admin). Put each module in a stage, name the stages and give their planned go-live dates, then choose <b>Live up to</b>. RASA answers only from the live modules; about a module not live yet it names the stage, for example <i>BOQ Engine is not live yet. It goes live in Stage 4</i>. A super admin can still ask, to test a module before it goes live, and that answer is marked <i>Test answer</i>. <b>Hide the modules not live yet from the menu</b> removes them from everyone's menu except super admins'. Every change is recorded with who made it. Until the plan is set, every module is live, as before.</p>
+  <p>What RASA notices on its own now also includes a notice of claim past its time bar or due within 7 days, and a BOQ estimate waiting for your review.</p>
 </section>
 
 <section id="server">
@@ -1091,6 +1337,21 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 
 <section id="faq">
   <h2>14. FAQ and troubleshooting</h2>
+  <h4>We have 100+ projects. Do we create them one by one?</h4><p>No. As super admin, open <b>Settings → Projects → Import projects from Excel</b>:</p>
+  <ol>
+    <li><b>Download the template.</b> Its <i>How to fill</i> sheet explains each column, and its <i>Lists</i> sheet holds the regions, sectors, cities, project types and people ProTrackAI knows. Add a missing city or person in Settings first.</li>
+    <li><b>Copy your project list into the Projects sheet,</b> one row per project:
+      <ul>
+        <li><b>Always needed:</b> PE number, project name, status (Pre-award, Active, On hold or Completed) and region.</li>
+        <li><b>Needed unless pre-award:</b> sector, city, start and finish dates.</li>
+        <li><b>Optional:</b> type, contract value, client and location; the Tender details (TE number, L1 or L2, expected value, notified, NOA and signing dates); and the project manager, site engineer, planning engineer and costing engineer by email or name, who get access.</li>
+        <li><b>New tenders:</b> leave the PE number empty for a pre-award tender to get the next number.</li>
+        <li><b>NOA date:</b> also records the finance WBS as released on that date.</li>
+      </ul></li>
+    <li><b>Upload it and check the preview.</b> Ready rows are listed, and refused rows show the reason, for example an unknown region or a finish before the start. A person not found is only a warning.</li>
+    <li><b>Confirm the refused rows and create the rest.</b> The upload is a numbered batch in the Import centre.</li>
+  </ol>
+  <p>A project whose PE number (or, for a new tender, TE number) is already in ProTrackAI is left unchanged, so you can upload the list again as it grows; the same file twice changes nothing. <b>Download the current project list</b> gives every project in the same layout. On the ProTrack server, the projects, dates, value and team access are saved; the Tender columns stay in the browser until the server is updated.</p>
   <h4>I cannot see Review or Approve on a report</h4><p>The approval matrix routes each report to one site engineer and one site manager per project. If it is not assigned to you, the button does not appear. The route is shown at the top of every report; the super admin changes it in Settings → Approval matrix.</p>
   <h4>A report went to the project manager instead of a site engineer</h4><p>That foreman, or his site engineer, has no assignment on that project. The project heading in Settings → Approval matrix shows how many are unassigned.</p>
   <h4>Settings → Email says "Demo: not sent"</h4><p>Emails are prepared and listed, but the mail function is not set up on the server yet. Follow EMAIL-SETUP.md once.</p>
@@ -1100,7 +1361,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h4>DCMA shows float as not assessed</h4><p>The XER was exported without scheduling. Press F9 in P6, then export again.</p>
   <h4>A project shows zero everywhere</h4><p>No baseline yet, or the Master Manpower Costing Sheet and labour loading are both missing, so there is no planned rate.</p>
   <h4>Invoiced is higher than invoiceable</h4><p>Either invoicing is ahead of certified progress, or the payment terms or price weighting are not set. Check the terms on the project.</p>
-  <h4>A subcontractor line says "estimated"</h4><p>That company has no purchase order on the project, or no rate for that activity or trade. The project's costing engineer adds it on the Baselines page.</p>
+  <h4>A subcontractor line says "estimated"</h4><p>That company has no purchase order on the project, or no rate for that activity or trade. The project's costing engineer adds it in Materials &amp; Procurement → Subcontract purchase orders.</p>
   <h4>"Invalid API key" at sign-in</h4><p>The key in <code>config.js</code> is incomplete or from another project. Copy the anon key again with the copy icon.</p>
   <h4>"The server refused this" when reviewing or approving</h4><p>The server checks the approval matrix itself. Only the site engineer assigned to that foreman on that project can review, and only the site manager assigned to that engineer can approve; the project manager can do both. Ask the super admin to check Settings → Approval matrix.</p>
   <h4>"This foreman already has a report for that date"</h4><p>Open the existing report and edit it instead of creating a second one.</p>

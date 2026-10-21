@@ -168,9 +168,127 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
-## Version 3.8.5
+## Version 3.28.2
 
-- Executive report (released) customisable: super admin defaults (everyone or per role), each person's own layout; Material tracking in the released report and the live summary. See RELEASE-NOTES-v3.8.5.md
+- Demo page fix: Riyadh Metro's sample July cash-out version is taken on the v3.21 sample data, so it no longer counts the old other line and the cost report heads both; it is within budget (95.0%) instead of a Forecast Overrun of about 186%. A browser holding the old sample is updated once when the page opens. Detail in [RELEASE-NOTES-v3.28.2.md](RELEASE-NOTES-v3.28.2.md).
+
+## Version 3.28.1
+
+- Project list: bid position (L1/L2), tender stage (awaiting NOA, NOA received, cancelled), NOA date, client and expected value, with a Tender stage filter; four SAMPLE tenders on the demo page. Fixes: a project reports from the first full period after its NOA, so a new award never re-opens a closed period; RASA's cash-inflow answer skips projects without a contract value. Detail in [RELEASE-NOTES-v3.28.1.md](RELEASE-NOTES-v3.28.1.md).
+
+## Version 3.28
+
+- New report **Project list** (Projects & Handover, and All reports): tender no, PE number, short name, status, region, sector, project manager, scheduling and costing engineers, latest progress, next key milestone, and the last daily, weekly, monthly and monthly cost report; filters by region, sector and status; Excel and A3 PDF; RASA answers "project list". Detail in [RELEASE-NOTES-v3.28.md](RELEASE-NOTES-v3.28.md).
+
+## Version 3.27.1
+
+- Progress by phase shows in monthly internal and client reports as in weekly ones: a version saved before v3.23 (as the sample monthly reports) has the table worked out from the updated schedule in force at the end of its period, labelled as such, and kept at approval. Detail in [RELEASE-NOTES-v3.27.1.md](RELEASE-NOTES-v3.27.1.md).
+
+## Version 3.27
+
+- RASA answers from every module that is live: BOQ Engine quantities, the text of the documents in the document rack (quoted with the page), the delay events register, the cash-out and cash-inflow forecasts, material tracking, purchase orders, contract values, intermediate milestones, progress by phase, E&P progress and reporting status, plus a "find" search across the live modules. Settings → Release strategy (super admin) puts each module in a go-live stage; RASA answers only from the live ones and names the stage of the others, and the menu can hide them. Documents have their text read in the browser at upload. Server: `schema-update-v34.sql` (STAGE-28-SETUP.md), not yet run on a database. Detail in [RELEASE-NOTES-v3.27.md](RELEASE-NOTES-v3.27.md).
+
+## Version 3.26.1
+
+- Module-by-module review after v3.19–v3.26: 84 logic gaps fixed across reporting, BOQ Engine, cost and commercial and the server updates; 8 left with a reason. Detail in [REVIEW-v3.26.1.md](REVIEW-v3.26.1.md) and [RELEASE-NOTES-v3.26.1.md](RELEASE-NOTES-v3.26.1.md). Server update files v24, v27–v30, v32 and v33 corrected in place (none run on a database yet). 19 acceptance suites, 411 checks, all passing.
+
+## Version 3.26
+
+- E&P progress moves inside every internal and client report (weekly and monthly) as a tab, read from the same updated P6 schedule the report uses (in force at the end of its period; client weightage for client reports): engineering and procurement totals and each activity's plan, actual, actual and forecast dates and slip. No separate E&P screen or upload. Saved with the report and frozen at approval; in the executive report and the client report Excel. Server: schema-update-v33.sql. See RELEASE-NOTES-v3.26.md
+
+## Version 3.25.1
+
+- BOQ Engine sample data on the demo page, labelled sample everywhere: an OHTL (Riyadh–Qassim 380 kV, Section 2: tower T-101 and T-105 foundations, access road AR-2) and a substation (Jubail 380 kV: transformer T1 foundation, cable trench CT-1, GIS building), with sample PDF drawings, specifications, assumptions, verified calculations, released estimates, a revision waiting for review and a hand-off. Fixes: inputs and wastage taken from a specification, requirement conflicts by what they apply to, access roads and earthing checked against the general drawing list. No server change. See RELEASE-NOTES-v3.25.1.md
+
+## Version 3.25
+
+- BOQ Engine works end to end: drawing register with every revision kept, PDF upload read in the background (title block, scale, units, classification and dimension proposals with confidence and evidence, confirmed by a person), review and measurement on the drawing (verify, correct with a reason, calibrate, measure), deterministic quantity calculations in exact decimals with sourced inputs, the drawing completeness check, specifications and assumptions, the Estimated BOQ with optional rates, review, approval and release with no self-approval, revision comparison, Excel export, dashboard and audit history. Never writes to budgets or cost data. OCR and a vision AI provider are not configured. Server: schema-update-v32.sql (STAGE-27-SETUP.md). See RELEASE-NOTES-v3.25.md and BOQ-ENGINE-HANDOVER.md
+
+## Version 3.24
+
+- BOQ Engine (AI-Powered Quantity Take-Off, Engineering Estimation & BOQ Generation), a module of its own in the menu right after Invoices & Cash Flow: the landing page (BOQ Engine Dashboard) with the twelve sections of the module, shown as planned until their specifications are confirmed. Seen by management, planning, costing and project managers; the super admin can change it in Settings → Role access. Server: schema-update-v31.sql (the screen). See RELEASE-NOTES-v3.24.md
+
+## Version 3.23
+
+- Internal and client reports: intermediate milestones besides the contractual ones (design completion, civil start, civil completion, ...), picked by the planning engineer from the P6 schedule's WBS elements (first start or last finish) or activities and milestones, as asked by the project manager or the client; baseline from the schedule's baseline dates, forecast and actual from the updated P6 schedule. Progress tab: every phase (general works to energization and close out) with plan and actual from the updated schedule, weighted by the internal weightage set at project start (internal report) or by the schedule's own weighting (client report); the site phases are compared with the daily reports. Energization is now a phase of its own. Server: schema-update-v30.sql (STAGE-26-SETUP.md). See RELEASE-NOTES-v3.23.md
+
+## Version 3.22.2
+
+- Executive report (released) by project status: active and on-hold projects are listed; a completed project only in the periods it released, then it drops out; pre-award and cancelled projects are not listed. An on-hold project shows its last released figures, labelled with their period, and never holds the report (Reporting status). No server change. See RELEASE-NOTES-v3.22.2.md
+
+## Version 3.22.1
+
+- The home page after signing in is Home → Executive report (released), for every role that has it in its menu. Site engineers and site managers still open the live summary, foremen their daily reports, read-only users the dashboard. Switching "Acting as" opens the same home page. No server change.
+
+## Version 3.22
+
+- Home → Reporting status: per week and month, each active project's internal report, monthly cost report, change order log, supplement log and invoice register update, with status, preparer, approver and on time / late / overdue against the due date. Reminders to the engineers and the project manager (super admin, Head, regional and portfolio managers, section planning manager). The executive report of a period is held until every project has released the required deliverables; exemptions with a reason. Server: schema-update-v29.sql (STAGE-25-SETUP.md). See RELEASE-NOTES-v3.22.md
+
+## Version 3.21
+
+- Cash-out forecast from the material POs (the PO numbers of Material tracking, with value, terms and milestones on the material tracking stages, paid on the P6 forecast dates), the subcontract POs and the monthly cost report by WBS head (EAC − actual of the heads without POs, spread to the P6 forecast TCC; contingency, reserve, PC and provisional sums excluded). Reconciliation bridge with Finance's monthly cash-out: payables, milestones due, retention, unexplained; EAC cross-check. Server: schema-update-v28.sql (STAGE-24-SETUP.md). See RELEASE-NOTES-v3.21.md
+
+## Version 3.20
+
+- Invoices & Cash Flow → Cash-out forecast: Finance cumulative actual cash-out (Excel import by the super admin or the Head Office cost control coordinator, column mapping, restatements kept), PO payment terms and milestones (percent or fixed, contractual days, retention, evidence, approval and baseline), other cash-out lines, monthly planned / actual / forecast, forecast at completion against the approved current budget of the released cost report, statuses, reconciliation, versions with a management review of overruns, scenarios, portfolio, Excel and PDF reports. Server: schema-update-v27.sql (STAGE-23-SETUP.md). See RELEASE-NOTES-v3.20.md
+
+## Version 3.19.2
+
+- Delay events register: Correspondence and letters on each event (letters, e-mails, notices, instructions, minutes; received, sent or internal; date, reference, subject; optional file), which can add their references to the register and date the notice of claim. Chronology (Excel) and EOT pack (ZIP with the numbered files) for the extension of time submission. Kept by the register's keepers; removing needs a reason and keeps the record. Server: schema-update-v26.sql (STAGE-22-SETUP.md). See RELEASE-NOTES-v3.19.2.md
+
+## Version 3.19.1
+
+- Delay events register: the company workbook's drop-down lists (claim identification, status, entitlement, liability, concurrency, mitigation, claim owner) in the window, the filters, the template's Lists sheet and the upload check; a value outside the lists is refused. The super admin adds, removes and reorders items in Settings → Delay register lists (status stays Ongoing / Closed). Server: schema-update-v25.sql (STAGE-21-SETUP.md). See RELEASE-NOTES-v3.19.1.md
+
+## Version 3.19
+
+- Claims & Variations → Delay events register: the company Delay Events Register (27 columns: claim contractual data, notice of claim, schedule impact, cost impact) per project, created and changed in the system or uploaded from Excel, downloaded in the same layout. Claim duration, notice days used, notice days vs time bar and days to the notice deadline are worked out. Planning engineers keep their own projects (new right delay.keep); everyone sees only the projects in their access. Server: schema-update-v24.sql (STAGE-20-SETUP.md). See RELEASE-NOTES-v3.19.md
+
+## Version 3.18
+
+- Presentations → Reports: the internal report, productivity details, client report, invoicing and cash flow, cost report and change order details, each with the parts you tick, for a month and one project or all in scope; as PowerPoint slides or an Excel workbook. See RELEASE-NOTES-v3.18.md
+
+## Version 3.17
+
+- Monthly cost report: gross margin for every budget column (tender and Rev-0 on the original contract value; revised Rev-0, current budget and EAC on the internal revised value; previous version on the previous month's). Emails when an internal report (monthly or weekly) or a monthly cost report is approved, to lists set by the super admin (and per region by the section planning manager for internal reports). See RELEASE-NOTES-v3.17.md
+
+## Version 3.16
+
+- Monthly invoicing on the cash-inflow forecast: planned invoice (original baseline), invoiceable (actual progress), submitted and approved (register) by month, with KPIs (months invoiced), a chart and a Monthly invoicing sheet in the Excel download. See RELEASE-NOTES-v3.16.md
+
+## Version 3.15
+
+- Invoice register with each invoice's phase and actual submission, approval and collection dates; invoicing status by phase. Cash-inflow forecast (Invoices & Cash Flow): a new project from the client baseline and the payment terms; a running project from the register (actuals and outstanding) with the balance of each phase on the latest updated schedule; payment period in the payment terms. See RELEASE-NOTES-v3.15.md
+
+## Version 3.14
+
+- Internal and client reports compare the actual progress with the baselines you tick: original, revised, recovery, and the baseline assigned in the updated schedule (the baseline project exported with the XER). Planned, variance, SPI and finish per baseline, frozen at approval. Monthly cost reports moved out of Internal Reporting (Cost Control → Monthly cost report). See RELEASE-NOTES-v3.14.md
+
+## Version 3.13
+
+- Import projects from Excel (Settings → Projects, super admin): 100+ projects in one sheet, one row per project, with a template, a Lists sheet, row checks, refused rows with reasons, existing projects left unchanged, team access, and a batch in the Import centre. See RELEASE-NOTES-v3.13.md
+
+## Version 3.12
+
+- Tender register: Register an L1 or L2 project opens as a full window and records our bid position (L1, or L2 when the client may still award us). The costing coordinator or a super admin records the NOA with its actual date; the finance WBS is released the same day to record the PBG cost. See RELEASE-NOTES-v3.12.md
+
+## Version 3.11
+
+- Internal and client contract value: the change order and claim log carries the client approved price and the price considered internally (full or partial) with its WF number and date, updated by the costing engineer on the screen or by upload. Internal reports, the executive report, the dashboards and the cost report margin use the internal revised contract value (original + considered internally); client reports use original + approved by the client only. Frozen with each approved report. See RELEASE-NOTES-v3.11.md
+
+## Version 3.10
+
+- Project Visual (Home): planned and actual progress on the project's own PDF drawings (site layout zones) and route (chainage sections, structures, work stages), or both; activity mapping with rules (AI suggestions on the demo page only) and approval; Live and Released (frozen with each approved internal report); PDF export. The P6 import now keeps total float. See RELEASE-NOTES-v3.10.md
+
+## Version 3.9.1
+
+- The Master Manpower Costing Sheet moves from Baselines to its own page under Cost Control, with Download new sample template, Download current existing data and Upload. See RELEASE-NOTES-v3.9.1.md
+
+## Version 3.9
+
+- Executive report (released): each person can show, hide and reorder its sections and tiles; the super admin sets the default for everyone.
+- Material tracking on the Live summary (from the latest updated schedule) and on the Executive report (saved with each released internal report).
+- Invoice register moves to Invoices & Cash Flow and subcontract purchase orders to Materials & Procurement, out of Baselines. See RELEASE-NOTES-v3.9.md
 
 ## Version 3.8.4
 

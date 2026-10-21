@@ -99,9 +99,9 @@ with sync_playwright() as p:
     J(f"openRelease('{pc}','cost','month','{MON[0]}')"); pg.wait_for_timeout(400)
     pg.set_input_files('#crfile', book(rows)); pg.wait_for_timeout(900); sh = pg.inner_text('#sheet')
     ck('Excel', 'the company sheet fills the form: lines by user field code, unknown rows ignored', J("document.querySelectorAll('#crTable [name$=_code]').length") == 3 and val('w0_code') == 'SM' and float(val('w0_budget')) == 150 and float(val('w0_commitment')) == 0, sh[:300])
-    ck('Excel', 'header read: POC as percentages, TCC dates, column months, contract value, overall note',
-       val('h_planned_poc') == '29.3' and val('h_forecast_tcc_date') == '2026-05-16' and val('h_tender_month_text') == '2024-12' and val('h_contract_value') == '1200' and val('h_overall_note_text') == 'Expected potential savings - sample',
-       [val(x) for x in ['h_planned_poc', 'h_forecast_tcc_date', 'h_tender_month_text', 'h_contract_value', 'h_overall_note_text']])
+    ck('Excel', 'header read: POC as percentages, TCC dates, column months, overall note; from v3.11 the contract value is the internal revised value from the change order and claim log, and a different value in the file is reported',
+       val('h_planned_poc') == '29.3' and val('h_forecast_tcc_date') == '2026-05-16' and val('h_tender_month_text') == '2024-12' and val('h_overall_note_text') == 'Expected potential savings - sample' and "The file's contract value 1,200 is not the internal revised contract value" in sh,
+       [val(x) for x in ['h_planned_poc', 'h_forecast_tcc_date', 'h_tender_month_text', 'h_overall_note_text']])
     ck('Excel', 'the file\'s Overall row is checked against its lines and a difference is reported', 'Filled from' in sh and 'differs from the sum of the lines' in sh, sh[:400])
     ck('Excel', 'previous version still comes from the last released report, not the file', J("document.querySelector('#relForm [name=w0_prev]').type") == 'hidden')
     pg.click('[data-reldo="save"]'); pg.wait_for_timeout(400)
