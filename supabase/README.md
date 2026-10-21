@@ -48,6 +48,8 @@
 | `schema-rollback-v34.sql` | Only to undo v34. Every module counts as live again and RASA stops quoting documents; keeps the tables |
 | `schema-update-v35.sql` | **Yes, on your live project, after v20.** STAGE-29-SETUP.md. The budget supplement log by user field and category: new columns, the lists (supp_lists, supp_lists_set), changes on the screen (supp_update, supp_audit), log_import and the budget change. Check with `select supp_features();` |
 | `schema-rollback-v35.sql` | Only to undo v35. Nobody can change rows on the screen or the lists; uploads go back to the earlier layout; keeps the columns, lists and history |
+| `schema-update-v36.sql` | **Yes, on your live project, after v35.** STAGE-30-SETUP.md. A version on each budget supplement row (budget_supplements.version, filled for the rows already logged); the cost report counts the rows whose version is up to the month. Check with `select supp_features();` |
+| `schema-rollback-v36.sql` | Only to undo v36. A row's version is the month of its log again; keeps the column |
 
 **v3.26.1:** v24 (and its rollback), v27, v28, v29, v30, v32 and v33 were corrected in place after the module review (see `../REVIEW-v3.26.1.md`). None had been run on a database, so run them as they are now, in order, once.
 

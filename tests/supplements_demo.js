@@ -1,4 +1,4 @@
-/* ProTrackAI v3.29 to v3.30, Cost Control → Budget supplements: the log by user field and category. Acceptance checks for the
+/* ProTrackAI v3.29 to v3.31, Cost Control → Budget supplements: the log by user field and category. Acceptance checks for the
    demo page. How to run: open demo.html (or index.html) on the demo page, sign in with the demo Super Admin account (U28),
    open the browser console and paste this whole file. It saves this browser's demo data first and puts it back at the
    end, then reloads the page. It prints one line per check and a total; the results are also in sessionStorage
@@ -48,23 +48,20 @@
     /* the template, an upload */
     state.logPid='RMX';saved=[];await suppTemplate();const tw=XLSX.read(await saved[0].b.arrayBuffer(),{type:'array'});
     ok('18. The template has the columns and a Lists sheet with the user fields and the categories',tw.SheetNames.join()==='Supplements,Lists'&&XLSX.utils.sheet_to_json(tw.Sheets.Lists,{header:1}).length>=25);
-    const per=curMonth(),M=MMMYY(per),aoa=book([['bs-01',M,per+'-02','man.elc','under estimation','Extra manpower',-250000,'Electrical','WBS-E2','Electrical manpower','',''],['BS-02',M,per+'-03','SM','Savings','',80000,'','','','',''],
+    const per=curMonth(),M=MMMYY(per),nxt=(()=>{let [y,m]=per.split('-').map(Number);m++;if(m>12){m=1;y++}return `${y}-${String(m).padStart(2,'0')}`})(),aoa=book([['bs-01',M,per+'-02','man.elc','under estimation','Extra manpower',-250000,'Electrical','WBS-E2','Electrical manpower','',''],['BS-02',M,per+'-03','SM','Savings','',80000,'','','','',''],
       ['BS-03',M,per+'-04','INSTL.ELC','Change Order','VO-009 cost',-300000,'','','','VO-009',''],['BS-04',M,per+'-04','Cont. Value','CHANGE ORDER','VO-009 price',420000,'','','','VO-009',''],
-      ['BS-05',M,per+'-04','XYZ','Savings','',1,'','','','',''],['BS-06',M,'','SM','Savings','',1,'','','','',''],['BS-07','Jan-20',per+'-04','SM','Savings','',1,'','','','',''],['BS-08',M,per+'-04','SM','Nope','',1,'','','','','']]);
+      ['BS-05',M,per+'-04','XYZ','Savings','',1,'','','','',''],['BS-06',M,'','SM','Savings','',1,'','','','',''],['BS-07',MMMYY(nxt),per+'-04','SM','Savings','',1,'','','','',''],['BS-09','Jan-20',per+'-04','SM','Savings','A late saving for Jan-20',2,'','','','',''],['BS-08',M,per+'-04','SM','Nope','',1,'','','','','']]);
     const P=logParse(aoa,false),why=Object.fromEntries(P.rows.map(r=>[r.supp_no,r.err]));
-    ok('19. Row checks: user field and category from the lists, the WF date required, the version is a month',!why['BS-01']&&!why['BS-04']&&/user field "XYZ"/.test(why['BS-05'])&&/WF date is missing/.test(why['BS-06'])&&/category "Nope"/.test(why['BS-08'])&&P.rows.find(r=>r.supp_no==='BS-07')._ver==='2020-01',why);
+    ok('19. Row checks: user field and category from the lists, the WF date required, the version is a month',!why['BS-01']&&!why['BS-04']&&/user field "XYZ"/.test(why['BS-05'])&&/WF date is missing/.test(why['BS-06'])&&/category "Nope"/.test(why['BS-08'])&&/version is after this month/.test(why['BS-07'])&&!why['BS-09']&&P.rows.find(r=>r.supp_no==='BS-09').version==='2020-01',why);
     const r1=P.rows.find(r=>r.supp_no==='BS-01');
     ok('20. A row is stored as the lists write it, with its unified category and WBS, approved',r1.user_field==='MAN.ELC'&&r1.category==='Under Estimation'&&r1.unified_category==='Under Estimation'&&r1.wbs_id==='WBS-E2'&&r1.approval_status==='Approved'&&!('v_supp' in r1));
     const P4=logParse(book([['BS-01',M,per+'-02','SM','Savings','',0,0,0,500,'']],['Supplement no','Version','WF date','User field','Category','Description','Supplement','Savings','VO Cost','VO Price','Remarks']),false);
     ok('21. A file with the four columns instead of one amount: their sum is the amount',P4.rows[0].amount===500&&!P4.rows[0].err,P4.rows[0]);
     as(cst.id);state.logPid=PROJECTS.find(p=>accessIds(cst).includes(p.id)).id;state.logUp={file:'test.xlsx',rows:P.rows,period:per,hash:'t-'+Date.now(),ack:true};
     go('logs');await new Promise(r=>setTimeout(r,150));$('#logMonth').value=per;$('#logAck')&&($('#logAck').checked=true);await logGo(document.createElement('button'));
-    /* the row of another version is refused at Save: it is shown with the others, and the refused rows are confirmed again */
-    const vRef=(state.logUp?.rows||[]).find(r=>r.supp_no==='BS-07');
-    ok('22a. A row of another version than the month is refused, and shown before anything is saved',!!vRef&&/version Jan-20 is not the month/.test(vRef.err||'')&&/is not the month/.test($('#view').innerText),vRef&&vRef.err);
-    $('#logMonth').value=per;$('#logAck')&&($('#logAck').checked=true);await logGo(document.createElement('button'));
     const nb=suppLatestAny(state.logPid);
-    ok('22. A costing engineer uploads the month: the refused rows (another version too) are left out',nb.b&&nb.b.source_period===per&&nb.rows.length===4&&!nb.rows.some(r=>r.supp_no==='BS-07'),nb.rows.map(r=>r.supp_no));
+    ok('22. A costing engineer uploads the month: the refused rows are left out (a version after the month too)',nb.b&&nb.b.source_period===per&&nb.rows.length===5&&!nb.rows.some(r=>r.supp_no==='BS-07'),nb.rows.map(r=>r.supp_no));
+    ok('22a. v3.31: a row keeps its own version, earlier than the month of the upload; a blank one is the month',(nb.rows.find(r=>r.supp_no==='BS-09')||{}).version==='2020-01'&&suppRowVer(nb.rows.find(r=>r.supp_no==='BS-01'))===per,nb.rows.map(r=>r.supp_no+' '+r.version));
     /* changes on the screen */
     const pid=state.logPid,n0=nb.rows.length;
     const a1=suppActLocal({action:'add',project_id:pid,values:{supp_no:'bs-10',supp_date:per+'-05',user_field:'DE',category:'Project Execution',amount:-10000,remarks:'design'}});
@@ -115,7 +112,7 @@
     const type=(el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}))},click=q=>{const b=document.querySelector(q);b&&b.click();return !!b};
     as(co.id);window.confirm=()=>true;window.prompt=()=>'Entered twice by mistake';state.logTab='supp';state.suppF=null;Object.assign(suppState(),{pid:xp,cat:'Savings'});state.logPid=xp;go('logs');await wait(200);
     const nLog=suppLatestAny(xp).rows.length;click('[data-suppgrid]');await wait(150);let G=state.suppGrid;
-    ok('41. Edit in the grid: every row of the latest log, whatever the filters, each cell an input or a drop-down',!!G&&G.rows.length===nLog&&document.querySelectorAll('#suppGrid tr[data-gr]').length===nLog
+    ok('41. Edit in the grid: every row of the latest log, whatever the filters, each cell an input or a drop-down (the Version too)',!!G&&G.rows.length===nLog&&document.querySelectorAll('#suppGrid tr[data-gr]').length===nLog&&cell(G.rows[0].k,'version').tagName==='SELECT'
       &&cell(G.rows[0].k,'user_field').tagName==='SELECT'&&cell(G.rows[0].k,'category').tagName==='SELECT'&&cell(G.rows[0].k,'user_field').options.length>=suppLists().uf.length,{rows:G&&G.rows.length,nLog});
     const g0=G.rows.find(r=>!r.old),g0no=g0.v.supp_no;type(cell(g0.k,'amount'),'-40000');
     click('[data-suppgadd]');await wait(100);G=state.suppGrid;const gn=G.rows[G.rows.length-1];
@@ -143,6 +140,22 @@
       click('[data-suppgsave]');await wait(250);const Ln=suppLatestAny(nolog.id);
       ok('48. A project without a log starts it here, with no file: an empty grid, a row typed and saved',st&&Ln.b&&Ln.b.source_period===curMonth()&&Ln.rows.length===1&&Ln.rows[0].supp_no==='BS-01',{st,b:Ln.b&&Ln.b.file_name,n:Ln.rows.length})}
     else ok('48. A project without a log starts it here, with no file',false,'every project has a log');
+    /* v3.31: a version on each row: the WF approved in SAP on the 5th for the values management approved the month before */
+    const prev=(()=>{let [y,m]=curMonth().split('-').map(Number);m--;if(m<1){m=12;y--}return `${y}-${String(m).padStart(2,'0')}`})();
+    as(co.id);state.suppGrid=null;state.suppF=null;Object.assign(suppState(),{pid:xp});state.logPid=xp;go('logs');await wait(200);const bud0=suppApproved(xp,prev),bud0n=suppApproved(xp,curMonth());
+    click('[data-suppgrid="add"]');await wait(150);G=state.suppGrid;const gv=G.rows[G.rows.length-1];
+    ok('51. A new row has a Version (this month, or the version chosen on the screen) from a list of months',cell(gv.k,'version').value===(suppState().per||curMonth())&&[...cell(gv.k,'version').options].some(o=>o.value===prev),cell(gv.k,'version').value);
+    type(cell(gv.k,'version'),prev);type(cell(gv.k,'supp_no'),'BS-90');type(cell(gv.k,'supp_date'),curMonth()+'-05');type(cell(gv.k,'user_field'),'MTRL.CVL');type(cell(gv.k,'category'),'Under Estimation');type(cell(gv.k,'amount'),'-60000');
+    click('[data-suppgsave]');await wait(250);const r90=suppLatestAny(xp).rows.find(r=>r.supp_no==='BS-90');
+    ok('52. Saved with its version, the month before its WF date: the cost report of that month counts it',r90&&r90.version===prev&&r90.supp_date===curMonth()+'-05'&&suppApproved(xp,prev)===bud0+60000&&suppApproved(xp,curMonth())===bud0n+60000,{r90,bud0,now:suppApproved(xp,prev)});
+    state.suppF=null;Object.assign(suppState(),{pid:xp,per:prev,vm:'only'});render();await wait(100);const Do=suppData();
+    Object.assign(suppState(),{vm:''});const Du=suppData();
+    ok('53. The screen by version: only that month, or every row up to it; the table shows each row\'s version',Do.rows.length>0&&Do.rows.every(r=>r.ver===prev)&&Do.rows.some(r=>r.supp_no==='BS-90')&&Du.rows.every(r=>r.ver<=prev)&&Du.rows.length>=Do.rows.length
+      &&!Du.rows.some(r=>r.ver>prev),{only:Do.rows.length,upto:Du.rows.length});
+    const lb7=suppLatestAny(xp).b;state.logUp={file:'old.xlsx',rows:[{row:1,supp_no:'BS-91',supp_date:prev+'-02',user_field:'SM',category:'Savings',amount:1,approval_status:'Approved'}],period:'2020-01',hash:'old-'+Date.now(),ack:true};
+    render();await wait(100);if($('#logMonth'))$('#logMonth').value='2020-01';const nb7=DB.batches.length;await logGo(document.createElement('button'));
+    ok('54. An upload for a month before the latest log is refused (the log of a project is its latest)',DB.batches.length===nb7&&suppLatestAny(xp).b.id===lb7.id);
+    state.logUp=null;
     /* v3.30.1: the grid is found from the view of every project, and the page says where it is */
     as(co.id);state.suppGrid=null;state.suppF=null;state.navSec='supp';go('logs');await wait(200);const pick=document.querySelector('[data-suppgrid="pick"]');
     ok('49. With all projects in scope, Edit in the grid is shown and asks for one project',!!pick&&$('[data-suppf="pid"]').value===''&&(pick.click(),!state.suppGrid)&&document.activeElement===$('[data-suppf="pid"]'));

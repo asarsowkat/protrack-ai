@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.31
+
+- A version on each budget supplement row: the month it applies to, whatever its WF date (a WF approved in SAP on 5 October for values management approved in September is Sep-26). The grid, the table and the export show it; the screen shows a version as every row up to it or that month only; the cost report of a month counts the rows whose version is up to that month; an upload keeps each row's version. Server update v36 (STAGE-30-SETUP.md). `tests/supplements_demo.js` now has 57 checks. See [RELEASE-NOTES-v3.31.md](RELEASE-NOTES-v3.31.md).
+
 ## Version 3.30.1
 
 - The budget supplement grid is easy to find: with all projects in scope, **Edit in the grid** asks for one project and puts the cursor in the Project box; the page is titled *Budget supplements*. See [RELEASE-NOTES-v3.30.1.md](RELEASE-NOTES-v3.30.1.md).
