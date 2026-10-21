@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.30
+
+- Budget supplements edited like Excel: **Edit in the grid** turns a project's latest log into cells, with drop-downs for the user field and the category; the unified category and Supplement, Savings, VO Cost, VO Price and Net value follow as you type; rows are added, deleted or pasted from Excel, checked, and saved with their history. A project without a log starts it on the screen, so the Excel upload is optional. No server change (it uses v35's supp_update). `tests/supplements_demo.js` now has 51 checks. See [RELEASE-NOTES-v3.30.md](RELEASE-NOTES-v3.30.md).
+
 ## Version 3.29.1
 
 - A budget supplement log can be changed in Excel: **Export to Excel**, change, add or delete rows, and upload it again for the same version; it replaces that version's log. The exported columns read back as they are, the Total row is left out, rows of another project are refused, and the rows leaving the log are listed before saving. No server change. See [RELEASE-NOTES-v3.29.1.md](RELEASE-NOTES-v3.29.1.md).

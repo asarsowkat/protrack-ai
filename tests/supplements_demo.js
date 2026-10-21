@@ -1,4 +1,4 @@
-/* ProTrackAI v3.29 and v3.29.1, Cost Control → Budget supplements: the log by user field and category. Acceptance checks for the
+/* ProTrackAI v3.29 to v3.30, Cost Control → Budget supplements: the log by user field and category. Acceptance checks for the
    demo page. How to run: open demo.html (or index.html) on the demo page, sign in with the demo Super Admin account (U28),
    open the browser console and paste this whole file. It saves this browser's demo data first and puts it back at the
    end, then reloads the page. It prints one line per check and a total; the results are also in sessionStorage
@@ -110,6 +110,39 @@
     const nbat=DB.batches.length;await up();ok('39. The same file twice changes nothing',DB.batches.length===nbat&&suppLatest(xp,xper).b.id===L5.b.id);
     state.suppF=null;Object.assign(suppState(),{per:xper});saved=[];await suppExport();const PA=logParse(await sheet(saved[0].b),false);PA.rows.forEach(x=>{if(!x.err)x.err=suppProjErr(x,xp)});
     ok('40. In an export of many projects, the rows of another project are refused',PA.rows.some(x=>/is for project/.test(x.err||''))&&PA.rows.filter(x=>!x.err).every(x=>x._proj.includes(projById(xp).short)));
+    /* v3.30: the grid, like Excel */
+    const wait=ms=>new Promise(r=>setTimeout(r,ms)),cell=(k,key)=>document.querySelector(`#suppGrid tr[data-gr="${k}"] [data-gk="${key}"]`),calc=(k,c)=>(document.querySelector(`#suppGrid tr[data-gr="${k}"] [data-gc="${c}"]`)||{}).textContent||'';
+    const type=(el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}))},click=q=>{const b=document.querySelector(q);b&&b.click();return !!b};
+    as(co.id);window.confirm=()=>true;window.prompt=()=>'Entered twice by mistake';state.logTab='supp';state.suppF=null;Object.assign(suppState(),{pid:xp,cat:'Savings'});state.logPid=xp;go('logs');await wait(200);
+    const nLog=suppLatestAny(xp).rows.length;click('[data-suppgrid]');await wait(150);let G=state.suppGrid;
+    ok('41. Edit in the grid: every row of the latest log, whatever the filters, each cell an input or a drop-down',!!G&&G.rows.length===nLog&&document.querySelectorAll('#suppGrid tr[data-gr]').length===nLog
+      &&cell(G.rows[0].k,'user_field').tagName==='SELECT'&&cell(G.rows[0].k,'category').tagName==='SELECT'&&cell(G.rows[0].k,'user_field').options.length>=suppLists().uf.length,{rows:G&&G.rows.length,nLog});
+    const g0=G.rows.find(r=>!r.old),g0no=g0.v.supp_no;type(cell(g0.k,'amount'),'-40000');
+    click('[data-suppgadd]');await wait(100);G=state.suppGrid;const gn=G.rows[G.rows.length-1];
+    type(cell(gn.k,'supp_no'),'bs-70');type(cell(gn.k,'user_field'),'Cont. Value');type(cell(gn.k,'category'),'Change Order');type(cell(gn.k,'amount'),'50,000');type(cell(gn.k,'description'),'VO-009 price');
+    ok('42. Typing a cell: the unified category and the four columns follow at once (a change order on Cont. Value is a VO price)',calc(gn.k,'uni')==='Change Order'&&/50k|50,000/.test(calc(gn.k,'voprice'))&&calc(gn.k,'vocost').trim()==='—'&&/changed/.test(calc(g0.k,'chk')),{uni:calc(gn.k,'uni'),vop:calc(gn.k,'voprice'),chk:calc(g0.k,'chk')});
+    const before43=JSON.stringify(suppLatestAny(xp).rows.map(r=>[r.supp_no,r.amount]));click('[data-suppgsave]');await wait(150);
+    ok('43. A row with a missing WF date stops the save, and the Check column says why',JSON.stringify(suppLatestAny(xp).rows.map(r=>[r.supp_no,r.amount]))===before43&&!!state.suppGrid&&/WF date is missing/.test(calc(gn.k,'chk')),calc(gn.k,'chk'));
+    type(cell(gn.k,'supp_date'),curMonth()+'-02');const gd=G.rows.find(r=>!r.old&&r!==g0&&r.id),gdno=gd.v.supp_no;click(`[data-suppgdel="${gd.k}"]`);await wait(100);
+    const a0=(DB.suppAudit||[]).length;click('[data-suppgsave]');await wait(250);const L6=suppLatestAny(xp);
+    ok('44. Save: the changed amount, the new row and the deleted row, each in the history',!state.suppGrid&&(L6.rows.find(r=>r.supp_no===g0no)||{}).amount===-40000&&L6.rows.some(r=>r.supp_no==='BS-70'&&r.user_field==='Cont. Value'&&r.unified_category==='Change Order'&&r.amount===50000)
+      &&!L6.rows.some(r=>r.supp_no===gdno)&&DB.suppAudit.length===a0+3&&DB.suppAudit.slice(0,3).map(a=>a.action).sort().join()==='added,changed,removed',DB.suppAudit.slice(0,3).map(a=>a.action+' '+a.supp_no));
+    click('[data-suppgrid="add"]');await wait(150);G=state.suppGrid;const gp=G.rows[G.rows.length-1];
+    const np=suppGridPaste(gp.k,'supp_no',`BS-71\t05/${curMonth().slice(5,7)}/${curMonth().slice(0,4)}\tman.elc\tunder estimation\tExtra electricians\t-15000\nBS-72\t${curMonth()}-06\tSM\tsavings\tSaving on cabins\t9000\n`);G=state.suppGrid;
+    const p1=G.rows.find(r=>r.v.supp_no==='BS-71'),p2=G.rows.find(r=>r.v.supp_no==='BS-72');
+    ok('45. A range pasted from Excel fills the cells and adds rows: lists matched, a day-first date read',np===2&&p1&&p2&&p1.v.user_field==='MAN.ELC'&&p1.v.category==='Under Estimation'&&p1.v.supp_date===curMonth()+'-05'&&p2.v.amount==='9000'&&calc(p2.k,'uni')==='Savings',p1&&p1.v);
+    type(cell(p2.k,'supp_no'),'BS-71');
+    ok('46. The same number twice in the grid is flagged',/twice in the log/.test(calc(p2.k,'chk')));
+    type(cell(p2.k,'supp_no'),'BS-72');window.confirm=()=>false;const fsel=$('[data-suppf="per"]');fsel.dispatchEvent(new Event('change',{bubbles:true}));await wait(100);
+    ok('47. Leaving the grid with changes not saved asks first',!!state.suppGrid&&state.suppGrid.rows.some(r=>r.v.supp_no==='BS-72'));
+    window.confirm=()=>true;click('[data-suppgsave]');await wait(250);
+    ok('47a. The pasted rows are saved',suppLatestAny(xp).rows.filter(r=>['BS-71','BS-72'].includes(r.supp_no)).length===2&&!state.suppGrid);
+    const nolog=PROJECTS.find(p=>accessIds().includes(p.id)&&!suppLatestAny(p.id).b);
+    if(nolog){state.suppF=null;Object.assign(suppState(),{pid:nolog.id});state.logPid=nolog.id;go('logs');await wait(200);const st=click(`[data-suppver="${nolog.id}"]`);await wait(200);G=state.suppGrid;
+      const gb=G&&G.rows[0];if(gb){type(cell(gb.k,'supp_no'),'BS-01');type(cell(gb.k,'supp_date'),curMonth()+'-03');type(cell(gb.k,'user_field'),'DE');type(cell(gb.k,'category'),'Project Execution');type(cell(gb.k,'amount'),'-5000')}
+      click('[data-suppgsave]');await wait(250);const Ln=suppLatestAny(nolog.id);
+      ok('48. A project without a log starts it here, with no file: an empty grid, a row typed and saved',st&&Ln.b&&Ln.b.source_period===curMonth()&&Ln.rows.length===1&&Ln.rows[0].supp_no==='BS-01',{st,b:Ln.b&&Ln.b.file_name,n:Ln.rows.length})}
+    else ok('48. A project without a log starts it here, with no file',false,'every project has a log');
   }catch(x){ok('The checks ran to the end',false,x.message+' '+(x.stack||'').split('\n')[1])}
   finally{window.saveFile=keepSave;window.confirm=keepConfirm;window.prompt=keepPrompt;try{localStorage.setItem(KEY,KEYDATA)}catch(x){}}
   console.table(res);const f=res.filter(r=>r.result==='FAIL').length;console.log(`Budget supplements: ${res.length-f} passed, ${f} failed. Restoring the demo data and reloading…`);
