@@ -5,7 +5,17 @@
 -- Everything is kept: the table report_mail_lists with every list (nobody can read it until schema-update-v23.sql is run
 -- again, which uses it again), and the cv_by saved with cost reports (a released version cannot be changed; the app
 -- reads it). Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v23.sql was never applied (the table report_mail_lists is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
 
+do $pt_rollback$
+declare applied boolean := to_regclass('public.report_mail_lists') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v23.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists margin_mail_features();
 drop function if exists release_act_cv(jsonb);
 drop trigger if exists trg_rr_cvby on report_releases;
@@ -21,3 +31,7 @@ end $$;
 drop function if exists pt_rel_mail_region_keeper(uuid, text);
 drop function if exists pt_rel_mail_reader(uuid);
 drop function if exists pt_mail_roles();
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v23.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

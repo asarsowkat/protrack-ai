@@ -7,6 +7,17 @@
 -- use them again. Safe to run twice.
 
 -- co_log: append-only again
+-- v3.28.2: safe to run even if schema-update-v20.sql was never applied (the table co_log_updates is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
+
+do $pt_rollback$
+declare applied boolean := to_regclass('public.co_log_updates') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v20.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop trigger if exists trg_col_guard on co_log;
 drop trigger if exists trg_col_append on co_log;
 create trigger trg_col_append before update or delete on co_log for each row execute function pt_append_only();
@@ -88,3 +99,7 @@ begin
 end $$;
 revoke execute on function log_import(jsonb) from public, anon;
 grant execute on function log_import(jsonb) to authenticated;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v20.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

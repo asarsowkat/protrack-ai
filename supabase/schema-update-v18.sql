@@ -326,17 +326,17 @@ create table if not exists xr_layouts (
 
 -- who changed the default and when is written by the server, and each change goes to the change log
 create or replace function pt_xr_default_stamp() returns trigger
-language plpgsql security definer set search_path = public as $
+language plpgsql security definer set search_path = public as $$
 begin
   if not pt_xr_layout_ok(new.layout) then raise exception 'This report layout is not valid' using errcode = '22023'; end if;
   new.id := true; new.set_by := auth.uid(); new.set_by_name := name_of(auth.uid()); new.set_at := now();
   return new;
-end $;
+end $$;
 drop trigger if exists trg_xrd_stamp on xr_layout_default;
 create trigger trg_xrd_stamp before insert or update on xr_layout_default for each row execute function pt_xr_default_stamp();
 -- after the write, so an upsert that ends as an update is logged once
 create or replace function pt_xr_default_log() returns trigger
-language plpgsql security definer set search_path = public as $
+language plpgsql security definer set search_path = public as $$
 begin
   if tg_op = 'INSERT' or new.layout is distinct from old.layout then
     insert into change_log (text, by_user)
@@ -344,7 +344,7 @@ begin
                  else 'Changed the default layout of the executive report' end, new.set_by);
   end if;
   return null;
-end $;
+end $$;
 drop trigger if exists trg_xrd_log on xr_layout_default;
 create trigger trg_xrd_log after insert or update on xr_layout_default for each row execute function pt_xr_default_log();
 

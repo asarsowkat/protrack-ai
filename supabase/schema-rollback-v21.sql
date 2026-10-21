@@ -6,7 +6,17 @@
 -- Everything is kept: the columns bid_rank, rank_note, fwbs_on and noa_by with their values, every register and stage
 -- history entry, the reworded checklists and any setting of tender.noa a super admin made. Run schema-update-v21.sql
 -- again to use them again. Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v21.sql was never applied (the column projects.bid_rank is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
 
+do $pt_rollback$
+declare applied boolean := exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'projects' and column_name = 'bid_rank');
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v21.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists tender_features();
 
 -- the right tender.noa leaves the list (the rest stays as it is)
@@ -230,3 +240,7 @@ end $$;
 
 revoke execute on function pt_proj_guard(), pt_lc_template(int), tender_act(jsonb) from public, anon, authenticated;
 grant execute on function tender_act(jsonb) to authenticated;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v21.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

@@ -1,5 +1,16 @@
 -- ProTrack: undo schema update v12 (ProTrackAI v3.3). Puts back the v3.1 release function (cost reports by totals only).
 -- Keeps every cost report, including those with WBS lines (still readable). Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v12.sql was never applied (the function pt_cost_wbs is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
+
+do $pt_rollback$
+declare applied boolean := exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'pt_cost_wbs');
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v12.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 create or replace function release_act(p jsonb) returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare me uuid := auth.uid(); r text := role_of(auth.uid()); a text := p ->> 'action';
@@ -128,3 +139,7 @@ begin
 end $$;
 
 drop function if exists pt_cost_wbs(text, text, jsonb);
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v12.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

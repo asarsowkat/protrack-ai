@@ -170,7 +170,7 @@ Production needs:
 
 ## Version 3.28.2
 
-- Demo page fix: Riyadh Metro's sample July cash-out version is taken on the v3.21 sample data, so it no longer counts the old other line and the cost report heads both; it is within budget (95.0%) instead of a Forecast Overrun of about 186%. A browser holding the old sample is updated once when the page opens. Detail in [RELEASE-NOTES-v3.28.2.md](RELEASE-NOTES-v3.28.2.md).
+- Demo page fix: Riyadh Metro's sample July cash-out version is taken on the v3.21 sample data, so it no longer counts the old other line and the cost report heads both; it is within budget (95.0%) instead of a Forecast Overrun of about 186%. A browser holding the old sample is updated once when the page opens. Server files: `schema-update-v18.sql` runs again (two functions were quoted with `$` instead of `$$`), and every rollback (v4 to v34) is safe to run even if its update was never applied: it then changes nothing and says so. Detail in [RELEASE-NOTES-v3.28.2.md](RELEASE-NOTES-v3.28.2.md).
 
 ## Version 3.28.1
 

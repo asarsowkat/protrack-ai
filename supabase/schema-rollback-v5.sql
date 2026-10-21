@@ -2,7 +2,17 @@
 -- Removes the v5 functions and puts back the v4 versions of the three import functions.
 -- Deletes NO data: every import batch, invoice, activity and progress record stays, and the added
 -- columns stay (v2.5 ignores them). Supabase -> SQL Editor -> New query -> paste -> Run. Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v5.sql was never applied (the column import_batches.file_sha256 is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
 
+do $pt_rollback$
+declare applied boolean := exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'import_batches' and column_name = 'file_sha256');
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v5.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists import_commit(jsonb);
 drop function if exists log_import_failure(jsonb);
 drop function if exists import_progress(jsonb);
@@ -142,3 +152,7 @@ end $$;
 -- pt_num, pt_date and their checks are left in place: harmless, and nothing in v4 uses them.
 grant execute on function import_invoices(text, text, text, jsonb, text), apply_costing(text, text, text, jsonb),
   import_baseline(text, text, text, jsonb) to authenticated;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v5.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

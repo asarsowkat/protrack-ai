@@ -48,6 +48,8 @@
 | `schema-rollback-v34.sql` | Only to undo v34. Every module counts as live again and RASA stops quoting documents; keeps the tables |
 
 **v3.26.1:** v24 (and its rollback), v27, v28, v29, v30, v32 and v33 were corrected in place after the module review (see `../REVIEW-v3.26.1.md`). None had been run on a database, so run them as they are now, in order, once.
+
+**v3.28.2:** `schema-update-v18.sql` is fixed: two of its functions were quoted with `$` instead of `$$`, so it stopped with *syntax error at or near "$"*. Every rollback (v4 to v34) is now safe to run even if its update was never applied: it checks for the first table, column or function that update adds, and if it is not there it changes nothing and answers one row, *schema-update-vN.sql is not on this database … nothing was changed*. Otherwise it runs the same rollback as before and answers *schema-update-vN.sql undone.* A rollback is still only for undoing an update that caused a problem: to move forward, run only the `schema-update-*.sql` files.
 | `schema-update-v16.sql` | **Yes, on your live project, after v15.** Step 1 of STAGE-13-SETUP.md. Roles and rights set by the super admin, custom roles, All projects, every check reading the rights |
 | `schema-rollback-v16.sql` | Only to undo v16. Back to the v3.6 rules; keeps every setting and the history |
 | `schema-rollback-v15.sql` | Only to undo v15. Back to the v3.5 rules; keeps all data |

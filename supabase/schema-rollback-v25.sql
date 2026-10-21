@@ -5,7 +5,17 @@
 -- schema-update-v25.sql again to use them again. To remove them as well (not undoable), run separately:
 -- drop table delay_list_audit; drop table delay_lists;
 -- Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v25.sql was never applied (the table delay_lists is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
 
+do $pt_rollback$
+declare applied boolean := to_regclass('public.delay_lists') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v25.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists delay_lists_set(jsonb);
 
 -- pt_dly_label and pt_dly_merge: as in schema-update-v24.sql
@@ -64,3 +74,7 @@ create or replace function delay_features() returns jsonb language sql immutable
   select '{"version":24,"delay_register":true}'::jsonb $$;
 revoke execute on function pt_dly_label(text), pt_dly_merge(text, uuid, jsonb), delay_features() from public, anon, authenticated;
 grant execute on function delay_features() to authenticated;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v25.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

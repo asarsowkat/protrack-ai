@@ -6,7 +6,17 @@
 -- admin made, and import_batches accepting the kind 'delays'. Run schema-update-v24.sql again to use them again.
 -- To remove the data as well (not undoable), run separately: drop table delay_audit; drop table delay_events;
 -- Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v24.sql was never applied (the table delay_events is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
 
+do $pt_rollback$
+declare applied boolean := to_regclass('public.delay_events') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v24.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists delay_features();
 drop function if exists delay_import(jsonb);
 drop function if exists delay_act(jsonb);
@@ -37,3 +47,7 @@ begin
     execute format('create or replace function pt_right_default(base text, k text) returns boolean language sql immutable as $f$%s$f$', src);
   end if;
 end $$;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v24.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

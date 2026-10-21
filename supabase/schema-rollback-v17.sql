@@ -4,6 +4,17 @@
 -- The right "materials.keep" and the screen "mat" are no longer known; settings already saved for them are kept but
 -- unused. Run schema-update-v17.sql again to use them again. Safe to run twice.
 -- pt_rights: as in schema-update-v16.sql
+-- v3.28.2: safe to run even if schema-update-v17.sql was never applied (the table material_items is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
+
+do $pt_rollback$
+declare applied boolean := to_regclass('public.material_items') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v17.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 create or replace function pt_rights() returns text[] language sql immutable as $$
   select array['dpr.create','dpr.approve','planning.manage','report.internal.prepare','report.internal.approve',
                'costing.manage','money.view','report.cost.prepare','report.cost.approve','logs.upload',
@@ -90,3 +101,7 @@ drop function if exists material_setup_save(jsonb);
 drop function if exists material_item_save(jsonb);
 drop function if exists pt_mat_keeper(uuid, text);
 drop function if exists pt_mat_stages();
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v17.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

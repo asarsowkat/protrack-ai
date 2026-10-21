@@ -3,7 +3,17 @@
 -- It deletes NO data: the added columns, the import_batches table and every report, line and audit
 -- entry stay where they are (the old app simply ignores them).
 -- Supabase -> SQL Editor -> New query -> paste -> Run. Safe to run more than once.
+-- v3.28.2: safe to run even if schema-update-v4.sql was never applied (the table import_batches is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
 
+do $pt_rollback$
+declare applied boolean := to_regclass('public.import_batches') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v4.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop trigger if exists trg_guard_dprs on dprs;
 drop trigger if exists trg_guard_lines on dpr_lines;
 drop trigger if exists trg_audit_chain on dpr_audit;
@@ -51,3 +61,7 @@ create policy da_write on dpr_audit for insert with check (exists (select 1 from
 drop policy if exists cl_write on change_log;
 create policy cl_write on change_log for insert with check (auth.uid() is not null);
 alter table change_log alter column by_user drop default;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v4.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

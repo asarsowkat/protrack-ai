@@ -20,6 +20,24 @@ The live forecast for Riyadh Metro was within budget (about 94.8%), so the July 
 
 **A browser that already holds the old sample** gets the July version taken again when the page opens, once. This happens only if the version is still the untouched sample with the Forecast Overrun. Reset demo data gives the same result.
 
+## Server files: v18 fixed, every rollback safe to run
+
+Two fixes to the `supabase/` files. Nothing changes in the app.
+
+- **`schema-update-v18.sql` would not run.** Two functions (`pt_xr_default_stamp`, `pt_xr_default_log`) had their body quoted with `$` instead of `$$`, so Supabase stopped with *syntax error at or near "$"*. They now use `$$`, and nothing else in the file changed.
+- **Every rollback, v4 to v34, is safe to run even if its update was never applied.** Before, `schema-rollback-v20.sql` stopped with *relation "co_log_updates" does not exist* on a database without v20. Some rollbacks did worse and quietly added functions of an update the database never had: v25 (the delay register's functions, so the app would think the register is on the server), v28 (cash-out) and v33 (E&P).
+  - Now each rollback first checks for the first table, column or function its update adds.
+  - If it is not there, the rollback changes nothing and answers one row: *schema-update-vN.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.*
+  - If it is there, the rollback runs exactly as before and answers *schema-update-vN.sql undone.*
+
+A rollback is still only for undoing an update that caused a problem. To bring a database up to date, run only the `schema-update-*.sql` files, in order.
+
+**Checked** on PostgreSQL 16.4 (PGlite) with the test stand-in for Supabase (`supabase/tests/TEST-ONLY-supabase-stub.sql`):
+- `schema.sql` and every update v2 to v34 apply in order, and each of v18 to v34 runs a second time without error.
+- Every rollback was run on a database one version below its update, on one at v17 and on one at v3: in all 76 cases no error, nothing changed, and the "not on this database" answer.
+- Undoing from v34 down to v4 one rollback at a time, run once and then again: after every step the database is the same as with the rollbacks before this change.
+- As before, undoing all the way below v9 stops at v8, v7 and v4 (tables kept from later updates still use those functions), and changes nothing.
+
 ## Checks
 
 - **Cash-out forecast suite** (`tests/cashout_demo.js`): 27 checks pass. One is new: Riyadh Metro's published July version is within budget and equals the July forecast.

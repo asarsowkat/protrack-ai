@@ -7,7 +7,17 @@
 -- To remove the data as well (not undoable), run separately:
 -- drop table co_audit, co_reviews, co_versions, co_scenarios, co_other_lines, co_po_terms, co_opening, co_actuals, co_batches, co_maps;
 -- Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v27.sql was never applied (the table co_batches is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
 
+do $pt_rollback$
+declare applied boolean := to_regclass('public.co_batches') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v27.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists cashout_features();
 drop function if exists cashout_act(jsonb);
 drop function if exists pt_co_ms(jsonb, numeric);
@@ -32,3 +42,7 @@ begin
     execute format('create or replace function pt_right_default(base text, k text) returns boolean language sql immutable as $f$%s$f$', src);
   end if;
 end $$;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v27.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

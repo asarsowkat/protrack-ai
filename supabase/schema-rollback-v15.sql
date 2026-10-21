@@ -3,7 +3,17 @@
 -- (release_act, the frozen-version rule and the read rule as in v14). Nothing is deleted: the phase weightage and its
 -- history, every updated schedule, every client report and the validation notes stay, and stay readable.
 -- The kind check on report_releases keeps 'client', so client reports already saved remain valid.
+-- v3.28.2: safe to run even if schema-update-v15.sql was never applied (the table schedule_updates is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
 
+do $pt_rollback$
+declare applied boolean := to_regclass('public.schedule_updates') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v15.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists phase_setup_save(jsonb);
 drop function if exists schedule_update_commit(jsonb);
 drop function if exists pt_rel_sched(text, text, text, text, jsonb);
@@ -205,3 +215,7 @@ end $$;
 
 revoke execute on function release_act(jsonb) from public, anon;
 grant execute on function release_act(jsonb) to authenticated;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v15.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

@@ -6,7 +6,17 @@
 -- Everything is kept: the columns bl_src, xbs, xbf, phase, sub_date, appr_date and coll_date with their values, every
 -- saved comparison in the released reports, and pay.days in the payment terms. Run schema-update-v22.sql again to use
 -- them again. Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v22.sql was never applied (the column schedule_updates.bl_src is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
 
+do $pt_rollback$
+declare applied boolean := exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'schedule_updates' and column_name = 'bl_src');
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v22.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists bl_cash_features();
 drop function if exists release_act_bl(jsonb);
 drop function if exists pt_bl_cmp(jsonb, jsonb, numeric, date);
@@ -123,3 +133,7 @@ drop function if exists pt_inv_phase(text);
 
 revoke execute on function schedule_update_commit(jsonb), import_invoices(text, text, text, jsonb, text) from public, anon;
 grant execute on function schedule_update_commit(jsonb), import_invoices(text, text, text, jsonb, text) to authenticated;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v22.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

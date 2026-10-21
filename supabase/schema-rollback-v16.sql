@@ -3,6 +3,17 @@
 -- screen_rights and rights_audit, and the profiles columns custom_role and all_projects, are kept with everything in
 -- them, but nothing reads them any more. Run schema-update-v16.sql again to use them again. Safe to run twice.
 -- user_sees: as in schema-update-v4.sql
+-- v3.28.2: safe to run even if schema-update-v16.sql was never applied (the table app_roles is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
+
+do $pt_rollback$
+declare applied boolean := to_regclass('public.app_roles') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v16.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 create or replace function user_sees(u uuid, p text) returns boolean
 language sql stable security definer set search_path = public as $$
   select case
@@ -728,3 +739,7 @@ drop function if exists pt_right_default(text, text);
 drop function if exists pt_rights();
 drop function if exists pt_screens();
 drop function if exists pt_builtin_roles();
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v16.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

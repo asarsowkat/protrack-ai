@@ -5,6 +5,17 @@
 -- everything in them; released reports keep the material status saved with them. Run schema-update-v18.sql again to use
 -- them again. Safe to run twice.
 -- pt_release_frozen: as in schema-update-v15.sql
+-- v3.28.2: safe to run even if schema-update-v18.sql was never applied (the table xr_layouts is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
+
+do $pt_rollback$
+declare applied boolean := to_regclass('public.xr_layouts') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v18.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 create or replace function pt_release_frozen() returns trigger language plpgsql as $$
 begin
   if old.status in ('Released','Superseded') and (new.figures is distinct from old.figures or new.overrides is distinct from old.overrides
@@ -211,3 +222,7 @@ do $$ begin
   if to_regclass('public.xr_layout_default') is not null then execute 'revoke all on xr_layout_default from anon, authenticated'; end if;
   if to_regclass('public.xr_layouts') is not null then execute 'revoke all on xr_layouts from anon, authenticated'; end if;
 end $$;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v18.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;
