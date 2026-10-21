@@ -868,7 +868,7 @@ tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,13
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.29</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.29.1</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -3025,7 +3025,7 @@ function voCheck(x){
   if(x.wf_no&&String(x.wf_no).length>40)return 'the WF number is longer than 40 characters';
   return ''}
 /* v3.29: the columns of the supplement log, in the order they are matched (a header is used once) */
-const SU_HEAD={supp_no:/supp.*no|^ref|^no\.?$|number/i,version:/version/i,supp_date:/date/i,user_field:/user.?field/i,unified:/unified/i,category:/categ/i,wbs_group:/wbs.*group/i,wbs_id:/wbs.*(id|code)|^wbs$/i,wbs_description:/wbs.*desc/i,description:/descr/i,amount:/^amount|net value|impact/i,v_supp:/^supplements?\b(?!.*no)/i,v_sav:/^savings?\b/i,v_voc:/vo.?cost/i,v_vop:/vo.?price/i,linked_ref:/link|claim ref/i,remarks:/remark|comment/i};
+const SU_HEAD={project:/^project$/i,pe:/^pe\s*(no|number|code)\b/i,supp_no:/^supp\w*\.?\s*(no|number)\b|^ref|^no\.?$|^number$/i,version:/version/i,supp_date:/date/i,user_field:/^user.?field(?!.*desc)/i,unified:/unified/i,category:/categ/i,wbs_group:/wbs.*group/i,wbs_id:/wbs.*(id|code)|^wbs$/i,wbs_description:/wbs.*desc/i,description:/^descr/i,amount:/^amount|net value|impact/i,v_supp:/^supplements?\b(?!.*no)/i,v_sav:/^savings?\b/i,v_voc:/vo.?cost/i,v_vop:/vo.?price/i,linked_ref:/link|claim ref/i,remarks:/remark|comment/i};
 async function logTemplate(){
   const vo=state.logTab!=='supp';
   if(!vo)return suppTemplate();
@@ -3045,6 +3045,7 @@ function logParse(aoa,vo){
   Object.entries(H).forEach(([k,re])=>{const i=head.findIndex((h,j)=>!used.has(j)&&re.test(h));if(i>=0){col[k]=i;used.add(i)}});
   const rows=[],seen=new Set();
   aoa.slice(hi+1).filter(r=>r.some(c=>String(c??'').trim())).forEach((r,i)=>{const g=k=>col[k]==null?'':r[col[k]],x={row:i+1};
+    if(!vo&&!String(g('supp_no')??'').trim()&&r.some(c=>/^total$/i.test(String(c??'').trim())))return;   /* the Total row of an exported log */
     Object.keys(H).forEach(k=>{x[k]=g(k)});
     const ref=String(x[vo?'ref_no':'supp_no']||'').trim().toUpperCase();x[vo?'ref_no':'supp_no']=ref;let err='';
     if(!ref)err='reference number missing';else if(seen.has(ref))err=`reference ${ref} appears twice in the file`;
@@ -3055,7 +3056,7 @@ function logParse(aoa,vo){
       x.wf_no=String(x.wf_no??'').trim()||null;if(!err)err=voCheck(x);if(voHas(x.internal_price))x.price_internal=voBasis(x);
       const d=cellIso(x.submitted_on);x.submitted_on=d==='bad'?null:d||null;if(d==='bad'&&!err)err='the submission date is not a valid date';
       if(!err&&!['VO','Claim'].includes(x.kind))err='type must be VO or Claim'}
-    else{const sn=suppNormalize(x,null),v=suppVer(x.version);Object.keys(x).forEach(k=>{if(k!=='row')delete x[k]});Object.assign(x,sn.row);x._ver=v;if(!err)err=sn.err}
+    else{const sn=suppNormalize(x,null),v=suppVer(x.version),pj=[x.project,x.pe].map(c=>String(c??'').trim()).filter(Boolean);Object.keys(x).forEach(k=>{if(k!=='row')delete x[k]});Object.assign(x,sn.row);x._ver=v;x._proj=pj;if(!err)err=sn.err}
     ['submission_status','client_status','price_internal','cost_internal','internal_wf','overall_status','approval_status','description','remarks','linked_ref'].forEach(k=>{if(k in x)x[k]=String(x[k]??'').trim()||null});
     if(!err)seen.add(ref);x.err=err;rows.push(x)});
   return {rows};
@@ -3064,19 +3065,20 @@ async function handleLogFile(file){
   const vo=state.logTab!=='supp',pid=state.logPid;
   try{await loadLib(LIBS.xlsx);const buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true}),aoa=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,blankrows:false});
     const r=logParse(aoa,vo);if(r.error){state.logUp={error:r.error,file:file.name};render();return}
-    if(!vo){const per=($('#logMonth')?.value||curMonth()).trim();r.rows.forEach(x=>{if(!x.err&&x._ver&&x._ver!==per)x.err=`the version ${MMMYY(x._ver)} is not the month of this log (${MMMYY(per)})`})}
+    if(!vo){const per=($('#logMonth')?.value||curMonth()).trim();r.rows.forEach(x=>{if(!x.err&&x._ver&&x._ver!==per)x.err=`the version ${MMMYY(x._ver)} is not the month of this log (${MMMYY(per)})`;if(!x.err)x.err=suppProjErr(x,pid)})}
     state.logUp={file:file.name,rows:r.rows,period:($('#logMonth')?.value)||curMonth(),hash:await sha256Hex(buf),ack:false};render()}
   catch(e){state.logUp={error:'That file could not be read: '+(e.message||''),file:file.name};render()}
 }
 async function logGo(btn){
   const U=state.logUp,vo=state.logTab!=='supp',pid=state.logPid;if(!U||!U.rows)return;
   U.period=($('#logMonth')?.value||U.period||'').trim();U.ack=!!$('#logAck')?.checked;
-  if(!vo){let n=0;U.rows.forEach(r=>{if(!r.err&&r._ver&&r._ver!==U.period){r.err=`the version ${MMMYY(r._ver)} is not the month of this log (${MMMYY(U.period)})`;n++}});if(n){render();return toast(`${n} row${n===1?' has':'s have'} another version than the month of this log: see the refused rows`)}}
+  if(!vo){let n=0;U.rows.forEach(r=>{if(!r.err&&r._ver&&r._ver!==U.period){r.err=`the version ${MMMYY(r._ver)} is not the month of this log (${MMMYY(U.period)})`;n++}else if(!r.err&&suppProjErr(r,pid)){r.err=suppProjErr(r,pid);n++}});if(n){render();return toast(`${n} row${n===1?' is':'s are'} for another version or project than this log: see the refused rows`)}}
   const bad=U.rows.filter(r=>r.err),good=U.rows.filter(r=>!r.err),k=vo?'volog':'supplements';
   if(!periodOk(U.period,'month'))return toast('The month must look like 2026-09');if(U.period>curMonth())return toast('The log month cannot be after the current month');
   if(!canLogUpload())return toast('Only the costing engineer or costing coordinator uploads logs');if(!accessIds().includes(pid))return toast('You do not have access to this project');
   if(bad.length&&!U.ack)return toast('Tick the box to confirm the refused rows first.');
-  btn.disabled=true;const clean=U.rows.map(({row,err,_ver,...x})=>x);
+  if(!vo){const gone=suppGone(pid,U.period,good);if(gone.length&&!confirm(`This file replaces the ${MMMYY(U.period)} log of ${projById(pid).short}. ${gone.length} row${gone.length===1?' of that log is':'s of that log are'} not in it and will leave the log: ${gone.slice(0,10).join(', ')}${gone.length>10?'…':''}. Upload it?`))return}
+  btn.disabled=true;const clean=U.rows.map(({row,err,_ver,_proj,...x})=>x);
   if(CLOUD_ME){let r;try{r=await rpc('log_import',{p:{kind:k,project_id:pid,period:U.period,file_name:U.file,hash:U.hash,rows:clean,ack:U.ack}})}catch(e){btn.disabled=false;toast('The server refused this: '+srvMsg(e));return}
     try{await cloudLoadInvoices();await cloudLoadReleases()}catch(e){}state.logUp=null;save();render();toast(r.duplicate?'This is the same file as the last one loaded for that month, so nothing changed.':`${r.accepted} rows saved as a new ${vo?'change order and claim':'supplement'} log for ${perLabel('month',U.period)}`);return}
   const last=(DB.batches||[]).filter(b=>b.kind===k&&b.project_id===pid&&b.status==='committed').sort((a,b)=>(b.seq||0)-(a.seq||0))[0];
@@ -3086,7 +3088,7 @@ async function logGo(btn){
   const b=logBatch({kind:k,project_id:pid,file_name:U.file,file_hash:U.hash,source_period:U.period,rows_total:U.rows.length,rows_accepted:good.length,rows_rejected:bad.length,total_source:tot,total_accepted:tot,
     recon_status:bad.length?'Accepted with difference':'Matched',recon_accepted_by:bad.length?me().name:null,detail:{rejected:bad.map(r=>({row:r.row,ref:r[vo?'ref_no':'supp_no'],error:r.err}))}});
   const key=vo?'coLog':'suppLog';DB[key]=DB[key]||[];let id=DB[key].reduce((m,r)=>Math.max(m,+r.id||0),0);
-  good.forEach(({row,err,_ver,...x})=>DB[key].push({id:++id,batch_id:b.id,project_id:pid,period:U.period,...x}));
+  good.forEach(({row,err,_ver,_proj,...x})=>DB[key].push({id:++id,batch_id:b.id,project_id:pid,period:U.period,...x}));
   logChange(`${projById(pid).short}: ${vo?'change order and claim':'budget supplement'} log for ${perLabel('month',U.period)} uploaded (${good.length} rows)`);
   state.logUp=null;save();render();toast(`${good.length} rows saved as a new ${vo?'change order and claim':'supplement'} log for ${perLabel('month',U.period)}`);
 }
@@ -3231,6 +3233,11 @@ function suppCheck(x){
   if([x.description,x.wbs_description,x.remarks].some(v=>v&&String(v).length>2000))return 'a text is longer than 2,000 characters';
   if(x.linked_ref&&String(x.linked_ref).length>60)return 'the linked VO or claim is longer than 60 characters';
   return ''}
+/* v3.29.1: a row whose Project or PE number column names another project than the log's ('' when it fits or is blank) */
+function suppProjErr(x,pid){const P=projById(pid);if(!P||!x._proj||!x._proj.length)return '';const ok=[P.short,pcode(P),P.id,P.name].map(v=>String(v||'').trim().toLowerCase());
+  return x._proj.every(v=>ok.includes(v.toLowerCase()))?'':`this row is for project ${x._proj[0]}, not ${P.short}`}
+/* the supplement numbers of a version's log that a new upload of that version leaves out (it replaces the log) */
+function suppGone(pid,per,good){const L=suppLatest(pid,per);if(!L.b||L.b.source_period!==per)return [];const keep=new Set(good.map(r=>String(r.supp_no||'').toUpperCase()));return L.rows.map(r=>String(r.supp_no||'').toUpperCase()).filter(n=>n&&!keep.has(n))}
 /* a row read from a file or typed on the screen → the stored row ('' error when it is fine) */
 function suppNormalize(x,per){
   const t=k=>{const v=String(x[k]??'').replace(/\s+/g,' ').trim();return v||null};
@@ -3327,6 +3334,7 @@ function renderSupp(){
     ${rows.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px">${suppGroupHTML('By unified category',rows,'uni','Unified category')}${suppGroupHTML('By user field',rows,'uf','User field')}</div>`:''}
     ${(()=>{if(!pid1)return '';const H=(DB.suppAudit||[]).filter(a=>a.project_id===pid1).slice(0,20);return H.length?`<h3>Changes on this screen</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.supp_no)}</b> ${esc(a.action)}${a.changes&&a.changes.length?': '+esc(a.changes.map(([k,o,n])=>`${SUPP_FIELD_N[k]||k} ${o==null||o===''?'—':o} → ${n==null||n===''?'—':n}`).join('; ')):''}${a.reason?` · ${esc(a.reason)}`:''} <span class="muted small">${esc(a.by)}, ${esc(tStamp(a.at))}</span></li>`).join('')}</ul>`:''})()}`}</section>
   ${canLogUpload()?`<section class="panel"><div class="card-head"><h2>Upload a month's log</h2><span class="small muted">The whole log of one project for one version; all-or-nothing; earlier months are kept</span></div>
+    <p class="small muted" style="margin:0 0 8px">To change a log in Excel: choose the project, <b>Export to Excel</b>, change, add or delete rows, and upload the file again for the same version. It replaces that version's log (the earlier upload stays in Import history); ProTrackAI lists the rows that leave the log before saving. The same file twice changes nothing.</p>
     <div class="fields">${F('Project',sel('logproj',ps.map(p=>[p.id,`${p.short} (${pcode(p)})`]),state.logPid||pid1||(ps[0]||{}).id,'data-logproj'))}${F('Version (month of this log)',`<input id="logMonth" value="${esc((U&&U.period)||curMonth())}" placeholder="2026-09">`)}</div>
     <div class="actions" style="margin:0"><button class="btn" type="button" data-logtpl>Download template</button><label class="btn primary" for="logfile">Choose file</label><input id="logfile" type="file" accept=".xlsx,.xls,.csv" hidden></div>
     ${U&&U.error?`<div class="warn-box" style="margin-top:10px"><b>${esc(U.error)}</b></div>`:''}
@@ -7992,7 +8000,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.29';
+const APP_VERSION='3.29.1';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[

@@ -1,4 +1,4 @@
-/* ProTrackAI v3.29, Cost Control → Budget supplements: the log by user field and category. Acceptance checks for the
+/* ProTrackAI v3.29 and v3.29.1, Cost Control → Budget supplements: the log by user field and category. Acceptance checks for the
    demo page. How to run: open demo.html (or index.html) on the demo page, sign in with the demo Super Admin account (U28),
    open the browser console and paste this whole file. It saves this browser's demo data first and puts it back at the
    end, then reloads the page. It prints one line per check and a total; the results are also in sessionStorage
@@ -93,6 +93,23 @@
     state.suppF=null;saved=[];await suppExport();const xw=XLSX.read(await saved[0].b.arrayBuffer(),{type:'array'}),xs=XLSX.utils.sheet_to_json(xw.Sheets.Supplements,{header:1});
     ok('34. Export to Excel: the rows shown, with project, region, sector, type and every column',saved[0].n.startsWith('ProTrack_budget_supplements_')&&xs[3].includes('Unified category')&&xs[3].includes('Net value')&&xs[3].includes('Project type')&&xs.length>5);
     ok('35. The executive report shows the supplements by unified category',(XR_SECS.find(x=>x[0]==='supp')||[])[1]==='Budget supplements by unified category');
+    /* v3.29.1: the exported file, changed in Excel, uploaded again for the same version */
+    as(co.id);const xp='RMX',xper=suppLatestAny(xp).b.source_period,sheet=async b=>XLSX.utils.sheet_to_json(XLSX.read(await b.arrayBuffer(),{type:'array'}).Sheets.Supplements,{header:1,blankrows:false});
+    state.suppF=null;Object.assign(suppState(),{pid:xp,per:xper});const D5=suppData();saved=[];await suppExport();
+    const aoa5=await sheet(saved[0].b),P5=logParse(aoa5,false);P5.rows.forEach(x=>{if(!x.err)x.err=suppProjErr(x,xp)});
+    ok('36. An exported log reads back: every row with its number (not the PE number), description, user field and amount; the Total row is left out',accessIds().includes(xp)&&P5.rows.length===D5.rows.length&&P5.rows.every(x=>!x.err)
+      &&D5.rows.every(r=>{const x=P5.rows.find(y=>y.supp_no===r.supp_no);return x&&x.amount===r.amt&&(x.description||null)===(r.description||null)&&x.user_field===r.uf}),{n:P5.rows.length,of:D5.rows.length,err:P5.rows.filter(x=>x.err).map(x=>x.err).slice(0,3)});
+    const hi=aoa5.findIndex(r=>r.includes('Supplement no')),H5=aoa5[hi],ci=k=>H5.indexOf(k),body=aoa5.slice(hi+1).filter(r=>r[ci('Supplement no')]);
+    const ch=body[0].slice(),ch0=ch[ci('Supplement no')],del=body[1][ci('Supplement no')],nw=ch.slice();ch[ci('Net value')]=-123000;nw[ci('Supplement no')]='BS-NEW';
+    const wb5=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb5,XLSX.utils.aoa_to_sheet([...aoa5.slice(0,hi+1),ch,...body.slice(2),nw]),'Supplements');
+    const file5=new File([xlsxBlob(wb5)],'changed.xlsx'),msgs=[];window.confirm=m=>{msgs.push(m);return true};
+    const up=async()=>{state.logTab='supp';state.logPid=xp;go('logs');await new Promise(r=>setTimeout(r,150));$('#logMonth').value=xper;await handleLogFile(file5);$('#logMonth').value=xper;await logGo(document.createElement('button'))};
+    await up();const L5=suppLatest(xp,xper);
+    ok('37. Uploaded again for the same version, the changed file replaces that log: the changed amount, the deleted row and the new row',L5.b.source_period===xper&&L5.rows.length===body.length&&(L5.rows.find(r=>r.supp_no===ch0)||{}).amount===-123000&&!L5.rows.some(r=>r.supp_no===del)&&L5.rows.some(r=>r.supp_no==='BS-NEW'),L5.rows.map(r=>r.supp_no+' '+r.amount));
+    ok('38. Before it is saved, the rows that leave the log are listed',msgs.some(m=>m.includes(del)&&/will leave the log/.test(m)),msgs);
+    const nbat=DB.batches.length;await up();ok('39. The same file twice changes nothing',DB.batches.length===nbat&&suppLatest(xp,xper).b.id===L5.b.id);
+    state.suppF=null;Object.assign(suppState(),{per:xper});saved=[];await suppExport();const PA=logParse(await sheet(saved[0].b),false);PA.rows.forEach(x=>{if(!x.err)x.err=suppProjErr(x,xp)});
+    ok('40. In an export of many projects, the rows of another project are refused',PA.rows.some(x=>/is for project/.test(x.err||''))&&PA.rows.filter(x=>!x.err).every(x=>x._proj.includes(projById(xp).short)));
   }catch(x){ok('The checks ran to the end',false,x.message+' '+(x.stack||'').split('\n')[1])}
   finally{window.saveFile=keepSave;window.confirm=keepConfirm;window.prompt=keepPrompt;try{localStorage.setItem(KEY,KEYDATA)}catch(x){}}
   console.table(res);const f=res.filter(r=>r.result==='FAIL').length;console.log(`Budget supplements: ${res.length-f} passed, ${f} failed. Restoring the demo data and reloading…`);
