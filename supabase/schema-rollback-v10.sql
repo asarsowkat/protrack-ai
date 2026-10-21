@@ -1,5 +1,16 @@
 -- ProTrack: undo schema update v10 (ProTrackAI v3.1). Removes the issue functions and puts back the v9 release rules.
 -- Keeps every issue, its history and every release with its saved issues (nothing is deleted). Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v10.sql was never applied (the table issues is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
+
+do $pt_rollback$
+declare applied boolean := to_regclass('public.issues') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v10.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists issue_act(jsonb);
 drop function if exists issue_import(jsonb);
 create or replace function pt_release_frozen() returns trigger language plpgsql as $$
@@ -142,3 +153,7 @@ drop function if exists pt_impact(text);
 drop function if exists pt_issue_editor(uuid, text);
 revoke execute on function release_act(jsonb) from public, anon;
 grant execute on function release_act(jsonb) to authenticated;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v10.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

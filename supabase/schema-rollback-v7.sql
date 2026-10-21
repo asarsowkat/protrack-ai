@@ -1,6 +1,17 @@
 -- ProTrack: undo schema update v7 (ProTrackAI v2.8). Removes the Tender register functions and puts back the v6
 -- lifecycle rules and checklists. Keeps every project, Tender detail, PE history entry, designation, stage and
 -- stage history (nothing is deleted). Supabase -> SQL Editor -> New query -> paste -> Run. Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v7.sql was never applied (the table pcc_designations is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
+
+do $pt_rollback$
+declare applied boolean := to_regclass('public.pcc_designations') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v7.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists tender_act(jsonb);
 drop function if exists pe_proposal();
 drop function if exists pcc_designate(jsonb);
@@ -152,3 +163,7 @@ drop function if exists pt_is_coord(uuid);
 drop function if exists pt_is_head(uuid);
 drop function if exists pt_pe_seq(text);
 drop function if exists pt_pe_canon(text);
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v7.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

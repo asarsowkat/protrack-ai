@@ -20,7 +20,7 @@ TOPICS = ["Today's productivity", 'Early warnings', 'Invoiceable value', 'Invoic
           'Manpower forecast', 'Milestones and EOT', 'Design and procurement', 'Underperforming activities', 'Compare foremen', 'Best subcontractor',
           'What is waiting for me', 'Lifecycle stages', 'Tender register']
 MONEY = ['Invoiceable value', 'Invoicing and collection', 'Unit rates', 'EAC forecast']
-UNTRACKED = ['Show the accruals', 'Give me the cash flow forecast', 'Any safety incidents this week?', 'What was the weather on site?', 'Material stock level for cement']   # v3.0: commitments, SAP actual cost and variations now come from released cost reports and the logs
+UNTRACKED = ['Show the accruals', 'Any safety incidents this week?', 'What was the weather on site?', 'Material stock level for cement']   # v3.0: commitments, SAP actual cost and variations now come from released cost reports and the logs; v3.27: the cash flow forecast is answered
 with sync_playwright() as p:
     b = p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome')
     def page(llm=False):

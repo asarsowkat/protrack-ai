@@ -1,5 +1,16 @@
 -- ProTrack: undo schema update v11 (ProTrackAI v3.2). Puts back the v4 review and approval function (no justification
 -- needed for quantities beyond the scope). Keeps every justification already recorded. Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v11.sql was never applied (the table dpr_qty_just is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
+
+do $pt_rollback$
+declare applied boolean := to_regclass('public.dpr_qty_just') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v11.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists dpr_act(text, text, text, int, jsonb);
 drop function if exists pt_dpr_over(text);
 create or replace function dpr_act(p_id text, p_action text, p_note text default null, p_secs int default 0) returns jsonb
@@ -54,3 +65,7 @@ end $$;
 
 revoke execute on function dpr_act(text, text, text, int) from public, anon, authenticated;
 grant execute on function dpr_act(text, text, text, int) to authenticated;
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v11.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

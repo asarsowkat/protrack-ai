@@ -1,6 +1,17 @@
 -- ProTrack: undo schema update v14 (ProTrackAI v3.5). Puts back the v3.4 release rules (the Head of Planning and Cost
 -- Control or a super admin approves; no review step). Keeps every release with its dashboard fields and review details,
 -- the approvers table and the settings (unused). Safe to run twice.
+-- v3.28.2: safe to run even if schema-update-v14.sql was never applied (the table release_settings is not on the database): then it changes
+-- nothing and its result says so. Otherwise it runs the rollback below, unchanged. The result is one row.
+
+do $pt_rollback$
+declare applied boolean := to_regclass('public.release_settings') is not null;
+begin
+  if not applied then
+    perform set_config('protrack.rollback', 'schema-update-v14.sql is not on this database (never run, or already undone): nothing to undo, nothing was changed.', false);
+    return;
+  end if;
+  execute $pt_rollback_body$
 drop function if exists release_setup(jsonb);
 create or replace function pt_release_frozen() returns trigger language plpgsql as $$
 begin
@@ -161,3 +172,7 @@ drop function if exists pt_rel_plan_calc(text, jsonb);
 drop function if exists pt_rel_decider(uuid, text);
 drop function if exists pt_rel_approver(uuid, text);
 drop function if exists pt_rel_pm_review();
+$pt_rollback_body$;
+  perform set_config('protrack.rollback', 'schema-update-v14.sql undone.', false);
+end $pt_rollback$;
+select current_setting('protrack.rollback', true) as result;

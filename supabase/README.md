@@ -1,4 +1,4 @@
-# ProTrack Supabase updates (current: v3.8)
+# ProTrack Supabase updates (current: v3.9)
 
 | File | Run it? |
 |---|---|
@@ -16,6 +16,40 @@
 | `schema-update-v15.sql` | **Yes, on your live project, after v14.** Step 1 of STAGE-12-SETUP.md. Internal weightage, updated schedules, client reports, validation of differences |
 | `schema-update-v17.sql` | **Yes, on your live project, after v16.** Step 1 of STAGE-14-SETUP.md. Material Tracking |
 | `schema-rollback-v17.sql` | Only to undo v17. Back to v3.7; keeps every table, column and history entry |
+| `schema-update-v18.sql` | **Yes, on your live project, after v17.** Step 1 of STAGE-15-SETUP.md. Material status saved with each released internal report; executive report layouts kept per person on the server |
+| `schema-rollback-v18.sql` | Only to undo v18. Back to v3.8; keeps the saved material status and every layout |
+| `schema-update-v20.sql` | **Yes, on your live project, after v18** (v19 is not needed first). Step 1 of STAGE-16-SETUP.md. Change order and claim log: client approved price, price considered internally with its WF number and date, row updates with their history; the contract breakdown saved with each released report |
+| `schema-rollback-v20.sql` | Only to undo v20. Back to the v3.10 server rules; keeps the four columns, the update history and every saved breakdown |
+| `schema-update-v22.sql` | **Yes, on your live project, after v17** (v18 to v21 are not needed first). Step 1 of STAGE-18-SETUP.md. Baseline comparison saved with internal and client reports; the baseline assigned in the updated schedule; invoice phase and submission, approval and collection dates; the payment period in the payment terms |
+| `schema-rollback-v22.sql` | Only to undo v22. Back to the v3.13 server rules; keeps the seven columns, every saved comparison and the payment periods |
+| `schema-update-v23.sql` | **Yes, on your live project, after v20 and v22** (v19 and v21 are not needed first). Step 1 of STAGE-19-SETUP.md. Report email lists kept on the server (default internal report and cost report lists, one per region for internal reports); the contract value of each cost report column (cv_by) worked out by the server and frozen at approval |
+| `schema-rollback-v23.sql` | Only to undo v23. Back to the v3.16 server rules; keeps the email lists table and every saved cv_by |
+| `schema-update-v24.sql` | **Yes, on your live project, after v10 and v16.** Step 1 of STAGE-20-SETUP.md. Delay events register (Claims & Variations): the events in the company register's columns, kept by the planning engineers of each project (new right delay.keep), read on the projects in each person's access, Excel upload, full history |
+| `schema-rollback-v24.sql` | Only to undo v24. Removes the save and upload functions, the right and the screen; keeps every event and history entry |
+| `schema-update-v25.sql` | **Yes, on your live project, after v24.** Step 1 of STAGE-21-SETUP.md. The delay register's drop-down lists, changed by the super admin only, and checked on every save and upload |
+| `schema-rollback-v25.sql` | Only to undo v25. Removes the list check and delay_lists_set; keeps the lists and their history |
+| `schema-update-v26.sql` | **Yes, on your live project, after v24** (v25 is not needed first). Step 1 of STAGE-22-SETUP.md. Correspondence and letters on delay events, with their files in the private `delay-docs` bucket |
+| `schema-rollback-v26.sql` | Only to undo v26. Nobody can add or remove records; keeps every record and file |
+| `schema-update-v27.sql` | **Yes, on your live project, after v7 and v16.** Step 1 of STAGE-23-SETUP.md. Cash-out forecast: Finance cumulative actuals and corrections, PO payment terms, other cash-out lines, versions, reviews, scenarios, all written through cashout_act |
+| `schema-rollback-v27.sql` | Only to undo v27. Nobody can change cash-out data; keeps every record |
+| `schema-update-v28.sql` | **Yes, on your live project, after v17 and v27.** Step 1 of STAGE-24-SETUP.md. Material PO payment terms (Material tracking PO numbers) and the cost report head treatments for the cash-out forecast |
+| `schema-rollback-v28.sql` | Only to undo v28. Back to the v27 actions; keeps the material PO terms and head treatments |
+| `schema-update-v29.sql` | **Yes, on your live project, after v14.** Step 1 of STAGE-25-SETUP.md. Reporting status: reporting rules, exemptions and reminders |
+| `schema-rollback-v29.sql` | Only to undo v29. Nobody can send reminders, exempt or change the rules; keeps everything |
+| `schema-update-v30.sql` | **Yes, on your live project, after v17 and v22.** Step 1 of STAGE-26-SETUP.md. Intermediate milestones from the P6 schedule, progress by phase with the daily-report comparison, energization as a phase |
+| `schema-rollback-v30.sql` | Only to undo v30. Nobody can add or remove intermediate milestones; reports save without them; keeps everything |
+| `schema-update-v31.sql` | **Yes, on your live project, after v16.** BOQ Engine: the screen in Settings → Role access (no step guide; run it as any update) |
+| `schema-rollback-v31.sql` | Only to undo v31. The BOQ Engine screen leaves Role access; the app uses its default |
+| `schema-update-v32.sql` | **Yes, on your live project, after v16 and v31.** Step 1 of STAGE-27-SETUP.md. BOQ Engine: rights, tables, the governed save boq_save, the private bucket boq-drawings |
+| `schema-rollback-v32.sql` | Only to undo v32. Nobody can change BOQ Engine records on the server; keeps everything |
+| `schema-update-v33.sql` | **Yes, on your live project, after v30.** E&P progress saved with each internal and client report (pt_ep_tbl, release_act_km). Run it as any update; check with `select ep_features();` |
+| `schema-rollback-v33.sql` | Only to undo v33. Reports save without E&P progress; keeps what was saved |
+| `schema-update-v34.sql` | **Yes, on your live project, after v13.** STAGE-28-SETUP.md. The release strategy (golive_cfg, golive_set) and the document text RASA reads (doc_text, doc_text_set, doc_text_search). Check with `select golive_features();` |
+| `schema-rollback-v34.sql` | Only to undo v34. Every module counts as live again and RASA stops quoting documents; keeps the tables |
+
+**v3.26.1:** v24 (and its rollback), v27, v28, v29, v30, v32 and v33 were corrected in place after the module review (see `../REVIEW-v3.26.1.md`). None had been run on a database, so run them as they are now, in order, once.
+
+**v3.28.2:** `schema-update-v18.sql` is fixed: two of its functions were quoted with `$` instead of `$$`, so it stopped with *syntax error at or near "$"*. Every rollback (v4 to v34) is now safe to run even if its update was never applied: it checks for the first table, column or function that update adds, and if it is not there it changes nothing and answers one row, *schema-update-vN.sql is not on this database … nothing was changed*. Otherwise it runs the same rollback as before and answers *schema-update-vN.sql undone.* A rollback is still only for undoing an update that caused a problem: to move forward, run only the `schema-update-*.sql` files.
 | `schema-update-v16.sql` | **Yes, on your live project, after v15.** Step 1 of STAGE-13-SETUP.md. Roles and rights set by the super admin, custom roles, All projects, every check reading the rights |
 | `schema-rollback-v16.sql` | Only to undo v16. Back to the v3.6 rules; keeps every setting and the history |
 | `schema-rollback-v15.sql` | Only to undo v15. Back to the v3.5 rules; keeps all data |
