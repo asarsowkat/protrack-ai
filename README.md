@@ -168,6 +168,14 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.33
+
+- **RASA comes alive on the approved RASA badge** (helmet, Alfanar Projects and ProTrack branding, unchanged): it blinks, breathes, turns toward the pointer, lights its AI ear-cup while listening, runs a light round the ring while thinking, and moves its mouth with the browser voice, timed from the text and kept in step by the word boundaries. Every live layer is hidden at rest, so the badge shows exactly as approved. Ready for Phase 2 (a Live2D rig from a layered PSD takes the badge's place with the same pose) and Phase 3 (Azure Speech visemes and an enterprise AI through the ProTrack server, both off until IT and Cybersecurity approve them). New `tests/rasa_avatar_demo.js` (25 checks). See [RELEASE-NOTES-v3.33.md](RELEASE-NOTES-v3.33.md) and [AVATAR-RIG-HANDOVER.md](AVATAR-RIG-HANDOVER.md).
+
+## Version 3.32
+
+- **Invoices & Cash Flow → Cashflow Dashboard**, below the Invoice register: inflow (invoice register collections and the cash-inflow forecast) and outflow (Finance cash-out and the cash-out forecast) together, actual and forecast, month by month and by project, sector and region; net cash flow as surplus or deficit; filters by region, sector, status, project, period and actual/forecast; Excel export. **Finance cost**: interest on each project's deficit at the rate the super admin sets per month (with a forecast-period average), no credit for a surplus. RASA answers "finance cost". Server: `schema-update-v37.sql` (STAGE-31-SETUP.md). Detail in [RELEASE-NOTES-v3.32.md](RELEASE-NOTES-v3.32.md).
+
 ## Version 3.31
 
 - A version on each budget supplement row: the month it applies to, whatever its WF date (a WF approved in SAP on 5 October for values management approved in September is Sep-26). The grid, the table and the export show it; the screen shows a version as every row up to it or that month only; the cost report of a month counts the rows whose version is up to that month; an upload keeps each row's version. Server update v36 (STAGE-30-SETUP.md). `tests/supplements_demo.js` now has 57 checks. See [RELEASE-NOTES-v3.31.md](RELEASE-NOTES-v3.31.md).
