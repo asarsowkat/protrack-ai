@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.31, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.33, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -245,6 +245,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#delays" class="sub">Delay events register</a>
   <a href="#f-eot" class="sub">Extension of time</a>
   <a href="#cashout" class="sub">Cash-out forecast</a>
+  <a href="#cfdash" class="sub">Cashflow Dashboard</a>
   <a href="#docrack" class="sub">Project document rack</a>
   <a href="#procurement">Purchase orders and material tracking</a>
   <a href="#f-subpo" class="sub">Subcontract purchase orders</a>
@@ -293,6 +294,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#f-all-reports" class="sub">All reports</a>
   <a href="#f-presentation" class="sub">Presentation</a>
   <a href="#rasa" class="sub">RASA, your project assistant</a>
+  <a href="#rasa-live" class="sub">RASA's live avatar</a>
   <a href="#rasa-rules" class="sub">How RASA's answers are governed</a>
   <a href="#rasa-modules" class="sub">RASA across the modules</a>
   <a href="#server">12. Server and demo mode</a>
@@ -314,7 +316,11 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.31</b>
+<div class="note" id="whatsnew"><b>New in version 3.33</b>
+    <b>RASA comes alive on the approved RASA badge.</b> It blinks, breathes, turns toward the pointer, lights its AI ear-cup while listening, runs a light round the ring while thinking, and moves its mouth when it reads an answer aloud. At rest the badge shows exactly as approved. Azure Speech and an enterprise AI are ready but off until IT and Cybersecurity approve them. See <a href="#rasa-live">RASA's live avatar</a>.</div>
+  <div class="note"><b>New in version 3.32</b>
+    <b>Invoices &amp; Cash Flow → Cashflow Dashboard</b>, below the Invoice register: inflow and outflow together, actual and forecast, month by month and by project, sector and region, with the net cash flow as a surplus or a deficit and the <b>finance cost</b> treasury charges on a deficit (a surplus earns nothing). The super admin sets the interest rate (% per annum) of each month and an average rate for the forecast period. On the server: <code>schema-update-v37.sql</code> (STAGE-31-SETUP). See <a href="#cfdash">Cashflow Dashboard</a>.</div>
+  <div class="note"><b>New in version 3.31</b>
     <b>A version on each budget supplement row:</b> the month the supplement applies to, whatever its WF date (a WF approved in SAP on 5 October for values management approved in September is <b>Sep-26</b>). The grid has a Version column; the cost report of a month counts the rows whose version is up to that month. On the server: <code>schema-update-v36.sql</code> (STAGE-30-SETUP). See <a href="#f-supp">Budget supplements</a>.</div>
   <div class="note"><b>New in version 3.30</b>
     <b>Budget supplements edited like Excel:</b> <b>Edit in the grid</b> turns the latest log into cells, with drop-downs for the user field and the category, the unified category and the four value columns following as you type, rows added, deleted or pasted from Excel. A project starts its log on the screen, so the Excel upload is optional. See <a href="#f-supp">Budget supplements</a>.</div>
@@ -860,7 +866,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 <h3 id="d-rasa">RASA AI Assistant</h3>
 <p>RASA answers questions from ProTrackAI's own records, for the projects and figures you can open, and points at the figures on your screen. It reads only the modules that are live in the release strategy.</p>
 <div class="scroll"><table><thead><tr><th>Screen</th><th>What it is for</th><th>Seen by (default)</th><th>Changed by</th><th>More</th></tr></thead><tbody>
-  <tr><td><b>RASA AI Assistant</b> (menu, or the round face at the bottom right)</td><td>Ask in plain words or by voice; quick actions, suggestions, insights it raises on its own, document quotes and "find".</td><td>Every signed-in person, within their access and rights</td><td>What RASA reads: the super admin, in Settings → Release strategy</td><td><a href="#rasa">RASA</a>, <a href="#rasa-rules">governed answers</a>, <a href="#rasa-modules">modules and release strategy</a></td></tr>
+  <tr><td><b>RASA AI Assistant</b> (menu, or the round RASA badge at the bottom right)</td><td>Ask in plain words or by voice; quick actions, suggestions, insights it raises on its own, document quotes and "find".</td><td>Every signed-in person, within their access and rights</td><td>What RASA reads: the super admin, in Settings → Release strategy</td><td><a href="#rasa">RASA</a>, <a href="#rasa-rules">governed answers</a>, <a href="#rasa-modules">modules and release strategy</a></td></tr>
 </tbody></table></div>
 
 <h3 id="d-imports">Imports &amp; Integrations</h3>
@@ -1383,6 +1389,27 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <li><b>Versions:</b> <b>Save the live forecast as a draft version</b> → reviewed by the costing coordinator, the Head or a super admin (not its author) → <b>Publish</b> by the Head or a super admin. A forecast over budget is published only after the management review: the Head or a super admin chooses the decision (corrective action agreed; budget revision to be requested; accepted for monitoring; data to be corrected) and describes the action. A published version is kept.</li>
 </ul>
 <p class="note">Demo (v3.28.2): Riyadh Metro's published July 2026 version (Version 1, the original baseline of the comparison) is within budget, SAR 312.2M against SAR 328.6M (95.0%). Earlier demo data showed it at about 186%, because the sample counted one cost twice. A browser holding the old sample is corrected once when the page opens; Reset demo data gives the same result. This is sample data only.</p>
+  <h2 id="cfdash">Cashflow Dashboard</h2>
+  <p><b>Invoices &amp; Cash Flow → Cashflow Dashboard</b>, below the Invoice register, puts the money coming in and the money going out side by side, for the projects in your scope. It is for those who see both the cash-inflow and the cash-out forecasts: management, project managers, planning and costing.</p>
+  <table><thead><tr><th>Side</th><th>Actual</th><th>Forecast</th></tr></thead><tbody>
+    <tr><td>Inflow</td><td>Collections recorded in the invoice register, by collection date</td><td>The cash-inflow forecast from this month: invoicing on the payment terms and the updated schedule, collected after the payment period</td></tr>
+    <tr><td>Outflow</td><td>Finance's cash-out movements, up to the last Finance import</td><td>The cash-out forecast after it: PO payment milestones, material POs on P6 dates, cost report heads, payables and other lines</td></tr>
+  </tbody></table>
+  <ul>
+    <li><b>Net cash flow</b> = inflow − outflow, shown green as a <b>surplus</b> or red as a <b>deficit</b>. The <b>cash position</b> is the running total of the net from each project's first month (before the period too).</li>
+    <li><b>Filters:</b> region, sector, project status, one project, the months from and to, actual and forecast or only one of them, and whether to keep only the projects that have both inflow and outflow data (the default; the others are named as left out).</li>
+    <li><b>Views:</b> the figures for the period, a chart (inflow, outflow, net, cash position, finance cost), month by month (each month says which side is actual, A, or forecast, F), by project (tap one to show only it), by sector and by region. <b>Export to Excel</b> gives all of them, a project × month sheet and the rates.</li>
+  </ul>
+  <h4>Finance cost</h4>
+  <p>Treasury funds a project's deficit and charges interest on it; a surplus earns nothing. The cost of a month is the deficit × the rate ÷ 100 ÷ 12, worked out <b>project by project</b>: one project's surplus never lowers another project's cost.</p>
+  <ol class="steps">
+    <li>The <b>super admin</b> enters the interest rate (% per annum) of each month in <b>Finance cost: interest rates</b> at the bottom of the dashboard.</li>
+    <li>For the forecast period, a <b>forecast average</b> applies from this month to every month without its own rate. An earlier month without a rate has no finance cost and is shown as such.</li>
+    <li><b>Interest on</b>: each month's deficit (the month's net outflow), or the cumulative deficit (the running cash position).</li>
+    <li>Every change of the rates is kept in its history with who made it. Others see the rates, read only.</li>
+  </ol>
+  <p>On the demo page the rates are <b>SAMPLE</b> rates, labelled as such. RASA answers "finance cost" or "net cash flow" from the same figures.</p>
+
   <h2 id="docrack">Project document rack</h2>
   <p><b>Projects &amp; Handover → Project document rack</b> (or <b>Project overview → Documents</b>) holds each project's source documents in three rows of box files. Choose the project at the top.</p>
   <table><thead><tr><th>Row</th><th>Kept by</th><th>Seen by</th></tr></thead><tbody>
@@ -2245,7 +2272,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h3 id="rasa">RASA, your project assistant</h3>
   <p><b>RASA</b> stands for Real-time Artificial Smart Assistant. It is the face of ProTrackAI's intelligence: it answers questions from the same data as the reports, points at the figures on your screen while it explains them, and tells you what needs attention before you ask. It only ever sees the projects you have access to, and never shows cost to site roles.</p>
   <ol class="steps">
-    <li><b>Open RASA</b> with the round face at the bottom right. A number on it means RASA has noticed something; a bubble beside it says what.</li>
+    <li><b>Open RASA</b> with the round RASA badge at the bottom right. A number on it means RASA has noticed something; a bubble beside it says what.</li>
     <li><b>Read what RASA noticed.</b> The first time you open it, RASA waves hello and then lists its insights as cards marked <i>Noticed for you</i>, separate from your own questions. Amber cards are alerts; blue cards are insights. Each says what it found, what it means and what to do.</li>
     <li><b>Show me</b> on a card takes you to the figure: RASA points at the tile, outlines it, labels it, and draws a line to it from where it stands. If its own window would hide the tile, RASA moves aside.</li>
     <li><b>Use a quick action</b> for the common questions, or <b>More questions</b> for the full list, or type, or press 🎤 and speak.</li>
@@ -2273,17 +2300,29 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>A card about a module that is not live yet is not shown.</li>
   </ul>
   <p><b>Who gets which quick action:</b> foremen get Critical activities, Manpower, Progress report and Ask RASA; site engineers and site managers get everything except Cost analysis; Executive summary (it opens <b>Home → Live summary (working data)</b>) is not offered to foremen or read-only users. A quick action or suggestion of a module that is not live yet is hidden, except for super admins. <b>Show me</b> opens the Live summary or the Dashboard when the figure is not on your screen.</p>
-  <table><thead><tr><th>RASA's expression</th><th>Means</th></tr></thead><tbody>
-    <tr><td>Waving</td><td>Hello when you open it, goodbye when you close it</td></tr>
-    <tr><td>Listening, with a sound wave</td><td>You are typing or speaking</td></tr>
-    <tr><td>Hand on chin, rising dots</td><td>Working out the answer</td></tr>
-    <tr><td>Open hands</td><td>Explaining the answer</td></tr>
-    <tr><td>Pointing</td><td>Showing you the figure on the screen</td></tr>
-    <tr><td>Finger raised, gold glow</td><td>An insight worth acting on</td></tr>
-    <tr><td>Serious, amber glow</td><td>Something needs your attention</td></tr>
-    <tr><td>Thumbs up, green glow</td><td>Done, or everything is within tolerance</td></tr>
+  <table><thead><tr><th>What RASA does</th><th>Means</th></tr></thead><tbody>
+    <tr><td>Blinks now and then, breathes slowly</td><td>Ready</td></tr>
+    <tr><td>The AI ear-cup lights and pulses, a ripple runs round the badge</td><td>You are typing or speaking</td></tr>
+    <tr><td>A light runs round the ring, the ear-cup ring turns</td><td>Working out the answer</td></tr>
+    <tr><td>The mouth moves, the ear-cup and ring glow with the voice</td><td>Reading the answer aloud (🔊 on)</td></tr>
+    <tr><td>Leans toward a tile</td><td>Showing you the figure on the screen</td></tr>
+    <tr><td>Gold ring</td><td>An insight worth acting on</td></tr>
+    <tr><td>Amber ring, pulsing</td><td>Something needs your attention</td></tr>
+    <tr><td>Green ring</td><td>Done, or everything is within tolerance</td></tr>
   </tbody></table>
   <p>RASA's figures always match the tiles: both measure at the data date, the last day with approved reports. On a phone, RASA steps aside when it points, and <b>Back to RASA</b> returns to the conversation.</p>
+  <h3 id="rasa-live">RASA's live avatar (v3.33)</h3>
+  <p>RASA is the approved RASA badge, exactly as designed: the helmet, the Alfanar Projects and ProTrack branding, the RASA logo and text, the colours and the circle. Only its size changes. What moves is drawn over it, and only while it moves, so at rest you see the approved badge.</p>
+  <ul>
+    <li><b>Blinking:</b> about every 4 seconds, never on a fixed beat; each blink takes about 0.2 s.</li>
+    <li><b>Mouth:</b> when 🔊 is on, the mouth opens and closes with the words. Its shapes come from the text: closed on m, b and p and at a full stop, open on the vowels. The voice's word boundaries keep it in step.</li>
+    <li><b>Attention:</b> with the panel open, the badge turns a few degrees toward your pointer.</li>
+    <li><b>Reduced motion:</b> if your computer is set to reduce motion, RASA does not breathe, turn or ripple; it still blinks and moves its mouth.</li>
+  </ul>
+  <p><b>What comes next.</b>
+    <b>Phase 2:</b> a layered version of the same artwork, rigged in Live2D Cubism, takes the badge's place, with real head, eye and lip movement.
+    <b>Phase 3:</b> Azure Speech for a neural voice with exact lip sync, and an enterprise AI (Claude or Azure OpenAI) through the ProTrack server.
+    Both are built and switched off until IT and Cybersecurity approve them; <b>Settings → System</b> shows their state.</p>
   <h3 id="rasa-rules">How RASA's answers are governed</h3>
   <ul>
     <li><b>Based on.</b> Under every answer and insight RASA lists its sources: the daily reports used (how many, their dates, how many are approved and how many are submitted or reviewed and counted before approval), the baseline and when it was loaded, the Master Manpower Costing Sheet or invoice register batch, the billing terms, the weekly update, and so on. Then come the scope and the data date. Anything it would have needed but ProTrackAI does not hold is listed under <b>Not available</b>.</li>

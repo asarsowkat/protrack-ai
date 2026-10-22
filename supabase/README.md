@@ -50,6 +50,8 @@
 | `schema-rollback-v35.sql` | Only to undo v35. Nobody can change rows on the screen or the lists; uploads go back to the earlier layout; keeps the columns, lists and history |
 | `schema-update-v36.sql` | **Yes, on your live project, after v35.** STAGE-30-SETUP.md. A version on each budget supplement row (budget_supplements.version, filled for the rows already logged); the cost report counts the rows whose version is up to the month. Check with `select supp_features();` |
 | `schema-rollback-v36.sql` | Only to undo v36. A row's version is the month of its log again; keeps the column |
+| `schema-update-v37.sql` | **Yes, on your live project, after v16.** STAGE-31-SETUP.md. The Cashflow Dashboard screen (`cfd` in pt_screens) and its finance cost rates (cf_rates, cf_settings, cf_rates_set). Check with `select cf_features();` |
+| `schema-rollback-v37.sql` | Only to undo v37. The dashboard shows no finance cost and leaves Role access; keeps the rates |
 
 **v3.26.1:** v24 (and its rollback), v27, v28, v29, v30, v32 and v33 were corrected in place after the module review (see `../REVIEW-v3.26.1.md`). None had been run on a database, so run them as they are now, in order, once.
 
