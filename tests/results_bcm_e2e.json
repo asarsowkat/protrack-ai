@@ -1,7 +1,7 @@
 {
  "suite": "bcm_e2e",
- "passed": 27,
- "total": 27,
+ "passed": 31,
+ "total": 31,
  "checks": [
   {
    "area": "Server",
@@ -60,6 +60,12 @@
   {
    "area": "Master",
    "check": "the approver approves the whole starting master and rules (parents first) on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP WBS",
+   "check": "after approval the tree shows SAP WBS IDs built on the project (P1-01-001-02 for Salaries - Site office team) and user fields",
    "result": "PASS",
    "detail": ""
   },
@@ -132,6 +138,24 @@
   {
    "area": "Intake",
    "check": "Verify reading downloads the stored file from the server and reads it again: the same rows",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Order",
+   "check": "\u25b2 proposes the new order on the server; the approved order stays until approved",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP WBS",
+   "check": "the server refuses a segment with the wrong number of digits for its level",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "User field",
+   "check": "the server refuses a user field that is not in the user field list",
    "result": "PASS",
    "detail": ""
   },

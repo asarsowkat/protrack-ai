@@ -1,7 +1,7 @@
 {
  "suite": "bcm_demo",
- "passed": 55,
- "total": 55,
+ "passed": 67,
+ "total": 67,
  "checks": [
   {
    "area": "Navigation",
@@ -306,6 +306,78 @@
   {
    "area": "Master",
    "check": "thresholds and value limits are shown and changeable only as a proposal",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP WBS",
+   "check": "the tree shows each element's SAP WBS ID on the chosen project and its user field",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP WBS",
+   "check": "the starting master follows the company user field list: SM 01 \u2026 MGT.RES 16, Mechanical, Prime Cost and Provisional Sum",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP WBS",
+   "check": "Salaries has its two sub-elements: Project office team 01 and Site office team 02",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Order",
+   "check": "\u25b2 proposes the new order of the siblings (SM3 before SM2), applied once approved",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Order",
+   "check": "...and the tree shows the proposed order with the change waiting",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP WBS",
+   "check": "a segment with the wrong number of digits for its level is refused (level 3 has 2)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP WBS",
+   "check": "...with 03 it is proposed, with its user field from the list",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "User field",
+   "check": "a user field that is not in the user field list is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "the WBS master workbook has the order, SAP segment, user field and the SAP WBS ID of the project, in tree order",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "an import with order, SAP segments and user fields: a bad segment and an unknown user field are refused, the reorder and the new element are offered",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "...and become proposals: SM2 to order 5, SM1-03 under SM1 with segment 03",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Upgrade",
+   "check": "a demo browser holding the v3.35 master gets the company layout (new elements, top-level SAD/FNE/CONT/MGT.RES, OTH off), and keeps the changes people have waiting",
    "result": "PASS",
    "detail": ""
   },

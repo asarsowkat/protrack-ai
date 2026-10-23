@@ -865,7 +865,7 @@ tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,13
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.35</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.36</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -8103,7 +8103,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.35';
+const APP_VERSION='3.36';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis',3],
@@ -12884,8 +12884,38 @@ const SEED_WBS=[
  ['FIN','OTH','Financing','financing;finance cost;bank guarantee','financing;finance;interest;bank;guarantee;bond;letter of credit',true,'Financing',true],
  ['CON','OTH','Contingency','contingency','contingency;contingencies',true,'Reserve',true],
  ['MR','OTH','Management Reserve','management reserve','management reserve;reserve',true,'Reserve',true]];
-function seedWbs(){return SEED_WBS.map(([code,par,desc,al,kw,post,cat,mand])=>({id:'W-'+code,ver:0,cur:null,status:'Proposed',
-  pend:{data:{code,parent:par?'W-'+par:null,desc,aliases:(al||'').split(';').filter(Boolean),keywords:(kw||'').split(';').filter(Boolean),cost_category:cat||null,ptypes:[],sap_wbs:null,eff_from:null,eff_to:null,active:true,postable:post!==false,mandatory_review:!!mand},by:'system',by_name:'System seed (working definition)',at:null,note:'Working definition from the specification: confirm against the company WBS before approving.'}}))}
+/* v3.36: the company's order, SAP WBS segments and user fields (Settings → Supplement lists), as in its user field list:
+   SM, DE, TEC, MTRL.ELC, MAN.ELC, INSTL.ELC, MTRL.MECH, MAN.MECH, INSTL.MECH, Civil, SAD, FNE, PC ITEMS, PROV. SUM, CONT, MGT.RES.
+   [order, SAP WBS segment, user field, parent (only where it changes: '' = top level)]. The SAP WBS ID of a project is
+   its PE number, then the segments down the tree: PE-XXX-01 Site Management, PE-XXX-01-001 SM1 Salaries, PE-XXX-01-001-01 ... */
+const SEED_LAYOUT={SM:[10,'01','SM'],SM1:[10,'001','SM'],SM2:[20,'002','SM'],SM3:[30,'003','SM'],SM4:[40,'004','SM'],SM5:[50,'005','SM'],SM6:[60,'006','SM'],SM7:[70,'007','SM'],SM8:[80,'008','SM'],SM9:[90,'009','SM'],
+  'SM1-01':[10,'01','SM'],'SM1-02':[20,'02','SM'],
+  DES:[20,'02','DE'],'DES-01':[10,'001','DE'],'DES-02':[20,'002','DE'],'DES-03':[30,'003','DE'],'DES-09':[90,'009','DE'],
+  TC:[30,'03','TEC'],'TC-01':[10,'001','TEC'],'TC-02':[20,'002','TEC'],'TC-03':[30,'003','TEC'],'TC-04':[40,'004','TEC'],'TC-05':[50,'005','TEC'],
+  ELM:[40,'04','MTRL.ELC'],'ELM-01':[10,'001','MTRL.ELC'],'ELM-02':[20,'002','MTRL.ELC'],'ELM-03':[30,'003','MTRL.ELC'],'ELM-04':[40,'004','MTRL.ELC'],'ELM-05':[50,'005','MTRL.ELC'],'ELM-09':[90,'009','MTRL.ELC'],
+  ELP:[50,'05','MAN.ELC'],'ELP-01':[10,'001','MAN.ELC'],'ELP-02':[20,'002','MAN.ELC'],'ELP-03':[30,'003','MAN.ELC'],'ELP-04':[40,'004','MAN.ELC'],
+  ELE:[60,'06','INSTL.ELC'],MEM:[70,'07','MTRL.MECH'],MEP:[80,'08','MAN.MECH'],MEI:[90,'09','INSTL.MECH'],
+  CIV:[100,'10',null],'CIV-01':[10,'001',null],'CIV-02':[20,'002',null],'CIV-03':[30,'003',null],'CIV-04':[40,'004',null],'CIV-05':[50,'005','MTRL.CVL'],'CIV-06':[60,'006','MTRL.CVL'],
+  'CIV-07':[70,'007','MTRL.CVL'],'CIV-08':[80,'008','MAN.CVL'],'CIV-09':[90,'009','INSTL.CVL'],'CIV-10':[100,'010',null],
+  SAU:[110,'11','SAD',''],FIN:[120,'12','FNE',''],PC:[130,'13','PC ITEMS'],PS:[140,'14','PROV. SUM'],CON:[150,'15','CONT',''],MR:[160,'16','MGT.RES','']};
+const SEED_NEW=[
+ ['SM1-01','SM1','Salaries - Project office team','project office team;head office staff','project office;salaries;staff',true,'Overhead'],
+ ['SM1-02','SM1','Salaries - Site office team','site office team;site staff salaries','site office;salaries;staff',true,'Overhead'],
+ ['MEM',null,'Mechanical Material','mechanical material;HVAC material;piping material','mechanical;hvac;piping;pumps;valves;ducts',true,'Material'],
+ ['MEP',null,'Mechanical Manpower','mechanical manpower;mechanical crew','mechanical;fitters;plumbers;hvac technicians;crew',true,'Manpower'],
+ ['MEI',null,'Mechanical inst','mechanical installation;mechanical equipment','mechanical;installation;equipment',true,'Equipment'],
+ ['PC',null,'Prime Cost','prime cost;PC items;PC sum','prime cost;pc sum;pc items',true,'Other',true],
+ ['PS',null,'Provisional Sum','provisional sum;PS items','provisional sum;provisional',true,'Other',true]];
+const seedRow=([code,par,desc,al,kw,post,cat,mand])=>{const L=SEED_LAYOUT[code]||[],p=L[3]!==undefined?(L[3]||null):(par||null);
+  return {code,parent:p?'W-'+p:null,desc,aliases:(al||'').split(';').filter(Boolean),keywords:(kw||'').split(';').filter(Boolean),cost_category:cat||null,ptypes:[],eff_from:null,eff_to:null,active:true,postable:post!==false,mandatory_review:!!mand,
+    order:L[0]??null,sap_seg:L[1]??null,user_field:L[2]??null}};
+function seedWbs(){return SEED_WBS.concat(SEED_NEW).filter(r=>r[0]!=='OTH').map(r=>({id:'W-'+r[0],ver:0,cur:null,status:'Proposed',
+  pend:{data:seedRow(r),by:'system',by_name:'System seed (working definition)',at:null,note:'Working definition from the specification and the company user field list: confirm against the company WBS before approving.'}}))}
+/* what v3.36 changes on a master made from the v3.35 starting master: {id: changes} for existing elements, full data for new ones */
+function seedDelta(){const ch={},add={};SEED_WBS.forEach(r=>{const L=SEED_LAYOUT[r[0]];if(!L)return;const c={order:L[0],sap_seg:L[1],user_field:L[2]};if(L[3]!==undefined)c.parent=L[3]?'W-'+L[3]:null;ch['W-'+r[0]]=c});
+  ch['W-OTH']={active:false,postable:false,order:990,sap_seg:null,user_field:null};SEED_NEW.forEach(r=>{add['W-'+r[0]]=seedRow(r)});return {ch,add}}
+/* the SAP WBS pattern: separator and digits per level (the last repeats) */
+const SAP_DEF={sep:'-',digits:[2,3,2]};
 const SEED_RULES=[
  ['Rebar supply','CIV-06','Material',10,[],['rebar','reinforcement steel','reinforcement bar','steel bars','deformed bars'],['fixing','fixers','fixer','crew','labour','manpower']],
  ['Rebar fixing crew','CIV-08','Manpower',20,['rebar|steel|reinforcement','fixing|fixers|fixer|crew|labour|manpower'],[],[]],
@@ -13030,7 +13060,7 @@ const ALL_ST=['Extracted','Normalized','Proposed','Auto-Classified','Pending Rev
 function bulkEligible(c){if(!c||!['Proposed','Auto-Classified'].includes(c.status))return 'not a proposal';if(!c.wbs)return 'no WBS';if(!c.cost_type)return 'no cost type';
   const f=(c.flags||[]).find(x=>/^(Mandatory review|High value|Conflicting|Combined cost|Close alternative)/.test(x)||FORCE_RE.test(x));return f?f:null}
 
-return {ENGINE,seedWbs,seedRules,SEED_CFG,MAX_BYTES,checkFile,readBook,dec,decStr,decSum,decMul,decAbs,money,curDp,normCur,normUnit,norm,lexicon,attrsOf,toks,hasPhrase,extractSheet,extractBook,findHeader,fingerprintText,
+return {ENGINE,SAP_DEF,seedDelta,seedWbs,seedRules,SEED_CFG,MAX_BYTES,checkFile,readBook,dec,decStr,decSum,decMul,decAbs,money,curDp,normCur,normUnit,norm,lexicon,attrsOf,toks,hasPhrase,extractSheet,extractBook,findHeader,fingerprintText,
   COST_TYPES,COMBINED_RE,context,classify,similar,validateAi,wbsUsable,HUMAN,ENGINE_ST,ALL_ST,bulkEligible,FORCE_RE,UNIT_DEF}})();
 /* BCM-ENGINE-END */
 
@@ -13122,7 +13152,11 @@ function bcmCheck(e,d,self){const B=bcmDB();if(!d||typeof d!=='object')bcmFail('
     if(String(d.desc||'').length<2||String(d.desc).length>200)bcmFail('Give the WBS element a description of 2 to 200 characters');
     if(B.master.some(m=>m.ent==='wbs'&&m.id!==self&&[m.cur&&m.cur.code,m.pend&&m.pend.data.code].some(x=>x&&String(x).toLowerCase()===c.toLowerCase())))bcmFail(`The WBS code ${c} is already used by another element`);
     let par=d.parent,n=0;if(par&&!bcmRow(par))bcmFail(`The parent element ${par} does not exist`);while(par&&n<20){if(par===self)bcmFail('An element cannot sit under itself');const m=bcmRow(par);par=m?(m.cur?m.cur.parent:m.pend&&m.pend.data.parent):null;n++}
-    if(d.eff_from&&d.eff_to&&d.eff_to<d.eff_from)bcmFail('Effective-to is before effective-from')}
+    if(d.eff_from&&d.eff_to&&d.eff_to<d.eff_from)bcmFail('Effective-to is before effective-from');
+    /* v3.36: order, SAP WBS segment (digits per level) and user field (from the user field list), as the server checks them */
+    if(d.order!=null&&d.order!==''&&!/^[0-9]{1,5}$/.test(String(d.order)))bcmFail('The order is a whole number from 0 to 99999');
+    const seg=String(d.sap_seg||'').trim();if(seg){if(!/^[0-9]{1,6}$/.test(seg))bcmFail(`A SAP WBS segment is 1 to 6 digits (got "${seg}")`);const lvl=bcmLevel(d),need=bcmDigits(lvl);if(seg.length!==need)bcmFail(`At level ${lvl} the SAP WBS segment has ${need} digits (got "${seg}")`)}
+    const uf=String(d.user_field||'').trim();if(uf){if(uf.length>40)bcmFail('A user field is up to 40 characters');if(bcmUfList().length&&!bcmUfOf(uf))bcmFail(`The user field ${uf} is not in the user field list (Settings → Supplement lists)`)}}
   else if(e==='rule'||e==='map'){if(!bcmWOk(d.wbs_id))bcmFail(`Choose an approved, active, postable WBS element (got ${d.wbs_id||'none'})`);if(d.cost_type&&!BCME.COST_TYPES.includes(d.cost_type))bcmFail('Unknown cost type '+d.cost_type);
     if(e==='rule'){if(String(d.name||'').length<2)bcmFail('Give the rule a name');if(!(d.any||[]).length&&!(d.all||[]).length)bcmFail('A rule needs at least one phrase to match');if(!(+(d.strength??0.96)>=0&&+(d.strength??0.96)<=1))bcmFail('A rule strength is from 0 to 1')}
     else{if(!['project','ptype','global'].includes(d.scope))bcmFail('A mapping is for a project, a project type or global');if(!d.key&&!d.item_code)bcmFail('A mapping needs a description or an item code');
@@ -13144,6 +13178,8 @@ const BCML={
     if(a==='approve'){if(!bcmCan('bcm.approve'))bcmFail('You cannot approve master-data changes (the bcm.approve right)');if(m.pend.by===u.id)bcmFail('You proposed this change, so someone else approves it');
       bcmCheck(m.ent,m.pend.data,m.id);if(m.ent==='wbs'&&B.master.some(o=>o.ent==='wbs'&&o.id!==m.id&&o.cur&&String(o.cur.code).toLowerCase()===String(m.pend.data.code).toLowerCase()))bcmFail('Another approved element already has the code '+m.pend.data.code);
       if(m.ent==='wbs'&&m.pend.data.parent&&!(bcmRow(m.pend.data.parent)||{}).cur)bcmFail(`Approve the parent element ${m.pend.data.parent} first`);
+      if(m.ent==='wbs'&&m.pend.data.sap_seg&&B.master.some(o=>o.ent==='wbs'&&o.id!==m.id&&o.cur&&o.cur.active!==false&&(o.cur.parent||'')===(m.pend.data.parent||'')&&o.cur.sap_seg===m.pend.data.sap_seg&&(!o.pend||(o.pend.data.sap_seg===o.cur.sap_seg&&(o.pend.data.parent||'')===(o.cur.parent||'')))))
+        bcmFail(`The SAP WBS segment ${m.pend.data.sap_seg} is already used under the same parent; give one of them another segment`);
       bcmHistAdd({ref:m.id,ent:m.ent,action:'Approved',ver:m.ver+1,data:m.pend.data,proposed_by:m.pend.by,proposed_by_name:m.pend.by_name,proposed_at:m.pend.at,decided_by:u.id,decided_by_name:u.name,note:p.note||null});
       m.cur=m.pend.data;m.ver++;m.pend=null;m.status='Approved';bcmLog('Change approved',m.ent,m.id,m.ent==='map'?m.cur.project_id:null,{version:m.ver});return {ok:true,id:m.id,ver:m.ver}}
     if(a==='reject'){if(!(bcmCan('bcm.approve')||m.pend.by===u.id))bcmFail('Only an approver rejects a change (or its proposer withdraws it)');if(String(p.note||'').trim().length<3)bcmFail('Give the reason');
@@ -13421,7 +13457,7 @@ function bcmTableHTML(U,L,mode){const R=bcmFiltered(U,L),F=U.F||{},pg=Math.min(U
       return `<tr class="click${sel.has(l.id)?' sel':''}" data-bcmline="${esc(l.id)}" tabindex="0">${rev?`<td><input type="checkbox" data-bcmsel="${esc(l.id)}" ${sel.has(l.id)?'checked':''} aria-label="Select"></td>`:''}
         <td class="small">${esc((bcmFile(l.file_id)||{}).name||'')}<span class="t2">${esc(l.sheet)} row ${l.row}</span></td><td>${esc((c.corr||{}).desc||l.desc||'')}${(c.corr||{}).desc?'<span class="t2">corrected; source unchanged</span>':''}${(l.secs||[]).length?`<span class="t2">${esc(l.secs.join(' › '))}</span>`:''}</td>
         <td class="n">${esc(l.qty??'')}</td><td>${esc(l.unit||'')}</td><td class="n">${l.rate!=null?esc(BCME.money(l.rate,bcmCurOf(l))):''}</td><td class="n ${hv?'a-c':''}">${l.amount!=null?esc(bcmMoney(l.amount,bcmCurOf(l))):'<span class="r-c">missing</span>'}</td>
-        <td>${c.wbs_id?`<b>${esc(bcmCode(c.wbs_id))}</b><span class="t2">${esc(bcmData(bcmRow(c.wbs_id)).desc||'')}</span>`:'—'}</td><td>${esc(c.cost_type||'—')}</td>
+        <td>${c.wbs_id?`<b>${esc(bcmCode(c.wbs_id))}</b><span class="t2">${esc(bcmData(bcmRow(c.wbs_id)).desc||'')}</span>${(x=>x.sap||x.uf?`<span class="t2">${esc(x.sap||'')}${x.sap&&x.uf?' · ':''}${esc(x.uf||'')}</span>`:'')(bcmSapUf(c.wbs_id,l.project_id))}`:'—'}</td><td>${esc(c.cost_type||'—')}</td>
         <td class="n">${bcmConf(c.conf)}<span class="t2">${esc(BCM_LAYER[c.layer]||'')}</span></td><td>${bcmPill(s)}${(c.flags||[]).length?`<span class="t2" title="${esc((c.flags||[]).join('; '))}">${esc((c.flags||[])[0]).slice(0,60)}${c.flags.length>1?' +'+(c.flags.length-1):''}</span>`:''}</td>
         <td class="small">${esc(c.decided_by_name||'')}</td></tr>`}).join('')||`<tr><td colspan="12" class="muted">No line matches.</td></tr>`}</tbody></table></div>
     ${R.length>50?`<div class="actions">${pg>0?`<button class="btn sm" type="button" data-bcmpage="${pg-1}">Previous</button>`:''}<span class="small muted">${pg*50+1}–${Math.min(R.length,pg*50+50)} of ${fmt(R.length)}</span>${(pg+1)*50<R.length?`<button class="btn sm" type="button" data-bcmpage="${pg+1}">Next</button>`:''}</div>`:''}</section>`}
@@ -13476,7 +13512,7 @@ function bcmPaintLine(lid){const l=bcmDB().lines.find(x=>x.id===lid);if(!l)retur
     <h3>Normalized for matching</h3><p class="small"><code>${esc(c.norm||BCME.norm((c.corr||{}).desc||l.desc||''))}</code>${(c.corr||{}).desc?`<br>Corrected description by ${esc(c.corr.by||'')}: ${esc(c.corr.desc)}`:''}</p>
     <p class="small muted">Technical attributes: ${esc(Object.entries(BCME.attrsOf(l.desc)).map(([k,v])=>v===true?k:`${k} ${v}`).join(', ')||'none')}. Lines that differ in these are never treated as the same item.</p></div>
   <div><h3>Classification</h3><table class="tbl small"><tbody>${row('Status',bcmPill(s)+(c.override?' <span class="sev Medium">overridden</span>':''))}${row('WBS',c.wbs_id?`<b>${esc(bcmWLabel(c.wbs_id))}</b>${bcmWOk(c.wbs_id)?'':' <span class="r-c">no longer an approved, active element</span>'}`:'—')}
-    ${row('Cost type',esc(c.cost_type||'—'))}${row('Confidence',`${bcmConf(c.conf)} · ${esc(BCM_LAYER[c.layer]||'—')}`)}${row('Why',esc(c.explain||'—'))}${row('Evidence',(c.evidence||[]).map(esc).join('<br>')||'—')}
+    ${c.wbs_id?row('SAP WBS ID · user field',`${esc(bcmSapId(c.wbs_id,l.project_id)||'not set')} · ${esc(bcmData(bcmRow(c.wbs_id)).user_field||'—')}`):''}${row('Cost type',esc(c.cost_type||'—'))}${row('Confidence',`${bcmConf(c.conf)} · ${esc(BCM_LAYER[c.layer]||'—')}`)}${row('Why',esc(c.explain||'—'))}${row('Evidence',(c.evidence||[]).map(esc).join('<br>')||'—')}
     ${row('Controls',(c.flags||[]).map(esc).join('<br>')||'none')}${row('Decided',c.decided_by_name?`${esc(c.decided_by_name)} ${esc(tStamp(c.decided_at))}${c.reason?`<span class="t2">${esc(c.reason)}</span>`:''}`:'—')}${row('Engine',esc(c.engine||'—'))}</tbody></table>
     <h3>Candidate destinations</h3><table class="tbl small"><thead><tr><th>WBS</th><th>Basis</th><th class="n">Score</th></tr></thead><tbody>${candRows.map(x=>`<tr><td><b>${esc(bcmCode(x.wbs))}</b> ${esc(bcmData(bcmRow(x.wbs)).desc||'')}</td><td class="small">${esc(x.src)}</td><td class="n">${bcmConf(x.s)}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">No candidate in the approved master.</td></tr>'}</tbody></table>
     ${rev&&s!=='Not a cost line'?`<h3>Decide</h3><div class="boqasset">
@@ -13506,6 +13542,41 @@ async function bcmDecide(act,lid){const l=bcmDB().lines.find(x=>x.id===lid);if(!
     if(CLOUD_ME){await bcmLoadBatch(l.batch_id,true);await bcmLoadLineHist(lid)}bcmPaintLine(lid);render()}
   catch(e){toast(srvMsg(e))}}
 
+/* ---------- v3.36: order, SAP WBS ID and user field ----------
+   The SAP WBS ID of an element on a project is the project's PE number and the SAP segments down the tree, joined by
+   the separator: PE-XXX-01 (Site Management), PE-XXX-01-001 (SM1 Salaries), PE-XXX-01-001-01 (Project office team).
+   Digits per level come from the settings (2-3-2 by default; the last repeats). User fields are the user field list of
+   Settings → Supplement lists (the same list as the budget supplements), kept by the super admin. */
+const bcmSap=()=>{const c=bcmCfg().sap||{};return {sep:c.sep||BCME.SAP_DEF.sep,digits:Array.isArray(c.digits)&&c.digits.length?c.digits.map(Number):BCME.SAP_DEF.digits}};
+const bcmUfList=()=>{try{return (suppLists().uf||[])}catch(e){return []}};
+const bcmUfOf=c=>c?bcmUfList().find(([k])=>String(k).toLowerCase()===String(c).toLowerCase())||null:null;
+const bcmEff=m=>m?((m.pend&&m.pend.data)||m.cur||{}):{};                 /* the data as it will be once the waiting change is approved */
+const bcmLevel=d=>{let n=1,p=d.parent,i=0;while(p&&i<20){n++;p=bcmEff(bcmRow(p)).parent;i++}return n};
+const bcmDigits=lvl=>{const D=bcmSap().digits;return D[Math.min(lvl,D.length)-1]};
+/* the segments from the top; null when one is missing. eff: with the waiting changes */
+function bcmSapSegs(id,eff){const out=[];let m=bcmRow(id),n=0;while(m&&n<20){const d=eff?bcmEff(m):bcmData(m);if(!d.sap_seg)return null;out.unshift(d.sap_seg);m=d.parent?bcmRow(d.parent):null;n++}return out}
+function bcmSapId(id,pid,eff){const s=bcmSapSegs(id,eff),S=bcmSap();if(!s)return null;const p=pid&&projById(pid);return (p?pcode(p):'PE-XXX')+S.sep+s.join(S.sep)}
+const bcmOrd=m=>{const v=bcmEff(m).order;return v==null||v===''?99999:+v};
+const bcmSort=(a,b)=>bcmOrd(a)-bcmOrd(b)||String(bcmEff(a).code).localeCompare(String(bcmEff(b).code),undefined,{numeric:true});
+/* SAP WBS ID and user field of a line's element, for the tables and exports */
+const bcmSapUf=(wid,pid)=>{if(!wid)return {sap:null,uf:null};const d=bcmData(bcmRow(wid));return {sap:bcmSapId(wid,pid),uf:d.user_field||null}};
+/* someone else's change waiting on an element is never replaced by a reorder or a numbering */
+const bcmOthersPend=m=>m&&m.pend&&m.pend.by!==(me()||{}).id;
+async function bcmMove(id,dir){const m=bcmRow(id);if(!m)return;const par=bcmEff(m).parent||null,S=bcmOf('wbs').filter(x=>(bcmEff(x).parent||null)===par).sort(bcmSort),i=S.findIndex(x=>x.id===id),j=dir==='up'?i-1:i+1;
+  if(i<0||j<0||j>=S.length)return;[S[i],S[j]]=[S[j],S[i]];const ch=S.map((x,k)=>({x,o:(k+1)*10})).filter(({x,o})=>bcmOrd(x)!==o);
+  const blocked=ch.filter(({x})=>bcmOthersPend(x));if(blocked.length){toast(`${blocked.map(({x})=>bcmEff(x).code).join(', ')} ${blocked.length===1?'has':'have'} a change waiting from someone else: approve or reject it first`);return}
+  let n=0;for(const {x,o} of ch){try{await bcmCall('master_act',{action:'propose',ent:'wbs',id:x.id,data:{...bcmEff(x),order:o},note:'New order among '+(par?bcmCode(par):'the top level')});n++}catch(e){toast(srvMsg(e));break}}
+  if(n)toast(`New order proposed (${n} element${n===1?'':'s'}): it applies once approved`);render()}
+/* number the elements that have no SAP segment, in their order, with the next free number of their level */
+async function bcmSapFill(){const W=bcmOf('wbs'),todo=[];const walk=par=>{const S=W.filter(x=>(bcmEff(x).parent||null)===par&&bcmEff(x).active!==false).sort(bcmSort);
+    const used=new Set(S.map(x=>bcmEff(x).sap_seg).filter(Boolean));S.forEach((x,k)=>{const d=bcmEff(x);if(!d.sap_seg){const dg=bcmDigits(bcmLevel(d));let n=k+1,v;do{v=String(n).padStart(dg,'0');n++}while(used.has(v));used.add(v);todo.push({x,v})}walk(x.id)})};walk(null);
+  if(!todo.length){toast('Every active element already has a SAP WBS segment');return}const bl=todo.filter(({x})=>bcmOthersPend(x)),ok=todo.filter(({x})=>!bcmOthersPend(x));
+  if(!await confirmBox(`Propose a SAP WBS segment for ${ok.length} element${ok.length===1?'':'s'} without one, numbered in their order?${bl.length?`
+${bl.length} with a change waiting from someone else are left out.`:''}
+Existing segments are not changed. The approver checks them against SAP before approving.`,'Propose'))return;
+  let n=0;for(const {x,v} of ok){try{await bcmCall('master_act',{action:'propose',ent:'wbs',id:x.id,data:{...bcmEff(x),sap_seg:v},note:'SAP WBS segment numbered from the order'});n++}catch(e){toast(bcmEff(x).code+': '+srvMsg(e));break}}
+  toast(`${n} SAP WBS segment${n===1?'':'s'} proposed`);render()}
+
 /* ---------- WBS Mapping Master ---------- */
 const BCM_MTABS=[['wbs','WBS elements'],['rules','Classification rules'],['cfg','Thresholds and lists'],['io','Excel import and export']];
 const bcmStatusTxt=m=>m.cur?`Approved v${m.ver}${m.pend?' · change waiting':''}${m.cur.active===false?' · inactive':''}`:m.status==='Rejected'?'Rejected':'Proposed, not approved';
@@ -13518,16 +13589,19 @@ function bcmMasterHTML(U){const t=U.mtab||'wbs',M=bcmDB().master,pend=M.filter(m
     <p class="small muted" style="margin:8px 0 0">Every change is a proposal (the <b>bcm.master</b> right) until someone else with the <b>bcm.approve</b> right approves it; the version in force stays until then, and every version is kept. Classification uses approved, active, postable elements only, and never creates a code.
     ${pend.length?` <b>${pend.length} change${pend.length===1?'':'s'} waiting.</b>`:''}${canA&&pend.filter(m=>!bcmMine(m)).length?` <button class="btn sm primary" type="button" data-bcmapprall>Approve all ${pend.filter(m=>!bcmMine(m)).length} waiting (parents first)</button>`:''}</p></section>`;
   if(t==='rules')return head+bcmRulesHTML(canP);if(t==='cfg')return head+bcmCfgHTML(canP);if(t==='io')return head+bcmIoHTML(U,canP);
-  const W=M.filter(m=>m.ent==='wbs'),q=String(U.mq||'').toLowerCase(),kids=p=>W.filter(m=>(bcmData(m).parent||null)===p).sort((a,b)=>String(bcmData(a).code).localeCompare(String(bcmData(b).code),undefined,{numeric:true}));
+  const W=M.filter(m=>m.ent==='wbs'),q=String(U.mq||'').toLowerCase(),kids=p=>W.filter(m=>(bcmEff(m).parent||null)===p).sort(bcmSort),pid=U.pid,pc=pcode(projById(pid))||'PE-XXX';
   const hit=m=>{const d=bcmData(m);return !q||`${d.code} ${d.desc} ${(d.aliases||[]).join(' ')} ${(d.keywords||[]).join(' ')}`.toLowerCase().includes(q)};
   const sub=m=>hit(m)||kids(m.id).some(sub);const open=U.mopen||{};
-  const node=(m,lvl)=>{if(!sub(m))return '';const d=bcmData(m),K=kids(m.id),o=q||open[m.id]!==false;
+  const node=(m,lvl)=>{if(!sub(m))return '';const d=bcmData(m),K=kids(m.id),o=q||open[m.id]!==false,sib=kids(bcmEff(m).parent||null),ix=sib.indexOf(m);
+    const sap=bcmSapId(m.id,pid),sapP=bcmSapId(m.id,pid,true),uf=bcmEff(m).user_field,ufx=bcmUfOf(uf);
     return `<div class="boqasset" style="margin:4px 0 4px ${lvl*18}px;padding:6px 10px"><div class="boqasset-h" style="margin:0">${K.length?`<button type="button" class="link" data-bcmtog="${esc(m.id)}">${o?'▾':'▸'}</button>`:'<span style="width:12px"></span>'}
       <div style="flex:1;min-width:220px"><b>${esc(d.code)}</b> ${esc(d.desc)} <span class="sev ${m.cur?'ok':'Medium'}">${esc(bcmStatusTxt(m))}</span>${d.postable===false?' <span class="small muted">heading (not a destination)</span>':''}${d.mandatory_review?' <span class="sev Medium">always reviewed</span>':''}
-        <div class="small muted">${d.cost_category?'Cost category '+esc(d.cost_category)+' · ':''}${d.sap_wbs?'SAP WBS '+esc(d.sap_wbs)+' · ':''}${(d.ptypes||[]).length?'Only for '+esc(d.ptypes.join(', '))+' · ':''}${d.eff_from||d.eff_to?`In force ${esc(d.eff_from||'…')} to ${esc(d.eff_to||'…')} · `:''}${(d.aliases||[]).length?'Aliases: '+esc(d.aliases.join('; '))+' · ':''}${(d.keywords||[]).length?'Keywords: '+esc(d.keywords.join('; ')):''} · ${esc(m.id)}</div>
-        ${bcmPendDiff(m)}</div><div class="actions" style="margin:0">${canP?`<button class="btn sm" type="button" data-bcmedit="${esc(m.id)}">Propose a change</button>`:''}${bcmApprBtns(m)}<button class="btn sm" type="button" data-bcmhist="${esc(m.id)}">History</button></div></div></div>${o?K.map(k=>node(k,lvl+1)).join(''):''}`};
+        <div class="small" style="margin:2px 0">SAP WBS <b>${sap?esc(sap):'<span class="r-c">not set</span>'}</b>${sapP&&sapP!==sap?` → <b>${esc(sapP)}</b> (waiting)`:''} · User field <b>${uf?esc(ufx?ufx[0]:uf):'—'}</b>${uf&&ufx?` ${esc(ufx[1])}`:uf?' <span class="r-c">not in the user field list</span>':''}</div>
+        <div class="small muted">${esc([d.cost_category&&'Cost category '+d.cost_category,(d.ptypes||[]).length&&'Only for '+d.ptypes.join(', '),(d.eff_from||d.eff_to)&&`In force ${d.eff_from||'…'} to ${d.eff_to||'…'}`,(d.aliases||[]).length&&'Aliases: '+d.aliases.join('; '),(d.keywords||[]).length&&'Keywords: '+d.keywords.join('; '),m.id].filter(Boolean).join(' · '))}</div>
+        ${bcmPendDiff(m)}</div><div class="actions" style="margin:0">${canP?`<button class="btn sm" type="button" data-bcmmove="${esc(m.id)}" data-dir="up" ${ix>0?'':'disabled'} aria-label="Move up" title="Move up">▲</button><button class="btn sm" type="button" data-bcmmove="${esc(m.id)}" data-dir="down" ${ix<sib.length-1?'':'disabled'} aria-label="Move down" title="Move down">▼</button><button class="btn sm" type="button" data-bcmedit="${esc(m.id)}">Propose a change</button>`:''}${bcmApprBtns(m)}<button class="btn sm" type="button" data-bcmhist="${esc(m.id)}">History</button></div></div></div>${o?K.map(k=>node(k,lvl+1)).join(''):''}`};
   return `${head}<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>WBS master</h2><span class="small muted">${W.filter(m=>m.cur).length} approved · ${W.filter(m=>!m.cur&&m.pend).length} proposed</span></div>
-    <div class="actions"><input id="bcmMq" placeholder="Search code, description, alias" value="${esc(U.mq||'')}" style="min-width:260px">${canP?'<button class="btn sm" type="button" data-bcmedit="new">Add an element</button>':''}</div>
+    <div class="actions"><input id="bcmMq" placeholder="Search code, description, alias" value="${esc(U.mq||'')}" style="min-width:260px">${canP?'<button class="btn sm" type="button" data-bcmedit="new">Add an element</button><button class="btn sm" type="button" data-bcmsapfill>Number missing SAP segments from the order</button>':''}</div>
+    <p class="small muted">SAP WBS IDs are shown for <b>${esc(pc)}</b> (the project chosen above): the project's PE number, then the segments down the tree, joined by "${esc(bcmSap().sep)}" with ${esc(bcmSap().digits.join('-'))} digits per level. ▲ ▼ propose a new order among the siblings; like every change, it applies once someone else approves it. User fields come from the user field list (Settings → Supplement lists).</p>
     ${kids(null).map(m=>node(m,0)).join('')||'<p class="muted">The WBS master is empty.</p>'}
     <p class="small muted">WBS destination and cost type are separate: rebar is Civil Works → Reinforcement / Rebar with the cost type Material, whatever the element's own cost category.</p></section>`}
 function bcmRulesHTML(canP){const R=bcmOf('rule').sort((a,b)=>String(a.id).localeCompare(String(b.id)));
@@ -13543,35 +13617,42 @@ function bcmCfgHTML(canP){const m=bcmRow('cfg')||{cur:BCME.SEED_CFG,ver:0},d=bcm
     <div class="fields"><label class="field">Automatic from (%)<input id="bcmCA" type="number" min="50" max="100" value="${Math.round(d.auto*100)}" ${canP?'':'disabled'}></label><label class="field">Review from (%), below: unresolved<input id="bcmCR" type="number" min="0" max="100" value="${Math.round(d.review*100)}" ${canP?'':'disabled'}></label></div>
     <h3>Value limits (at or above: confirmed one by one)</h3><p class="small muted">One line per limit: currency, project type (empty for all), amount. Example: <code>SAR, , 1000000</code></p>
     <textarea id="bcmCV" rows="4" style="width:100%" ${canP?'':'disabled'}>${esc((d.values||[]).map(v=>[v.cur,v.ptype||'',v.amount].join(', ')).join('\n'))}</textarea>
+    <h3>SAP WBS ID</h3><p class="small muted">The project's PE number, then each element's segment down the tree. Example with the settings below: <b>PE-XXX${esc((d.sap||BCME.SAP_DEF).sep||'-')}01${esc((d.sap||BCME.SAP_DEF).sep||'-')}001${esc((d.sap||BCME.SAP_DEF).sep||'-')}01</b>.</p>
+    <div class="fields"><label class="field">Separator<input id="bcmCSs" maxlength="2" value="${esc((d.sap||BCME.SAP_DEF).sep||'-')}" ${canP?'':'disabled'}></label><label class="field">Digits per level (the last repeats)<input id="bcmCSd" value="${esc(((d.sap||BCME.SAP_DEF).digits||[2,3,2]).join(','))}" ${canP?'':'disabled'}></label></div>
     <h3>Abbreviations and spellings (added to the built-in lists)</h3><p class="small muted">One per line: <code>short = long</code>, for example <code>ug = underground</code>.</p>
     <div class="fields"><label class="field">Abbreviations<textarea id="bcmCAb" rows="4" ${canP?'':'disabled'}>${esc((d.abbr||[]).map(x=>x.join(' = ')).join('\n'))}</textarea></label><label class="field">Spelling variants<textarea id="bcmCSp" rows="4" ${canP?'':'disabled'}>${esc((d.spell||[]).map(x=>x.join(' = ')).join('\n'))}</textarea></label></div>
     ${canP?'<div class="actions"><input id="bcmCN" placeholder="Why the change (for the approver)" maxlength="300" style="min-width:280px"><button class="btn primary" type="button" data-bcmcfgsave>Propose these settings</button></div>':''}
     ${bcmPendDiff(m)}<div class="actions">${bcmApprBtns(m)}${m.id?`<button class="btn sm" type="button" data-bcmhist="cfg">History</button>`:''}</div></section>`}
 /* the WBS master as a workbook, and proposals from a workbook (validated row by row) */
-const BCM_IO_COLS=['WBS code','Parent code','Description','Aliases','Keywords','Cost category','Project types','SAP WBS','Effective from','Effective to','Active','Postable','Mandatory review'];
+const BCM_IO_COLS=['Order','WBS code','Parent code','Description','SAP WBS segment','User field','Aliases','Keywords','Cost category','Project types','Effective from','Effective to','Active','Postable','Mandatory review'];
 function bcmIoHTML(U,canP){const P=U.ioPrev;
   return `<section class="panel"><div class="card-head"><h2>Excel import and export</h2></div>
     <div class="actions"><button class="btn" type="button" data-bcmexport="wbs">Download the WBS master (Excel)</button>${canP?`<label class="btn" style="cursor:pointer">Import a WBS master workbook<input type="file" id="bcmWbsFile" accept=".xlsx,.xls" hidden></label>`:''}</div>
-    <p class="small muted">The import reads the columns ${BCM_IO_COLS.map(esc).join(', ')}. Each valid row becomes a proposal (a new element, or a change of the element with that code) for someone else to approve. Rows with a blank or repeated code, an unknown parent or a wrong date are refused with the reason. Lists are separated by semicolons.</p>
+    <p class="small muted">The import reads the columns ${BCM_IO_COLS.map(esc).join(', ')}. Each valid row becomes a proposal (a new element, or a change of the element with that code) for someone else to approve. Rows with a blank or repeated code, an unknown parent, a wrong date, a SAP segment that is not digits or a user field that is not in the list are refused with the reason. Lists are separated by semicolons. Without an Order column, the order is the order of the rows. The export also shows each element's SAP WBS ID for the project chosen above.</p>
     ${P?`<div class="scroll"><table class="tbl small"><thead><tr><th>Row</th><th>Code</th><th>Description</th><th>Parent</th><th>Result</th></tr></thead><tbody>${P.rows.map(r=>`<tr><td>${r.row}</td><td>${esc(r.code||'')}</td><td>${esc(r.desc||'')}</td><td>${esc(r.parent||'')}</td><td>${r.err?`<span class="r-c">Refused: ${esc(r.err)}</span>`:`<span class="g-c">${r.id?'Change of '+esc(r.id):'New element'}</span>`}</td></tr>`).join('')}</tbody></table></div>
       ${P.rows.some(r=>!r.err)?`<div class="actions"><input id="bcmIoN" placeholder="Note for the approver" maxlength="300" style="min-width:260px"><button class="btn primary" type="button" data-bcmioprop>Propose the ${P.rows.filter(r=>!r.err).length} valid rows</button></div>`:''}`:''}</section>`}
 function bcmParseWbs(aoa){const H=(aoa[0]||[]).map(x=>String(x||'').trim().toLowerCase()),ix=k=>H.indexOf(k.toLowerCase()),W=bcmOf('wbs'),byCode=new Map(W.map(m=>[String(bcmData(m).code).toLowerCase(),m]));
   if(ix('WBS code')<0||ix('Description')<0)return {rows:[{row:1,err:'The first row must name the columns "WBS code" and "Description"'}]};
   const L=v=>String(v??'').split(';').map(s=>s.trim()).filter(Boolean),yes=(v,d)=>v==null||v===''?d:/^(y|yes|true|1)$/i.test(String(v).trim()),dt=v=>{if(v==null||v==='')return null;if(typeof v==='number'){const d=new Date(Math.round((v-25569)*864e5));return d.toISOString().slice(0,10)}const s=String(v).trim();return /^\d{4}-\d{2}-\d{2}$/.test(s)?s:'bad'};
-  const seen=new Map(),rows=[];aoa.slice(1).forEach((r,i)=>{if(!r||r.every(x=>x==null||String(x).trim()===''))return;const g=k=>r[ix(k)],code=String(g('WBS code')??'').trim(),o={row:i+2,code,desc:String(g('Description')??'').trim(),parent:String(g('Parent code')??'').trim()};
+  const seen=new Map(),rows=[],hasOrd=ix('Order')>=0,sapc=ix('SAP WBS segment')>=0?'SAP WBS segment':'SAP WBS';aoa.slice(1).forEach((r,i)=>{if(!r||r.every(x=>x==null||String(x).trim()===''))return;const g=k=>ix(k)<0?null:r[ix(k)],code=String(g('WBS code')??'').trim(),o={row:i+2,code,desc:String(g('Description')??'').trim(),parent:String(g('Parent code')??'').trim()};
     if(!code)o.err='no WBS code';else if(seen.has(code.toLowerCase()))o.err='the code '+code+' is repeated (row '+seen.get(code.toLowerCase())+')';else if(!/^[A-Za-z0-9][A-Za-z0-9._/-]{0,29}$/.test(code))o.err='the code has characters that are not allowed';
     else if(o.desc.length<2)o.err='no description';else if(o.parent&&!byCode.has(o.parent.toLowerCase())&&!aoa.slice(1).some(x=>String(x[ix('WBS code')]??'').trim().toLowerCase()===o.parent.toLowerCase()))o.err='unknown parent '+o.parent;
     const ef=dt(g('Effective from')),et=dt(g('Effective to'));if(!o.err&&(ef==='bad'||et==='bad'))o.err='a date is not YYYY-MM-DD';if(!o.err&&ef&&et&&et<ef)o.err='effective-to is before effective-from';
+    const seg=String(g(sapc)??'').trim()||null,ufr=String(g('User field')??'').trim()||null,ufx=ufr?bcmUfOf(ufr):null,ordv=hasOrd&&g('Order')!=null&&String(g('Order')).trim()!==''?Number(g('Order')):(i+1)*10;
+    if(!o.err&&seg&&!/^[0-9]{1,6}$/.test(seg))o.err='the SAP WBS segment "'+seg+'" is not 1 to 6 digits';if(!o.err&&ufr&&!ufx)o.err='the user field '+ufr+' is not in the user field list';if(!o.err&&!(Number.isInteger(ordv)&&ordv>=0&&ordv<=99999))o.err='the order is not a whole number';
     if(code)seen.set(code.toLowerCase(),i+2);const ex=byCode.get(code.toLowerCase());o.id=ex?ex.id:null;
-    o.data={code,parent:null,parentCode:o.parent||null,desc:o.desc,aliases:L(g('Aliases')),keywords:L(g('Keywords')),cost_category:String(g('Cost category')??'').trim()||null,ptypes:L(g('Project types')),sap_wbs:String(g('SAP WBS')??'').trim()||null,
+    o.data={code,parent:null,parentCode:o.parent||null,desc:o.desc,aliases:L(g('Aliases')),keywords:L(g('Keywords')),cost_category:String(g('Cost category')??'').trim()||null,ptypes:L(g('Project types')),sap_seg:seg,user_field:ufx?ufx[0]:null,order:ordv,
       eff_from:ef==='bad'?null:ef,eff_to:et==='bad'?null:et,active:yes(g('Active'),true),postable:yes(g('Postable'),true),mandatory_review:yes(g('Mandatory review'),false)};rows.push(o)});return {rows}}
 async function bcmExport(kind){try{await loadLib(LIBS.xlsx);const U=bcmUi(),wb=XLSX.utils.book_new();let name;
   if(kind==='wbs'){const W=bcmOf('wbs').sort((a,b)=>String(bcmData(a).code).localeCompare(String(bcmData(b).code),undefined,{numeric:true}));
-    const aoa=[BCM_IO_COLS.concat(['Status','Version','Internal id'])].concat(W.map(m=>{const d=bcmData(m);return [d.code,d.parent?bcmCode(d.parent):'',d.desc,(d.aliases||[]).join('; '),(d.keywords||[]).join('; '),d.cost_category||'',(d.ptypes||[]).join('; '),d.sap_wbs||'',d.eff_from||'',d.eff_to||'',d.active===false?'No':'Yes',d.postable===false?'No':'Yes',d.mandatory_review?'Yes':'No',bcmStatusTxt(m),m.ver,m.id]}));
+    const tree=[],walk=(par,lvl)=>W.filter(x=>(bcmData(x).parent||null)===par).sort(bcmSort).forEach(x=>{tree.push([x,lvl]);walk(x.id,lvl+1)});walk(null,1);W.filter(x=>!tree.some(([y])=>y===x)).forEach(x=>tree.push([x,0]));
+    const pc=pcode(projById(U.pid))||'PE-XXX',aoa=[BCM_IO_COLS.concat(['Level','SAP WBS ID ('+pc+')','User field description','Status','Version','Internal id'])].concat(tree.map(([m,lvl])=>{const d=bcmData(m),u=bcmUfOf(d.user_field);
+      return [d.order??'',d.code,d.parent?bcmCode(d.parent):'',d.desc,d.sap_seg||'',d.user_field||'',(d.aliases||[]).join('; '),(d.keywords||[]).join('; '),d.cost_category||'',(d.ptypes||[]).join('; '),d.eff_from||'',d.eff_to||'',d.active===false?'No':'Yes',d.postable===false?'No':'Yes',d.mandatory_review?'Yes':'No',
+        lvl||'',bcmSapId(m.id,U.pid)||'',u?u[1]:'',bcmStatusTxt(m),m.ver,m.id]}));
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'WBS master');name='ProTrack WBS master '+TODAY+'.xlsx'}
   else{const b=bcmBatch(U.bid);if(!b)return;const L=bcmLinesOf(b.id).filter(l=>bcmKind(l)==='item').filter(l=>kind==='all'||BCM_OPEN.includes(bcmStatus(l))||((bcmCls(l.id)||{}).flags||[]).length);
-    const aoa=[['Tender','Revision','File','Sheet','Row','Cell (amount)','Item code','Description (source)','Description (corrected)','Quantity','Unit','Rate','Amount','Currency','Amount from','Status','WBS code','WBS description','Cost type','Confidence','Basis','Why','Controls and flags','Reviewer','Decided','Reason','Line id']]
-      .concat(L.map(l=>{const c=bcmCls(l.id)||{};return [b.tender_ref,b.tender_rev,(bcmFile(l.file_id)||{}).name,l.sheet,l.row,(l.refs||{}).amount||'',l.code||'',l.desc||'',(c.corr||{}).desc||'',l.qty==null?'':Number(l.qty),l.unit||'',l.rate==null?'':Number(l.rate),l.amount==null?'':Number(l.amount),bcmCurOf(l),l.amount_src||'',bcmStatus(l),c.wbs_id?bcmCode(c.wbs_id):'',c.wbs_id?bcmData(bcmRow(c.wbs_id)).desc:'',c.cost_type||'',c.conf==null?'':Math.round(c.conf*100)/100,BCM_LAYER[c.layer]||'',c.explain||'',[...(l.flags||[]),...(c.flags||[])].filter((x,i,A)=>A.indexOf(x)===i).join('; '),c.decided_by_name||'',c.decided_at?tStamp(c.decided_at):'',c.reason||'',l.id]}));
+    const aoa=[['Tender','Revision','File','Sheet','Row','Cell (amount)','Item code','Description (source)','Description (corrected)','Quantity','Unit','Rate','Amount','Currency','Amount from','Status','WBS code','WBS description','SAP WBS ID','User field','Cost type','Confidence','Basis','Why','Controls and flags','Reviewer','Decided','Reason','Line id']]
+      .concat(L.map(l=>{const c=bcmCls(l.id)||{};return [b.tender_ref,b.tender_rev,(bcmFile(l.file_id)||{}).name,l.sheet,l.row,(l.refs||{}).amount||'',l.code||'',l.desc||'',(c.corr||{}).desc||'',l.qty==null?'':Number(l.qty),l.unit||'',l.rate==null?'':Number(l.rate),l.amount==null?'':Number(l.amount),bcmCurOf(l),l.amount_src||'',bcmStatus(l),c.wbs_id?bcmCode(c.wbs_id):'',c.wbs_id?bcmData(bcmRow(c.wbs_id)).desc:'',bcmSapUf(c.wbs_id,b.project_id).sap||'',bcmSapUf(c.wbs_id,b.project_id).uf||'',c.cost_type||'',c.conf==null?'':Math.round(c.conf*100)/100,BCM_LAYER[c.layer]||'',c.explain||'',[...(l.flags||[]),...(c.flags||[])].filter((x,i,A)=>A.indexOf(x)===i).join('; '),c.decided_by_name||'',c.decided_at?tStamp(c.decided_at):'',c.reason||'',l.id]}));
     const ws=XLSX.utils.aoa_to_sheet(aoa);XLSX.utils.book_append_sheet(wb,ws,kind==='all'?'Lines':'Exceptions');
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ProTrack, Budget & Cost Management: '+(kind==='all'?'all cost lines':'exception list')],['Tender',b.tender_ref+' rev '+b.tender_rev],['Project',(projById(b.project_id)||{}).name||b.project_id],['Exported',stamp()+' by '+(me()||{}).name],['Engine',BCME.ENGINE],
       ['Amounts are as read from the source files (exact); classifications are proposals and decisions, not an approved budget. Nothing in this file has been sent to SAP.']]),'About');
@@ -13621,11 +13702,14 @@ function bcmEditWbs(id){const m=id==='new'?null:bcmRow(id),d=m?JSON.parse(JSON.s
   $('#sheet').innerHTML=`<div class="sheet-head"><h2>${m?'Change '+esc(bcmData(m).code):'New WBS element'}</h2><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
     ${m&&m.pend?'<p class="warn-box small">A change is already waiting; this replaces it.</p>':''}
     <div class="fields">${inp('code','WBS code',d.code,'maxlength="30"')}<label class="field">Parent<select data-bcmw="parent"><option value="">None (top level)</option>${W.map(x=>`<option value="${esc(x.id)}" ${x.id===d.parent?'selected':''}>${esc(bcmData(x).code+' '+bcmData(x).desc)}</option>`).join('')}</select></label>
-      ${inp('desc','Description',d.desc,'maxlength="200"')}${inp('cost_category','Cost category',d.cost_category)}${inp('sap_wbs','SAP WBS (optional mapping)',d.sap_wbs)}
+      ${inp('desc','Description',d.desc,'maxlength="200"')}${inp('cost_category','Cost category',d.cost_category)}
+      ${inp('order','Order among its siblings',d.order,'type="number" min="0" max="99999"')}${inp('sap_seg',`SAP WBS segment (${bcmDigits(bcmLevel(d))} digits at this level)`,d.sap_seg,'maxlength="6" inputmode="numeric"')}
+      <label class="field">User field<select data-bcmw="user_field"><option value="">None</option>${bcmUfList().map(([k,v])=>`<option value="${esc(k)}" ${String(k).toLowerCase()===String(d.user_field||'').toLowerCase()?'selected':''}>${esc(k)} · ${esc(v)}</option>`).join('')}${d.user_field&&!bcmUfOf(d.user_field)?`<option value="${esc(d.user_field)}" selected>${esc(d.user_field)} (not in the list)</option>`:''}</select></label>
       ${inp('aliases','Aliases (separated by ;)',(d.aliases||[]).join('; '))}${inp('keywords','Keywords (separated by ;)',(d.keywords||[]).join('; '))}
       <label class="field">Project types (none: all)<select data-bcmw="ptypes" multiple size="4">${BOQ_PTYPES.map(t=>`<option ${(d.ptypes||[]).includes(t)?'selected':''}>${esc(t)}</option>`).join('')}</select></label>
       ${inp('eff_from','Effective from',d.eff_from,'type="date"')}${inp('eff_to','Effective to',d.eff_to,'type="date"')}</div>
     <div class="actions" style="flex-wrap:wrap">${ck('active','Active')}${ck('postable','Postable (a destination for cost lines)')}${ck('mandatory_review','Always needs individual review')}</div>
+    <p class="small muted">SAP WBS ID on ${esc(pcode(projById(bcmUi().pid))||'PE-XXX')}: <b>${esc(m?(bcmSapId(m.id,bcmUi().pid,true)||'not complete: a segment is missing up the tree'):'shown once saved')}</b>. The PE number comes from the project; the segments from the elements above.</p>
     <label class="field">Why the change (for the approver)<input id="bcmWN" maxlength="300"></label>
     <div class="actions"><button class="btn primary" type="button" data-bcmwsave="${esc(id)}">Propose</button></div>`;$('#drawer').hidden=false}
 function bcmEditRule(id){const m=id==='new'?null:bcmRow(id),d=m?JSON.parse(JSON.stringify(m.pend?m.pend.data:m.cur||{})):{priority:10,strength:0.96,all:[],any:[],none:[],active:true};
@@ -13655,7 +13739,7 @@ async function bcmApproveAll(){const M=bcmDB().master.filter(m=>m.pend&&m.ent!==
   toast(`${ok} approved${bad.length?`; ${bad.length} not: ${bad[0].id} ${bad[0].error}`:''}`);render()}
 
 /* ---------- actions ---------- */
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcmsec],[data-bcmgo],[data-bcmopenb],[data-bcmnewbatch],[data-bcmsample],[data-bcmlines],[data-bcmflog],[data-bcmmap],[data-bcmmapclose],[data-bcmmapsheet],[data-bcmmapsave],[data-bcmreread],[data-bcmverify],[data-bcmwithdraw],[data-bcmviewclose],[data-bcmviewsheet],[data-bcmviewpg],[data-bcmrun],[data-bcmline],[data-bcmsel],[data-bcmselall],[data-bcmselnone],[data-bcmbulk],[data-bcmexport],[data-bcmsort],[data-bcmpage],[data-bcmdo],[data-bcmmtab],[data-bcmtog],[data-bcmedit],[data-bcmredit],[data-bcmwsave],[data-bcmrsave],[data-bcmappr],[data-bcmrej],[data-bcmapprall],[data-bcmhist],[data-bcmcfgsave],[data-bcmioprop],[data-bcmexpire]');
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcmsec],[data-bcmgo],[data-bcmopenb],[data-bcmnewbatch],[data-bcmsample],[data-bcmlines],[data-bcmflog],[data-bcmmap],[data-bcmmapclose],[data-bcmmapsheet],[data-bcmmapsave],[data-bcmreread],[data-bcmverify],[data-bcmwithdraw],[data-bcmviewclose],[data-bcmviewsheet],[data-bcmviewpg],[data-bcmrun],[data-bcmline],[data-bcmsel],[data-bcmselall],[data-bcmselnone],[data-bcmbulk],[data-bcmexport],[data-bcmsort],[data-bcmpage],[data-bcmdo],[data-bcmmtab],[data-bcmtog],[data-bcmedit],[data-bcmredit],[data-bcmwsave],[data-bcmrsave],[data-bcmappr],[data-bcmrej],[data-bcmapprall],[data-bcmhist],[data-bcmcfgsave],[data-bcmioprop],[data-bcmexpire],[data-bcmmove],[data-bcmsapfill]');
   if(!t)return;const d=t.dataset,U=bcmUi();
   if(d.bcmsel!==undefined){e.stopPropagation();const s=new Set(U.sel||[]);t.checked?s.add(d.bcmsel):s.delete(d.bcmsel);U.sel=[...s];render();return}
   if(d.bcmsec){U.sec=d.bcmsec;U.sel=[];U.mapFile=null;U.viewFile=null;render();return}
@@ -13703,17 +13787,21 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcms
       const why={};sk.forEach(x=>{const k=x.why.replace(/\(.*\)/,'').trim();why[k]=(why[k]||0)+1});
       toast(`${done} done${sk.length?`; ${sk.length} left for individual review: ${Object.entries(why).map(([k,n])=>`${n} ${k}`).join('; ')}`:''}`);render();return}
     if(d.bcmdo){await bcmDecide(d.bcmdo,d.id);return}
+    if(d.bcmmove){await bcmMove(d.bcmmove,d.dir);return}
+    if(d.bcmsapfill!==undefined){await bcmSapFill();return}
     if(d.bcmedit){bcmEditWbs(d.bcmedit);return}
     if(d.bcmredit){bcmEditRule(d.bcmredit);return}
-    if(d.bcmwsave){const g=k=>document.querySelector(`[data-bcmw="${k}"]`),D={code:g('code').value.trim(),parent:g('parent').value||null,desc:g('desc').value.trim(),cost_category:g('cost_category').value.trim()||null,sap_wbs:g('sap_wbs').value.trim()||null,
+    if(d.bcmwsave){const g=k=>document.querySelector(`[data-bcmw="${k}"]`),D={code:g('code').value.trim(),parent:g('parent').value||null,desc:g('desc').value.trim(),cost_category:g('cost_category').value.trim()||null,order:g('order').value===''?null:+g('order').value,sap_seg:g('sap_seg').value.trim()||null,user_field:g('user_field').value||null,
         aliases:bcmList(g('aliases').value),keywords:bcmList(g('keywords').value),ptypes:[...g('ptypes').selectedOptions].map(o=>o.value),eff_from:g('eff_from').value||null,eff_to:g('eff_to').value||null,active:g('active').checked,postable:g('postable').checked,mandatory_review:g('mandatory_review').checked};
-      await bcmPropose('wbs',d.bcmwsave,D,$('#bcmWN').value);return}
+      const S=$('[data-bcmw="sap_seg"]');if(D.sap_seg&&!/^[0-9]{1,6}$/.test(D.sap_seg)){toast('A SAP WBS segment is digits only');return}
+      const old=d.bcmwsave!=='new'?bcmEff(bcmRow(d.bcmwsave)):{};await bcmPropose('wbs',d.bcmwsave,{...old,...D},$('#bcmWN').value);return}
     if(d.bcmrsave){const g=k=>document.querySelector(`[data-bcmr="${k}"]`),D={name:g('name').value.trim(),wbs_id:g('wbs_id').value,cost_type:g('cost_type').value||null,priority:+g('priority').value||0,strength:+g('strength').value,
         all:bcmList(g('all').value.replace(/;/g,'\n')).filter(Boolean),any:String(g('any').value).split('\n').map(s=>s.trim()).filter(Boolean),none:String(g('none').value).split('\n').map(s=>s.trim()).filter(Boolean),section:bcmList(g('section').value),units:bcmList(g('units').value),ptypes:[],eff_from:g('eff_from').value||null,eff_to:g('eff_to').value||null,active:g('active').checked};
       await bcmPropose('rule',d.bcmrsave,D,$('#bcmRN').value);return}
     if(d.bcmcfgsave!==undefined){const pairs=v=>String(v||'').split('\n').map(s=>s.split('=').map(x=>x.trim())).filter(x=>x.length===2&&x[0]&&x[1]);
       const V=String($('#bcmCV').value||'').split('\n').map(s=>s.split(',').map(x=>x.trim())).filter(x=>x.length>=3&&x[0]).map(([c,pt,a])=>({cur:c.toUpperCase(),ptype:pt||'',amount:String(a).replace(/,/g,'')}));
-      await bcmPropose('cfg','cfg',{...bcmCfg(),auto:(+$('#bcmCA').value)/100,review:(+$('#bcmCR').value)/100,values:V,abbr:pairs($('#bcmCAb').value),spell:pairs($('#bcmCSp').value)},$('#bcmCN').value);return}
+      const dg=String($('#bcmCSd').value||'').split(/[,\s-]+/).filter(Boolean).map(Number);if(!dg.length||dg.some(x=>!(Number.isInteger(x)&&x>=1&&x<=6))){toast('Digits per level: whole numbers from 1 to 6, for example 2,3,2');return}
+      await bcmPropose('cfg','cfg',{...bcmCfg(),sap:{sep:String($('#bcmCSs').value||'-').slice(0,2),digits:dg},auto:(+$('#bcmCA').value)/100,review:(+$('#bcmCR').value)/100,values:V,abbr:pairs($('#bcmCAb').value),spell:pairs($('#bcmCSp').value)},$('#bcmCN').value);return}
     if(d.bcmappr){await bcmCall('master_act',{action:'approve',id:d.bcmappr});toast('Approved: the new version is in force');render();return}
     if(d.bcmrej){const n=await bcmAsk('Why is this change rejected?');if(n==null)return;await bcmCall('master_act',{action:'reject',id:d.bcmrej,note:n});toast('Rejected');render();return}
     if(d.bcmapprall!==undefined){await bcmApproveAll();return}
@@ -13746,8 +13834,15 @@ function seedBcm335(){if(CLOUD||DB.bcmSeeded335)return;const B=bcmDB(),at='2026-
     B.mhist.push({id:B.mhist.length+1,ref:r.id,ent:r.id.startsWith('W-')?'wbs':'rule',action:'Approved',ver:1,data:r.pend.data,proposed_by:'system',proposed_by_name:'System seed (working definition)',decided_by_name:'Sample approver (demo)',decided_at:at,note:'Sample approval on the demo page'});return x};
   B.master=[...BCME.seedWbs().map(r=>({...ok(r),ent:'wbs'})),...BCME.seedRules().map(r=>({...ok(r),ent:'rule'})),{id:'cfg',ent:'cfg',ver:1,cur:JSON.parse(JSON.stringify(BCME.SEED_CFG)),pend:null,status:'Approved'}];
   /* one change waiting, to show the approval step: SM9 split into its own warranty element (sample) */
-  B.master.push({id:'W-SM10',ent:'wbs',ver:0,cur:null,status:'Proposed',pend:{data:{code:'SM10',parent:'W-SM',desc:'Warranty-period expenses (sample proposal)',aliases:['warranty period','defects liability'],keywords:['warranty','dlp'],cost_category:'Overhead',ptypes:[],sap_wbs:null,eff_from:null,eff_to:null,active:true,postable:true,mandatory_review:false},by:'sample',by_name:'Sample costing engineer (demo)',at,note:'If the company keeps warranty apart from site establishment (sample)'}});
-  bcmLog('Sample master data approved','master',null,null,{note:'demo page only'});DB.bcmSeeded335=true;save()}
+  B.master.push({id:'W-SM10',ent:'wbs',ver:0,cur:null,status:'Proposed',pend:{data:{code:'SM10',parent:'W-SM',desc:'Warranty-period expenses (sample proposal)',order:100,sap_seg:'010',user_field:'SM',aliases:['warranty period','defects liability'],keywords:['warranty','dlp'],cost_category:'Overhead',ptypes:[],sap_wbs:null,eff_from:null,eff_to:null,active:true,postable:true,mandatory_review:false},by:'sample',by_name:'Sample costing engineer (demo)',at,note:'If the company keeps warranty apart from site establishment (sample)'}});
+  bcmLog('Sample master data approved','master',null,null,{note:'demo page only'});DB.bcmSeeded335=true;DB.bcmSeeded336=true;save()}
+/* v3.36 demo: the starting master in the company layout (order, SAP segments, user fields, new elements), approved by the sample approver */
+function seedBcm336(){if(CLOUD||DB.bcmSeeded336||!DB.bcmSeeded335)return;const B=bcmDB(),{ch,add}=BCME.seedDelta(),at=new Date().toISOString();
+  const hist=(m,d)=>B.mhist.push({id:B.mhist.length+1,ref:m.id,ent:'wbs',action:'Approved',ver:m.ver,data:d,proposed_by:'system',proposed_by_name:'System seed (v3.36 structure)',decided_by_name:'Sample approver (demo)',decided_at:at,note:'Sample approval on the demo page'});
+  Object.entries(ch).forEach(([id,c])=>{const m=bcmRow(id);if(!m||bcmOthersPend(m)&&m.pend.by!=='sample')return;const d={...(m.cur||m.pend.data),...c};m.cur=d;m.ver++;m.status='Approved';if(!m.pend||m.pend.by==='system')m.pend=null;hist(m,d)});
+  Object.entries(add).forEach(([id,d])=>{if(bcmRow(id))return;const m={id,ent:'wbs',ver:1,cur:d,pend:null,status:'Approved'};B.master.push(m);hist(m,d)});
+  const s10=bcmRow('W-SM10');if(s10&&s10.pend)Object.assign(s10.pend.data,{order:100,sap_seg:'010',user_field:'SM'});
+  bcmLog('Sample master updated to the company layout (v3.36)','master',null,null,{note:'demo page only'});DB.bcmSeeded336=true;save()}
 async function bcmAddSample(U){await loadLib(LIBS.xlsx);const p=projById(U.pid);if(!p)return;
   const r=await bcmCall('batch_save',{project_id:p.id,tender_ref:'T-SAMPLE-118',tender_rev:'0',currency:'SAR',ptype:'132 kV substation',title:'Sample tender (demo data)'});U.bid=r.id;
   const mk=(sheets)=>{const wb=XLSX.utils.book_new();sheets.forEach(([n,aoa,hidden])=>{const ws=XLSX.utils.aoa_to_sheet(aoa);XLSX.utils.book_append_sheet(wb,ws,n)});
@@ -17590,7 +17685,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBcm336();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=homeView();showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

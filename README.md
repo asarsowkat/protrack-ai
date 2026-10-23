@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.36
+
+- **WBS master: order, SAP WBS ID and user field.** Each WBS element has its order among its siblings (▲ ▼, as proposals), a SAP WBS segment (2-3-2 digits by level) and a user field from the user field list of Settings → Supplement lists. The SAP WBS ID on a project is its PE number and the segments down the tree (PE-XXX-01 Site Management, PE-XXX-01-001 SM1 Salaries, PE-XXX-01-001-01 Project office team). Shown in the master, the review and the exports; the Excel import and export carry the new columns. The starting master follows the company user field list (Mechanical, Prime Cost, Provisional Sum and the Salaries sub-elements added). Server: schema-update-v40.sql (STAGE-34-SETUP.md). See [RELEASE-NOTES-v3.36.md](RELEASE-NOTES-v3.36.md).
+
 ## Version 3.35
 
 - **Budget & Cost Management → Automatic WBS Classification (stages 1 and 2).** A new menu after Cost Control (unchanged). Tender costing workbooks are uploaded in batches (.xlsx, .xls, .xlsm; macros never run), fingerprinted and kept unchanged, read sheet by sheet (headers found where they are, hidden sheets, sections, subtotals, control totals, formulas and their problems), and every cost line is classified into the approved WBS master: approved mappings, approved rules, then a similarity match (computed in ProTrack, not an AI, never automatic). High-value, mandatory, conflicting, combined and flagged lines go to a person; Classification Review confirms, overrides with a reason, excludes, corrects and undoes; decisions can become mappings once someone else approves them. WBS Mapping Master: versioned, proposals approved by another person, Excel import with validation. Stage 3 (duplicates, reconciliation, splits, budget versions) and stage 4 (cost summary, SAP import and loading workbook) are planned and shown so. Server: schema-update-v39.sql (STAGE-33-SETUP.md). See [RELEASE-NOTES-v3.35.md](RELEASE-NOTES-v3.35.md) and [BCM-HANDOVER.md](BCM-HANDOVER.md).

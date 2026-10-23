@@ -141,6 +141,16 @@ wb, ws = book(); ws.title = 'Rates'
 ws.append(['Tender pricing (test data)']); ws.append([]); ws.append(['A', 'Cable laying manpower', 3, 'month', 41000, 123000]); ws.append(['B', 'Cable jointing manpower', 2, 'month', 47000, 94000])
 wb.save(f'{RAW}/16_no_header.xlsx')
 
+
+# 17. a WBS master import with order, SAP WBS segments and user fields (v3.36); no formulas, so written as is
+wb, ws = book(); ws.title = 'WBS master'
+head(ws, 1, ['Order', 'WBS code', 'Parent code', 'Description', 'SAP WBS segment', 'User field', 'Active', 'Postable'])
+for r in [[5, 'SM2', 'SM', 'Vehicles', '002', 'SM', 'Yes', 'Yes'],
+          [30, 'SM1-03', 'SM1', 'Salaries - Camp staff', '03', 'SM', 'Yes', 'Yes'],
+          [40, 'SM1-04', 'SM1', 'Bad segment', 'A1', 'SM', 'Yes', 'Yes'],
+          [50, 'SM1-05', 'SM1', 'Bad user field', '05', 'XYZ', 'Yes', 'Yes']]: ws.append(r)
+wb.save(f'{OUT}/17_wbs_import_sap.xlsx')
+
 # LibreOffice recalculates and saves with cached values; 01 also as .xls and 02 also as .xlsm (a macro-enabled container, no macros)
 os.makedirs(OUT, exist_ok=True)
 calc = tempfile.mkdtemp()

@@ -56,6 +56,8 @@
 | `schema-rollback-v38.sql` | Only to undo v38. Emails are listed as not sent again; keeps the outbox |
 | `schema-update-v39.sql` | **Yes, on your live project, after v16.** STAGE-33-SETUP.md. Budget & Cost Management, Automatic WBS Classification: rights `bcm.upload`, `bcm.review`, `bcm.master`, `bcm.approve`; master data with versions and approvals (`bcm_master`, `bcm_master_hist`, the starting WBS master and rules as proposals); tender batches, files and frozen lines (`bcm_batches`, `bcm_files`, `bcm_lines`); classifications checked on the server (`bcm_class`, `bcm_class_hist`); `bcm_audit`; the private bucket `bcm-tender` |
 | `schema-rollback-v39.sql` | Only to undo v39. Nothing can be written to the module; keeps every table, file and history |
+| `schema-update-v40.sql` | **Yes, on your live project, after v39** (and v35 for the user field list). STAGE-34-SETUP.md. Each WBS element's order, SAP WBS segment (digits per level, once under a parent) and user field (from the user field list), checked on the server; the starting master in the company layout, as System seed proposals |
+| `schema-rollback-v40.sql` | Only to undo v40. Back to the v39 checks; keeps the fields and the proposals |
 | `functions/send-mail/index.ts` | The Edge Function that sends a queued email through Microsoft 365 (Graph) or an SMTP relay on port 465. STAGE-32-SETUP.md steps 2 and 3. `functions/send-mail/test.mjs` tests it (Node 22) |
 
 **v3.26.1:** v24 (and its rollback), v27, v28, v29, v30, v32 and v33 were corrected in place after the module review (see `../REVIEW-v3.26.1.md`). None had been run on a database, so run them as they are now, in order, once.

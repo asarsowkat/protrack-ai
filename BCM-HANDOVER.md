@@ -18,7 +18,7 @@ A module of the existing ProTrackAI application (menu: after Cost Control). It i
 
 | Table | One row per | Changes |
 |---|---|---|
-| `bcm_master` | WBS element (`W-…`), rule (`R-…`), approved mapping (`M-…`), the settings (`cfg`); `cur` = version in force, `pend` = change waiting, `ver` | Only `bcm_master_act` (propose, approve, reject, approve_many) |
+| `bcm_master` | WBS element (`W-…`; v3.36: with `order`, `sap_seg` and `user_field` in its data), rule (`R-…`), approved mapping (`M-…`), the settings (`cfg`); `cur` = version in force, `pend` = change waiting, `ver` | Only `bcm_master_act` (propose, approve, reject, approve_many) |
 | `bcm_master_hist` | Proposal, approval, rejection or withdrawal, with the full content and version | Append only (trigger) |
 | `bcm_batches` | Tender submission: project, tender reference, revision, currency, project type | `bcm_batch_save` (create, withdraw) |
 | `bcm_files` | Workbook: name, SHA-256 (unique per project unless withdrawn), size, kind, stored path, status, run, sheets, control total, mappings, log, fingerprint, engine | `bcm_file_add`, `bcm_file_run` |
@@ -135,3 +135,17 @@ The engine has a provider hook. Its output must name an approved, active element
 - **Monthly SAP ECC reports are the current path.** Until go-live, they come in as Excel through the stage 4 import.
 - **An approved interface later replaces the import and the export.** The tables are designed for it: imports and exports as batches with references and statuses. A load is confirmed only with the SAP reference returned by SAP.
 - **No direct database writes.** ProTrack will never write directly to an SAP database, and no write-back is ever simulated.
+
+## 11. v3.36: order, SAP WBS ID and user field
+- **Each WBS element's data carries three more fields:**
+  - `order` (among its siblings);
+  - `sap_seg` (its SAP WBS segment);
+  - `user_field` (a code of the user field list of Settings → Supplement lists, `pt_supp_lists()`, shared with the budget supplements).
+- **SAP WBS ID on a project** = `pcode(project)` (its PE number from the Tender register, else the project code) + the segments from the top, joined by the separator. Separator and digits per level are in the settings (`cfg.sap`, default `-` and 2-3-2, the last repeating).
+- **Checks** (`pt_bcm_check`, and the same in the app):
+  - segment digits for the level;
+  - user field in the list;
+  - order a whole number.
+  - At approval, a segment already used by an approved sibling (not moving away) is refused.
+- **Ordering and numbering are proposals** like any master change. Someone else's waiting change is never overwritten by a reorder or a numbering.
+- **Upgrading the starting master:** `schema-update-v40.sql` brings it to the company layout through `pt_bcm_seed_upd`, as System seed proposals only. The demo page does the same through `seedBcm336`.

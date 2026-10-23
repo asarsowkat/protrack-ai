@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.35, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.36, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -316,7 +316,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.35</b>
+<div class="note" id="whatsnew"><b>New in version 3.36</b>
+    <b>The WBS master's order, SAP WBS ID and user field.</b> Reorder elements with ▲ ▼; give each a SAP WBS segment and a user field from the user field list (Settings → Supplement lists). The SAP WBS ID on a project is its PE number and the segments down the tree: PE-XXX-01 Site Management, PE-XXX-01-001 SM1 Salaries, PE-XXX-01-001-01 Salaries - Project office team. The Excel import and export carry Order, SAP WBS segment and User field. On the server: schema-update-v40.sql (STAGE-34-SETUP).</div>
+  <div class="note"><b>New in version 3.35</b>
     <b>Budget &amp; Cost Management → Automatic WBS Classification.</b> Upload a tender's costing workbooks in one go; ProTrack keeps each file unchanged, reads every sheet and row with its cells, and classifies each cost line into the approved WBS master (approved mappings, approved rules, then a similarity proposal that is never automatic). Only the exceptions need a person: Classification Review lists them, high-value lines first. Every WBS, rule and threshold change is approved by someone other than the person who proposed it. No outside AI and no SAP connection are used. Stages 3 and 4 (duplicates, reconciliation, budget versions, cost summary, SAP files) are planned. On the server: schema-update-v39.sql (STAGE-33-SETUP). See <a href="#bcm">Budget &amp; Cost Management</a>.</div>
   <div class="note"><b>New in version 3.34</b>
     <b>Approval and report emails are really sent.</b> The server checks each email’s event and decides who receives it; the send-mail function sends it through the company mailbox (Microsoft 365) or an SMTP relay. Settings → Email shows the mail service, a test email, every email with its status and reason, and Send again. On the server: schema-update-v38.sql and the send-mail function (STAGE-32-SETUP).</div>
@@ -1401,6 +1403,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Tender File Intake:</b> create a batch (tender, revision, currency, project type) and upload its workbooks, several at once. Each is checked, fingerprinted and kept unchanged; the same file is never taken twice. A sheet whose header is not found says <b>Map columns</b>.</li>
     <li><b>Automatic WBS Classification:</b> approved mappings, then approved rules, then a similarity proposal. Automatic only from an approved mapping or rule at 95% or more, below the value limit, with a cost type and no data problem.</li>
     <li><b>Classification Review:</b> the lines to look at, high-value ones first. Confirm, confirm with another WBS (a reason is needed), reject, exclude with a reason, correct the description or row kind (the source stays as read), or undo. A bulk confirmation takes only clean proposals.</li>
+    <li><b>Order, SAP WBS ID and user field (v3.36):</b> each element has its order among its siblings (▲ ▼), a SAP WBS segment and a user field from the user field list. Its SAP WBS ID on a project is the project's PE number and the segments down the tree, for example PE-XXX-01-001-01 for Salaries - Project office team.</li>
     <li><b>Mapping Learning History:</b> a decision you choose to remember (this project, this project type, all projects) becomes a mapping once someone else approves it; the next tender uses it.</li>
   </ol>
   <table><thead><tr><th>Status</th><th>Means</th></tr></thead><tbody>

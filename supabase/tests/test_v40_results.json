@@ -1,0 +1,142 @@
+{
+ "suite": "test_v40",
+ "passed": 27,
+ "total": 27,
+ "checks": [
+  {
+   "check": "Before: the approver approves SM, SM1 and DES under v39",
+   "pass": true,
+   "detail": "{'results': [{'id': 'W-SM', 'ok': True}, {'id': 'W-SM1', 'ok': True}, {'id': 'W-DES', 'ok': True}]}"
+  },
+  {
+   "check": "Before: a costing engineer proposes a change of DES",
+   "pass": true,
+   "detail": "{'id': 'W-DES', 'ok': True}"
+  },
+  {
+   "check": "Install: v40 runs",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: bcm_features gives version 40",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Seed: seven new elements arrive as proposals (SM1-01, SM1-02, Mechanical x3, Prime Cost, Provisional Sum)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Seed: SM1-02 is \"Salaries - Site office team\" under SM1, SAP segment 02, user field SM",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Seed: an approved element (SM) keeps its approved version and gets a System proposal with segment 01 and user field SM",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Seed: an element still waiting (SM4) gets the change in its proposal: segment 004",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Seed: an element with a person's change waiting (DES) is left alone, and the audit log says so",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Seed: Saudization, Financing, Contingency and Management Reserve move to the top level; Other approved categories is switched off",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Seed: nothing is approved by the update",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Approve: the approver approves the System proposal of SM: version 2 with segment 01",
+   "pass": true,
+   "detail": "{'id': 'W-SM', 'ok': True, 'ver': 2}"
+  },
+  {
+   "check": "Approve: SM1 (segment 001) and SM1-01 (segment 01) in bulk, parents first",
+   "pass": true,
+   "detail": "{'results': [{'id': 'W-SM1', 'ok': True}, {'id': 'W-SM1-01', 'ok': True}]}"
+  },
+  {
+   "check": "...the SAP WBS of Salaries - Project office team is built from 01-001-01",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Check: a top-level segment of 1 digit is refused (2 digits at level 1)",
+   "pass": true,
+   "detail": "psql:/tmp/tmph55zk28b.sql:4: ERROR:  At level 1 the SAP WBS segment has 2 digits (got \"1\")\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 29 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Check: a level-2 segment needs 3 digits",
+   "pass": true,
+   "detail": "psql:/tmp/tmp5807lsuq.sql:4: ERROR:  At level 2 the SAP WBS segment has 3 digits (got \"02\")\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 29 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Check: a segment is digits",
+   "pass": true,
+   "detail": "psql:/tmp/tmply67lvzb.sql:4: ERROR:  A SAP WBS segment is 1 to 6 digits (got \"AB\")\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 24 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Check: a user field must be in the user field list",
+   "pass": true,
+   "detail": "psql:/tmp/tmp24juol8w.sql:4: ERROR:  The user field XYZ is not in the user field list (Settings \u2192 Supplement lists)\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 36 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Check: a user field of the list is taken whatever its case (instl.mech)",
+   "pass": true,
+   "detail": "{'id': 'W-b5bfc633', 'ok': True}"
+  },
+  {
+   "check": "Check: the order is a whole number",
+   "pass": true,
+   "detail": "psql:/tmp/tmp3yri4eme.sql:4: ERROR:  The order is a whole number from 0 to 99999\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 21 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Unique: a new top-level element proposed with segment 01",
+   "pass": true,
+   "detail": "{'id': 'W-a76eeeb9', 'ok': True}"
+  },
+  {
+   "check": "Unique: ...its approval is refused: 01 is used by Site Management",
+   "pass": true,
+   "detail": "psql:/tmp/tmpehqm3ury.sql:4: ERROR:  The SAP WBS segment 01 is already used under the same parent; give one of them another segment\nCONTEXT:  PL/pgSQL function bcm_master_act(jsonb) line 44 at RAISE"
+  },
+  {
+   "check": "Order: a costing engineer with bcm.master proposes a new order for SM2 (a proposal like any change)",
+   "pass": true,
+   "detail": "{'id': 'W-SM2', 'ok': True}"
+  },
+  {
+   "check": "Again: v40 runs a second time without new proposals or history",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: runs and goes back to the v39 checks (version 39), keeping the records",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: the v39 checks do not look at segments any more",
+   "pass": true,
+   "detail": "{'id': 'W-e97a9191', 'ok': True}"
+  },
+  {
+   "check": "Again: v40 after the rollback",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

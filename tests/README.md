@@ -94,3 +94,10 @@ python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 | `bcm_e2e.py` (`python3 bcm_e2e.py ../live.html ../supabase path/to/xlsx.full.min.js`) | see results | The live app against the database through the stand-in Supabase with its storage |
 
 `fixtures/bcm/make_fixtures.py` makes the test workbooks (openpyxl, then LibreOffice to store calculated values; file 13 keeps formulas without values on purpose). SheetJS 0.18.5 is the version the app loads: `git clone --depth 1 --branch v0.18.5 https://github.com/SheetJS/sheetjs` gives `xlsx.js` and `dist/xlsx.full.min.js`.
+
+## v3.36: order, SAP WBS ID and user field
+
+| Test | Checks | What it proves |
+|---|---|---|
+| `../supabase/tests/test_v40.py` | 27 | v40 on top of a partly approved v39 master: the System proposals, a person's change left alone, the checks of segments and user fields, uniqueness at approval, reorder, running twice, rollback |
+| `bcm_demo.py`, `bcm_e2e.py` | 67, 31 | Now include the SAP WBS IDs, user fields, reorder, the Excel columns (`fixtures/bcm/17_wbs_import_sap.xlsx`) and the upgrade of a v3.35 sample master |
