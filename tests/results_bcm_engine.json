@@ -1,8 +1,8 @@
 {
  "suite": "bcm_engine",
  "engine": "ProTrack WBS classification engine 1.0 (ProTrackAI v3.35)",
- "passed": 99,
- "total": 99,
+ "passed": 130,
+ "total": 130,
  "checks": [
   {
    "area": "Money",
@@ -595,6 +595,192 @@
   {
    "area": "Budget import",
    "check": "a workbook with mistakes is still parsed row by row, so each refused row can be shown with its reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "a by-WBS report (S_ALR_87013558) is found below its title rows: Object, Budget, Actual, Commitment",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "the WBS element and its description in one cell are split (\"PE-555-04-001 Cables material\")",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "with totals at each level, an element counts only what is not in the elements below it: the totals are the leaves (8,370,000 / 4,735,000 / 2,700,000)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "...and the total row is checked against them",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "without that option every row counts as written (and the total row no longer matches)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "actual cost line items (CJI3): posting date, document, value; SAP dates 30.09.2026 and a trailing minus (1,500.00-) read",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "a posting outside the period is refused (or allowed before it with \"to the end of the period\")",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "commitment line items (CJI5, with a purchasing document) are recognised as commitments",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "a report with mistakes is refused with each reason: not a number, another currency, no WBS element, repeated, the total row",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "a template finds its columns by their headings; a missing one is said",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Figures",
+   "check": "August: the actual of the month is the difference of the July and August reports (600,000 - 480,000)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Figures",
+   "check": "September: actual to date = the August report + the September line items; commitments from CJI5 (a snapshot)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Figures",
+   "check": "...the SAP budget from the latest by-WBS report up to the period",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Figures",
+   "check": "a missing month is said, never filled in",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the 24 columns, each with its definition",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "tender, Rev 0 and current budget; the revision waiting for approval as a change (-150,000 on the cables)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "over budget: actual 3,118,500 + commitments 2,380,000 > 5,100,000 → EAC 5,498,500, VAC -398,500",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "at risk at 90% committed, and the SAP budget (900,000) differing from the approved 910,000",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "an element with cost in SAP but not in the approved budget is shown so",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the levels above add up their elements, named from the master",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the total of the project counts each element once, and its EAC is the sum of the elements (an overrun is not hidden)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "percentages: % spent and % committed of the current budget",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "without a SAP report, only the budget columns: nothing is estimated",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the first loading: the amounts by SAP WBS ID, every ID valid for the project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "a revision: supplements and returns against the version loaded",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "an ID of another project, or with wrong digits, is excluded with the reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the workbook has its six sheets",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "a revision fills Supplements & Returns (4 rows) and says Original Budget is not used",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the control totals add up: previously loaded + supplements + returns = the total",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the WBS Elements sheet adds the levels above with their parents",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the header says nothing was sent to SAP",
    "result": "PASS",
    "detail": ""
   }

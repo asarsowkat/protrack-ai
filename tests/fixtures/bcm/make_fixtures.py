@@ -169,6 +169,45 @@ for r in [['PE-555-01-001-01', 'Salaries - Project office team', 'SM', 1250000],
           ['PE-555-04-001', 'Cables material', 'MTRL.ELC', 'TBC'], ['PE-555-09', 'Unknown field', 'XYZ', 100], [None, 'No ID here', 'SM', 5]]: ws.append(r)
 wb.save(f'{OUT}/19_budget_import_invalid.xlsx')
 
+# 20 to 24: monthly SAP ECC reports of project PE-555 (v3.38); no formulas, written as they are exported
+def sap_wbs(path, period, rows, title='Budget/Actual/Commitment/Rem.Order Plan/Assigned'):
+    wb, ws = book(); ws.title = 'S_ALR_87013558'
+    ws['A1'] = title + ' (test data)'; ws['A2'] = f'Period: {period}  Currency: SAR'
+    head(ws, 4, ['Object', 'Budget', 'Actual', 'Commitment', 'Assigned', 'Available'])
+    for o, b, a, c in rows: ws.append([o, b, a, c, (a or 0) + (c or 0), (b or 0) - (a or 0) - (c or 0)])
+    wb.save(path)
+L08 = [('PE-555-01-001-01 Salaries - Project office team', 1250000, 600000, 100000), ('PE-555-01-001-02 Salaries - Site office team', 820000, 300000, 100000),
+       ('PE-555-04-001 Cables material', 5100000, 3000000, 2500000), ('PE-555-05-001 Cable laying manpower', 900000, 820000, 0), ('PE-555-13 Prime cost items', 300000, 0, 0),
+       ('PE-555-09-001 Earthing material', 0, 15000, 0)]
+def tree(L):   # the report shows each level with the totals below it, as SAP does
+    out = {}
+    for o, b, a, c in L:
+        i = o.split()[0]; out[i] = [o, b, a, c]
+        p = i
+        while p.count('-') > 1:
+            p = p.rsplit('-', 1)[0]; t = out.setdefault(p, [p + {'PE-555-01': ' Site Management', 'PE-555-01-001': ' Salaries', 'PE-555-04': ' Electrical Material', 'PE-555-05': ' Electrical Manpower', 'PE-555-09': ' Earthing', 'PE-555': ' Project'}.get(p, ''), 0, 0, 0])
+            if p != i: t[1] += b; t[2] += a; t[3] += c
+    return [tuple(out[k]) for k in sorted(out, key=lambda k: [int(x) if x.isdigit() else x for x in k.split('-')])]
+R08 = tree(L08)
+sap_wbs(f'{OUT}/20_sap_wbs_2026-08.xlsx', '08/2026', R08 + [('Total', 8370000, 4735000, 2700000)])
+sap_wbs(f'{OUT}/21_sap_wbs_2026-07.xlsx', '07/2026', tree([(o, b, round(a * 0.8), c) for o, b, a, c in L08]))
+wb, ws = book(); ws.title = 'CJI3'
+ws['A1'] = 'Display Actual Cost Line Items for Projects (test data)'
+head(ws, 3, ['WBS Element', 'Cost Element', 'Cost element name', 'Posting Date', 'Ref Document Number', 'Val.in Obj.Crcy', 'Obj.Crcy'])
+for r in [['PE-555-01-001-01', '610000', 'Salaries', '30.09.2026', '5100001', 50000, 'SAR'], ['PE-555-01-001-01', '610000', 'Salaries', '15.09.2026', '5100002', 25000, 'SAR'],
+          ['PE-555-04-001', '410000', 'Materials', '20.09.2026', '5000123', 120000, 'SAR'], ['PE-555-04-001', '410000', 'Materials', '21.09.2026', '5000124', '1,500.00-', 'SAR'],
+          ['PE-555-05-001', '620000', 'Subcontract labour', '28.09.2026', '5000200', 40000, 'SAR']]: ws.append(r)
+ws.append([None, None, None, None, None, 233500, 'SAR'])
+wb.save(f'{OUT}/22_cji3_2026-09.xlsx')
+wb, ws = book(); ws.title = 'CJI5'
+head(ws, 1, ['WBS Element', 'Purchasing Document', 'Cost Element', 'Value in Obj. Crcy', 'Currency'])
+for r in [['PE-555-04-001', '4500011', '410000', 2380000, 'SAR'], ['PE-555-01-001-02', '4500020', '610000', 90000, 'SAR']]: ws.append(r)
+wb.save(f'{OUT}/24_cji5_2026-09.xlsx')
+wb, ws = book(); ws.title = 'Report'
+head(ws, 1, ['WBS Element', 'Description', 'Budget', 'Actual', 'Currency'])
+for r in [['PE-555-01-001-01', 'Salaries', 1250000, 'n/a', 'SAR'], ['PE-555-04-001', 'Cables', 5100000, 10, 'SAR'], ['PE-555-04-001', 'Cables again', 1, 1, 'SAR'], ['PE-555-05-001', 'Manpower', 900000, 5, 'USD'], [None, 'No WBS', 1, 1, 'SAR'], ['Total', None, 99, 99, None]]: ws.append(r)
+wb.save(f'{OUT}/23_sap_invalid.xlsx')
+
 # LibreOffice recalculates and saves with cached values; 01 also as .xls and 02 also as .xlsm (a macro-enabled container, no macros)
 os.makedirs(OUT, exist_ok=True)
 calc = tempfile.mkdtemp()

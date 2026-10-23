@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.37, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.38, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -316,7 +316,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.37</b>
+<div class="note" id="whatsnew"><b>New in version 3.38</b>
+    <b>Budget &amp; Cost Management stage 4.</b> Import the monthly SAP ECC reports as Excel (by WBS element, actual cost and commitment line items), checked and frozen; the Cost Summary with its 24 columns by SAP WBS element; the SAP loading workbook of an approved version (original budget, then supplements and returns), and SAP Loading Confirmed recorded with the SAP reference by the SAP authorized user. Nothing is sent to SAP.<br><b>Version 3.37</b>
     <b>Budget &amp; Cost Management stage 3.</b> Duplicate &amp; Backup Analysis (sheet roles and candidates, decided by a reviewer, nothing deleted), split allocations approved by someone else, the Reconciliation Centre (each valid cost once, control totals within the tolerance), Budget Versions from a ready tender or imported for an existing project with its actual SAP WBS IDs (Draft → Submitted → Under Review → Approved in ProTrackAI), and Approval History. Nothing is sent to SAP.<br><b>Version 3.36</b>
     <b>The WBS master's order, SAP WBS ID and user field.</b> Reorder elements with ▲ ▼; give each a SAP WBS segment and a user field from the user field list (Settings → Supplement lists). The SAP WBS ID on a project is its PE number and the segments down the tree: PE-XXX-01 Site Management, PE-XXX-01-001 SM1 Salaries, PE-XXX-01-001-01 Salaries - Project office team. The Excel import and export carry Order, SAP WBS segment and User field. On the server: schema-update-v40.sql (STAGE-34-SETUP).</div>
   <div class="note"><b>New in version 3.35</b>
@@ -1409,6 +1410,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Split allocations (v3.37):</b> in the line view of a combined line, <b>Propose a split</b> into WBS and cost types that add up to the line (amounts or percentages), with its basis. Someone else approves it.</li>
     <li><b>Reconciliation Centre (v3.37):</b> the accepted total (each valid cost once), each file's control total against the lines counted, within the tolerance, the amounts by WBS with their SAP WBS IDs, and the checks. Explain a variance with a reason; it is never adjusted.</li>
     <li><b>Budget Versions (v3.37):</b> Tender estimate, Rev 0, Revised Rev 0 or Approved revision, prepared from a ready tender batch or imported from Excel for an existing project (one row per SAP WBS element with its actual SAP WBS ID, user field and an amount column you choose). Draft → Submitted → Under Review (a reviewer) → Approved in ProTrackAI (a budget approver), never by the preparer. Each version is compared with the previous approved one and exports to Excel. Approved in ProTrackAI is not loaded in SAP.</li>
+    <li><b>SAP reports (v3.38):</b> SAP Export &amp; Import → SAP reports. Choose the period and the Excel file exported from SAP: by WBS element (as S_ALR_87013558), actual cost line items (as CJI3) or open commitments (as CJI5). Check the kind, the columns and the totals; correct any problem listed; press <b>Import and freeze</b>. Save the columns as a template for the next month.</li>
+    <li><b>Cost Summary (v3.38):</b> the 24 columns by SAP WBS element for the period you choose: budgets (Tender, Rev 0, current, pending), the SAP budget, actual of the period and to date, commitments, remaining, estimate to complete and at completion, variance and status (Over budget, At risk, SAP budget differs, Not in the SAP report, Not in the approved budget). Hover a heading for its definition; export to Excel.</li>
+    <li><b>SAP loading (v3.38):</b> the SAP authorized user (right bcm.sap) prepares the six-sheet loading workbook of an approved version and gives it to the SAP team. Once loaded, record <b>SAP Loading Confirmed</b> with the SAP reference and date, or <b>Return</b> it with the reason. The next revision goes as supplements and returns.</li>
     <li><b>Mapping Learning History:</b> a decision you choose to remember (this project, this project type, all projects) becomes a mapping once someone else approves it; the next tender uses it.</li>
   </ol>
   <table><thead><tr><th>Status</th><th>Means</th></tr></thead><tbody>
@@ -1419,7 +1423,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <tr><td>Unclassified</td><td>No approved destination fits well enough</td></tr>
     <tr><td>Confirmed, Rejected, Excluded with Reason</td><td>A person decided; a new run never changes it</td></tr>
   </tbody></table>
-  <p class="note">No outside AI is called, and nothing is sent to SAP. Stage 4 (cost summary, SAP report import, SAP loading workbook) is planned and shown as planned in the menu.</p>
+  <p class="note">No outside AI is called, and nothing is sent to SAP. Every page of the module is open (stage 4 since v3.38). There is no connection to SAP: reports come in as Excel and the loading workbook goes to the SAP team.</p>
   <h2 id="cfdash">Cashflow Dashboard</h2>
   <p><b>Invoices &amp; Cash Flow → Cashflow Dashboard</b>, below the Invoice register, puts the money coming in and the money going out side by side, for the projects in your scope. It is for those who see both the cash-inflow and the cash-out forecasts: management, project managers, planning and costing.</p>
   <table><thead><tr><th>Side</th><th>Actual</th><th>Forecast</th></tr></thead><tbody>

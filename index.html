@@ -865,7 +865,7 @@ tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,13
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.37</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.38</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -6336,7 +6336,9 @@ const RIGHTS=[
   ['bcm.master','Budget & Cost Management: propose WBS master, rule and threshold changes','Budget & Cost',[]],
   ['bcm.approve','Budget & Cost Management: approve WBS master, rule, mapping and threshold changes (never their own)','Budget & Cost',[]],
   ['bcm.budget','Budget & Cost Management: prepare, import and submit budget versions (Tender estimate, Rev 0, revisions)','Budget & Cost',['costing']],
-  ['bcm.budget.approve','Budget & Cost Management: approve budget versions in ProTrackAI (never one they prepared or submitted)','Budget & Cost',[]]];
+  ['bcm.budget.approve','Budget & Cost Management: approve budget versions in ProTrackAI (never one they prepared or submitted)','Budget & Cost',[]],
+  ['bcm.sap.import','Budget & Cost Management: import the monthly SAP ECC reports (budget, actual, commitments) and keep their column templates','Budget & Cost',['costing']],
+  ['bcm.sap','Budget & Cost Management: SAP authorized user: prepare the SAP loading workbook of an approved budget version and record SAP Loading Confirmed with the SAP reference','Budget & Cost',[]]];
 /* what comes with a position, shown beside the right in the tables */
 const RIGHT_POS={'bcm.review':'Head of Planning and Cost Control','bcm.master':'Head of Planning and Cost Control','bcm.approve':'Head of Planning and Cost Control','bcm.budget.approve':'Head of Planning and Cost Control','boq.review':'Head of Planning and Cost Control','boq.approve':'Head of Planning and Cost Control','cashout.keep':'Head of Planning and Cost Control; costing coordinator','visual.keep':'Head of Planning and Cost Control','delay.keep':'Head of Planning and Cost Control','materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
   'report.cost.approve':'Head of Planning and Cost Control','logs.upload':'costing coordinator','issues.keep':'Head of Planning and Cost Control',
@@ -8105,11 +8107,11 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.37';
+const APP_VERSION='3.38';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
-  ['recon','Reconciliation Centre'],['master','WBS Mapping Master'],['learn','Mapping Learning History'],['sum','Cost Summary',4],['ver','Budget Versions'],['sap','SAP Export & Import',4],['appr','Approval History'],['audit','Audit Log']];
+  ['recon','Reconciliation Centre'],['master','WBS Mapping Master'],['learn','Mapping Learning History'],['sum','Cost Summary'],['ver','Budget Versions'],['sap','SAP Export & Import'],['appr','Approval History'],['audit','Audit Log']];
 const BCM_PLANNED={3:'Stage 3 (financial controls): duplicate and backup analysis, reconciliation, split allocation and budget versions come in the next release',
   4:'Stage 4 (reporting and SAP preparation): the WBS cost summary, the SAP report import, the SAP loading workbook and its confirmation come in the next release'};
 const DOMAINS=[
@@ -13144,7 +13146,182 @@ function parseBudget(aoa){const H=(aoa||[]).slice(0,15);let hr=-1,map={};
     const desc=g('desc'),sap=g('sap');const isTotal=!sap&&/total/i.test(desc||String(r.find(x=>typeof x==='string')||''));rows.push({row:hr+i+2,sap,code:g('code'),desc,uf:g('uf'),ct:g('ct'),raw:r,total:isTotal})});
   return {header_row:hr+1,map,amountCols,rows}}
 
-return {ENGINE,ROLES,ROLE_N,COUNTING_ROLES,BLOCKING,DUP_N,proposeRoles,findDups,dupTargets,dupEffect,tolOf,allocate,parseBudget,SAP_DEF,seedDelta,seedWbs,seedRules,SEED_CFG,MAX_BYTES,checkFile,readBook,dec,decStr,decSum,decMul,decAbs,money,curDp,normCur,normUnit,norm,lexicon,attrsOf,toks,hasPhrase,extractSheet,extractBook,findHeader,fingerprintText,
+/* ---------- 9. stage 4: SAP reports, the cost summary, the SAP loading workbook (v3.38) ----------
+   Monthly SAP ECC reports come in as Excel: budget, actual and commitment by WBS element (as S_ALR_87013558 gives), or
+   line items (actual costs as CJI3, open commitments as CJI5). Each report is checked and then frozen. Nothing is sent to
+   SAP: the loading workbook is prepared for the SAP team, and "loaded" is recorded only with the SAP reference. */
+const SAP_H={wbs:/^(wbs\s*element|wbs\s*elem\.?|wbs|wbs\s*id|sap\s*wbs(\s*(id|element))?|object|object\s*id|wbs\s*no\.?|project\s*\/\s*wbs)$/,
+  desc:/^(description|name|object\s*name|wbs\s*description|wbs\s*name|short\s*text|text)$/,
+  budget:/^(budget|current\s*budget|overall\s*budget|annual\s*budget|released\s*budget|budget\s*\(.*\))$/,
+  actual:/^(actual|actuals|actual\s*costs?|act\.?\s*costs?|actual\s*\(.*\)|cumulative\s*actuals?|actual\s*to\s*date)$/,
+  commit:/^(commitments?|open\s*commitments?|commitment\s*\(.*\)|purchase\s*order\s*commitments?|obligo)$/,
+  eac:/^(forecast|forecast\s*at\s*completion|eac|estimate\s*at\s*completion|forecast\s*\(.*\))$/,
+  etc:/^(etc|estimate\s*to\s*complete|cost\s*to\s*complete|rem\.?\s*order\s*plan|remaining\s*order\s*plan|remaining\s*plan)$/,
+  value:/^(value|amount|val\.?\s*in\s*obj\.?\s*crcy|value\s*in\s*obj\.?\s*crcy|value\s*obj\.?\s*crcy|val\.?\s*in\s*rep\.?\s*cur\.?|value\s*in\s*report\s*currency|value\s*\(.*\)|total\s*value)$/,
+  date:/^(posting\s*date|pstng\s*date|pstg\s*date|document\s*date|date)$/,
+  ce:/^(cost\s*element|cost\s*elem\.?|cost\s*element\s*name|cost\s*elem\.?\s*name|g\/l\s*account|gl\s*account)$/,
+  doc:/^(ref\.?\s*document(\s*number)?|document\s*(no\.?|number)|ref\.?\s*doc\.?|purchasing\s*document|po\s*number)$/,
+  cur:/^(currency|crcy|obj\.?\s*crcy|object\s*currency|report\s*currency|curr\.?)$/};
+const SAP_KINDS={wbs:'Budget, actual and commitment by WBS element',actual:'Actual cost line items',commit:'Open commitment line items'};
+const SAP_MEAS=['budget','actual','commit','eac','etc'];
+/* an Excel date (serial or text: 31.10.2026, 2026-10-31, 31/10/2026) → YYYY-MM-DD, or null */
+function sapDate(v){if(v==null||v==='')return null;if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Date.UTC(1899,11,30)+Math.round(v)*86400000);return d.toISOString().slice(0,10)}
+  if(v instanceof Date&&!isNaN(v))return v.toISOString().slice(0,10);const s=String(v).trim();let m;
+  if((m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s)))return `${m[1]}-${m[2]}-${m[3]}`;if((m=/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/.exec(s)))return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;return null}
+const prevPeriod=p=>{let [y,m]=p.split('-').map(Number);m--;if(!m){m=12;y--}return `${y}-${String(m).padStart(2,'0')}`};
+/* find the header and read the rows; tpl = a saved template {name, kind, map: {key: column heading}} */
+function parseSapReport(aoa,tpl){const H=(aoa||[]).slice(0,25);let hr=-1,map={};
+  if(tpl&&tpl.map){for(let r=0;r<H.length&&hr<0;r++){const names=(H[r]||[]).map(hnorm),m={};let ok=true;for(const [k,name] of Object.entries(tpl.map)){const c=names.indexOf(hnorm(name));if(c<0){ok=false;break}m[k]=c}if(ok){hr=r;map=m}}
+    if(hr<0)return {error:`The columns of the template "${tpl.name}" were not found in the first 25 rows: ${Object.values(tpl.map).join(', ')}`}}
+  else for(let r=0;r<H.length&&hr<0;r++){const m={};(H[r]||[]).forEach((v,c)=>{const t=hnorm(v);if(!t)return;for(const [k,re] of Object.entries(SAP_H))if(m[k]==null&&re.test(t)){m[k]=c;break}});
+    if(m.wbs!=null&&['budget','actual','commit','value'].some(k=>m[k]!=null)){hr=r;map=m}}
+  if(hr<0)return {error:'No header row naming the WBS element and an amount column (Budget, Actual, Commitment or Value) was found in the first 25 rows'};
+  const names=Object.fromEntries(Object.entries(map).map(([k,c])=>[k,String(aoa[hr][c]??'').trim()]));
+  const rows=[];(aoa.slice(hr+1)).forEach((r,i)=>{if(!r||r.every(x=>x==null||String(x).trim()===''))return;const g=k=>map[k]==null?null:r[map[k]],t=k=>{const v=g(k);return v==null?null:String(v).trim()||null};
+    let w=t('wbs'),d=t('desc');if(w&&/\s/.test(w)){const m=/^(\S+)\s+(.+)$/.exec(w);if(m&&/\d/.test(m[1])){w=m[1];if(!d)d=m[2].trim()}}
+    if(w&&/^(total|grand\s*total|overall\s*result|result|\*+)$/i.test(w))w=null;const txt=r.map(x=>x==null?'':String(x)).join(' '),
+      total=!w&&(/\btotal\b|\bresult\b|^\s*\*+/i.test(txt)||(!d&&!t('doc')&&!t('ce')&&!t('date')));
+    rows.push({row:hr+i+2,wbs:w,desc:d,budget:g('budget'),actual:g('actual'),commit:g('commit'),eac:g('eac'),etc:g('etc'),value:g('value'),date:g('date'),ce:t('ce'),doc:t('doc'),cur:t('cur'),total})});
+  const kind=tpl&&tpl.kind?tpl.kind:map.value!=null&&map.budget==null&&map.actual==null?(map.commit!=null||/purchas|^po\b|order/i.test(names.doc||'')?'commit':'actual'):'wbs';
+  return {header_row:hr+1,map,names,kind,rows}}
+/* check a parsed report for a period and give the figures by WBS element (key: the SAP WBS ID in lower case).
+   o: {period 'YYYY-MM', cur, kind, cumulative (line items to the end of the period, not only the period), sep, tol (BigInt)} */
+function sapCheck(P,o){const kind=o.kind||P.kind,cum=!!o.cumulative,sep=o.sep||'-',tol=o.tol??1000000n,ps=o.period+'-01',pe=o.period+'-31',errs=[],warns=[];
+  const has={};SAP_MEAS.forEach(k=>{has[k]=kind==='wbs'&&P.map[k]!=null});if(kind==='actual')has.actual=true;if(kind==='commit')has.commit=true;
+  const out=[],tot={};let ftot=null;
+  P.rows.forEach(r=>{const e=[],x={row:r.row,wbs:r.wbs,desc:r.desc,ce:r.ce,doc:r.doc};
+    const num=(k,v)=>{if(v==null||String(v).trim()==='')return null;const d=dec(v);if(d==null)e.push(`${P.names[k]||k} "${v}" is not a number`);return d};
+    if(kind==='wbs')SAP_MEAS.forEach(k=>{if(has[k])x[k]=num(k,r[k])});else x[kind]=num('value',r.value);
+    if(r.cur&&o.cur&&normCur(r.cur)!==o.cur)e.push(`in ${r.cur}, not ${o.cur} (ProTrack does not convert)`);
+    if(kind!=='wbs'){x.date=sapDate(r.date);if(P.map.date!=null&&r.date!=null&&!x.date)e.push(`the date "${r.date}" is not a date`);
+      if(kind==='actual'&&x.date){if(x.date>pe)e.push(`posted on ${x.date}, after the period ${o.period}`);else if(!cum&&x.date<ps)e.push(`posted on ${x.date}, before the period ${o.period} (or choose "postings to the end of the period")`)}
+      x.inP=!x.date||x.date>=ps}
+    if(r.total){ftot=ftot||{};(kind==='wbs'?SAP_MEAS:[kind]).forEach(k=>{if(x[k]!=null)ftot[k]=x[k]});return}
+    if(!r.wbs)e.push('no WBS element');x.key=r.wbs?r.wbs.toLowerCase():null;x.err=e.join('; ')||null;if(x.err)errs.push(`row ${r.row}: ${x.err}`);out.push(x)});
+  const by=new Map();
+  if(kind==='wbs'){out.filter(x=>x.key).forEach(x=>{if(by.has(x.key)){x.err=(x.err?x.err+'; ':'')+'repeated in the report';errs.push(`row ${x.row}: ${x.wbs} repeated in the report`);return}by.set(x.key,{...x})});
+    /* a report with totals at each level: an element counts only what is not already in the elements below it */
+    if(o.hier!==false){const keys=[...by.keys()],par=new Map();keys.forEach(k=>{let best=null;keys.forEach(q=>{if(q!==k&&k.startsWith(q+sep)&&(!best||q.length>best.length))best=q});if(best)par.set(k,best)});
+      const kids=new Map();par.forEach((p,k)=>kids.set(p,[...(kids.get(p)||[]),k]));
+      kids.forEach((ks,p)=>{const row=by.get(p);SAP_MEAS.forEach(m=>{if(!has[m])return;const s=decSum(ks.map(k=>by.get(k)[m]));if(row[m]==null&&s===0n)return;const own=(row[m]||0n)-s;
+        row[m+'_sum']=row[m];row[m]=own;if(decAbs(own)>tol)warns.push(`${row.wbs}: ${P.names[m]||m} ${decStr(row[m+'_sum'])} is ${decStr(own)} more than its elements below; that part is counted on ${row.wbs} itself`)});row.parent_row=true})}}
+  else out.filter(x=>x.key&&!x.err).forEach(x=>{const b=by.get(x.key)||{key:x.key,wbs:x.wbs,desc:x.desc,n:0,[kind]:0n,inP:0n};b.n++;b[kind]+=x[kind]||0n;if(x.inP)b.inP+=x[kind]||0n;by.set(x.key,b)});
+  (kind==='wbs'?SAP_MEAS.filter(k=>has[k]):[kind]).forEach(k=>{tot[k]=decSum([...by.values()].map(b=>b[k]))});
+  if(ftot)Object.entries(ftot).forEach(([k,v])=>{if(decAbs(v-tot[k])>tol)errs.push(`the total row gives ${P.names[k]||k} ${decStr(v)}, the elements add up to ${decStr(tot[k])}`)});
+  if(!by.size&&!errs.length)errs.push('no WBS element with figures');
+  return {kind,has,rows:out,by,tot,ftot,errs,warns,ok:!errs.length}}
+/* the figures of a period from the frozen reports of a project. R: [{id, period, kind, cumulative, has, by: Map or object key → figures}]
+   - actual to date: the latest by-WBS report up to the period, plus the actual line items of the months after it (or a
+     line-item report of the period that runs to the end of the period);
+   - actual of the period: the line items of the period, or the difference of the by-WBS reports of the period and the month before;
+   - commitments: the by-WBS report of the period, else the commitment line items of the period (a snapshot, never carried over);
+   - SAP budget: the latest by-WBS report up to the period; forecast: the by-WBS report of the period. */
+function sapFigures(R,period){const m=x=>x.by instanceof Map?x.by:new Map(Object.entries(x.by||{})),at=(k,p)=>R.filter(r=>r.kind===k&&r.period===p).slice(-1)[0]||null,v=(x,f)=>x==null||x[f]==null?null:dec(x[f]);
+  const W=at('wbs',period),Wp=at('wbs',prevPeriod(period)),Wl=R.filter(r=>r.kind==='wbs'&&r.period<=period&&r.has&&r.has.actual).sort((a,b)=>a.period.localeCompare(b.period)).slice(-1)[0]||null,
+    Wb=R.filter(r=>r.kind==='wbs'&&r.period<=period&&r.has&&r.has.budget).sort((a,b)=>a.period.localeCompare(b.period)).slice(-1)[0]||null,AP=at('actual',period),C=at('commit',period),F=new Map(),basis={},used=new Set(),notes=[];
+  const put=(k,src,f)=>{const o=F.get(k)||{key:k,wbs:src.wbs,desc:src.desc};f(o);if(!o.desc&&src.desc)o.desc=src.desc;F.set(k,o)};
+  /* actual to date */
+  if(AP&&AP.cumulative){used.add(AP.id);m(AP).forEach((x,k)=>put(k,x,o=>{o.actual=v(x,'actual')}));basis.actual=`${SAP_KINDS.actual} to the end of ${period}`}
+  else{const from=Wl?Wl.period:'',I=R.filter(r=>r.kind==='actual'&&!r.cumulative&&r.period>from&&r.period<=period).sort((a,b)=>a.period.localeCompare(b.period));
+    if(Wl){used.add(Wl.id);m(Wl).forEach((x,k)=>put(k,x,o=>{o.actual=v(x,'actual')}))}
+    I.forEach(r=>{used.add(r.id);m(r).forEach((x,k)=>put(k,x,o=>{o.actual=(o.actual||0n)+(v(x,'actual')||0n)}))});
+    if(Wl||I.length){basis.actual=[Wl?`${SAP_KINDS.wbs} ${Wl.period}`:null,I.length?`${SAP_KINDS.actual} ${I.map(r=>r.period).join(', ')}`:null].filter(Boolean).join(' + ');
+      let p=period;const have=new Set(I.map(r=>r.period));const miss=[];while(p>(from||(I[0]||{}).period||period)){if(!have.has(p)&&p!==from)miss.push(p);p=prevPeriod(p)}
+      if(miss.length)notes.push(`No actual cost report for ${miss.reverse().join(', ')}: the actual to date may be incomplete`)}}
+  /* actual of the period */
+  if(AP){used.add(AP.id);m(AP).forEach((x,k)=>put(k,x,o=>{o.actual_p=AP.cumulative?v(x,'inP'):v(x,'actual')}));basis.actual_p=`${SAP_KINDS.actual} ${period}`}
+  else if(W&&Wp&&W.has.actual&&Wp.has.actual){used.add(W.id);used.add(Wp.id);const mw=m(W),mp=m(Wp);new Set([...mw.keys(),...mp.keys()]).forEach(k=>put(k,mw.get(k)||mp.get(k),o=>{o.actual_p=(v(mw.get(k),'actual')||0n)-(v(mp.get(k),'actual')||0n)}));
+    basis.actual_p=`difference between the by-WBS reports of ${period} and ${prevPeriod(period)}`}
+  /* commitments: a snapshot of the period */
+  if(W&&W.has.commit){used.add(W.id);m(W).forEach((x,k)=>put(k,x,o=>{o.commit=v(x,'commit')}));basis.commit=`${SAP_KINDS.wbs} ${period}`}
+  else if(C){used.add(C.id);m(C).forEach((x,k)=>put(k,x,o=>{o.commit=v(x,'commit')}));basis.commit=`${SAP_KINDS.commit} ${period}`}
+  if(Wb){used.add(Wb.id);m(Wb).forEach((x,k)=>put(k,x,o=>{o.sap_budget=v(x,'budget')}));basis.sap_budget=`${SAP_KINDS.wbs} ${Wb.period}`}
+  if(W&&(W.has.eac||W.has.etc)){used.add(W.id);m(W).forEach((x,k)=>put(k,x,o=>{if(W.has.eac)o.eac=v(x,'eac');if(W.has.etc)o.etc=v(x,'etc')}));basis.forecast=`${SAP_KINDS.wbs} ${period}`}
+  return {fig:F,basis,used:[...used],notes,any:used.size>0}}
+/* the parts of a SAP WBS ID below the project's PE number, or a reason it is not a valid ID of this project */
+function sapSegs(id,pcode,sap){const S=sap||SAP_DEF,sep=S.sep||'-';if(!id)return {err:'no SAP WBS ID'};const pre=String(pcode)+sep;if(!String(id).startsWith(pre))return {err:`does not start with the project's PE number ${pcode}`};
+  const segs=String(id).slice(pre.length).split(sep),D=S.digits&&S.digits.length?S.digits:SAP_DEF.digits;
+  for(let i=0;i<segs.length;i++){const d=D[Math.min(i,D.length-1)];if(!new RegExp(`^[0-9]{${d}}$`).test(segs[i]))return {err:`level ${i+1} should be ${d} digits ("${segs[i]}")`}}return {segs}}
+const sapParent=(id,pcode,sep)=>{const s=String(id),i=s.lastIndexOf(sep);if(i<=String(pcode).length)return null;return s.slice(0,i)};
+const pctOf=(a,b)=>a==null||b==null||b===0n?null:decStr((a*100n*SC+(b>0n?b:-b)/2n)/b);
+const cmpSap=(a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true});
+/* the WBS cost summary of a project. o: {pcode, sep, versions [{id, kind, rev_no, status, approved_at, lines}], fig (sapFigures), names {key: description}, tol} */
+const CS_COLS=[['sap','SAP WBS ID'],['code','WBS code'],['desc','Description'],['level','Level'],['uf','User field'],['tender','Tender estimate'],['rev0','Rev 0 (original budget)'],['revs','Approved revisions'],
+  ['current','Current approved budget'],['pending','Pending budget changes'],['sap_budget','SAP budget'],['bud_diff','ProTrack less SAP budget'],['actual_p','Actual this period'],['actual','Actual to date'],
+  ['commit','Commitments'],['act_com','Actual + commitments'],['remaining','Remaining budget'],['pct_spent','% spent'],['pct_comm','% committed'],['etc','Estimate to complete'],['eac','Estimate at completion'],
+  ['vac','Variance at completion'],['vac_pct','VAC %'],['status','Status']];
+const CS_DEF={tender:'The latest approved Tender estimate',rev0:'The latest approved Rev 0',revs:'Current approved budget less Rev 0',current:'The latest approved version other than the Tender estimate (Rev 0, Revised Rev 0 or Approved revision)',
+  pending:'A version submitted or under review, less the current approved budget',sap_budget:'The budget in the SAP report of the period',bud_diff:'Current approved budget less the SAP budget',
+  actual_p:'Actual cost posted in the period',actual:'Actual cost to the end of the period',commit:'Open commitments at the end of the period',act_com:'Actual to date + commitments',remaining:'Current approved budget less actual and commitments',
+  pct_spent:'Actual to date / current approved budget',pct_comm:'Actual + commitments / current approved budget',etc:'From the SAP report when it has one; otherwise commitments + what remains of the budget (never less than zero)',
+  eac:'Actual to date + estimate to complete',vac:'Current approved budget less the estimate at completion',vac_pct:'Variance at completion / current approved budget',status:'Over budget, At risk (90% committed), SAP budget differs, Not in the SAP report, Not in the approved budget'};
+const APPROVED_ST=['Approved in ProTrackAI','Ready for SAP Loading','SAP Loading Confirmed'];
+function costSummary(o){const sep=o.sep||'-',tol=o.tol??1000000n,V=(o.versions||[]),ap=V.filter(v=>APPROVED_ST.includes(v.status)).sort((a,b)=>String(a.approved_at).localeCompare(String(b.approved_at)));
+  const last=f=>ap.filter(f).slice(-1)[0]||null,tender=last(v=>v.kind==='Tender estimate'),rev0=last(v=>v.kind==='Rev 0'),cur=last(v=>v.kind!=='Tender estimate'),
+    pend=V.filter(v=>['Submitted','Under Review'].includes(v.status)&&v.kind!=='Tender estimate').sort((a,b)=>String(a.submitted_at).localeCompare(String(b.submitted_at))).slice(-1)[0]||null;
+  const R=new Map(),row=(k,l)=>{let r=R.get(k);if(!r){r={key:k,sap:l.sap_wbs_id||null,code:l.wbs_code||null,desc:l.descr||null,uf:l.user_field||null,own:{}};R.set(k,r)}if(!r.code&&l.wbs_code)r.code=l.wbs_code;if(!r.desc&&l.descr)r.desc=l.descr;if(!r.uf&&l.user_field)r.uf=l.user_field;return r};
+  const add=(v,col)=>{if(!v)return;(v.lines||[]).forEach(l=>{const k=String(l.sap_wbs_id||l.wbs_code||'').toLowerCase();if(!k)return;const r=row(k,l);r.own[col]=(r.own[col]||0n)+(dec(l.amount)||0n)})};
+  add(tender,'tender');add(rev0,'rev0');add(cur,'current');add(pend,'pend_v');
+  const F=o.fig||{fig:new Map(),basis:{},any:false};F.fig.forEach((f,k)=>{const r=R.get(k)||row(k,{sap_wbs_id:f.wbs,descr:f.desc});if(!r.sap)r.sap=f.wbs;['actual','actual_p','commit','sap_budget','eac','etc'].forEach(c=>{if(f[c]!=null)r.own[c]=(r.own[c]||0n)+f[c]})});
+  /* the levels above: every SAP WBS ID of the project has its parents, which add up what is below them */
+  [...R.values()].forEach(r=>{if(!r.sap)return;let p=sapParent(r.sap,o.pcode,sep);while(p&&String(p).startsWith(String(o.pcode)+sep)){const k=p.toLowerCase();if(!R.has(k))R.set(k,{key:k,sap:p,code:null,desc:(o.names||{})[k]||null,uf:null,own:{}});p=sapParent(p,o.pcode,sep)}});
+  const pk=String(o.pcode||'').toLowerCase();if(R.has(pk)&&Object.values(R.get(pk).own).every(x=>x==null||x===0n))R.delete(pk);
+  const rows=[...R.values()].sort((a,b)=>cmpSap(a.sap||a.code||a.key,b.sap||b.code||b.key)),M=['tender','rev0','current','pend_v','actual','actual_p','commit','sap_budget','eac','etc'];
+  rows.forEach(r=>{r.sum={};M.forEach(c=>{r.sum[c]=r.own[c]});r.level=r.sap&&String(r.sap).startsWith(String(o.pcode)+sep)?String(r.sap).slice(String(o.pcode).length+sep.length).split(sep).length:null;
+    if(!r.desc)r.desc=(o.names||{})[r.key]||null});
+  rows.forEach(r=>{if(!r.sap)return;rows.forEach(c=>{if(c!==r&&c.sap&&String(c.sap).startsWith(r.sap+sep))M.forEach(m=>{if(c.own[m]!=null)r.sum[m]=(r.sum[m]||0n)+c.own[m]})});r.kids=rows.some(c=>c!==r&&c.sap&&String(c.sap).startsWith(r.sap+sep))});
+  const cols=(s,anySap)=>{const z=x=>x==null?(anySap?0n:null):x,c={tender:s.tender??null,rev0:s.rev0??null,current:s.current??null};c.revs=c.current!=null&&c.rev0!=null?c.current-c.rev0:null;
+    c.pending=s.pend_v!=null||(pend&&c.current!=null)?(s.pend_v||0n)-(c.current||0n):null;if(!pend)c.pending=null;
+    c.sap_budget=s.sap_budget??null;c.bud_diff=c.sap_budget!=null||(F.basis.sap_budget&&c.current!=null)?(c.current||0n)-(c.sap_budget||0n):null;
+    c.actual_p=s.actual_p??(F.basis.actual_p&&anySap?0n:null);c.actual=F.basis.actual?z(s.actual):null;c.commit=F.basis.commit?z(s.commit):null;
+    c.act_com=c.actual!=null||c.commit!=null?(c.actual||0n)+(c.commit||0n):null;c.remaining=c.current!=null&&c.act_com!=null?c.current-c.act_com:c.current;
+    c.pct_spent=pctOf(c.actual,c.current);c.pct_comm=pctOf(c.act_com,c.current);let basis;
+    if(s.eac!=null){c.eac=s.eac;c.etc=c.actual!=null?s.eac-c.actual:null;basis='SAP forecast'}else if(s.etc!=null){c.etc=s.etc;c.eac=(c.actual||0n)+s.etc;basis='SAP estimate to complete'}
+    else if(c.current!=null||c.act_com!=null){const rem=(c.current||0n)-(c.act_com||0n);c.etc=(c.commit||0n)+(rem>0n?rem:0n);c.eac=(c.actual||0n)+c.etc;basis='Budget-based'}else{c.etc=null;c.eac=null}
+    c.vac=c.current!=null&&c.eac!=null?c.current-c.eac:null;c.vac_pct=pctOf(c.vac,c.current);
+    const st=[];if(c.current==null&&(c.actual||c.commit))st.push('Not in the approved budget');if(c.current!=null&&F.any&&s.actual==null&&s.commit==null&&s.sap_budget==null)st.push('Not in the SAP report');
+    if(c.vac!=null&&c.vac<-tol)st.push('Over budget');else if(c.current&&c.act_com!=null&&c.act_com*10n>=c.current*9n)st.push('At risk');if(c.bud_diff!=null&&decAbs(c.bud_diff)>tol&&F.basis.sap_budget)st.push('SAP budget differs');
+    c.status=st;c.basis=basis||null;return c};
+  /* the estimate at completion of a level is the sum of the estimates of its elements (an overrun is not hidden by an underrun elsewhere) */
+  const fin=(c,G)=>{const E=G.map(x=>x.eac).filter(x=>x!=null),T2=G.map(x=>x.etc).filter(x=>x!=null);if(!E.length)return c;c.eac=decSum(E);c.etc=T2.length?decSum(T2):null;
+    c.vac=c.current!=null?c.current-c.eac:null;c.vac_pct=pctOf(c.vac,c.current);c.status=c.status.filter(x=>x!=='Over budget'&&x!=='At risk');
+    if(c.vac!=null&&c.vac<-tol)c.status.push('Over budget');else if(c.current&&c.act_com!=null&&c.act_com*10n>=c.current*9n)c.status.push('At risk');if(G.some(x=>x.basis&&x.basis!=='Budget-based'))c.basis='Sum of the elements';return c};
+  rows.forEach(r=>{r.oc=Object.values(r.own).some(x=>x!=null)?cols(r.own,F.any):null});
+  rows.forEach(r=>{r.c=cols(r.sum,F.any);if(r.kids)fin(r.c,rows.filter(c=>c.oc&&(c===r||(c.sap&&String(c.sap).startsWith(r.sap+sep)))).map(c=>c.oc))});
+  const T={};M.forEach(m=>{const L=rows.map(r=>r.own[m]).filter(x=>x!=null);T[m]=L.length?decSum(L):null});
+  return {notes:F.notes||[],rows,total:fin(cols(T,F.any),rows.filter(r=>r.oc).map(r=>r.oc)),tender,rev0,current:cur,pending:pend,basis:F.basis,used:F.used||[]}}
+/* what goes to the SAP team: the version's amounts by SAP WBS ID, and the change from the version last confirmed as loaded */
+function sapContent(lines,prevLines,pcode,sap){const agg=L=>{const m=new Map();(L||[]).forEach(l=>{const k=String(l.sap_wbs_id||'').trim();const x=m.get(k)||{sap:k,desc:l.descr||null,uf:l.user_field||null,code:l.wbs_code||null,amount:0n,n:[]};
+    x.amount+=dec(l.amount)||0n;x.n.push(l.n);if(!x.desc)x.desc=l.descr;m.set(k,x)});return m};
+  const A=agg(lines),P=prevLines?agg(prevLines):null,excluded=[];
+  A.forEach(x=>{const s=sapSegs(x.sap,pcode,sap);if(s.err)excluded.push({sap:x.sap||'(none)',lines:x.n,reason:s.err})});
+  const items=[...A.values()].sort((a,b)=>cmpSap(a.sap,b.sap)).map(x=>({sap:x.sap,desc:x.desc,uf:x.uf,code:x.code,amount:decStr(x.amount)}));
+  const changes=P?[...new Set([...A.keys(),...P.keys()])].sort(cmpSap).map(k=>{const a=(P.get(k)||{}).amount||0n,b=(A.get(k)||{}).amount||0n;return {sap:k,desc:(A.get(k)||P.get(k)).desc,prev:decStr(a),now:decStr(b),diff:decStr(b-a)}}).filter(x=>x.diff!=='0'):null;
+  return {items,changes,excluded,total:decStr(decSum([...A.values()].map(x=>x.amount))),prev_total:P?decStr(decSum([...P.values()].map(x=>x.amount))):null}}
+/* the six sheets of the SAP loading workbook. o: {content, project {code, name}, version, prev (the version last loaded) , gen {by, at, seq, check}, hist, names, sep} */
+const SAP_TPL='ProTrack SAP loading template 1 (to be confirmed by the SAP team)';
+function sapWorkbook(o){const C=o.content,v=o.version,p=o.project,cur=v.currency,sep=o.sep||'-',fy=String(v.effective_date||o.gen.at||'').slice(0,4),N=x=>x==null?null:Number(x);
+  const all=new Map();C.items.forEach(x=>{all.set(x.sap,{...x,has:true});let q=sapParent(x.sap,p.code,sep);while(q){if(!all.has(q))all.set(q,{sap:q,desc:(o.names||{})[q.toLowerCase()]||null,has:false});q=sapParent(q,p.code,sep)}});
+  const el=[...all.values()].sort((a,b)=>cmpSap(a.sap,b.sap)),lvl=s=>String(s).slice(String(p.code).length+sep.length).split(sep).length;
+  const supp=C.changes?decSum(C.changes.map(x=>dec(x.diff)).filter(x=>x>0n)):0n,ret=C.changes?decSum(C.changes.map(x=>dec(x.diff)).filter(x=>x<0n)):0n;
+  const by1=new Map();C.items.forEach(x=>{const k=String(x.sap).split(sep).slice(0,String(p.code).split(sep).length+1).join(sep);const b=by1.get(k)||{n:0,t:0n};b.n++;b.t+=dec(x.amount);by1.set(k,b)});
+  const ok=C.prev_total==null||dec(C.prev_total)+supp+ret===dec(C.total);
+  const S=[{name:'Header',num:[],aoa:[['ProTrack SAP loading workbook'],['Project',`${p.code} ${p.name||''}`.trim()],['Budget version',`${v.kind} ${v.rev_no}`],['Version id',v.id],['Currency',cur],['Total',N(C.total)],['WBS elements with an amount',C.items.length],
+      ['Approved in ProTrackAI',`${v.approved_by_name||''} ${String(v.approved_at||'').slice(0,10)}`.trim()],['Loading',C.changes?`Changes from ${o.prev.kind} ${o.prev.rev_no} (SAP reference ${o.prev.sap_ref||'—'}): Supplements & Returns`:'First loading: Original Budget'],
+      ['Generated',`${o.gen.by} ${String(o.gen.at).slice(0,16).replace('T',' ')}, workbook ${o.gen.seq}`],['Content check',o.gen.check||''],['Template',SAP_TPL],[],
+      ['This workbook was prepared in ProTrackAI for the SAP team. Nothing has been sent to SAP. The budget counts as loaded only when an authorized SAP user records SAP Loading Confirmed in ProTrackAI with the SAP reference.']]},
+    {name:'WBS Elements',num:[],aoa:[['SAP WBS ID','Level','Parent SAP WBS ID','Description','User field','WBS code','Amount in this version']].concat(el.map(x=>[x.sap,lvl(x.sap),sapParent(x.sap,p.code,sep)||p.code,x.desc||'',x.uf||'',x.code||'',x.has?'Yes':'No (level above)']))},
+    {name:'Original Budget',num:[2],aoa:C.changes?[['Not used: the original budget was loaded with '+o.prev.kind+' '+o.prev.rev_no+' (SAP reference '+(o.prev.sap_ref||'—')+'). The changes are in Supplements & Returns.']]
+      :[['SAP WBS ID','Description','Amount','Currency','Fiscal year']].concat(C.items.map(x=>[x.sap,x.desc||'',N(x.amount),cur,fy]))},
+    {name:'Supplements & Returns',num:[2,3,4],aoa:C.changes?[['SAP WBS ID','Description','Previously loaded','Now approved','Difference','Supplement or return','Currency','Fiscal year']].concat(C.changes.map(x=>[x.sap,x.desc||'',N(x.prev),N(x.now),N(x.diff),dec(x.diff)>0n?'Supplement':'Return',cur,fy]))
+      :[['Not used: this is the first loading of the project, in Original Budget.']]},
+    {name:'Control Totals',num:[2],aoa:[['Element (level 1)','Elements','Amount']].concat([...by1].sort((a,b)=>cmpSap(a[0],b[0])).map(([k,b])=>[k,b.n,N(decStr(b.t))]),[[],['Total of this version','',N(C.total)],['Previously loaded','',N(C.prev_total)],['Supplements','',N(decStr(supp))],['Returns','',N(decStr(ret))],
+      ['Check: previously loaded + supplements + returns = total',' ',C.prev_total==null?'Not applicable (first loading)':ok?'OK':'Does not add up']])},
+    {name:'Approvals & Checks',num:[],aoa:[['When','Action','Status','By','Reason']].concat((o.hist||[]).map(h=>[String(h.at_time||'').slice(0,16).replace('T',' '),h.action,h.status||'',h.by_name||'',h.reason||'']),[[],['Checks'],
+      ['Every amount has a valid SAP WBS ID of the project',C.excluded.length?`No: ${C.excluded.length} excluded`:'Yes'],['Status of the version',v.status],['Currency',cur+' (no conversion)'],['Only eligible records',C.excluded.length?C.excluded.map(x=>`${x.sap}: ${x.reason}`).join('; '):'Yes, every line of the version']])}];
+  return {sheets:S,ok:!C.excluded.length&&ok}}
+
+return {SAP_H,SAP_KINDS,SAP_MEAS,sapDate,prevPeriod,parseSapReport,sapCheck,sapFigures,sapSegs,sapParent,pctOf,cmpSap,CS_COLS,CS_DEF,costSummary,sapContent,SAP_TPL,sapWorkbook,ENGINE,ROLES,ROLE_N,COUNTING_ROLES,BLOCKING,DUP_N,proposeRoles,findDups,dupTargets,dupEffect,tolOf,allocate,parseBudget,SAP_DEF,seedDelta,seedWbs,seedRules,SEED_CFG,MAX_BYTES,checkFile,readBook,dec,decStr,decSum,decMul,decAbs,money,curDp,normCur,normUnit,norm,lexicon,attrsOf,toks,hasPhrase,extractSheet,extractBook,findHeader,fingerprintText,
   COST_TYPES,COMBINED_RE,context,classify,similar,validateAi,wbsUsable,HUMAN,ENGINE_ST,ALL_ST,bulkEligible,FORCE_RE,UNIT_DEF}})();
 /* BCM-ENGINE-END */
 
@@ -13208,7 +13385,7 @@ async function cloudLoadBcm(){
   try{B.master=await selAll('bcm_master','*',null,['id']);B.batches=await selAll('bcm_batches','*',null,['created_at']);B.files=await selAll('bcm_files','*',null,['created_at']);
     const {data}=await SB.from('bcm_audit').select('*').order('id',{ascending:false}).limit(2000);B.audit=data||[];DB.bcmMissing=null}
   catch(e){DB.bcmMissing=srvMsg(e)}
-  B.loaded={};B.lines=[];B.cls={};B.chist=[];await cloudLoadBcm3()}
+  B.loaded={};B.lines=[];B.cls={};B.chist=[];await cloudLoadBcm3();await cloudLoadBcm4()}
 async function bcmLoadBatch(bid,force){const B=bcmDB();if(!CLOUD_ME||!bid||(B.loaded[bid]&&!force))return;
   const L=[];for(let off=0;;off+=2000){const r=await rpc('bcm_lines_read',{bid,off,cur_only:true});L.push(...(r||[]));if(!r||r.length<2000)break}
   const C=await selAll('bcm_class','*',q=>q.eq('batch_id',bid),['line_id']);
@@ -13417,9 +13594,10 @@ function renderBcm(){
     ${U.pid?`<div class="boqctx"><label class="field">Project<select data-bcmpid>${bcmProjOpts(U.pid)}</select></label>${bat?`<label class="field">Tender batch<select data-bcmbid>${B.length?B.map(b=>`<option value="${esc(b.id)}" ${b.id===U.bid?'selected':''}>${esc(bcmBatchLabel(b))}</option>`).join(''):'<option value="">No batch yet</option>'}</select></label>`:''}
       <span class="small muted">Budget versions are approved in ProTrackAI only. Nothing here is sent to SAP.</span></div>`:''}</section>`;
   let warn='';if(CLOUD_ME&&!DB.bcmSrv)warn=`<div class="warn-box" style="margin-bottom:12px"><b>Budget &amp; Cost Management needs the v39 database update.</b> Run schema-update-v39.sql (STAGE-33-SETUP). Until then nothing here can be saved on the server.${DB.bcmMissing?` <span class="small">(${esc(DB.bcmMissing)})</span>`:''}</div>`;
+  if(CLOUD_ME&&DB.bcmSrv&&DB.bcmV41&&!DB.bcmV42&&['sum','sap'].includes(sec))warn+=`<div class="warn-box" style="margin-bottom:12px"><b>Stage 4 needs the v42 database update.</b> Run schema-update-v42.sql (STAGE-36-SETUP). Until then SAP reports cannot be imported and no SAP loading workbook can be made.</div>`;
   if(CLOUD_ME&&DB.bcmSrv&&!DB.bcmV41&&['dup','recon','ver','appr'].includes(sec))warn+=`<div class="warn-box" style="margin-bottom:12px"><b>Stage 3 needs the v41 database update.</b> Run schema-update-v41.sql (STAGE-35-SETUP). Until then duplicate decisions, splits, reconciliation notes and budget versions cannot be saved.</div>`;
   if(!U.pid){$('#view').innerHTML=`${crumb()}${head}${warn}<section class="panel"><p class="muted">No project in your access. Budget &amp; Cost Management works on the projects of the ProTrackAI project master that you can see.</p></section>`;return}
-  const body={ov:bcmOvHTML,intake:bcmIntakeHTML,auto:bcmAutoHTML,review:bcmReviewHTML,dup:bcmDupHTML,recon:bcmReconHTML,ver:bcmVerHTML,appr:bcmApprHTML,master:bcmMasterHTML,learn:bcmLearnHTML,audit:bcmAuditHTML}[sec]||bcmOvHTML;
+  const body={ov:bcmOvHTML,intake:bcmIntakeHTML,auto:bcmAutoHTML,review:bcmReviewHTML,dup:bcmDupHTML,recon:bcmReconHTML,ver:bcmVerHTML,appr:bcmApprHTML,sum:bcmSumHTML,sap:bcmSapHTML,master:bcmMasterHTML,learn:bcmLearnHTML,audit:bcmAuditHTML}[sec]||bcmOvHTML;
   let html;try{html=body(U)}catch(e){console.error(e);html=`<section class="panel"><p class="err">This section could not be shown: ${esc(e.message)}</p></section>`}
   $('#view').innerHTML=`${crumb()}${head}${warn}${html}`;bcmPaintJobs()}
 
@@ -13447,7 +13625,7 @@ function bcmOvHTML(U){const B=bcmBatchesOf(U.pid).filter(b=>b.status==='Open');i
     ${bcmKpi('Files needing attention',fmt(att),'header mapping, failed or unfinished reading','intake')}
     ${bcmKpi('Duplicate candidates',fmt(bcmS3().dups.filter(d=>B.some(b=>b.id===d.batch_id)&&d.status==='Open'&&d.blocking).length),'to decide before a budget version','dup')}
     ${bcmKpi('Reconciliation variances',fmt(B.filter(b=>bcmLinesOf(b.id).length).reduce((n,b)=>n+bcmTotalsLocal(b.id).files.filter(x=>x.status==='Variance').length,0)),'control totals not matched or explained','recon')}
-    ${bcmKpi('Pending budget approvals',fmt(bcmVersOf(U.pid).filter(v=>['Submitted','Under Review'].includes(v.status)).length),'submitted or under review','ver')}${bcmKpiPlan('Available SAP exports',4)}</div>
+    ${bcmKpi('Pending budget approvals',fmt(bcmVersOf(U.pid).filter(v=>['Submitted','Under Review'].includes(v.status)).length),'submitted or under review','ver')}${bcmKpi('Ready for SAP loading',fmt(bcmVersOf(U.pid).filter(v=>v.status==='Ready for SAP Loading').length),'workbooks waiting for the SAP reference','sap')}</div>
     <p class="small muted" style="margin:8px 0 0">Counted from the stored lines of the open batches of this project, by currency, exact. Excluded lines: ${fmt(S.excl.length)} (${bcmSumTxt(S.excl)}). These are the lines as read: the lines of a backup sheet and the summary line they support are both in them. The accepted total, with each valid cost counted once, is in the Reconciliation Centre.${CLOUD?'':' On this demo page the sample batches are labelled sample.'}</p></section>
   <section class="panel"><div class="card-head"><h2>Tender batches</h2></div>${B.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Tender</th><th>Currency</th><th>Project type</th><th class="n">Files</th><th class="n">Cost lines</th><th>Source control total</th><th>Classified</th><th>Still to resolve</th><th>Progress</th></tr></thead><tbody>
     ${B.map(b=>{const s=bcmStats(bcmLinesOf(b.id)),F=bcmFilesOf(b.id).filter(f=>f.status!=='Withdrawn');const ct=F.map(f=>f.control&&f.control.amount!=null?bcmMoney(f.control.amount,b.currency):null).filter(Boolean);
@@ -14197,7 +14375,7 @@ function bcmVerHTML(U){if(!bcmS3Ready())return '<section class="panel"><p class=
       ${bcmKpi('Current approved budget',CA[0]?esc(bcmMoney(CA[0].total,CA[0].currency)):'—',CA[0]?`${esc(CA[0].kind)} ${CA[0].rev_no}, approved ${esc(tStamp(CA[0].approved_at))}`:'none approved yet')}
       ${bcmKpi('Previous approved budget',CA[1]?esc(bcmMoney(CA[1].total,CA[1].currency)):'—',CA[1]?`${esc(CA[1].kind)} ${CA[1].rev_no}`:'')}${bcmKpi('Tender estimate',tender?esc(bcmMoney(tender.total,tender.currency)):'—',tender?'approved':'')}
       ${bcmKpi('Waiting for review or approval',fmt(V.filter(v=>['Submitted','Under Review'].includes(v.status)).length),'submitted or under review')}</div>
-    <p class="small muted">Draft → Submitted → Under Review (a reviewer, not the preparer) → Approved in ProTrackAI (a budget approver, not the preparer or submitter). Lines never change after the draft; a correction is a new version. <b>Approved in ProTrackAI is not loaded in SAP</b>: the SAP loading workbook and its confirmation come with stage 4.</p></section>
+    <p class="small muted">Draft → Submitted → Under Review (a reviewer, not the preparer) → Approved in ProTrackAI (a budget approver, not the preparer or submitter). Lines never change after the draft; a correction is a new version. <b>Approved in ProTrackAI is not loaded in SAP</b>: a SAP authorized user prepares the SAP loading workbook in SAP Export &amp; Import, and records SAP Loading Confirmed with the SAP reference.</p></section>
   <section class="panel"><div class="scroll"><table class="tbl"><thead><tr><th>Version</th><th>Status</th><th>Source</th><th class="n">Lines</th><th class="n">Total</th><th>Prepared</th><th>Reviewed</th><th>Approved</th></tr></thead><tbody>
     ${V.map(v=>`<tr class="click" data-bcmver="${esc(v.id)}" tabindex="0"><td><b>${esc(v.kind)} ${v.rev_no}</b>${v.title?`<span class="t2">${esc(v.title)}</span>`:''}${CA[0]&&CA[0].id===v.id?' <span class="sev ok">current</span>':''}</td><td><span class="sev ${BCM_VST_SEV[v.status]||'Low'}">${esc(v.status)}</span></td>
       <td class="small">${v.source==='batch'?'Tender batch '+esc((bcmBatch(v.batch_id)?bcmBatchLabel(bcmBatch(v.batch_id)):v.batch_id)||''):'Imported '+esc((v.file||{}).name||'')}</td><td class="n">${v.n}</td><td class="n">${esc(bcmMoney(v.total,v.currency))}</td>
@@ -14239,7 +14417,7 @@ async function bcmOpenVer(id){const v=bcmS3().versions.find(x=>x.id===id);if(!v)
   if(['Draft','Submitted'].includes(v.status)&&([v.prepared_by,v.submitted_by].includes(u)||bcmCan('bcm.budget.approve',pid)))acts.push(btn('cancel','Cancel (reason)'));
   $('#sheet').innerHTML=`<div class="sheet-head"><h2>${esc(v.kind)} ${v.rev_no}${v.title?' · '+esc(v.title):''}</h2><span class="sev ${BCM_VST_SEV[v.status]||'Low'}">${esc(v.status)}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
     <p class="small">${esc(pcode(projById(pid)))} · ${esc(v.currency)} · ${v.source==='batch'?'from tender batch '+esc(v.batch_id):'imported from '+esc((v.file||{}).name||'a workbook')} · effective ${esc(v.effective_date||'—')} · ${esc(v.id)}<br>Justification: ${esc(v.justification||'')}${v.close_reason?`<br>${esc(v.status)}: ${esc(v.close_reason)}`:''}</p>
-    ${v.status==='Approved in ProTrackAI'?'<p class="small muted">Approved in ProTrackAI. It is not loaded in SAP: the SAP loading workbook and the confirmation with the SAP reference come with stage 4.</p>':''}
+    ${v.status==='Approved in ProTrackAI'?'<p class="small muted">Approved in ProTrackAI. It is not loaded in SAP until a SAP authorized user prepares its loading workbook (SAP Export &amp; Import) and records the loading with the SAP reference.</p>':v.status==='Ready for SAP Loading'?'<p class="small muted">Ready for SAP Loading: the workbook is with the SAP team. It counts as loaded only when the SAP reference is recorded.</p>':v.status==='SAP Loading Confirmed'?`<p class="small">Loaded in SAP: reference <b>${esc(v.sap_ref||'')}</b>.</p>`:''}
     ${acts.length?`<div class="actions" style="flex-wrap:wrap"><input id="bcmVR" placeholder="Reason (to reject or cancel)" maxlength="300" style="min-width:240px">${acts.join('')}</div>`:''}<div class="actions"><button class="btn sm" type="button" data-bcmvexp="${esc(id)}">Export to Excel</button></div>
     <h3>Lines (${L.length}) · ${M(v.total)}</h3><div class="scroll" style="max-height:340px"><table class="tbl small"><thead><tr><th>SAP WBS ID</th><th>WBS</th><th>Description</th><th>User field</th><th>Cost type</th><th class="n">Amount</th></tr></thead><tbody>
       ${L.map(l=>`<tr><td>${esc(l.sap_wbs_id||'—')}</td><td>${esc(l.wbs_code||'')}</td><td>${esc(l.descr||'')}</td><td>${esc(l.user_field||'')}</td><td>${esc(l.cost_type||'')}</td><td class="n">${M(l.amount)}</td></tr>`).join('')}</tbody></table></div>
@@ -14250,10 +14428,10 @@ async function bcmOpenVer(id){const v=bcmS3().versions.find(x=>x.id===id);if(!v)
 async function bcmVerExport(id){await loadLib(LIBS.xlsx);const v=bcmS3().versions.find(x=>x.id===id);if(!v)return;if(CLOUD_ME)await bcmLoadVLines(id);const L=bcmS3().vlines[id]||[],wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['SAP WBS ID','WBS code','Description','User field','Cost type','Amount ('+v.currency+')']].concat(L.map(l=>[l.sap_wbs_id||'',l.wbs_code||'',l.descr||'',l.user_field||'',l.cost_type||'',Number(l.amount)]))),'Budget version');
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ProTrack budget version'],['Project',pcode(projById(v.project_id))],['Version',v.kind+' '+v.rev_no],['Status',v.status],['Total',v.total],['Prepared',v.prepared_by_name+' '+tStamp(v.prepared_at)],['Approved',v.approved_by_name?v.approved_by_name+' '+tStamp(v.approved_at):''],
-    ['This is a ProTrackAI budget version. It is not loaded in SAP; the SAP loading workbook comes with stage 4.']]),'About');XLSX.writeFile(wb,`ProTrack budget ${pcode(projById(v.project_id))} ${v.kind} ${v.rev_no}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
+    [v.status==='SAP Loading Confirmed'?'This budget version was loaded in SAP with reference '+(v.sap_ref||'')+'.':'This is a ProTrackAI budget version. It is not loaded in SAP until SAP Loading Confirmed is recorded with the SAP reference.']]),'About');XLSX.writeFile(wb,`ProTrack budget ${pcode(projById(v.project_id))} ${v.kind} ${v.rev_no}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
 
 /* ---------- Approval History ---------- */
-function bcmApprHTML(U){const A=bcmDB().audit.filter(a=>(!a.project_id||bcmSees(a.project_id))&&/approved|rejected|budget version|duplicate decided|reopened|sheet roles confirmed|variance explained|split/i.test(a.action));
+function bcmApprHTML(U){const A=bcmDB().audit.filter(a=>(!a.project_id||bcmSees(a.project_id))&&/approved|rejected|budget version|duplicate decided|reopened|sheet roles confirmed|variance explained|split|sap loading/i.test(a.action));
   return `<section class="panel"><div class="card-head"><h2>Approval history</h2><span class="small muted">${A.length} decisions · master data, splits, duplicates, explanations and budget versions</span></div>
     <div class="scroll"><table class="tbl small"><thead><tr><th>When</th><th>Who</th><th>Decision</th><th>Record</th><th>Project</th><th>Detail</th></tr></thead><tbody>
     ${A.slice(0,400).map(a=>`<tr><td>${esc(tStamp(a.at_time))}</td><td>${esc(a.by_name||'')}</td><td>${esc(a.action)}</td><td>${esc(a.ent||'')} ${esc(a.ref||'')}</td><td>${esc((projById(a.project_id)||{}).short||a.project_id||'')}</td><td class="small">${esc(Object.entries(a.detail||{}).filter(([,v])=>v!=null&&v!=='').map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join(' · ').slice(0,240))}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">No decision yet.</td></tr>'}</tbody></table></div></section>`}
@@ -14290,6 +14468,227 @@ document.addEventListener('change',async e=>{const t=e.target,U=state.bcmUi;if(!
   if(t.matches('[data-bcmvb]')){U.vbid=t.value;render();return}if(t.matches('[data-bcmbudcol]')){U.bud.col=+t.value;render();return}
   if(t.matches('#bcmBudFile')){const f=t.files[0];t.value='';if(!f)return;try{await loadLib(LIBS.xlsx);const bytes=new Uint8Array(await f.arrayBuffer()),chk=BCME.checkFile(f.name,bytes);if(!chk.ok){toast(chk.error);return}const rb=BCME.readBook(XLSX,bytes);if(rb.error){toast(rb.error);return}
     const ws=rb.wb.Sheets[rb.wb.SheetNames[0]],P=BCME.parseBudget(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null}));U.bud={...P,name:f.name,sha:await sha256Hex(bytes)};if(!P.error&&!P.amountCols.length)U.bud.error='No column with amounts was found next to the SAP WBS IDs';render()}catch(err){toast(srvMsg(err))}}});
+/* =====================================================================================
+   v3.38: Budget & Cost Management, stage 4 (reporting and SAP preparation)
+   - SAP reports: the monthly SAP ECC reports as Excel (budget, actual and commitment by WBS element; actual cost or open
+     commitment line items), read with column templates, checked, then frozen on the server.
+   - Cost Summary: the 24 columns by SAP WBS element, from the approved budget versions and the frozen SAP reports.
+   - SAP loading workbook (6 sheets) of an approved version; "SAP Loading Confirmed" recorded only by a SAP authorized
+     user (bcm.sap) with the SAP reference. Nothing is sent to SAP. */
+const bcmS4=()=>{const B=bcmS3();['sapTpls','sapReps','sapExps'].forEach(k=>{B[k]=B[k]||[]});B.sapLines=B.sapLines||{};return B};
+const bcmS4Ready=()=>!CLOUD_ME||DB.bcmV42;
+async function cloudLoadBcm4(){if(!CLOUD_ME||!DB.bcmSrv)return;const B=bcmS4();
+  try{const f=await rpc('bcm_features',{});DB.bcmV42=+((f&&f.version)||0)>=42}catch(e){DB.bcmV42=false}
+  if(!DB.bcmV42)return;
+  try{[B.sapTpls,B.sapReps,B.sapExps]=await Promise.all([selAll('bcm_sap_tpls','*',null,['name']),selAll('bcm_sap_reports','*',null,['imported_at']),selAll('bcm_sap_exports','*',null,['generated_at'])]);B.sapLines={}}
+  catch(e){toast('Could not read the SAP reports: '+srvMsg(e))}}
+async function bcmCall4(fn,p){if(CLOUD_ME){if(!DB.bcmV42)throw new Error('Stage 4 needs the v42 database update (STAGE-36-SETUP)');const r=await rpc('bcm_'+fn,{p});await cloudLoadBcm3();await cloudLoadBcm4();
+    try{const {data}=await SB.from('bcm_audit').select('*').order('id',{ascending:false}).limit(2000);bcmDB().audit=data||bcmDB().audit}catch(e){}return r}
+  const r=BCML4[fn](p);save();return r}
+const bcmPcode=pid=>pcode(projById(pid))||pid;
+const bcmRepsOf=pid=>bcmS4().sapReps.filter(r=>r.project_id===pid).sort((a,b)=>String(b.period).localeCompare(String(a.period))||String(b.imported_at).localeCompare(String(a.imported_at)));
+const bcmMoney0=(a,cur)=>a==null?'—':esc(BCME.money(typeof a==='bigint'?BCME.decStr(a):a,cur||'SAR'));
+const bcmCurOfP=pid=>((bcmVersOf(pid).find(v=>BCM_APPROVED_V.includes(v.status))||bcmVersOf(pid)[0]||bcmBatchesOf(pid)[0]||{}).currency)||'SAR';
+
+/* ---------- the same rules in this browser (demo page) ---------- */
+const BCML4={
+  sap_tpl(p){const B=bcmS4(),u=me();if(!bcmCan('bcm.sap.import'))bcmFail('You cannot keep SAP report templates (the bcm.sap.import right)');
+    if(p.action==='drop'){B.sapTpls=B.sapTpls.filter(t=>t.id!==p.id);bcmLog('SAP report template removed','sap_tpl',p.id,null,{});return {ok:true}}
+    const nm=String(p.name||'').trim();if(nm.length<3||nm.length>80)bcmFail('Give the template a name of 3 to 80 characters');if(!BCME.SAP_KINDS[p.kind])bcmFail('Choose the kind of report');if(!p.map||!p.map.wbs)bcmFail('The template needs at least the WBS element column');
+    let t=B.sapTpls.find(x=>x.name===nm);if(!t){t={id:'ST-'+Math.random().toString(36).slice(2,10),name:nm};B.sapTpls.push(t)}Object.assign(t,{kind:p.kind,map:p.map,opts:p.opts||null,by_user:u.id,by_name:u.name,at_time:new Date().toISOString()});
+    bcmLog('SAP report template saved','sap_tpl',t.id,null,{name:nm,kind:p.kind,map:p.map});return {ok:true,id:t.id}},
+  sap_import(p){const B=bcmS4(),u=me(),pid=p.project_id,per=p.period,knd=p.kind;if(!projById(pid))bcmFail('Choose the project');if(!bcmCan('bcm.sap.import',pid))bcmFail('You cannot import SAP reports on this project (the bcm.sap.import right)');
+    if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(per||''))bcmFail('Choose the period (year and month)');if(per>TODAY.slice(0,7))bcmFail(`The period ${per} is in the future`);if(!BCME.SAP_KINDS[knd])bcmFail('Choose the kind of report');
+    if(!/^[A-Z]{3}$/.test(p.currency||''))bcmFail('Choose the currency');if(!(p.rows||[]).length||p.rows.length>20000)bcmFail('Send 1 to 20000 rows');
+    const old=B.sapReps.find(r=>r.project_id===pid&&r.file.sha256===p.file.sha256);if(old)bcmFail(`This file is already imported (report ${old.id})`);
+    const has=knd==='wbs'?Object.fromEntries(BCME.SAP_MEAS.map(k=>[k,!!(p.has||{})[k]])):{[knd]:true};if(knd==='wbs'&&!Object.values(has).some(Boolean))bcmFail('The report has no Budget, Actual, Commitment or forecast column');
+    const ps=per+'-01',pe=per+'-31';p.rows.forEach(x=>{const r=x.row;if(!String(x.wbs||'').trim())bcmFail(`Row ${r}: no WBS element`);
+      BCME.SAP_MEAS.forEach(m=>{if(has[m]&&x[m]!=null&&!/^-?[0-9]+(\.[0-9]+)?$/.test(String(x[m])))bcmFail(`Row ${r}: ${m} "${x[m]}" is not a number`)});
+      if(knd==='actual'&&x.date){if(x.date>pe)bcmFail(`Row ${r}: posted on ${x.date}, after the period ${per}`);if(!p.cumulative&&x.date<ps)bcmFail(`Row ${r}: posted on ${x.date}, before the period ${per} (or choose postings to the end of the period)`)}});
+    const P={kind:knd,map:Object.assign({wbs:0},knd==='wbs'?Object.fromEntries(Object.entries(has).filter(([,v])=>v).map(([k])=>[k,1])):{value:1}),names:{},rows:p.rows.map(x=>({...x,value:x[knd],total:false}))};
+    const C=BCME.sapCheck(P,{period:per,cur:p.currency,kind:knd,cumulative:p.cumulative,hier:p.hier!==false,sep:bcmSap().sep,tol:BCME.tolOf(bcmCfg(),p.currency,null,'0')});
+    const rep=C.errs.find(e=>/repeated/.test(e));if(rep)bcmFail(rep.replace(/^row \d+: /,''));
+    const agg={};C.by.forEach((x,k)=>{const o={wbs:x.wbs,desc:x.desc};['budget','actual','commit','eac','etc','inP'].forEach(m=>{if(x[m]!=null)o[m]=BCME.decStr(x[m])});if(x.n)o.n=x.n;if(knd==='wbs')o.parent_row=!!x.parent_row;agg[k]=o});
+    const tots={};Object.entries(C.tot).forEach(([k,v])=>{tots[k]=BCME.decStr(v)});
+    Object.entries(p.ftot||{}).forEach(([k,v])=>{if(tots[k]!=null&&BCME.decAbs(BCME.dec(v)-BCME.dec(tots[k]))>BCME.tolOf(bcmCfg(),p.currency,null,tots[k]))bcmFail(`The total row gives ${k} ${v}, the elements add up to ${tots[k]}`)});
+    const id='SR-'+per.replace('-','')+'-'+Math.random().toString(36).slice(2,8);
+    B.sapReps.filter(r=>r.project_id===pid&&r.period===per&&r.kind===knd&&r.status==='Frozen').forEach(r=>{r.status='Superseded';r.superseded_by=id});
+    B.sapReps.push({id,project_id:pid,period:per,kind:knd,cumulative:!!p.cumulative,currency:p.currency,file:p.file,template:p.template||null,has,hier:p.hier!==false,agg,totals:tots,warns:p.warns||[],n:p.rows.length,status:'Frozen',imported_by:u.id,imported_by_name:u.name,imported_at:new Date().toISOString()});
+    B.sapLines[id]=p.rows.map((x,i)=>({n:i+1,row_no:x.row,wbs:x.wbs,descr:x.desc,budget:x.budget??null,actual:x.actual??null,commit:x.commit??null,eac:x.eac??null,etc:x.etc??null,posting_date:x.date||null,cost_element:x.ce||null,doc:x.doc||null}));
+    bcmLog('SAP report imported','sap_report',id,pid,{period:per,kind:knd,rows:p.rows.length,totals:tots,file:p.file.name});return {ok:true,id,n:p.rows.length,totals:tots}},
+  sap_export(p){const B=bcmS4(),u=me(),now=new Date().toISOString(),hist=(v,action,st,why)=>B.vhist.push({id:B.vhist.length+1,version_id:v.id,project_id:v.project_id,action,status:st,reason:why||null,by_user:u.id,by_name:u.name,at_time:now});
+    if(p.action==='generate'){const v=B.versions.find(x=>x.id===p.version_id);if(!v)bcmFail('Unknown version');if(!bcmCan('bcm.sap',v.project_id))bcmFail('Only a SAP authorized user (bcm.sap) prepares the SAP loading workbook');
+      if(v.kind==='Tender estimate')bcmFail('A Tender estimate is not loaded in SAP; load Rev 0 or a revision');if(!['Approved in ProTrackAI','Ready for SAP Loading'].includes(v.status))bcmFail(`Only a version approved in ProTrackAI is prepared for SAP (this one is ${v.status})`);
+      const w=B.versions.find(o=>o.project_id===v.project_id&&o.id!==v.id&&o.status==='Ready for SAP Loading');if(w)bcmFail(`${w.kind} ${w.rev_no} is waiting for its SAP loading confirmation; confirm or return it first`);
+      const conf=B.versions.filter(o=>o.project_id===v.project_id&&o.id!==v.id&&o.status==='SAP Loading Confirmed'),lc=conf.sort((a,b)=>String(b.approved_at).localeCompare(String(a.approved_at)))[0];
+      if(lc&&String(lc.approved_at)>String(v.approved_at))bcmFail(`A later version (${lc.kind} ${lc.rev_no}) is already loaded in SAP`);
+      const pv=conf.map(o=>({o,e:B.sapExps.filter(e=>e.version_id===o.id&&e.status==='Confirmed').sort((a,b)=>String(b.closed_at).localeCompare(String(a.closed_at)))[0]})).filter(x=>x.e).sort((a,b)=>String(b.e.closed_at).localeCompare(String(a.e.closed_at)))[0];
+      const C=BCME.sapContent(B.vlines[v.id]||[],pv?B.vlines[pv.o.id]||[]:null,bcmPcode(v.project_id),bcmSap());C.prev=pv?{id:pv.o.id,kind:pv.o.kind,rev_no:pv.o.rev_no,sap_ref:pv.o.sap_ref}:null;
+      if(C.excluded.length)bcmFail('Not every amount has a valid SAP WBS ID of the project: '+C.excluded.map(x=>`${x.sap} (${x.reason})`).join('; '));
+      if(C.changes&&!C.changes.length)bcmFail(`Nothing changes from the version last loaded (${pv.o.kind} ${pv.o.rev_no})`);
+      B.sapExps.filter(e=>e.version_id===v.id&&e.status==='Generated').forEach(e=>Object.assign(e,{status:'Returned',reason:'Replaced by a new workbook',closed_by:u.id,closed_by_name:u.name,closed_at:now}));
+      const seq=B.sapExps.filter(e=>e.version_id===v.id).length+1,id='SX-'+TODAY.slice(2).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,8),check=h336(JSON.stringify(C))+h336(JSON.stringify(C).split('').reverse().join(''));
+      B.sapExps.push({id,version_id:v.id,project_id:v.project_id,seq,content:C,check_md5:check,status:'Generated',generated_by:u.id,generated_by_name:u.name,generated_at:now,gen_day:TODAY});
+      v.status='Ready for SAP Loading';hist(v,'SAP loading workbook '+seq,'Ready for SAP Loading');bcmLog('SAP loading workbook prepared','version',v.id,v.project_id,{export:id,seq,total:C.total,check});return {ok:true,id,seq,content:C,check}}
+    const e=B.sapExps.find(x=>x.id===p.export_id);if(!e)bcmFail('Unknown SAP loading workbook');const v=B.versions.find(x=>x.id===e.version_id);if(!bcmCan('bcm.sap',v.project_id))bcmFail('Only a SAP authorized user (bcm.sap) records the SAP loading');
+    if(e.status!=='Generated'||v.status!=='Ready for SAP Loading')bcmFail(`This workbook is ${e.status.toLowerCase()} (the version is ${v.status})`);
+    if(p.action==='confirm'){const ref=String(p.sap_ref||'').trim(),sd=p.sap_date||'';if(ref.length<3||ref.length>60)bcmFail('Give the SAP reference (3 to 60 characters), as SAP gave it');if(!/^\d{4}-\d{2}-\d{2}$/.test(sd))bcmFail('Give the date of the loading in SAP');
+      if(sd>TODAY)bcmFail(`The loading date ${sd} is in the future`);if(sd<(e.gen_day||String(e.generated_at).slice(0,10)))bcmFail(`The loading date ${sd} is before the workbook was prepared (${e.gen_day||String(e.generated_at).slice(0,10)})`);
+      Object.assign(e,{status:'Confirmed',sap_ref:ref,sap_date:sd,note:p.note||null,closed_by:u.id,closed_by_name:u.name,closed_at:now});Object.assign(v,{status:'SAP Loading Confirmed',sap_ref:ref});
+      hist(v,`SAP loading confirmed: ${ref} on ${sd}`,'SAP Loading Confirmed',p.note);bcmLog('SAP loading confirmed','version',v.id,v.project_id,{export:e.id,sap_ref:ref,sap_date:sd});return {ok:true,status:'SAP Loading Confirmed'}}
+    if(p.action==='return'){const rs=String(p.reason||'').trim();if(rs.length<5)bcmFail('Give the reason (at least 5 characters)');Object.assign(e,{status:'Returned',reason:rs,closed_by:u.id,closed_by_name:u.name,closed_at:now});v.status='Approved in ProTrackAI';
+      hist(v,`SAP loading workbook ${e.seq} returned`,'Approved in ProTrackAI',rs);bcmLog('SAP loading workbook returned','version',v.id,v.project_id,{export:e.id,reason:rs});return {ok:true,status:'Approved in ProTrackAI'}}
+    bcmFail('Unknown action '+p.action)}};
+
+/* ---------- the figures of a period, and the cost summary ---------- */
+const bcmRepFig=r=>({id:r.id,period:r.period,kind:r.kind,cumulative:r.cumulative,has:r.has,by:r.agg||{}});
+const bcmPeriodsOf=pid=>[...new Set(bcmRepsOf(pid).filter(r=>r.status==='Frozen').map(r=>r.period))].sort().reverse();
+function bcmNamesOf(pid){const o={};bcmOf('wbs').filter(m=>m.cur).forEach(m=>{const s=bcmSapId(m.id,pid);if(s)o[s.toLowerCase()]=m.cur.desc});return o}
+async function bcmSumData(pid){const V=bcmVersOf(pid).filter(v=>BCM_APPROVED_V.includes(v.status)||['Submitted','Under Review'].includes(v.status));
+  if(CLOUD_ME)await Promise.all(V.map(v=>bcmLoadVLines(v.id)));return V.map(v=>({...v,lines:bcmS3().vlines[v.id]||[]}))}
+function bcmSummary(pid,period,V){const R=bcmRepsOf(pid).filter(r=>r.status==='Frozen').map(bcmRepFig),cur=bcmCurOfP(pid);
+  return BCME.costSummary({pcode:bcmPcode(pid),sep:bcmSap().sep,versions:V,fig:period?BCME.sapFigures(R,period):null,names:bcmNamesOf(pid),tol:BCME.tolOf(bcmCfg(),cur,null,'0')})}
+const BCM_CS_ST={'Over budget':'High','At risk':'Medium','SAP budget differs':'Medium','Not in the SAP report':'Low','Not in the approved budget':'High'};
+const bcmCsCell=(k,c,cur)=>{const v=c[k];if(k==='status')return (v||[]).map(s=>`<span class="sev ${BCM_CS_ST[s]||'Low'}">${esc(s)}</span>`).join(' ');if(/^pct|vac_pct/.test(k))return v==null?'—':esc((+v).toFixed(1)+'%');
+  if(v==null)return '—';const neg=typeof v==='bigint'&&v<0n;return `<span class="${neg&&['remaining','vac','bud_diff'].includes(k)?'r-c':''}">${bcmMoney0(v,cur)}</span>`};
+function bcmSumHTML(U){if(!bcmS4Ready())return '<section class="panel"><p class="warn-box"><b>Stage 4 needs the v42 database update</b> (STAGE-36-SETUP).</p></section>';
+  const pid=U.pid,P=bcmPeriodsOf(pid);if(U.csPer===undefined||(U.csPer&&!P.includes(U.csPer)))U.csPer=P[0]||'';const key=pid+'|'+U.csPer;
+  const stamp=bcmS3().versions.filter(v=>v.project_id===pid).map(v=>v.id+v.status).join()+'/'+bcmS4().sapReps.filter(r=>r.project_id===pid).map(r=>r.id+r.status).join();
+  if(!U.csData||U.csData.key!==key||U.csData.stamp!==stamp){if(!bcmSumHTML.p){bcmSumHTML.p=bcmSumData(pid).then(V=>{U.csData={key,stamp,V}}).catch(e=>toast(srvMsg(e))).finally(()=>{bcmSumHTML.p=null;if(state.view==='bcm')render()})}
+    return '<section class="panel"><p class="muted">Reading the budget versions…</p></section>'}
+  const S=bcmSummary(pid,U.csPer,U.csData.V),cur=bcmCurOfP(pid),T=S.total,F=U.csF||'all',lv=U.csLv!==false;
+  const rows=S.rows.filter(r=>(lv||!r.kids)&&(F==='all'||(r.c.status||[]).includes(F)));U.csLast=S;
+  const cnt=s=>S.rows.filter(r=>!r.kids&&(r.c.status||[]).includes(s)).length;
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Cost summary of ${esc(bcmPcode(pid))}</h2>
+      <label class="field" style="margin:0">Period<select data-bcmcsper>${P.map(p=>`<option ${p===U.csPer?'selected':''}>${p}</option>`).join('')}<option value="" ${!U.csPer?'selected':''}>No SAP report (budgets only)</option></select></label>
+      <button class="btn sm" type="button" data-bcmcsexp>Export to Excel</button></div>
+    ${!S.current?'<p class="warn-box">No approved budget version other than a Tender estimate yet: approve Rev 0 in Budget Versions (from a tender, or imported for an existing project).</p>':''}
+    <div class="boqgrid">${bcmKpi('Current approved budget',bcmMoney0(T.current,cur),S.current?`${esc(S.current.kind)} ${S.current.rev_no}${S.current.sap_ref?' · SAP '+esc(S.current.sap_ref):''}`:'none')}${bcmKpi('Actual to date',bcmMoney0(T.actual,cur),T.pct_spent!=null?(+T.pct_spent).toFixed(1)+'% of the budget':'')}
+      ${bcmKpi('Commitments',bcmMoney0(T.commit,cur),'open at the end of the period')}${bcmKpi('Remaining budget',bcmMoney0(T.remaining,cur),'budget less actual and commitments')}
+      ${bcmKpi('Estimate at completion',bcmMoney0(T.eac,cur),'sum of the elements')}${bcmKpi('Variance at completion',bcmMoney0(T.vac,cur),T.vac_pct!=null?(+T.vac_pct).toFixed(1)+'%':'')}
+      ${bcmKpi('Over budget',fmt(cnt('Over budget')),'elements','')}${bcmKpi('SAP budget differs',fmt(cnt('SAP budget differs')),'from the approved budget')}</div>
+    <p class="small muted">${U.csPer?`Figures of ${esc(U.csPer)}. Actual: ${esc(S.basis.actual||'no report')}. Of the period: ${esc(S.basis.actual_p||'not available')}. Commitments: ${esc(S.basis.commit||'not reported')}. SAP budget: ${esc(S.basis.sap_budget||'not reported')}.`:'No SAP report: budget columns only.'}
+      ${(S.notes||[]).map(esc).join(' ')} The estimate to complete is budget-based (commitments plus what remains of the budget, never less than zero) unless the SAP report gives a forecast. Nothing is estimated where a figure is missing.</p></section>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><div class="chips">${[['all','All'],['Over budget','Over budget'],['At risk','At risk'],['SAP budget differs','SAP budget differs'],['Not in the SAP report','Not in the SAP report'],['Not in the approved budget','Not in the approved budget']].map(([k,l])=>`<button type="button" class="chip" data-bcmcsf="${esc(k)}" aria-pressed="${F===k}">${esc(l)}</button>`).join('')}</div>
+    <label class="small"><input type="checkbox" data-bcmcslv ${lv?'checked':''}> Show the levels above</label></div>
+    <div class="scroll" style="max-height:620px"><table class="tbl small bcmcs" style="white-space:nowrap"><thead><tr>${BCME.CS_COLS.map(([k,l])=>`<th class="${['sap','code','desc','uf','status','level'].includes(k)?'':'n'}" title="${esc(BCME.CS_DEF[k]||'')}">${esc(l)}</th>`).join('')}</tr></thead><tbody>
+    ${rows.map(r=>`<tr class="${r.kids?'boqsub':''}"><td style="padding-left:${6+12*Math.max(0,(r.level||1)-1)}px">${r.kids?'<b>':''}${esc(r.sap||r.key)}${r.kids?'</b>':''}</td><td>${esc(r.code||'')}</td><td style="white-space:normal;min-width:200px">${esc(r.desc||'')}</td><td>${r.level??''}</td><td>${esc(r.uf||'')}</td>
+      ${BCME.CS_COLS.slice(5).map(([k])=>`<td class="${k==='status'?'':'n'}">${bcmCsCell(k,r.c,cur)}</td>`).join('')}</tr>`).join('')||'<tr><td colspan="24" class="muted">Nothing to show.</td></tr>'}
+    <tr><td colspan="5"><b>Total of the project</b></td>${BCME.CS_COLS.slice(5).map(([k])=>`<td class="${k==='status'?'':'n'}"><b>${bcmCsCell(k,T,cur)}</b></td>`).join('')}</tr></tbody></table></div>
+    <p class="small muted">Hover a column heading for its definition. A level above adds up its elements; the totals count each element once.</p></section>`}
+async function bcmCsExport(U){await loadLib(LIBS.xlsx);const S=U.csLast;if(!S)return;const cur=bcmCurOfP(U.pid),N=v=>v==null?null:typeof v==='bigint'?Number(BCME.decStr(v)):v,wb=XLSX.utils.book_new();
+  const row=(r,c)=>[r?r.sap||r.key:'Total of the project',r?r.code||'':'',r?r.desc||'':'',r?r.level??'':'',r?r.uf||'':''].concat(BCME.CS_COLS.slice(5).map(([k])=>k==='status'?(c.status||[]).join(', '):/pct/.test(k)?(c[k]==null?null:Number(c[k])):N(c[k])));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([BCME.CS_COLS.map(x=>x[1])].concat(S.rows.map(r=>row(r,r.c)),[row(null,S.total)])),'Cost summary');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Column','Definition']].concat(BCME.CS_COLS.slice(5).map(([k,l])=>[l,BCME.CS_DEF[k]]))),'Definitions');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ProTrack cost summary'],['Project',bcmPcode(U.pid)],['Period',U.csPer||'none'],['Currency',cur],['Current approved budget',S.current?`${S.current.kind} ${S.current.rev_no}`:''],
+    ['Actual',S.basis.actual||''],['Actual of the period',S.basis.actual_p||''],['Commitments',S.basis.commit||''],['SAP budget',S.basis.sap_budget||''],['Reports used',(S.used||[]).join(', ')],[],['Figures from the frozen SAP reports imported into ProTrackAI. Nothing was read from or sent to SAP.']]),'Sources');
+  XLSX.writeFile(wb,`ProTrack cost summary ${bcmPcode(U.pid)} ${U.csPer||'budget'}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
+
+/* ---------- SAP Export & Import ---------- */
+function bcmSapHTML(U){if(!bcmS4Ready())return '<section class="panel"><p class="warn-box"><b>Stage 4 needs the v42 database update</b> (STAGE-36-SETUP).</p></section>';
+  const tab=U.sapTab||'imp';
+  return `<section class="panel"><div class="chips">${[['imp','SAP reports (import)'],['load','SAP loading (export)']].map(([k,l])=>`<button type="button" class="chip" data-bcmsaptab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>
+    <p class="small muted" style="margin:8px 0 0">There is no connection to SAP. Reports come in as Excel files exported from SAP ECC; the loading workbook goes to the SAP team, who load it in SAP. A loading is recorded only with the reference SAP gave.</p></section>
+    ${tab==='imp'?bcmSapImpHTML(U):bcmSapLoadHTML(U)}`}
+function bcmSapImpHTML(U){const pid=U.pid,can=bcmCan('bcm.sap.import',pid),R=bcmRepsOf(pid),I=U.sapImp,T=bcmS4().sapTpls,lastM=(()=>{const [y,m]=TODAY.slice(0,7).split('-').map(Number);return m===1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,'0')}`})();
+  return `${can?`<section class="panel"><div class="card-head"><h2>Import a monthly SAP report</h2></div>
+    <div class="fields"><label class="field">Period<input type="month" id="bcmSapPer" value="${esc((I&&I.period)||U.sapPer||lastM)}" max="${TODAY.slice(0,7)}"></label>
+      <label class="field">Columns<select id="bcmSapTpl"><option value="">Found by their names</option>${T.map(t=>`<option value="${esc(t.id)}" ${I&&I.tpl===t.id?'selected':''}>${esc(t.name)} (${esc(BCME.SAP_KINDS[t.kind])})</option>`).join('')}</select></label>
+      <label class="field">Currency<select id="bcmSapCur">${BCM_CURS.map(c=>`<option ${c===((I&&I.cur)||bcmCurOfP(pid))?'selected':''}>${c}</option>`).join('')}</select></label></div>
+    <div class="actions"><label class="btn" style="cursor:pointer">Choose the SAP report (Excel)<input type="file" id="bcmSapFile" accept=".xlsx,.xls,.xlsm" hidden></label>
+      <span class="small muted">By WBS element (as S_ALR_87013558: Budget, Actual, Commitment), or line items (as CJI3 for actual costs, CJI5 for open commitments).</span></div>
+    ${I?bcmSapPrevHTML(U):''}</section>`:'<section class="panel"><p class="muted">Importing SAP reports needs the <b>bcm.sap.import</b> right (costing engineers by default).</p></section>'}
+  <section class="panel"><div class="card-head"><h2>Imported reports</h2><span class="small muted">frozen when imported; a new report for the same period and kind supersedes the earlier one, which is kept</span></div>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>Period</th><th>Kind</th><th>File</th><th class="n">Rows</th><th class="n">Budget</th><th class="n">Actual</th><th class="n">Commitments</th><th>Status</th><th>Imported</th></tr></thead><tbody>
+    ${R.map(r=>`<tr class="click" data-bcmsaprep="${esc(r.id)}" tabindex="0"><td><b>${esc(r.period)}</b></td><td>${esc(BCME.SAP_KINDS[r.kind])}${r.cumulative?' (to the end of the period)':''}</td><td>${esc((r.file||{}).name||'')}${r.template?`<span class="t2">${esc(r.template)}</span>`:''}</td><td class="n">${r.n}</td>
+      <td class="n">${bcmMoney0((r.totals||{}).budget,r.currency)}</td><td class="n">${bcmMoney0((r.totals||{}).actual,r.currency)}</td><td class="n">${bcmMoney0((r.totals||{}).commit,r.currency)}</td>
+      <td><span class="sev ${r.status==='Frozen'?'ok':'Low'}">${esc(r.status)}</span></td><td class="small">${esc(r.imported_by_name||'')}<span class="t2">${esc(tStamp(r.imported_at))}</span></td></tr>`).join('')||'<tr><td colspan="9" class="muted">No SAP report yet.</td></tr>'}</tbody></table></div></section>
+  ${T.length?`<section class="panel"><div class="card-head"><h2>Column templates</h2></div><table class="tbl small"><tbody>${T.map(t=>`<tr><td><b>${esc(t.name)}</b></td><td>${esc(BCME.SAP_KINDS[t.kind])}</td><td class="small">${esc(Object.entries(t.map).map(([k,v])=>k+': '+v).join(' · '))}</td><td class="small">${esc(t.by_name||'')}</td><td>${can?`<button class="btn sm" type="button" data-bcmsaptpldrop="${esc(t.id)}">Remove</button>`:''}</td></tr>`).join('')}</tbody></table></section>`:''}`}
+const BCM_SAP_KEYS=[['wbs','WBS element'],['desc','Description'],['budget','Budget'],['actual','Actual'],['commit','Commitment'],['eac','Forecast (EAC)'],['etc','Estimate to complete'],['value','Value (line items)'],['date','Posting date'],['ce','Cost element'],['doc','Document'],['cur','Currency']];
+function bcmSapPrevHTML(U){const I=U.sapImp;if(I.error)return `<p class="err">${esc(I.error)}</p>`;const P=I.P,C=I.C,cur=I.cur,heads=(I.aoa[P.header_row-1]||[]).map(x=>String(x??'').trim());
+  const shown=C.rows.slice(0,60);
+  return `<div class="fields"><label class="field">Kind of report<select id="bcmSapKind">${Object.entries(BCME.SAP_KINDS).map(([k,l])=>`<option value="${k}" ${k===I.kind?'selected':''}>${esc(l)}</option>`).join('')}</select></label>
+      ${I.kind==='actual'?`<label class="field small"><span><input type="checkbox" id="bcmSapCum" ${I.cum?'checked':''}> Postings to the end of the period (not only the period)</span></label>`:''}
+      ${I.kind==='wbs'?`<label class="field small"><span><input type="checkbox" id="bcmSapHier" ${I.hier!==false?'checked':''}> The report shows totals at each level (count each element once)</span></label>`:''}</div>
+    <p class="small">${esc(I.name)} · header in row ${P.header_row} · ${C.rows.length} rows · ${C.by.size} WBS elements${Object.entries(C.tot).map(([k,v])=>` · ${esc(P.names[k]||(k===I.kind?P.names.value:k)||k)} ${esc(cur)} ${bcmMoney0(v,cur)}`).join('')}${C.ftot?' · total row checked':''}</p>
+    <details ${I.mapOpen?'open':''}><summary class="small">Columns (${Object.keys(P.map).length} found)</summary><div class="fields">${BCM_SAP_KEYS.map(([k,l])=>`<label class="field">${esc(l)}<select data-bcmsapcol="${k}"><option value="">—</option>${heads.map((h,i)=>h?`<option value="${esc(h)}" ${P.map[k]===i?'selected':''}>${esc(h)}</option>`:'').join('')}</select></label>`).join('')}</div>
+      <div class="actions"><input id="bcmSapTplName" placeholder="Template name, e.g. S_ALR_87013558 by WBS" maxlength="80" style="min-width:280px"><button class="btn sm" type="button" data-bcmsaptplsave>Save these columns as a template</button></div></details>
+    ${C.errs.length?`<div class="warn-box"><b>${C.errs.length} problem${C.errs.length===1?'':'s'}: nothing can be imported until the file is corrected.</b><ul class="small">${C.errs.slice(0,30).map(e=>`<li>${esc(e)}</li>`).join('')}</ul></div>`:''}
+    ${C.warns.length?`<ul class="small">${C.warns.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
+    <div class="scroll" style="max-height:300px"><table class="tbl small"><thead><tr><th>Row</th><th>WBS element</th><th>Description</th>${I.kind==='wbs'?BCME.SAP_MEAS.filter(k=>C.has[k]).map(k=>`<th class="n">${esc(P.names[k]||k)}</th>`).join(''):`<th>Date</th><th>Document</th><th class="n">${esc(P.names.value||'Value')}</th>`}<th></th></tr></thead><tbody>
+      ${shown.map(x=>`<tr><td>${x.row}</td><td>${esc(x.wbs||'')}</td><td>${esc(x.desc||'')}</td>${I.kind==='wbs'?BCME.SAP_MEAS.filter(k=>C.has[k]).map(k=>`<td class="n">${bcmMoney0(x[k],cur)}</td>`).join(''):`<td>${esc(x.date||'')}</td><td>${esc(x.doc||'')}</td><td class="n">${bcmMoney0(x[I.kind],cur)}</td>`}<td>${x.err?`<span class="r-c">${esc(x.err)}</span>`:''}</td></tr>`).join('')}
+      ${C.rows.length>shown.length?`<tr><td colspan="9" class="muted">${C.rows.length-shown.length} more rows</td></tr>`:''}</tbody></table></div>
+    <div class="actions"><button class="btn primary" type="button" data-bcmsapgo ${C.ok?'':'disabled'}>Import and freeze the report of ${esc(I.period)}</button></div>`}
+function bcmSapParse(U){const I=U.sapImp;if(!I||!I.aoa)return;const tpl=I.map?{name:'columns chosen',kind:I.kind,map:I.map}:I.tpl?bcmS4().sapTpls.find(t=>t.id===I.tpl):null;
+  const P=BCME.parseSapReport(I.aoa,tpl);if(P.error){I.error=P.error;I.P=null;return}I.error=null;I.P=P;if(!I.kindSet)I.kind=tpl&&tpl.kind||P.kind;
+  I.C=BCME.sapCheck(P,{period:I.period,cur:I.cur,kind:I.kind,cumulative:I.cum,hier:I.hier!==false,sep:bcmSap().sep,tol:BCME.tolOf(bcmCfg(),I.cur,null,'0')})}
+async function bcmSapRead(U,f){await loadLib(LIBS.xlsx);const bytes=new Uint8Array(await f.arrayBuffer()),chk=BCME.checkFile(f.name,bytes);if(!chk.ok){toast(chk.error);return}const rb=BCME.readBook(XLSX,bytes);if(rb.error){toast(rb.error);return}
+  const ws=rb.wb.Sheets[rb.wb.SheetNames[0]];U.sapImp={name:f.name,bytes,kind_ext:chk.kind,sha:await sha256Hex(bytes),aoa:XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null}),period:$('#bcmSapPer').value,cur:$('#bcmSapCur').value,tpl:$('#bcmSapTpl').value||null,hier:true};
+  bcmSapParse(U)}
+async function bcmSapImport(U){const I=U.sapImp,C=I.C,pid=U.pid;if(!C||!C.ok)return;const path=`bcm/${pid}/sap/${I.sha}.${I.kind_ext}`;await bcmStoreFile(path,I.bytes,I.kind_ext);
+  const D=v=>v==null?null:BCME.decStr(v),rows=C.rows.map(x=>({row:x.row,wbs:x.wbs,desc:x.desc,budget:D(x.budget),actual:D(x.actual),commit:D(x.commit),eac:D(x.eac),etc:D(x.etc),date:x.date||null,ce:x.ce||null,doc:x.doc||null}));
+  const tplName=I.tpl?(bcmS4().sapTpls.find(t=>t.id===I.tpl)||{}).name:null;
+  const r=await bcmCall4('sap_import',{project_id:pid,period:I.period,kind:I.kind,cumulative:!!I.cum,hier:I.hier!==false,currency:I.cur,file:{name:I.name,sha256:I.sha,size:I.bytes.length,kind:I.kind_ext,path},template:tplName,rows,has:C.has,
+    ftot:C.ftot?Object.fromEntries(Object.entries(C.ftot).map(([k,v])=>[k,BCME.decStr(v)])):null,warns:C.warns});
+  U.sapPer=I.period;U.sapImp=null;U.csPer=undefined;U.csData=null;return r}
+async function bcmOpenSapRep(id){const B=bcmS4(),r=B.sapReps.find(x=>x.id===id);if(!r)return;if(CLOUD_ME&&!B.sapLines[id]){try{B.sapLines[id]=await selAll('bcm_sap_lines','*',q=>q.eq('report_id',id),['n'])}catch(e){toast(srvMsg(e))}}
+  const L=B.sapLines[id]||[],A=Object.values(r.agg||{}).sort((a,b)=>BCME.cmpSap(a.wbs,b.wbs)),M=r.kind==='wbs'?BCME.SAP_MEAS.filter(k=>(r.has||{})[k]):[r.kind];
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>SAP report ${esc(r.period)} · ${esc(BCME.SAP_KINDS[r.kind])}</h2><span class="sev ${r.status==='Frozen'?'ok':'Low'}">${esc(r.status)}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <p class="small">${esc(bcmPcode(r.project_id))} · ${esc(r.currency)} · ${esc((r.file||{}).name||'')} (SHA-256 ${esc(String((r.file||{}).sha256||'').slice(0,12))}…) · ${r.n} rows · imported by ${esc(r.imported_by_name||'')} ${esc(tStamp(r.imported_at))}${r.superseded_by?' · superseded by '+esc(r.superseded_by):''}</p>
+    ${(r.warns||[]).length?`<ul class="small">${r.warns.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
+    <h3>By WBS element</h3><div class="scroll" style="max-height:300px"><table class="tbl small"><thead><tr><th>WBS element</th><th>Description</th>${M.map(k=>`<th class="n">${esc(k)}</th>`).join('')}</tr></thead><tbody>
+      ${A.map(a=>`<tr><td>${a.parent_row?'<i>':''}${esc(a.wbs)}${a.parent_row?'</i>':''}</td><td>${esc(a.desc||'')}${a.parent_row?' <span class="t2">its own part only (the elements below are counted on their own)</span>':''}</td>${M.map(k=>`<td class="n">${bcmMoney0(a[k],r.currency)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <h3>Rows as imported (${L.length})</h3><div class="scroll" style="max-height:300px"><table class="tbl small"><thead><tr><th>Row</th><th>WBS element</th><th>Description</th>${M.map(k=>`<th class="n">${esc(k)}</th>`).join('')}<th>Date</th><th>Document</th></tr></thead><tbody>
+      ${L.slice(0,500).map(l=>`<tr><td>${l.row_no??''}</td><td>${esc(l.wbs)}</td><td>${esc(l.descr||'')}</td>${M.map(k=>`<td class="n">${bcmMoney0(l[k],r.currency)}</td>`).join('')}<td>${esc(l.posting_date||'')}</td><td>${esc(l.doc||'')}</td></tr>`).join('')}</tbody></table></div>`;
+  $('#sheet').classList.add('wide');$('#drawer').hidden=false}
+/* the loading workbook */
+const bcmExpsOf=vid=>bcmS4().sapExps.filter(e=>e.version_id===vid).sort((a,b)=>a.seq-b.seq);
+function bcmSapLoadHTML(U){const pid=U.pid,can=bcmCan('bcm.sap',pid),V=bcmVersOf(pid).filter(v=>v.kind!=='Tender estimate'&&BCM_APPROVED_V.includes(v.status)),E=bcmS4().sapExps.filter(e=>e.project_id===pid).sort((a,b)=>String(b.generated_at).localeCompare(String(a.generated_at)));
+  const loaded=V.filter(v=>v.status==='SAP Loading Confirmed').sort((a,b)=>String(b.approved_at).localeCompare(String(a.approved_at)))[0];
+  return `<section class="panel"><div class="card-head"><h2>Budget versions for SAP</h2><span class="small muted">${loaded?`Last loaded in SAP: ${esc(loaded.kind)} ${loaded.rev_no} (SAP reference ${esc(loaded.sap_ref||'')})`:'Nothing recorded as loaded in SAP yet'}</span></div>
+    <p class="small muted">The first loading of a project is its original budget; later versions go as supplements and returns against the version last loaded. Every amount must have a valid SAP WBS ID of the project (its PE number and the segments). Only a SAP authorized user (bcm.sap) prepares the workbook and records the loading${can?'':'; you do not have that right'}.</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Version</th><th>Status</th><th class="n">Total</th><th>Workbooks</th><th></th></tr></thead><tbody>
+    ${V.map(v=>{const X=bcmExpsOf(v.id),g=X.find(e=>e.status==='Generated');return `<tr><td><b>${esc(v.kind)} ${v.rev_no}</b><span class="t2">approved ${esc(tStamp(v.approved_at))} by ${esc(v.approved_by_name||'')}</span></td>
+      <td><span class="sev ${BCM_VST_SEV[v.status]||'ok'}">${esc(v.status)}</span>${v.sap_ref?`<span class="t2">SAP ${esc(v.sap_ref)}</span>`:''}</td><td class="n">${esc(bcmMoney(v.total,v.currency))}</td>
+      <td class="small">${X.map(e=>`${e.seq}: ${esc(e.status)}${e.sap_ref?' '+esc(e.sap_ref):''}`).join('<br>')||'—'}</td>
+      <td>${can&&v.status==='Approved in ProTrackAI'?`<button class="btn sm primary" type="button" data-bcmsapgen="${esc(v.id)}">Prepare the SAP loading workbook</button>`:''}
+        ${g?`<button class="btn sm" type="button" data-bcmsapdl="${esc(g.id)}">Download the workbook</button>${can?`<div class="fields" style="margin-top:6px"><label class="field">SAP reference<input data-bcmsapref="${esc(g.id)}" maxlength="60" placeholder="as SAP gave it"></label><label class="field">Loaded in SAP on<input type="date" data-bcmsapdate="${esc(g.id)}" max="${TODAY}" value="${TODAY}"></label><label class="field">Note<input data-bcmsapnote="${esc(g.id)}" maxlength="300"></label></div>
+          <div class="actions"><button class="btn sm primary" type="button" data-bcmsapok="${esc(g.id)}">Record SAP Loading Confirmed</button><input data-bcmsaprs="${esc(g.id)}" placeholder="Reason to return" maxlength="300"><button class="btn sm" type="button" data-bcmsapret="${esc(g.id)}">Return (not loaded)</button></div>`:''}`:''}</td></tr>`}).join('')||'<tr><td colspan="5" class="muted">No approved Rev 0 or revision yet.</td></tr>'}</tbody></table></div></section>
+  <section class="panel"><div class="card-head"><h2>Loading workbooks</h2></div><div class="scroll"><table class="tbl small"><thead><tr><th>Prepared</th><th>Version</th><th>Workbook</th><th class="n">Total</th><th>Loading</th><th>Status</th><th>SAP reference</th><th>Recorded</th></tr></thead><tbody>
+    ${E.map(e=>{const v=bcmS3().versions.find(x=>x.id===e.version_id)||{},C=e.content||{};return `<tr><td>${esc(tStamp(e.generated_at))}<span class="t2">${esc(e.generated_by_name||'')}</span></td><td>${esc(v.kind||'')} ${v.rev_no??''}</td><td>${e.seq} <button class="btn sm" type="button" data-bcmsapdl="${esc(e.id)}">Download</button></td>
+      <td class="n">${esc(bcmMoney(C.total,v.currency))}</td><td class="small">${C.changes?`${C.changes.length} supplements and returns`:'Original budget'}</td><td><span class="sev ${e.status==='Confirmed'?'ok':e.status==='Returned'?'Low':'Medium'}">${esc(e.status)}</span>${e.reason?`<span class="t2">${esc(e.reason)}</span>`:''}</td>
+      <td>${esc(e.sap_ref||'')}${e.sap_date?`<span class="t2">${esc(e.sap_date)}</span>`:''}</td><td class="small">${esc(e.closed_by_name||'')}<span class="t2">${esc(e.closed_at?tStamp(e.closed_at):'')}</span></td></tr>`}).join('')||'<tr><td colspan="8" class="muted">No workbook yet.</td></tr>'}</tbody></table></div></section>`}
+async function bcmSapDownload(eid){await loadLib(LIBS.xlsx);const B=bcmS4(),e=B.sapExps.find(x=>x.id===eid);if(!e)return;const v=B.versions.find(x=>x.id===e.version_id);
+  if(CLOUD_ME){const {data}=await SB.from('bcm_version_hist').select('*').eq('version_id',v.id).order('id');B.vhist=B.vhist.filter(h=>h.version_id!==v.id).concat(data||[])}
+  const p=projById(v.project_id)||{},W=BCME.sapWorkbook({content:e.content,project:{code:bcmPcode(v.project_id),name:p.name},version:v,prev:e.content.prev,gen:{by:e.generated_by_name,at:e.generated_at,seq:e.seq,check:e.check_md5},
+    hist:B.vhist.filter(h=>h.version_id===v.id).sort((a,b)=>a.id-b.id),names:bcmNamesOf(v.project_id),sep:bcmSap().sep}),wb=XLSX.utils.book_new();
+  W.sheets.forEach(s=>{const ws=XLSX.utils.aoa_to_sheet(s.aoa);ws['!cols']=(s.aoa[0]||[]).map((_,i)=>({wch:i===0?24:i===1&&s.name==='Header'?70:18}));XLSX.utils.book_append_sheet(wb,ws,s.name)});
+  XLSX.writeFile(wb,`SAP loading ${bcmPcode(v.project_id)} ${v.kind} ${v.rev_no} workbook ${e.seq}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
+
+/* ---------- actions (stage 4) ---------- */
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcmcsf],[data-bcmcsexp],[data-bcmsaptab],[data-bcmsaprep],[data-bcmsapgo],[data-bcmsaptplsave],[data-bcmsaptpldrop],[data-bcmsapgen],[data-bcmsapdl],[data-bcmsapok],[data-bcmsapret]');if(!t)return;
+  const d=t.dataset,U=bcmUi();if(d.bcmcsf){U.csF=d.bcmcsf;render();return}if(d.bcmcsexp!==undefined){bcmCsExport(U);return}if(d.bcmsaptab){U.sapTab=d.bcmsaptab;render();return}if(d.bcmsaprep){bcmOpenSapRep(d.bcmsaprep);return}
+  if(d.bcmsapdl){bcmSapDownload(d.bcmsapdl).catch(err=>toast(srvMsg(err)));return}
+  t.disabled=true;
+  try{
+    if(d.bcmsapgo!==undefined){const r=await bcmSapImport(U);toast(`SAP report imported and frozen: ${r.n} rows`);render();return}
+    if(d.bcmsaptplsave!==undefined){const I=U.sapImp,heads=(I.aoa[I.P.header_row-1]||[]).map(x=>String(x??'').trim()),map=Object.fromEntries(Object.entries(I.P.map).map(([k,c])=>[k,heads[c]]));
+      const r=await bcmCall4('sap_tpl',{name:$('#bcmSapTplName').value,kind:I.kind,map});I.tpl=r.id;I.map=null;toast('Template saved');render();return}
+    if(d.bcmsaptpldrop){await bcmCall4('sap_tpl',{action:'drop',id:d.bcmsaptpldrop});toast('Template removed');render();return}
+    if(d.bcmsapgen){const r=await bcmCall4('sap_export',{action:'generate',version_id:d.bcmsapgen});toast(`SAP loading workbook ${r.seq} prepared: the version is Ready for SAP Loading`);render();await bcmSapDownload(r.id);return}
+    if(d.bcmsapok){const id=d.bcmsapok,g=s=>(document.querySelector(`[${s}="${CSS.escape(id)}"]`)||{}).value||'';await bcmCall4('sap_export',{action:'confirm',export_id:id,sap_ref:g('data-bcmsapref').trim(),sap_date:g('data-bcmsapdate'),note:g('data-bcmsapnote').trim()});
+      toast('SAP Loading Confirmed recorded with the SAP reference');U.csData=null;render();return}
+    if(d.bcmsapret){const id=d.bcmsapret;await bcmCall4('sap_export',{action:'return',export_id:id,reason:((document.querySelector(`[data-bcmsaprs="${CSS.escape(id)}"]`)||{}).value||'').trim()});toast('Returned: the version is approved in ProTrackAI again');render();return}
+  }catch(err){toast(srvMsg(err))}finally{t.disabled=false}});
+document.addEventListener('change',async e=>{const t=e.target,U=state.bcmUi;if(!U)return;
+  if(t.matches('[data-bcmcsper]')){U.csPer=t.value;U.csData=null;render();return}if(t.matches('[data-bcmcslv]')){U.csLv=t.checked;render();return}
+  if(t.matches('#bcmSapFile')){const f=t.files[0];t.value='';if(!f)return;try{await bcmSapRead(U,f);render()}catch(err){toast(srvMsg(err))}return}
+  const I=U.sapImp;if(!I)return;
+  if(t.matches('#bcmSapPer')){I.period=t.value;bcmSapParse(U);render();return}if(t.matches('#bcmSapCur')){I.cur=t.value;bcmSapParse(U);render();return}
+  if(t.matches('#bcmSapTpl')){I.tpl=t.value||null;I.map=null;I.kindSet=false;bcmSapParse(U);render();return}
+  if(t.matches('#bcmSapKind')){I.kind=t.value;I.kindSet=true;bcmSapParse(U);render();return}if(t.matches('#bcmSapCum')){I.cum=t.checked;bcmSapParse(U);render();return}if(t.matches('#bcmSapHier')){I.hier=t.checked;bcmSapParse(U);render();return}
+  if(t.matches('[data-bcmsapcol]')){const heads=(I.aoa[I.P.header_row-1]||[]).map(x=>String(x??'').trim()),m=Object.fromEntries(Object.entries(I.P.map).map(([k,c])=>[k,heads[c]]));if(t.value)m[t.dataset.bcmsapcol]=t.value;else delete m[t.dataset.bcmsapcol];
+    I.map=m;I.kindSet=true;I.mapOpen=true;bcmSapParse(U);render();return}});
 
 /* =====================================================================================
    v3.25: BOQ Engine — drawing-based quantity take-off, engineering estimation and the Estimated BOQ

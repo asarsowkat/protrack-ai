@@ -5,7 +5,7 @@
  "checks": [
   {
    "area": "Navigation",
-   "check": "Budget & Cost Management sits in the menu with its pages; stage 4 pages are marked planned",
+   "check": "Budget & Cost Management sits in the menu with its pages; since v3.38 no page is planned",
    "result": "PASS",
    "detail": ""
   },

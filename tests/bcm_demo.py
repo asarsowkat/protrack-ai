@@ -42,7 +42,7 @@ with sync_playwright() as p:
     login('asarudeen@company.com')
     J("go('bcm');window.__jb=0"); pg.wait_for_timeout(600)
     nav = J("document.querySelector('#nav').textContent")
-    ck('Navigation', 'Budget & Cost Management sits in the menu with its pages; stage 4 pages are marked planned', 'Budget & Cost Management' in nav and J("[...document.querySelectorAll('#nav .nav-item')].filter(x=>/Tender File Intake|WBS Mapping Master|Classification Review|Reconciliation Centre/.test(x.textContent)).length") == 4 and J("[...document.querySelectorAll('#nav .nav-item.planned')].some(x=>/Cost Summary/.test(x.textContent))"))
+    ck('Navigation', 'Budget & Cost Management sits in the menu with its pages; since v3.38 no page is planned', 'Budget & Cost Management' in nav and J("[...document.querySelectorAll('#nav .nav-item')].filter(x=>/Tender File Intake|WBS Mapping Master|Classification Review|Reconciliation Centre/.test(x.textContent)).length") == 4 and not J("[...document.querySelectorAll('#nav .nav-item.planned')].some(x=>/Cost Summary|SAP Export/.test(x.textContent))"))
     ck('Navigation', 'Cost Control keeps its own menu as before', all(x in nav for x in ['Cost Control dashboard', 'Earned value and EAC', 'Master Manpower Costing Sheet', 'Budget supplements']))
     ck('Master', 'demo page: the starting master is approved by a sample approver, and one sample change waits', J("bcmOf('wbs').filter(m=>m.cur).length") == 56 and J("bcmOf('rule').filter(m=>m.cur).length") == 38 and J("!!bcmRow('W-SM10').pend"))
     # ---- intake
