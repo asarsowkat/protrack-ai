@@ -1,0 +1,452 @@
+{
+ "suite": "bcm_engine",
+ "engine": "ProTrack WBS classification engine 1.0 (ProTrackAI v3.35)",
+ "passed": 74,
+ "total": 74,
+ "checks": [
+  {
+   "area": "Money",
+   "check": "decimals are exact: 0.1 + 0.2 = 0.3, and 1,234.565 is kept to the last place",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Money",
+   "check": "accounting negatives (1,000.00) and trailing minus are read as negative",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Money",
+   "check": "currency precision: SAR 2 places, KWD 3 places, half-up",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Money",
+   "check": "text that is not a number is never turned into zero",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Files",
+   "check": "a text file named .xlsx is refused before reading, with the reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Files",
+   "check": "CSV and .xlsb are refused with what to do",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Files",
+   "check": "an empty file is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Files",
+   "check": "a file over 25 MB is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Files",
+   "check": ".xls (Excel 97-2003) is read like .xlsx: the same lines and amounts",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Files",
+   "check": ".xlsm is read as data only (macros never run), with every sheet",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "a simple sheet: six cost lines with quantity, unit, rate and amount",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "each line keeps its sheet, row and cell references, and its original text",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "an amount from a formula keeps the formula and says so",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "the grand total row is recognised and becomes the control total, not a cost line",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "header rows are found where they are (row 4, row 3, row 1), with other column names",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "title rows above the header are not taken as cost lines",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "a hidden sheet is read and marked hidden",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "a two-row header under a merged heading (\"Price\" over Rate and Amount) maps rate and amount to their own columns",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "a merged section heading becomes the section of the lines below it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "formula subtotals (SUM over the rows above) and the grand total are detected, never counted as cost lines",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "numbered sections (1, 2) carry to their lines",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "the sum of the cost lines equals the grand total in this file",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "an amount linked to a backup sheet says which sheet and cell it comes from",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "the summary sheet grand total is chosen as the control total when the backup has its own total",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "material and labour amount columns are kept as a breakdown beside the total amount",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "a negative adjustment is kept with its sign and flagged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "a currency column gives each line its currency",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "a formula saved without its calculated value: the amount is missing (never zero) and flagged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "a sheet without a header row asks for a header mapping, with a preview",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "with a header mapping given by a person, the sheet is read: two lines from row 3",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "every non-empty row is kept: rows that are not cost lines stay as sections, notes, subtotals or totals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Extraction",
+   "check": "the same file read twice gives the same fingerprint",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Normalization",
+   "check": "\"630 sq.mm XLPE cable\", \"XLPE cable 630mm2\" and \"Power cable 630 sq mm\" all read 630 mm²",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Normalization",
+   "check": "...but the 13.8 kV cable is not the same item as the 132 kV ones, and 300 mm² is not 630 mm²",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Normalization",
+   "check": "abbreviations, units and spelling: \"S&I\", \"cu.m\", \"labor\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Normalization",
+   "check": "currency notation: SR, US$, €",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Normalization",
+   "check": "the original description is never replaced",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "\"Supply of rebar\" → Civil Works → Reinforcement / Rebar, cost type Material, by an approved rule",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "\"Rebar fixing crew\" → Civil manpower, cost type Manpower: the WBS destination is kept apart from the cost type",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "\"Cable pulling technicians\" → Electrical Manpower → Cable laying",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "\"Excavation for cable trench\" → Civil Works → Excavation (cost type left for the reviewer)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "\"Site villa rent\" → accommodation (SM4), \"Recruitment fees\" → recruitment (SM5)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Controls",
+   "check": "\"Transformer supply\" (SAR 5.7 million) is proposed as Transformers but held for review as high value",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Controls",
+   "check": "value thresholds are by currency: EUR 1.64 million is high value at the EUR limit",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Controls",
+   "check": "combined supply-and-install lines go to Split Required; no split is invented",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Controls",
+   "check": "financing, contingency and management reserve need a person whatever the score (mandatory review)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Controls",
+   "check": "a negative adjustment is held for review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Controls",
+   "check": "a line whose formula result is missing is held for review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "unknown descriptions stay Unclassified; no WBS is invented",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "section headings, subtotals and totals are not classified",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "WBS master",
+   "check": "an inactive element is never a destination: the villa line no longer goes to SM4",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "WBS master",
+   "check": "until the company approves the master, nothing is classified (no destination exists)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "WBS master",
+   "check": "an element past its effective-to date is not used",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "WBS master",
+   "check": "a parent (not postable) element is never a destination",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Mappings",
+   "check": "an approved global mapping classifies a line no rule knows, at 100%, and names the mapping and its version",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Mappings",
+   "check": "a project mapping wins over a project-type mapping, which wins over a global one",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Mappings",
+   "check": "another project's mapping is not used",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Mappings",
+   "check": "two approved mappings that disagree send the line to review, never pick one",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Mappings",
+   "check": "an expired mapping is not used",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Mappings",
+   "check": "an alias of an approved mapping matches too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Mappings",
+   "check": "a mapping to an element that is no longer approved is not used",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "two rules of the same priority with different destinations: review, with both shown",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rules",
+   "check": "a rule not yet approved is not used",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Thresholds",
+   "check": "raising the automatic threshold above the rule strength sends rule results to confirmation (Proposed)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Thresholds",
+   "check": "a similarity match is never auto-classified, however close",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Thresholds",
+   "check": "below the review threshold a match is a hint only (Unclassified)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "AI provider",
+   "check": "malformed provider output is rejected; the line stays, flagged, for a person",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "AI provider",
+   "check": "a WBS the provider invents is rejected (it is not in the approved master)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "AI provider",
+   "check": "a provider failure does not lose the line: it stays for review with the reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "AI provider",
+   "check": "a provider that tries to give an amount is rejected",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "AI provider",
+   "check": "a valid provider proposal at 99% still needs a person (never auto-classified on its own)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "AI provider",
+   "check": "the amount of the line is never changed by classification",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "bulk approval takes a clean auto-classification",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "bulk approval never takes high-value, mandatory, conflicting or combined lines",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

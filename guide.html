@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.34, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.35, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -316,7 +316,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.34</b>
+<div class="note" id="whatsnew"><b>New in version 3.35</b>
+    <b>Budget &amp; Cost Management → Automatic WBS Classification.</b> Upload a tender's costing workbooks in one go; ProTrack keeps each file unchanged, reads every sheet and row with its cells, and classifies each cost line into the approved WBS master (approved mappings, approved rules, then a similarity proposal that is never automatic). Only the exceptions need a person: Classification Review lists them, high-value lines first. Every WBS, rule and threshold change is approved by someone other than the person who proposed it. No outside AI and no SAP connection are used. Stages 3 and 4 (duplicates, reconciliation, budget versions, cost summary, SAP files) are planned. On the server: schema-update-v39.sql (STAGE-33-SETUP). See <a href="#bcm">Budget &amp; Cost Management</a>.</div>
+  <div class="note"><b>New in version 3.34</b>
     <b>Approval and report emails are really sent.</b> The server checks each email’s event and decides who receives it; the send-mail function sends it through the company mailbox (Microsoft 365) or an SMTP relay. Settings → Email shows the mail service, a test email, every email with its status and reason, and Send again. On the server: schema-update-v38.sql and the send-mail function (STAGE-32-SETUP).</div>
   <div class="note"><b>New in version 3.33</b>
     <b>RASA comes alive on the approved RASA badge.</b> It blinks, breathes, turns toward the pointer, lights its AI ear-cup while listening, runs a light round the ring while thinking, and moves its mouth when it reads an answer aloud. At rest the badge shows exactly as approved. Azure Speech and an enterprise AI are ready but off until IT and Cybersecurity approve them. See <a href="#rasa-live">RASA's live avatar</a>.</div>
@@ -1392,6 +1394,24 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <li><b>Versions:</b> <b>Save the live forecast as a draft version</b> → reviewed by the costing coordinator, the Head or a super admin (not its author) → <b>Publish</b> by the Head or a super admin. A forecast over budget is published only after the management review: the Head or a super admin chooses the decision (corrective action agreed; budget revision to be requested; accepted for monitoring; data to be corrected) and describes the action. A published version is kept.</li>
 </ul>
 <p class="note">Demo (v3.28.2): Riyadh Metro's published July 2026 version (Version 1, the original baseline of the comparison) is within budget, SAR 312.2M against SAR 328.6M (95.0%). Earlier demo data showed it at about 186%, because the sample counted one cost twice. A browser holding the old sample is corrected once when the page opens; Reset demo data gives the same result. This is sample data only.</p>
+  <h2 id="bcm">Budget &amp; Cost Management (v3.35)</h2>
+  <p><b>Budget &amp; Cost Management → Automatic WBS Classification</b> takes the tender department's costing workbooks, whatever their layout, and classifies every cost line into the company's approved WBS. People review only the exceptions. It is for those who see cost figures; costing engineers upload and review by default.</p>
+  <ol>
+    <li><b>WBS Mapping Master:</b> the WBS elements, rules and thresholds. Every change is proposed (<code>bcm.master</code>) and approved by someone else (<code>bcm.approve</code>); the version in force stays until then, and every version is kept. On the server the starting master arrives as proposals; approve it first (STAGE-33-SETUP).</li>
+    <li><b>Tender File Intake:</b> create a batch (tender, revision, currency, project type) and upload its workbooks, several at once. Each is checked, fingerprinted and kept unchanged; the same file is never taken twice. A sheet whose header is not found says <b>Map columns</b>.</li>
+    <li><b>Automatic WBS Classification:</b> approved mappings, then approved rules, then a similarity proposal. Automatic only from an approved mapping or rule at 95% or more, below the value limit, with a cost type and no data problem.</li>
+    <li><b>Classification Review:</b> the lines to look at, high-value ones first. Confirm, confirm with another WBS (a reason is needed), reject, exclude with a reason, correct the description or row kind (the source stays as read), or undo. A bulk confirmation takes only clean proposals.</li>
+    <li><b>Mapping Learning History:</b> a decision you choose to remember (this project, this project type, all projects) becomes a mapping once someone else approves it; the next tender uses it.</li>
+  </ol>
+  <table><thead><tr><th>Status</th><th>Means</th></tr></thead><tbody>
+    <tr><td>Auto-Classified</td><td>An approved mapping or rule decided it within every control</td></tr>
+    <tr><td>Proposed</td><td>A match between the review and automatic thresholds: confirm or change it</td></tr>
+    <tr><td>Pending Review</td><td>Needs a person whatever the score: high value, mandatory element (financing, contingency, reserve), conflict, data problem, no cost type</td></tr>
+    <tr><td>Split Required</td><td>Supply and installation (or material and labour) in one line. Splitting comes with stage 3; until then confirm it as one line only with a reason</td></tr>
+    <tr><td>Unclassified</td><td>No approved destination fits well enough</td></tr>
+    <tr><td>Confirmed, Rejected, Excluded with Reason</td><td>A person decided; a new run never changes it</td></tr>
+  </tbody></table>
+  <p class="note">No outside AI is called, and nothing is sent to SAP. Stage 3 (duplicate and backup analysis, reconciliation, split allocations, budget versions) and stage 4 (cost summary, SAP report import, SAP loading workbook) are planned and shown as planned in the menu. Until stage 3, a backup sheet's lines and the summary line they support are both counted in the totals.</p>
   <h2 id="cfdash">Cashflow Dashboard</h2>
   <p><b>Invoices &amp; Cash Flow → Cashflow Dashboard</b>, below the Invoice register, puts the money coming in and the money going out side by side, for the projects in your scope. It is for those who see both the cash-inflow and the cash-out forecasts: management, project managers, planning and costing.</p>
   <table><thead><tr><th>Side</th><th>Actual</th><th>Forecast</th></tr></thead><tbody>

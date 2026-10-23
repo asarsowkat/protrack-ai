@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.35
+
+- **Budget & Cost Management → Automatic WBS Classification (stages 1 and 2).** A new menu after Cost Control (unchanged). Tender costing workbooks are uploaded in batches (.xlsx, .xls, .xlsm; macros never run), fingerprinted and kept unchanged, read sheet by sheet (headers found where they are, hidden sheets, sections, subtotals, control totals, formulas and their problems), and every cost line is classified into the approved WBS master: approved mappings, approved rules, then a similarity match (computed in ProTrack, not an AI, never automatic). High-value, mandatory, conflicting, combined and flagged lines go to a person; Classification Review confirms, overrides with a reason, excludes, corrects and undoes; decisions can become mappings once someone else approves them. WBS Mapping Master: versioned, proposals approved by another person, Excel import with validation. Stage 3 (duplicates, reconciliation, splits, budget versions) and stage 4 (cost summary, SAP import and loading workbook) are planned and shown so. Server: schema-update-v39.sql (STAGE-33-SETUP.md). See [RELEASE-NOTES-v3.35.md](RELEASE-NOTES-v3.35.md) and [BCM-HANDOVER.md](BCM-HANDOVER.md).
+
 ## Version 3.34
 
 - **Approval and report emails really sent.** The server queues each email about a real event (a daily report or report the sender approved, a reminder he sent, a test) and works out the recipients itself; the new Edge Function `send-mail` sends it through Microsoft 365 (Graph) or an SMTP relay and records sent or failed. Settings → Email: mail service status, test email, Send again, settings kept on the server. Server: schema-update-v38.sql and supabase/functions/send-mail (STAGE-32-SETUP.md). See [RELEASE-NOTES-v3.34.md](RELEASE-NOTES-v3.34.md).

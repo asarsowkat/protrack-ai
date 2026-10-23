@@ -1,0 +1,337 @@
+{
+ "suite": "bcm_demo",
+ "passed": 55,
+ "total": 55,
+ "checks": [
+  {
+   "area": "Navigation",
+   "check": "Budget & Cost Management sits in the menu with its pages; stage 3 and 4 pages are marked planned",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Navigation",
+   "check": "Cost Control keeps its own menu as before",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "demo page: the starting master is approved by a sample approver, and one sample change waits",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "a batch is created with project, tender, revision, currency and project type",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "ten workbooks registered in one go (.xlsx, .xls, .xlsm), each stored with its SHA-256",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "a text file named .xlsx is refused with the reason, and not registered",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "a sheet without a header row leaves its file \"Needs header mapping\"",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "the original file is kept unchanged in this browser (IndexedDB) under its fingerprint",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "the same file uploaded again is refused, naming the first upload",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "the processing log is shown with each file and step",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "rebar supply: automatic to CIV-06, Material, by an approved rule",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "the transformer (SAR 5.7 million) waits for individual review as high value",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "a hidden sheet is read and its line classified (engineering hours \u2192 DES-02)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "combined supply-and-install lines are Split Required",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "missing formula results: amounts missing (never zero) and held for review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "unknown descriptions stay Unclassified",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "the EUR line is high value at the EUR limit",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "subtotals and totals are kept and not classified",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "the column mapping shows a preview of the stored sheet",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "with the mapping, the file is read again (run 2): two manpower lines, classified",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "Verify reading: the stored file read again gives the same rows",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "View lines shows the rows as read with their cells",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "the progress summary shows source lines, automatic, awaiting review, confirmed, unclassified and amounts by currency",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "high-value lines waiting are shown on top",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "the line shows its source (sheet, row, cells, formula), context, proposal, candidates and history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "a high-value line is confirmed on its own",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "bulk confirmation of Pending Review lines confirms none: they are confirmed one by one",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "bulk confirmation confirms the clean automatic classifications",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "an override without a reason is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "the costing engineer confirms with the cost type, recorded as overridden with the reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Learning",
+   "check": "...and proposes a project mapping, which waits for approval",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Learning",
+   "check": "the proposer cannot approve it (no approve right; and never one's own)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Learning",
+   "check": "the super admin approves it: version 1 in force",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Learning",
+   "check": "the next file (Rev 1) uses the approved mapping: automatic, 100%, Subcontract",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "the negative adjustment in Rev 1 waits for review",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "a person's decision is never overwritten by a new run",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "exclude with a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "undo restores the previous state as a new action in the history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "a corrected description is used for matching; the source description stays as read",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Exports",
+   "check": "the exception list workbook has every open or flagged line with its source and reason columns",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Exports",
+   "check": "...with an About sheet saying it is not an approved budget and nothing went to SAP",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "the WBS master is a tree with versions, flags and the waiting change",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "a change is a proposal: the approved version stays in force",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "...and its proposer is not offered approval",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "...nor can he approve it by any other way",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "a project manager given bcm.approve approves it: version 2",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "the history keeps every version",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "someone without bcm.master is not offered the import",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "a WBS import with invalid codes: blank, repeated and unknown-parent rows are refused with the reason; the valid row is offered",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "...and becomes a proposal under its parent",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "thresholds and value limits are shown and changeable only as a proposal",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a foreman (no cost figures) does not see the module",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Regression",
+   "check": "Cost Control, earned value, the costing sheet, logs, BOQ Engine and releases still open",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Audit",
+   "check": "the audit log lists uploads, readings, classifications, decisions and approvals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}
