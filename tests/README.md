@@ -95,6 +95,14 @@ python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 
 `fixtures/bcm/make_fixtures.py` makes the test workbooks (openpyxl, then LibreOffice to store calculated values; file 13 keeps formulas without values on purpose). SheetJS 0.18.5 is the version the app loads: `git clone --depth 1 --branch v0.18.5 https://github.com/SheetJS/sheetjs` gives `xlsx.js` and `dist/xlsx.full.min.js`.
 
+## v3.38: Budget & Cost Management stage 4
+
+| Test | Checks | What it proves |
+|---|---|---|
+| `../supabase/tests/test_v42.py` | 67 | v42 on PostgreSQL: rights; templates; imports refused (file not stored, future period, not a number, repeated, no WBS element, total row, no amount column) and kept nothing; the figures by WBS element with totals at each level counted once; the same file refused; a report superseded and kept; frozen rows; line items (period, to the end of the period, commitments); read rules (and the v41 fix); the loading workbook refused (Tender estimate, no right, draft, invalid SAP WBS IDs, another waiting); original budget; confirmation (right, reference, dates); supplements and returns; return and a second workbook; an older version after a later one; nothing changing; rollback and again |
+| `bcm_demo4.py` (`python3 bcm_demo4.py ../demo.html path/to/xlsx.full.min.js`) | see results | The demo page: the reports of `fixtures/bcm/20` to `24` imported (and the mistakes of 23 refused), a template, the Cost Summary with its 24 columns, statuses, filters and export, the loading workbook of Rev 0 and of the revision (supplements and returns), confirmation with the SAP reference, a return, Approval History |
+| `bcm_e2e.py`, `bcm_engine_test.cjs` | see results | Now include stage 4 on the server and the engine functions (SAP report reading and checks, the figures of a period, the cost summary, the workbook content and sheets) |
+
 ## v3.37: Budget & Cost Management stage 3
 
 | Test | Checks | What it proves |

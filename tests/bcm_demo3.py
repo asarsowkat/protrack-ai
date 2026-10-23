@@ -44,8 +44,8 @@ with sync_playwright() as p:
     login('asarudeen@company.com')
     J("go('bcm');window.__jb=0"); pg.wait_for_timeout(600)
     nav = J("[...document.querySelectorAll('#nav .nav-item')].filter(x=>/Duplicate|Reconciliation Centre|Budget Versions|Approval History|Cost Summary|SAP Export/.test(x.textContent)).map(x=>x.textContent.trim().replace(/Planned.*$/,'')+(x.classList.contains('planned')?' [planned]':'')).join('|')")
-    ck('Navigation', 'Duplicate & Backup Analysis, Reconciliation Centre, Budget Versions and Approval History are open; Cost Summary and SAP Export stay planned (stage 4)',
-       all(f'{x} [planned]' not in nav and x in nav for x in ['Duplicate & Backup Analysis', 'Reconciliation Centre', 'Budget Versions', 'Approval History']) and 'Cost Summary [planned]' in nav and 'SAP Export & Import [planned]' in nav, nav)
+    ck('Navigation', 'Duplicate & Backup Analysis, Reconciliation Centre, Budget Versions and Approval History are open (and, since v3.38, Cost Summary and SAP Export too)',
+       all(f'{x} [planned]' not in nav and x in nav for x in ['Duplicate & Backup Analysis', 'Reconciliation Centre', 'Budget Versions', 'Approval History']) and 'Cost Summary' in nav and '[planned]' not in nav, nav)
     pid = J("bcmUi().pid"); pe = J("pcode(projById(bcmUi().pid))")
     J("bcmUi().sec='intake';render()"); pg.wait_for_timeout(300)
     pg.fill('#bcmTr', 'T-2026-300'); pg.fill('#bcmRev', '0'); pg.select_option('#bcmPt', '132 kV substation'); pg.click('[data-bcmnewbatch]'); pg.wait_for_timeout(500)

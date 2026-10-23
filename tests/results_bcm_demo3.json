@@ -5,7 +5,7 @@
  "checks": [
   {
    "area": "Navigation",
-   "check": "Duplicate & Backup Analysis, Reconciliation Centre, Budget Versions and Approval History are open; Cost Summary and SAP Export stay planned (stage 4)",
+   "check": "Duplicate & Backup Analysis, Reconciliation Centre, Budget Versions and Approval History are open (and, since v3.38, Cost Summary and SAP Export too)",
    "result": "PASS",
    "detail": ""
   },

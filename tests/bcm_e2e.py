@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""ProTrackAI v3.35 to v3.37 in server mode: Budget & Cost Management (stages 1 to 3), against a local PostgreSQL
-built from schema.sql and every update v2 to v41, through fake_supabase.py (files kept by the stand-in storage, under the
+"""ProTrackAI v3.35 to v3.38 in server mode: Budget & Cost Management (stages 1 to 4), against a local PostgreSQL
+built from schema.sql and every update v2 to v42, through fake_supabase.py (files kept by the stand-in storage, under the
 database's own storage rules). Every allow and refuse is the database's. The real SheetJS 0.18.5 reads the workbooks.
 Usage: python3 bcm_e2e.py APP_HTML SUPABASE_DIR XLSX_FULL_MIN_JS > results_bcm_e2e.json"""
 import json, os, subprocess, sys, time, urllib.request
@@ -21,7 +21,7 @@ def sql(q):
     return p.stdout.strip()
 subprocess.run(PG + ['-d', 'postgres', '-c', f'drop database if exists {DBN}'], capture_output=True)
 subprocess.run(PG + ['-d', 'postgres', '-c', f'create database {DBN}'], check=True, capture_output=True)
-for f in ['tests/TEST-ONLY-supabase-stub.sql', 'schema.sql'] + [f'schema-update-v{i}.sql' for i in range(2, 42)]:
+for f in ['tests/TEST-ONLY-supabase-stub.sql', 'schema.sql'] + [f'schema-update-v{i}.sql' for i in range(2, 43)]:
     path = os.path.join(DBDIR, f)
     if not os.path.exists(path): continue
     p = subprocess.run(PG + ['-d', DBN, '-f', path], capture_output=True, text=True)
@@ -141,7 +141,7 @@ with sync_playwright() as p:
     b2 = J("bcmUi().bid")
     pg.set_input_files('#bcmFiles', fx('05_backup_in_summary.xlsx', '06_similar_specs.xlsx', '07_combined.xlsx')); wait_jobs(3)
     lid = lambda d, sh=None: sql(f"select id from bcm_lines where batch_id='{b2}' and descr like '{d}%' and kind='item'" + (f" and sheet='{sh}'" if sh else '') + " order by row_no limit 1")
-    ck('Stage 3', 'the app sees the v41 update', J("DB.bcmV41") is True and sql("select bcm_features()->>'version'") == '41')
+    ck('Stage 3', 'the app sees the v41 update (or later)', J("DB.bcmV41") is True and int(sql("select bcm_features()->>'version'")) >= 41)
     r = J(f"rpc('bcm_version_act',{{p:{{action:'from_batch',batch_id:'{b2}',kind:'Tender estimate',justification:'too early'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
     ck('Stage 3', 'the server refuses a budget version from a batch that is not ready', 'not ready' in r, r)
     open_sec('dup'); pg.click(f'[data-bcmanalyse="{b2}"]'); pg.wait_for_timeout(5000)
@@ -204,8 +204,52 @@ with sync_playwright() as p:
     ck('Import', 'the server refuses a user field that is not in the list', 'user field' in r, r)
     login('sa'); open_sec('appr'); v = pg.inner_text('#view')
     ck('Approval history', 'Approval History lists the server\'s decisions', all(x in v for x in ['Budget version approved in protrackai', 'Split approved', 'Duplicate decided: duplicate', 'Sheet roles confirmed']), v[:600])
+    # ---- v3.38 stage 4 on the server: SAP reports, the cost summary, the SAP loading workbook
+    sql("insert into projects (id, name, short, region, sector, start_date, finish_date, value_m, status, pe_number) values ('P2','Old Line','OL','R1','S1','2024-01-01','2026-12-31',30,'Active','PE-555')")
+    sql("insert into project_access (user_id, project_id) values " + ",".join(f"('{U[k]}','P2')" for k in ['co', 'ap', 'pl', 'fo']))
+    login('co'); J("bcmUi().pid='P2'"); open_sec('ver'); pg.wait_for_timeout(800)
+    pg.set_input_files('#bcmBudFile', fx('18_budget_import.xlsx')); pg.wait_for_timeout(1500); pg.select_option('[data-bcmbudcol]', label='Rev 0'); pg.wait_for_timeout(400)
+    pg.fill('#bcmBJ', 'Rev 0 as loaded in SAP'); pg.click('[data-bcmbudgo]'); pg.wait_for_timeout(3000); J("closeDrawer()")
+    v0 = sql("select id from bcm_versions where project_id='P2' and kind='Rev 0' order by prepared_at desc limit 1")
+    J(f"rpc('bcm_version_act',{{p:{{action:'submit',id:'{v0}'}}}})"); pg.wait_for_timeout(800)
+    login('ap'); J(f"rpc('bcm_version_act',{{p:{{action:'review',id:'{v0}'}}}})"); pg.wait_for_timeout(800)
+    login('sa'); J(f"rpc('bcm_version_act',{{p:{{action:'approve',id:'{v0}'}}}})"); pg.wait_for_timeout(800)
+    ck('Stage 4', 'the app sees the v42 update; Rev 0 of PE-555 approved', J("DB.bcmV42") is True and sql(f"select status from bcm_versions where id='{v0}'") == 'Approved in ProTrackAI')
+    login('co'); J("bcmUi().pid='P2';bcmUi().sapTab='imp'"); open_sec('sap')
+    def imp(f, period):
+        pg.fill('#bcmSapPer', period); pg.dispatch_event('#bcmSapPer', 'change'); pg.wait_for_timeout(300)
+        pg.set_input_files('#bcmSapFile', fx(f)); pg.wait_for_selector('[data-bcmsapgo]', timeout=15000); pg.wait_for_timeout(400)
+    imp('21_sap_wbs_2026-07.xlsx', '2026-07'); pg.click('[data-bcmsapgo]'); pg.wait_for_timeout(3000)
+    imp('20_sap_wbs_2026-08.xlsx', '2026-08'); pg.click('summary:has-text("Columns")'); pg.fill('#bcmSapTplName', 'S_ALR_87013558 by WBS'); pg.click('[data-bcmsaptplsave]'); pg.wait_for_timeout(2000)
+    ck('SAP reports', 'the column template is kept on the server', sql("select name || '/' || (map ->> 'wbs') || '/' || by_name from bcm_sap_tpls") == 'S_ALR_87013558 by WBS/Object/Carla Costing')
+    pg.click('[data-bcmsapgo]'); pg.wait_for_timeout(3000)
+    imp('22_cji3_2026-09.xlsx', '2026-09'); pg.click('[data-bcmsapgo]'); pg.wait_for_timeout(3000)
+    imp('24_cji5_2026-09.xlsx', '2026-09'); pg.click('[data-bcmsapgo]'); pg.wait_for_timeout(3000)
+    ck('SAP reports', 'four reports frozen on the server, each original kept in the bucket under sap/', sql("select string_agg(period || ':' || kind, ',' order by period, kind) from bcm_sap_reports where status = 'Frozen'") == '2026-07:wbs,2026-08:wbs,2026-09:actual,2026-09:commit'
+       and sql("select count(*) from storage.objects where bucket_id='bcm-tender' and name like 'bcm/P2/sap/%'") == '4')
+    ck('SAP reports', 'the server worked out the figures by WBS element (levels above: only their own part)', sql("select (agg -> 'pe-555-01' ->> 'actual') || '/' || (agg -> 'pe-555-04-001' ->> 'commit') || '/' || (totals ->> 'actual') from bcm_sap_reports where period = '2026-08'") == '0.000000/2500000.000000/4735000.000000')
+    r = J("rpc('bcm_sap_import',{p:{project_id:'P2',period:'2026-09',kind:'actual',currency:'SAR',file:{name:'x.xlsx',sha256:'f'.repeat(64),path:'bcm/P2/sap/'+'f'.repeat(64)+'.xlsx',kind:'xlsx'},rows:[{row:2,wbs:'PE-555-04-001',actual:'1',date:'2026-09-01'}]}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('SAP reports', 'the server refuses a report whose file is not stored', 'Upload the file' in r, r)
+    login('pl'); r = J("rpc('bcm_sap_tpl',{p:{name:'mine',kind:'wbs',map:{wbs:'Object'}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('SAP reports', 'a planner cannot keep templates or import', 'bcm.sap.import' in r, r)
+    login('co'); J("bcmUi().pid='P2';bcmUi().csPer=undefined"); open_sec('sum'); pg.wait_for_timeout(2500)
+    T = J("(t=>({c:BCME.decStr(t.current),a:BCME.decStr(t.actual),m:BCME.decStr(t.commit),e:BCME.decStr(t.eac)}))(bcmUi().csLast.total)")
+    ck('Cost summary', 'the summary from the server\'s versions and reports: budget 8,380,000, actual 4,968,500, commitments 2,470,000, EAC 8,793,500', T == {'c': '8380000', 'a': '4968500', 'm': '2470000', 'e': '8793500'}, T)
+    J("bcmUi().sapTab='load'"); open_sec('sap')
+    r = J(f"rpc('bcm_sap_export',{{p:{{action:'generate',version_id:'{v0}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('SAP loading', 'the server refuses the workbook to someone without bcm.sap', 'bcm.sap' in r, r)
+    login('sa'); J("bcmUi().pid='P2';bcmUi().sapTab='load'"); open_sec('sap')
+    with pg.expect_download() as dl: pg.click(f'[data-bcmsapgen="{v0}"]')
+    import openpyxl, tempfile; pth = os.path.join(tempfile.mkdtemp(), 'w.xlsx'); dl.value.save_as(pth); wb = openpyxl.load_workbook(pth)
+    ck('SAP loading', 'the workbook is made from the content the server worked out, with its check', len(wb.sheetnames) == 6 and wb['Original Budget']['A2'].value == 'PE-555-01-001-01'
+       and any(r[0] == 'Content check' and r[1] == sql(f"select check_md5 from bcm_sap_exports where version_id='{v0}'") for r in wb['Header'].iter_rows(values_only=True)) and sql(f"select status from bcm_versions where id='{v0}'") == 'Ready for SAP Loading')
+    eid = sql(f"select id from bcm_sap_exports where version_id='{v0}'"); sql(f"update bcm_sap_exports set generated_at = now() - interval '1 day' where id='{eid}'")
+    pg.fill(f'[data-bcmsapref="{eid}"]', 'CJ30-4711'); pg.fill(f'[data-bcmsapdate="{eid}"]', sql("select current_date::text")); pg.click(f'[data-bcmsapok="{eid}"]'); pg.wait_for_timeout(2500)
+    ck('SAP loading', 'SAP Loading Confirmed is recorded on the server with the SAP reference', sql(f"select v.status || '/' || v.sap_ref || '/' || e.closed_by_name from bcm_versions v join bcm_sap_exports e on e.version_id = v.id where v.id='{v0}'") == 'SAP Loading Confirmed/CJ30-4711/Sara Admin', toast())
+    open_sec('appr')
+    ck('Approval history', 'lists the SAP loading from the server', 'SAP loading confirmed' in pg.inner_text('#view'))
     # ---- people without the right
-    login('pl'); open_sec('intake')
+    login('pl'); J("bcmUi().pid='P1'"); open_sec('intake')
     ck('Rights', 'a planner sees the batch but is not offered uploads', J("!document.querySelector('#bcmFiles')") and 'T-2026-118' in pg.inner_text('#view'))
     r = J("rpc('bcm_batch_save',{p:{project_id:'P1',tender_ref:'X',currency:'SAR'}}).then(()=>'ran',e=>'refused: '+e.message)")
     ck('Rights', '...and the server refuses a batch from him', 'bcm.upload' in r, r)

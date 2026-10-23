@@ -1,0 +1,217 @@
+{
+ "suite": "bcm_demo4",
+ "passed": 35,
+ "total": 35,
+ "checks": [
+  {
+   "area": "Navigation",
+   "check": "Cost Summary and SAP Export & Import are open; no page of the module is planned any more",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Setup",
+   "check": "Rev 0 of the project (PE-555) imported and approved in ProTrackAI",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "the page says there is no connection to SAP: reports come in as Excel, the workbook goes to the SAP team",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "a by-WBS report is read: header row 4, 12 rows, its totals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "imported and frozen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Templates",
+   "check": "the columns are saved as a template",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "the same file again is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "a report with mistakes: each reason is shown and nothing can be imported",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "actual cost line items (CJI3) are recognised, dates and the credit read",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "open commitment line items (CJI5) are recognised",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "four reports frozen: July and August by WBS, September actual and commitment line items",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "a report opens with its figures by WBS element (levels above showing only their own part) and its rows as imported",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the latest period (2026-09) is shown with the 24 columns",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the project: budget 8,380,000, actual 4,968,500, commitments 2,470,000, EAC 8,793,500, VAC -413,500",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the sources are said (August by WBS + September line items; commitments from the line items)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "over budget, at risk with the SAP budget differing, and cost outside the approved budget are flagged",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the filter shows the elements over budget and their levels",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the Excel export has the 24 columns, the definitions and the sources",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "August: the actual of the month from the difference of the July and August reports",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "a costing engineer without bcm.sap is not offered the workbook",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "...nor can he make it any other way",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the SAP authorized user prepares the workbook: six sheets, the original budget by SAP WBS ID",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "...with the levels above in WBS Elements, the control totals and the approvals",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the version is Ready for SAP Loading",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "a loading without the SAP reference is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "SAP Loading Confirmed is recorded with the SAP reference",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the revision goes as supplements and returns against Rev 0 (CJ30-4711)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "returned with the reason: the version is approved in ProTrackAI again",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "workbook 2 confirmed: the revision is loaded (CJ37-0815)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the list of workbooks keeps all three with their status and reference",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the current budget is now the Revised Rev 0 (8,295,000.50); the SAP budget of the reports (Rev 0) differs from it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval history",
+   "check": "lists the SAP loadings and the return",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "the overview has the SAP loading tile instead of a planned one",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Audit",
+   "check": "the audit log has the imports, the template and the SAP loading",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

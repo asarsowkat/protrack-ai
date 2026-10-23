@@ -1,4 +1,4 @@
-# Budget & Cost Management, Automatic WBS Classification: engineering handover (ProTrackAI v3.35 to v3.37, October 2026)
+# Budget & Cost Management, Automatic WBS Classification: engineering handover (ProTrackAI v3.35 to v3.38, October 2026)
 
 A module of the existing ProTrackAI application (menu: after Cost Control). It is not a separate app. It adds no second project, user or WBS database for budgets, and it does not change Cost Control.
 
@@ -40,7 +40,7 @@ Reads: master data needs the cost-figures right; everything else also needs the 
 | Audit_Log | `bcm_audit` |
 | Duplicate_Link, Cost_Allocation, Reconciliation_Result, Budget_Version | v3.37: `bcm_roles` + `bcm_dups`, `bcm_alloc`, `bcm_totals` (computed) + `bcm_recon_notes`, `bcm_versions` + `bcm_version_lines` + `bcm_version_hist` |
 | Budget_Change_Request | A new version of kind Approved revision, with its justification and comparison (v3.37) |
-| SAP_Import_Batch, SAP_Cost_Record, SAP_Export_Batch | Stage 4 (not built) |
+| SAP_Import_Batch, SAP_Cost_Record, SAP_Export_Batch | v3.38: `bcm_sap_reports` (+ `bcm_sap_tpls`), `bcm_sap_lines`, `bcm_sap_exports` |
 | Approval_History | Approval History page: the approvals and decisions of `bcm_audit` with the version histories (v3.37) |
 
 ## 3. The fifteen logical services
@@ -58,9 +58,9 @@ Reads: master data needs the cost-figures right; everything else also needs the 
 | 9. Human review | Classification Review, line view; `bcm_review` | Built |
 | 10. Mapping learning | Remember-as on decisions; Mapping Learning History; performance report | Built |
 | 11. Budget versioning | Budget Versions; `bcm_version_act` (from a batch, import, submit, review, approve, reject, cancel) | Built (v3.37) |
-| 12. Cost summary | — | Stage 4 |
-| 13. Excel export | Exception list, all lines, WBS master | Built (the SAP loading workbook is stage 4) |
-| 14. SAP import | — | Stage 4 |
+| 12. Cost summary | Cost Summary; `BCME.sapFigures`, `costSummary` (24 columns, `CS_COLS`, `CS_DEF`) | Built (v3.38) |
+| 13. Excel export | Exception list, all lines, WBS master, budget versions, cost summary, the SAP loading workbook (`sapWorkbook`, content from `pt_bcm_sap_content`) | Built |
+| 14. SAP import | `BCME.parseSapReport`, `sapCheck`; `bcm_sap_import` (checks again and works out the figures on the server) | Built (v3.38), Excel only |
 | 15. Audit and approval | `bcm_audit`, histories; master-data approvals with segregation | Built, with budget approvals (v3.37) |
 
 ## 4. Roles
@@ -74,7 +74,7 @@ Reads: master data needs the cost-figures right; everything else also needs the 
 | Budget preparer | `bcm.budget` (costing engineers by default) |
 | Finance Reviewer | `bcm.review` |
 | Budget Approver | `bcm.budget.approve` (Head of Planning and Cost Control by position, or given by the super admin) |
-| SAP Authorized User | Right to come with stage 4 |
+| SAP Authorized User | `bcm.sap` (nobody by default; given by the super admin). `bcm.sap.import` (costing engineers) imports the reports |
 | Foreman (site roles without cost figures) | Never see the module |
 
 Every rule is enforced by the server functions; hiding a button is only for convenience.
@@ -129,11 +129,11 @@ The engine has a provider hook. Its output must name an approved, active element
 | AI cannot create or approve WBS codes | **Met**: no AI; the provider hook is validated; codes only through proposal and approval |
 | AI cannot alter financial amounts | **Met**: classification never writes an amount; outputs with amounts are refused |
 | Historical approved budgets remain reproducible | **Met** (v3.37): version lines frozen after the draft (trigger), with the WBS version they used |
-| The Excel export contains only eligible records | Stage 4 (SAP loading workbook) |
+| The Excel export contains only eligible records | **Met** (v3.38): the server refuses a loading workbook while an amount has no valid SAP WBS ID of the project |
 | Failed AI processing does not destroy imported data | **Met** (tested) |
 | Unauthorized users cannot approve or change master data | **Met** (server tests) |
 | Existing Cost Control workflows continue to function | **Met** (tested opening; console scripts as on main) |
-| No unsupported SAP integration is presented as operational | **Met**: none exists; exports say nothing went to SAP |
+| No unsupported SAP integration is presented as operational | **Met**: none exists; reports come in as Excel; the workbook says nothing went to SAP; a loading counts only with the SAP reference recorded by the SAP authorized user |
 
 ## 10. For S/4HANA, after go-live and authorization
 - **Optional SAP WBS on each element.** Each WBS element already has an optional SAP WBS mapping, and the budget export (stage 4) will use configurable templates.
@@ -162,3 +162,22 @@ The engine has a provider hook. Its output must name an approved, active element
 - **`bcm_totals(batch)`** returns readiness, the problems (unresolved, no amount, currency, WBS, open candidates, unconfirmed roles, waiting splits, unexplained file variances), the accepted amounts by WBS and cost type, and the counted, not counted and unresolved totals. `bcm_version_act` from_batch uses it and refuses a batch that is not ready.
 - **Versions**: one row per WBS (and cost type) with the SAP WBS ID (`pt_bcm_sap_id`) and user field at the time. Imports keep the SAP WBS IDs as written and link a master element by WBS code or SAP WBS ID. Lines can be inserted only while the version is a draft. `prev_id` is the previous approved version of the project at approval.
 - **Not built (stage 4):** the cost summary, the SAP report import, the SAP loading workbook, Ready for SAP Loading and SAP Loading Confirmed (the statuses exist).
+
+## 13. v3.38: stage 4, reporting and SAP preparation
+- **SAP reports.** `parseSapReport` finds the header by SAP's column names (or a saved template of headings) and the kind (`wbs`, `actual`, `commit`). `sapCheck` reads the numbers and dates and lists every problem.
+  - A by-WBS report with totals at each level: an element's own part = its value less its direct children (nearest prefix in the report).
+  - Line items: summed by element; `inP` keeps the part dated in the period.
+  - The server (`bcm_sap_import`) checks the rows again, works out `agg` and `totals`, refuses a mismatching total row, supersedes the earlier report of the same project, period and kind, and keeps the file under `bcm/<project>/sap/<sha256>.<ext>`.
+- **Figures of a period** (`sapFigures`):
+  - actual to date = the latest by-WBS report up to the period + the actual line items of later months (or a cumulative line-item report of the period);
+  - actual of the period = line items of the period, or the difference of the by-WBS reports of the period and the month before;
+  - commitments only from the period's reports;
+  - the SAP budget from the latest by-WBS report;
+  - missing months are listed in `notes`.
+- **Cost summary** (`costSummary`) keys rows by SAP WBS ID (lower case), else WBS code. Parent IDs (cutting segments down to the PE number) roll up. Totals count each element's own values once; a level's EAC is the sum of its elements' EACs.
+- **Loading workbook.** `pt_bcm_sap_content` (server) and `sapContent` (demo) aggregate by SAP WBS ID, check each ID with `pt_bcm_sap_bad` / `sapSegs`, and diff against the version last confirmed (latest `Confirmed` export). `bcm_sap_export`:
+  - `generate` (bcm.sap; approved, not a Tender estimate, no other version waiting, not older than the one loaded, something to change): stores the content with `md5` and sets the version Ready for SAP Loading;
+  - `confirm` (SAP reference 3–60 characters, date not future, not before the workbook): sets SAP Loading Confirmed and `sap_ref`;
+  - `return` (reason): sets the version back to Approved in ProTrackAI.
+  - `sapWorkbook` builds the six sheets from the stored content.
+- **Read fix:** `bcm_version_lines` (and `bcm_sap_lines`) are read through `pt_bcm_reads_ver` / `pt_bcm_reads_sr`, security-definer lookups of the parent's project; a parent hidden by its own rule no longer reads as "no project".

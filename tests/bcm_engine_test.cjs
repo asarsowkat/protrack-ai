@@ -189,6 +189,55 @@ ck('Budget import', 'a sheet without a SAP WBS column is refused with the reason
 const pi = E.parseBudget(aoa('19_budget_import_invalid.xlsx'));
 ck('Budget import', 'a workbook with mistakes is still parsed row by row, so each refused row can be shown with its reason', pi.rows.length === 5 && pi.amountCols.map(c => c.name).join() === 'Rev 0' && pi.rows[2].raw[3] === 'TBC' && pi.rows[4].sap === null, pi.rows.map(r => r.sap));
 
+// ---------------- v3.38 stage 4: SAP reports, the cost summary, the SAP loading workbook
+const sheet0 = f => { const wb = E.readBook(X, new Uint8Array(fs.readFileSync(path.join(FX, f)))).wb; return X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: null }); };
+const P08 = E.parseSapReport(sheet0('20_sap_wbs_2026-08.xlsx')), C08 = E.sapCheck(P08, { period: '2026-08', cur: 'SAR' });
+ck('SAP reports', 'a by-WBS report (S_ALR_87013558) is found below its title rows: Object, Budget, Actual, Commitment', P08.kind === 'wbs' && P08.header_row === 4 && ['wbs', 'budget', 'actual', 'commit'].every(k => P08.map[k] != null), P08.map);
+ck('SAP reports', 'the WBS element and its description in one cell are split ("PE-555-04-001 Cables material")', P08.rows.some(r => r.wbs === 'PE-555-04-001' && r.desc === 'Cables material'));
+ck('SAP reports', 'with totals at each level, an element counts only what is not in the elements below it: the totals are the leaves (8,370,000 / 4,735,000 / 2,700,000)', C08.ok && E.decStr(C08.tot.budget) === '8370000' && E.decStr(C08.tot.actual) === '4735000' && E.decStr(C08.tot.commit) === '2700000', C08.errs);
+ck('SAP reports', '...and the total row is checked against them', C08.ftot && E.decStr(C08.ftot.budget) === '8370000');
+ck('SAP reports', 'without that option every row counts as written (and the total row no longer matches)', !E.sapCheck(P08, { period: '2026-08', cur: 'SAR', hier: false }).ok);
+const Pi = E.parseSapReport(sheet0('22_cji3_2026-09.xlsx')), Ci = E.sapCheck(Pi, { period: '2026-09', cur: 'SAR' });
+ck('SAP reports', 'actual cost line items (CJI3): posting date, document, value; SAP dates 30.09.2026 and a trailing minus (1,500.00-) read', Pi.kind === 'actual' && Ci.ok && Ci.rows[0].date === '2026-09-30' && E.decStr(Ci.by.get('pe-555-04-001').actual) === '118500', Ci.errs);
+ck('SAP reports', 'a posting outside the period is refused (or allowed before it with "to the end of the period")', !E.sapCheck(Pi, { period: '2026-10', cur: 'SAR' }).ok && E.sapCheck(Pi, { period: '2026-10', cur: 'SAR', cumulative: true }).ok && !E.sapCheck(Pi, { period: '2026-08', cur: 'SAR', cumulative: true }).ok);
+const Pc = E.parseSapReport(sheet0('24_cji5_2026-09.xlsx'));
+ck('SAP reports', 'commitment line items (CJI5, with a purchasing document) are recognised as commitments', Pc.kind === 'commit' && E.decStr(E.sapCheck(Pc, { period: '2026-09', cur: 'SAR' }).tot.commit) === '2470000');
+const Cx = E.sapCheck(E.parseSapReport(sheet0('23_sap_invalid.xlsx')), { period: '2026-09', cur: 'SAR' });
+ck('SAP reports', 'a report with mistakes is refused with each reason: not a number, another currency, no WBS element, repeated, the total row', !Cx.ok && ['is not a number', 'in USD', 'no WBS element', 'repeated in the report', 'the total row gives'].every(m => Cx.errs.some(e => e.includes(m))), Cx.errs);
+ck('SAP reports', 'a template finds its columns by their headings; a missing one is said', E.parseSapReport(sheet0('20_sap_wbs_2026-08.xlsx'), { name: 'T', kind: 'wbs', map: { wbs: 'Object', actual: 'Actual' } }).map.actual === 2
+   && /were not found/.test(E.parseSapReport(sheet0('20_sap_wbs_2026-08.xlsx'), { name: 'T', kind: 'wbs', map: { wbs: 'WBS Element' } }).error || ''));
+const rep = (id, period, f, o) => { const P = E.parseSapReport(sheet0(f)), c = E.sapCheck(P, Object.assign({ period, cur: 'SAR' }, o || {})); return { id, period, kind: c.kind, cumulative: !!(o || {}).cumulative, has: c.has, by: c.by }; };
+const REP = [rep('R7', '2026-07', '21_sap_wbs_2026-07.xlsx'), rep('R8', '2026-08', '20_sap_wbs_2026-08.xlsx'), rep('R9', '2026-09', '22_cji3_2026-09.xlsx'), rep('C9', '2026-09', '24_cji5_2026-09.xlsx')];
+const F8 = E.sapFigures(REP, '2026-08'), F9 = E.sapFigures(REP, '2026-09'), g = (F, k, f) => E.decStr(F.fig.get(k)[f]);
+ck('Figures', 'August: the actual of the month is the difference of the July and August reports (600,000 - 480,000)', g(F8, 'pe-555-01-001-01', 'actual') === '600000' && g(F8, 'pe-555-01-001-01', 'actual_p') === '120000' && /difference/.test(F8.basis.actual_p));
+ck('Figures', 'September: actual to date = the August report + the September line items; commitments from CJI5 (a snapshot)', g(F9, 'pe-555-04-001', 'actual') === '3118500' && g(F9, 'pe-555-04-001', 'actual_p') === '118500' && g(F9, 'pe-555-04-001', 'commit') === '2380000' && F9.basis.commit.includes('commitment'));
+ck('Figures', '...the SAP budget from the latest by-WBS report up to the period', g(F9, 'pe-555-05-001', 'sap_budget') === '900000' && F9.basis.sap_budget.includes('2026-08'));
+ck('Figures', 'a missing month is said, never filled in', E.sapFigures([REP[0], REP[2]], '2026-09').notes.some(n => /2026-08/.test(n)));
+const pb18 = E.parseBudget(aoa('18_budget_import.xlsx')), col = n => pb18.amountCols.find(c => c.name === n).c;
+const vl = n => pb18.rows.filter(r => !r.total).map((r, i) => ({ n: i + 1, sap_wbs_id: r.sap, wbs_code: r.code, descr: r.desc, user_field: r.uf, amount: E.decStr(E.dec(r.raw[col(n)])) }));
+const VERS = [{ id: 'T', kind: 'Tender estimate', rev_no: 0, status: 'Approved in ProTrackAI', approved_at: '2026-06-01', lines: vl('Tender') }, { id: 'V0', kind: 'Rev 0', rev_no: 0, status: 'SAP Loading Confirmed', approved_at: '2026-07-01', lines: vl('Rev 0') },
+  { id: 'V1', kind: 'Revised Rev 0', rev_no: 0, status: 'Submitted', submitted_at: '2026-09-01', lines: vl('Revised Rev 0') }];
+const CS = E.costSummary({ pcode: 'PE-555', sep: '-', versions: VERS, fig: F9, names: { 'pe-555-04': 'Electrical Material' } }), row = k => CS.rows.find(r => r.key === k).c, s = x => x == null ? null : E.decStr(x);
+ck('Cost summary', 'the 24 columns, each with its definition', E.CS_COLS.length === 24 && E.CS_COLS.slice(5).every(([k]) => E.CS_DEF[k]));
+ck('Cost summary', 'tender, Rev 0 and current budget; the revision waiting for approval as a change (-150,000 on the cables)', s(row('pe-555-04-001').tender) === '5000000' && s(row('pe-555-04-001').rev0) === '5100000' && s(row('pe-555-04-001').current) === '5100000' && s(row('pe-555-04-001').pending) === '-150000');
+ck('Cost summary', 'over budget: actual 3,118,500 + commitments 2,380,000 > 5,100,000 → EAC 5,498,500, VAC -398,500', s(row('pe-555-04-001').eac) === '5498500' && s(row('pe-555-04-001').vac) === '-398500' && row('pe-555-04-001').status.includes('Over budget'));
+ck('Cost summary', 'at risk at 90% committed, and the SAP budget (900,000) differing from the approved 910,000', row('pe-555-05-001').status.includes('At risk') && row('pe-555-05-001').status.includes('SAP budget differs') && s(row('pe-555-05-001').bud_diff) === '10000');
+ck('Cost summary', 'an element with cost in SAP but not in the approved budget is shown so', row('pe-555-09-001').status.includes('Not in the approved budget') && s(row('pe-555-09-001').actual) === '15000');
+ck('Cost summary', 'the levels above add up their elements, named from the master', s(row('pe-555-04').actual) === '3118500' && CS.rows.find(r => r.key === 'pe-555-04').desc === 'Electrical Material' && CS.rows.find(r => r.key === 'pe-555-04').kids);
+ck('Cost summary', 'the total of the project counts each element once, and its EAC is the sum of the elements (an overrun is not hidden)', s(CS.total.current) === '8380000' && s(CS.total.actual) === '4968500' && s(CS.total.eac) === '8793500' && s(CS.total.vac) === '-413500', [s(CS.total.current), s(CS.total.actual), s(CS.total.eac)]);
+ck('Cost summary', 'percentages: % spent and % committed of the current budget', Number(row('pe-555-01-001-01').pct_spent).toFixed(1) === '54.0');
+ck('Cost summary', 'without a SAP report, only the budget columns: nothing is estimated', (r => r.actual === null && r.commit === null && r.status.length === 0)(E.costSummary({ pcode: 'PE-555', versions: VERS }).rows.find(r => r.key === 'pe-555-04-001').c));
+const SC0 = E.sapContent(vl('Rev 0'), null, 'PE-555', { sep: '-', digits: [2, 3, 2] }), SC1 = E.sapContent(vl('Revised Rev 0'), vl('Rev 0'), 'PE-555', { sep: '-', digits: [2, 3, 2] });
+ck('SAP loading', 'the first loading: the amounts by SAP WBS ID, every ID valid for the project', SC0.items.length === 5 && SC0.changes === null && SC0.excluded.length === 0 && SC0.total === '8380000');
+ck('SAP loading', 'a revision: supplements and returns against the version loaded', JSON.stringify(SC1.changes.map(x => [x.sap, x.diff])) === JSON.stringify([['PE-555-01-001-01', '50000'], ['PE-555-01-001-02', '20000'], ['PE-555-04-001', '-150000'], ['PE-555-05-001', '-4999.5']]));
+ck('SAP loading', 'an ID of another project, or with wrong digits, is excluded with the reason', (x => x.excluded.map(e => e.reason).join('|') === "does not start with the project's PE number PE-555|level 1 should be 2 digits (\"1\")")(E.sapContent([{ n: 1, sap_wbs_id: 'PE-999-01', amount: '1' }, { n: 2, sap_wbs_id: 'PE-555-1', amount: '1' }], null, 'PE-555', { sep: '-', digits: [2, 3, 2] })));
+const WB = E.sapWorkbook({ content: { ...SC1, prev: { kind: 'Rev 0', rev_no: 0, sap_ref: 'CJ30-4711' } }, project: { code: 'PE-555', name: 'Old Line' }, version: { id: 'V1', kind: 'Revised Rev 0', rev_no: 0, currency: 'SAR', status: 'Ready for SAP Loading' }, prev: { kind: 'Rev 0', rev_no: 0, sap_ref: 'CJ30-4711' }, gen: { by: 'C', at: '2026-10-23T10:00', seq: 1, check: 'x' }, hist: [] });
+ck('SAP loading', 'the workbook has its six sheets', WB.sheets.map(x => x.name).join('|') === 'Header|WBS Elements|Original Budget|Supplements & Returns|Control Totals|Approvals & Checks');
+ck('SAP loading', 'a revision fills Supplements & Returns (4 rows) and says Original Budget is not used', WB.sheets[3].aoa.length === 5 && WB.sheets[3].aoa[3][5] === 'Return' && /Not used/.test(WB.sheets[2].aoa[0][0]));
+ck('SAP loading', 'the control totals add up: previously loaded + supplements + returns = the total', WB.ok && WB.sheets[4].aoa.some(r => r[2] === 'OK'));
+ck('SAP loading', 'the WBS Elements sheet adds the levels above with their parents', WB.sheets[1].aoa.some(r => r[0] === 'PE-555-01-001' && r[2] === 'PE-555-01' && r[1] === 2));
+ck('SAP loading', 'the header says nothing was sent to SAP', WB.sheets[0].aoa.some(r => /Nothing has been sent to SAP/.test(r[0] || '')));
+
 const passed = R.filter(r => r.result === 'PASS').length;
 console.log(JSON.stringify({ suite: 'bcm_engine', engine: E.ENGINE, passed, total: R.length, checks: R }, null, 1));
 process.exitCode = passed === R.length ? 0 : 1;

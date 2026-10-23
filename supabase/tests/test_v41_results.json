@@ -21,7 +21,7 @@
   {
    "check": "Totals: before stage 3 decisions the batch is not ready: sheets without a confirmed role and a split pending",
    "pass": true,
-   "detail": "[{'n': 2, 'key': 'unresolved', 'msg': '2 counting lines are not classified yet (unclassified, waiting for review, or a split not approved)'}, {'n': 3, 'key': 'roles', 'msg': '3 sheets have no confirmed role'}, {'n': 1, 'key': 'src:TF-d83a35cbfc', 'msg': 'summary.xlsx: the control total 1731000 diffe"
+   "detail": "[{'n': 2, 'key': 'unresolved', 'msg': '2 counting lines are not classified yet (unclassified, waiting for review, or a split not approved)'}, {'n': 3, 'key': 'roles', 'msg': '3 sheets have no confirmed role'}, {'n': 1, 'key': 'src:TF-2b38414ffd', 'msg': 'summary.xlsx: the control total 1731000 diffe"
   },
   {
    "check": "Totals: without decisions the backup lines and the repeated line all count (double counting is visible)",
@@ -31,7 +31,7 @@
   {
    "check": "Roles: a planner cannot propose sheet roles",
    "pass": true,
-   "detail": "psql:/tmp/tmpdep_2sar.sql:4: ERROR:  You cannot propose sheet roles on this project\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 10 at RAISE"
+   "detail": "psql:/tmp/tmppy_xjoiy.sql:4: ERROR:  You cannot propose sheet roles on this project\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 10 at RAISE"
   },
   {
    "check": "Roles: ProTrack proposes the roles (summary, backup)",
@@ -41,7 +41,7 @@
   {
    "check": "Roles: an unknown role is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpeeq13g_u.sql:4: ERROR:  Unknown sheet role main\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 14 at RAISE"
+   "detail": "psql:/tmp/tmpar62cdmz.sql:4: ERROR:  Unknown sheet role main\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 14 at RAISE"
   },
   {
    "check": "Roles: a proposed backup role already stops its lines counting (shown, never added)",
@@ -51,7 +51,7 @@
   {
    "check": "Roles: a planner cannot confirm roles",
    "pass": true,
-   "detail": "psql:/tmp/tmpwm4b_gla.sql:4: ERROR:  Only a reviewer (bcm.review) confirms sheet roles\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 11 at RAISE"
+   "detail": "psql:/tmp/tmp9nvm9adm.sql:4: ERROR:  Only a reviewer (bcm.review) confirms sheet roles\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 11 at RAISE"
   },
   {
    "check": "Roles: a reviewer confirms the roles of both files",
@@ -71,12 +71,12 @@
   {
    "check": "Candidates: a planner cannot run the analysis",
    "pass": true,
-   "detail": "psql:/tmp/tmpm1f6xqg4.sql:4: ERROR:  You cannot run the analysis on this project\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 29 at RAISE"
+   "detail": "psql:/tmp/tmp_rg9_r90.sql:4: ERROR:  You cannot run the analysis on this project\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 29 at RAISE"
   },
   {
    "check": "Candidates: a candidate naming a line of another batch is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp5hchjt48.sql:4: ERROR:  Candidate exact-x2 names a line that is not in the current reading of this batch\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 35 at RAISE"
+   "detail": "psql:/tmp/tmpnv9f_wyh.sql:4: ERROR:  Candidate exact-x2 names a line that is not in the current reading of this batch\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 35 at RAISE"
   },
   {
    "check": "Candidates: the analysis saves its candidates",
@@ -96,32 +96,32 @@
   {
    "check": "Decide: a planner cannot decide",
    "pass": true,
-   "detail": "psql:/tmp/tmppdnxkmbr.sql:4: ERROR:  Only a reviewer (bcm.review) decides duplicates and backups\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 49 at RAISE"
+   "detail": "psql:/tmp/tmpm3o6zjz3.sql:4: ERROR:  Only a reviewer (bcm.review) decides duplicates and backups\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 49 at RAISE"
   },
   {
    "check": "Decide: a duplicate decision needs a reason",
    "pass": true,
-   "detail": "psql:/tmp/tmpppmqmp7r.sql:4: ERROR:  Give the reason (at least 5 characters)\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 60 at RAISE"
+   "detail": "psql:/tmp/tmph__3d7ph.sql:4: ERROR:  Give the reason (at least 5 characters)\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 60 at RAISE"
   },
   {
    "check": "Decide: ...and the line that counts",
    "pass": true,
-   "detail": "psql:/tmp/tmpeayprljs.sql:4: ERROR:  Choose the line or lines that count\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 67 at RAISE"
+   "detail": "psql:/tmp/tmpmndj2aoj.sql:4: ERROR:  Choose the line or lines that count\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 67 at RAISE"
   },
   {
    "check": "Decide: keeping every line is not a duplicate decision",
    "pass": true,
-   "detail": "psql:/tmp/tmp5k5d7n15.sql:4: ERROR:  At least one line stops counting under this decision; else choose \"valid independent cost\"\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 69 at RAISE"
+   "detail": "psql:/tmp/tmp03ys6z0p.sql:4: ERROR:  At least one line stops counting under this decision; else choose \"valid independent cost\"\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 69 at RAISE"
   },
   {
    "check": "Decide: duplicate of another line: the server stops the second line counting",
    "pass": true,
-   "detail": "{'ok': True, 'targets': ['TF-8166374aed:1:3']}"
+   "detail": "{'ok': True, 'targets': ['TF-b12902acbc:1:3']}"
   },
   {
    "check": "Decide: supporting backup only, counting the summary line: the backup lines do not count",
    "pass": true,
-   "detail": "{'ok': True, 'targets': ['TF-d83a35cbfc:1:4', 'TF-d83a35cbfc:1:5', 'TF-d83a35cbfc:1:6']}"
+   "detail": "{'ok': True, 'targets': ['TF-2b38414ffd:1:4', 'TF-2b38414ffd:1:5', 'TF-2b38414ffd:1:6']}"
   },
   {
    "check": "Decide: reopen needs a reason, then count the backup lines instead (Project office and Site office teams)",
@@ -131,7 +131,7 @@
   {
    "check": "...",
    "pass": true,
-   "detail": "{'ok': True, 'targets': ['TF-d83a35cbfc:1:1']}"
+   "detail": "{'ok': True, 'targets': ['TF-2b38414ffd:1:1']}"
   },
   {
    "check": "Decide: the specification candidate is a valid independent cost (no reason needed)",
@@ -151,37 +151,37 @@
   {
    "check": "Split: a planner cannot propose a split",
    "pass": true,
-   "detail": "psql:/tmp/tmpnr9sti8r.sql:4: ERROR:  Only a reviewer (bcm.review) proposes a split\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 80 at RAISE"
+   "detail": "psql:/tmp/tmp8j8cabd4.sql:4: ERROR:  Only a reviewer (bcm.review) proposes a split\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 80 at RAISE"
   },
   {
    "check": "Split: allocations that do not add up to the line are refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp5arb516t.sql:4: ERROR:  The allocations add up to 240000, not the line amount 250000.000000 (difference 10000.000000)\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 92 at RAISE"
+   "detail": "psql:/tmp/tmpvsxltbbs.sql:4: ERROR:  The allocations add up to 240000, not the line amount 250000.000000 (difference 10000.000000)\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 92 at RAISE"
   },
   {
    "check": "Split: one allocation is not a split",
    "pass": true,
-   "detail": "psql:/tmp/tmpid_z4s55.sql:4: ERROR:  A split has at least two allocations\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 85 at RAISE"
+   "detail": "psql:/tmp/tmpupwm0eir.sql:4: ERROR:  A split has at least two allocations\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 85 at RAISE"
   },
   {
    "check": "Split: a destination that is not approved is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpndl1fxyb.sql:4: ERROR:  W-ELP is not an approved, active, postable WBS element\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 88 at RAISE"
+   "detail": "psql:/tmp/tmpvtb44rwf.sql:4: ERROR:  W-ELP is not an approved, active, postable WBS element\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 88 at RAISE"
   },
   {
    "check": "Split: a manual split needs its basis",
    "pass": true,
-   "detail": "psql:/tmp/tmphzko2m6u.sql:4: ERROR:  A manual allocation needs its basis written down\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 84 at RAISE"
+   "detail": "psql:/tmp/tmp_fp3m9ea.sql:4: ERROR:  A manual allocation needs its basis written down\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 84 at RAISE"
   },
   {
    "check": "Split: the costing engineer proposes the split from the source breakdown",
    "pass": true,
-   "detail": "{'id': 'AL-e02b9fd778', 'ok': True}"
+   "detail": "{'id': 'AL-0336263a24', 'ok': True}"
   },
   {
    "check": "Split: its proposer cannot approve it",
    "pass": true,
-   "detail": "psql:/tmp/tmpy0z0ujlk.sql:4: ERROR:  You proposed this split, so someone else approves or rejects it\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 108 at RAISE"
+   "detail": "psql:/tmp/tmp3h49kom4.sql:4: ERROR:  You proposed this split, so someone else approves or rejects it\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 108 at RAISE"
   },
   {
    "check": "Totals: a split waiting for approval stops the version",
@@ -211,17 +211,17 @@
   {
    "check": "Reconciliation: the electrical file's control total (1,290,000) differs from the lines counted (770,000): not ready until explained",
    "pass": true,
-   "detail": "{'src:TF-8166374aed': 'electrical.xlsx: the control total 1290000 differs from the lines counted 770000.000000 by 520000.000000 (tolerance 129.0000000000000000), not explained'}"
+   "detail": "{'src:TF-b12902acbc': 'electrical.xlsx: the control total 1290000 differs from the lines counted 770000.000000 by 520000.000000 (tolerance 129.0000000000000000), not explained'}"
   },
   {
    "check": "Reconciliation: an explanation needs at least 10 characters",
    "pass": true,
-   "detail": "psql:/tmp/tmptdghmnmf.sql:4: ERROR:  Explain the variance (at least 10 characters)\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 135 at RAISE"
+   "detail": "psql:/tmp/tmptasedst9.sql:4: ERROR:  Explain the variance (at least 10 characters)\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 135 at RAISE"
   },
   {
    "check": "Reconciliation: a planner cannot explain",
    "pass": true,
-   "detail": "psql:/tmp/tmp8u6nur4z.sql:4: ERROR:  Only a reviewer (bcm.review) explains a variance\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 134 at RAISE"
+   "detail": "psql:/tmp/tmp7qyv4i4x.sql:4: ERROR:  Only a reviewer (bcm.review) explains a variance\nCONTEXT:  PL/pgSQL function bcm_stage3(jsonb) line 134 at RAISE"
   },
   {
    "check": "Reconciliation: a reviewer explains it (the figures are not adjusted)",
@@ -241,17 +241,17 @@
   {
    "check": "Version: a planner cannot prepare a budget version",
    "pass": true,
-   "detail": "psql:/tmp/tmpwh6w9uf4.sql:4: ERROR:  You cannot prepare budget versions on this project (the bcm.budget right)\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 13 at RAISE"
+   "detail": "psql:/tmp/tmpl245kpqk.sql:4: ERROR:  You cannot prepare budget versions on this project (the bcm.budget right)\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 13 at RAISE"
   },
   {
    "check": "Version: a justification is needed",
    "pass": true,
-   "detail": "psql:/tmp/tmp3q1hz9uh.sql:4: ERROR:  Give the justification of the version\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 8 at RAISE"
+   "detail": "psql:/tmp/tmp29l0w5i5.sql:4: ERROR:  Give the justification of the version\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 8 at RAISE"
   },
   {
    "check": "Version: the costing engineer prepares Rev 0 from the batch: the server computes the lines",
    "pass": true,
-   "detail": "{'n': 5, 'id': 'BV-261023-d7d536', 'ok': True, 'total': '2501000.000000', 'rev_no': 0}"
+   "detail": "{'n': 5, 'id': 'BV-261023-4a6063', 'ok': True, 'total': '2501000.000000', 'rev_no': 0}"
   },
   {
    "check": "Version: each line has its SAP WBS ID on the project (PE-777-01-001-01 for the Project office team) and its user field",
@@ -281,7 +281,7 @@
   {
    "check": "Version: the preparer cannot review it",
    "pass": true,
-   "detail": "psql:/tmp/tmp_igemsbk.sql:4: ERROR:  You prepared or submitted this version, so someone else reviews it\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 69 at RAISE"
+   "detail": "psql:/tmp/tmp0zbyw_fb.sql:4: ERROR:  You prepared or submitted this version, so someone else reviews it\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 69 at RAISE"
   },
   {
    "check": "Version: another reviewer takes it under review",
@@ -291,7 +291,7 @@
   {
    "check": "Version: a reviewer without bcm.budget.approve cannot approve",
    "pass": true,
-   "detail": "psql:/tmp/tmpl4wo55jg.sql:4: ERROR:  Only a budget approver (bcm.budget.approve) approves budget versions\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 73 at RAISE"
+   "detail": "psql:/tmp/tmpumwor51p.sql:4: ERROR:  Only a budget approver (bcm.budget.approve) approves budget versions\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 73 at RAISE"
   },
   {
    "check": "Version: the budget approver approves: \"Approved in ProTrackAI\" (not loaded in SAP)",
@@ -306,37 +306,37 @@
   {
    "check": "Version: an approved version cannot be cancelled",
    "pass": true,
-   "detail": "psql:/tmp/tmpek4dvban.sql:4: ERROR:  Only a draft or a submitted version is cancelled\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 86 at RAISE"
+   "detail": "psql:/tmp/tmpj0ni2pkb.sql:4: ERROR:  Only a draft or a submitted version is cancelled\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 86 at RAISE"
   },
   {
    "check": "Import: the same SAP WBS twice is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpejvgsv42.sql:4: ERROR:  Line 4: PE-555-01 (cost type none) is twice in the file\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 41 at RAISE"
+   "detail": "psql:/tmp/tmpj17o4rh0.sql:4: ERROR:  Line 4: PE-555-01 (cost type none) is twice in the file\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 41 at RAISE"
   },
   {
    "check": "Import: an amount that is not a number is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpg9kxo78h.sql:4: ERROR:  Line 1: the amount is not a number\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 38 at RAISE"
+   "detail": "psql:/tmp/tmptzn4wr24.sql:4: ERROR:  Line 1: the amount is not a number\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 38 at RAISE"
   },
   {
    "check": "Import: a user field outside the list is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpuga9pow_.sql:4: ERROR:  Line 1: the user field XYZ is not in the user field list\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 47 at RAISE"
+   "detail": "psql:/tmp/tmpjooglmj4.sql:4: ERROR:  Line 1: the user field XYZ is not in the user field list\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 47 at RAISE"
   },
   {
    "check": "Import: lines that do not add up to the file total are refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpuw07w64a.sql:4: ERROR:  The lines add up to 9500000.50, not the total 9000000 stated in the file\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 52 at RAISE"
+   "detail": "psql:/tmp/tmp2jlhrfop.sql:4: ERROR:  The lines add up to 9500000.50, not the total 9000000 stated in the file\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 52 at RAISE"
   },
   {
    "check": "Import: a planner cannot import",
    "pass": true,
-   "detail": "psql:/tmp/tmptyibt61v.sql:4: ERROR:  You cannot prepare budget versions on this project (the bcm.budget right)\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 19 at RAISE"
+   "detail": "psql:/tmp/tmpdxrqsm0s.sql:4: ERROR:  You cannot prepare budget versions on this project (the bcm.budget right)\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 19 at RAISE"
   },
   {
    "check": "Import: the existing project's Rev 0 is imported with its actual SAP WBS IDs, exact",
    "pass": true,
-   "detail": "{'n': 3, 'id': 'BV-261023-636f93', 'ok': True, 'total': '9500000.500000', 'rev_no': 0}"
+   "detail": "{'n': 3, 'id': 'BV-261023-b58c17', 'ok': True, 'total': '9500000.500000', 'rev_no': 0}"
   },
   {
    "check": "Import: lines kept as in SAP; a line may be linked to a master element",
@@ -351,7 +351,7 @@
   {
    "check": "Import: the submitter cannot reject his own version (he cancels it)",
    "pass": true,
-   "detail": "psql:/tmp/tmpkew_eue_.sql:4: ERROR:  You prepared or submitted this version; cancel it instead\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 83 at RAISE"
+   "detail": "psql:/tmp/tmp7g0m5y22.sql:4: ERROR:  You prepared or submitted this version; cancel it instead\nCONTEXT:  PL/pgSQL function bcm_version_act(jsonb) line 83 at RAISE"
   },
   {
    "check": "Import: the approver rejects it with a reason",
@@ -361,7 +361,7 @@
   {
    "check": "Import: a corrected import is the next version number (rev 1) of the same kind",
    "pass": true,
-   "detail": "{'n': 3, 'id': 'BV-261023-317b73', 'ok': True, 'total': '9500000.500000', 'rev_no': 1}"
+   "detail": "{'n': 3, 'id': 'BV-261023-1aca9d', 'ok': True, 'total': '9500000.500000', 'rev_no': 1}"
   },
   {
    "check": "Import: its preparer cancels the draft with a reason",

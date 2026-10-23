@@ -1,7 +1,7 @@
 {
  "suite": "bcm_e2e",
- "passed": 53,
- "total": 53,
+ "passed": 64,
+ "total": 64,
  "checks": [
   {
    "area": "Server",
@@ -161,7 +161,7 @@
   },
   {
    "area": "Stage 3",
-   "check": "the app sees the v41 update",
+   "check": "the app sees the v41 update (or later)",
    "result": "PASS",
    "detail": ""
   },
@@ -288,6 +288,72 @@
   {
    "area": "Approval history",
    "check": "Approval History lists the server's decisions",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stage 4",
+   "check": "the app sees the v42 update; Rev 0 of PE-555 approved",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "the column template is kept on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "four reports frozen on the server, each original kept in the bucket under sap/",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "the server worked out the figures by WBS element (levels above: only their own part)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "the server refuses a report whose file is not stored",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "a planner cannot keep templates or import",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Cost summary",
+   "check": "the summary from the server's versions and reports: budget 8,380,000, actual 4,968,500, commitments 2,470,000, EAC 8,793,500",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the server refuses the workbook to someone without bcm.sap",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "the workbook is made from the content the server worked out, with its check",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP loading",
+   "check": "SAP Loading Confirmed is recorded on the server with the SAP reference",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval history",
+   "check": "lists the SAP loading from the server",
    "result": "PASS",
    "detail": ""
   },
