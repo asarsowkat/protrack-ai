@@ -1,7 +1,7 @@
 {
  "suite": "bcm_e2e",
- "passed": 31,
- "total": 31,
+ "passed": 53,
+ "total": 53,
  "checks": [
   {
    "area": "Server",
@@ -156,6 +156,138 @@
   {
    "area": "User field",
    "check": "the server refuses a user field that is not in the user field list",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stage 3",
+   "check": "the app sees the v41 update",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Stage 3",
+   "check": "the server refuses a budget version from a batch that is not ready",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Analysis",
+   "check": "the analysis is stored on the server: five sheet roles proposed and five candidates",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Analysis",
+   "check": "the salaries sheet is proposed as a supporting backup, with its basis",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "the server refuses a duplicate decision without a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "the decision is stored with the line that stops counting, worked out by the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "both backups decided and the roles confirmed on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "the split is proposed on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "the server refuses its approval by the proposer",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "the server refuses allocations that do not add up to the line",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "someone else approves it on the server: the line is confirmed by its split",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reconciliation",
+   "check": "the server's figures: ready, 3,113,000 counted, each valid cost once",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reconciliation",
+   "check": "the Reconciliation Centre shows the server check (ready) and the same figures in the browser",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the draft is made on the server from its own figures, with the SAP WBS IDs of the project",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the version drawer shows the lines read from the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "submitted; the server refuses its review by the preparer",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "nobody changes the lines of a version directly",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "under review; the server refuses approval by someone without bcm.budget.approve",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the super admin approves it: Approved in ProTrackAI on the server, with its history",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import",
+   "check": "imported on the server as a draft Rev 0: five lines, the SAP WBS IDs as written, linked to the master, the total checked",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import",
+   "check": "the server refuses a user field that is not in the list",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval history",
+   "check": "Approval History lists the server's decisions",
    "result": "PASS",
    "detail": ""
   },

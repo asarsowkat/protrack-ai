@@ -865,7 +865,7 @@ tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,13
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.36</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.37</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -6334,9 +6334,11 @@ const RIGHTS=[
   ['bcm.upload','Budget & Cost Management: upload tender costing workbooks, read them and run the WBS classification (costing engineer)','Budget & Cost',['costing']],
   ['bcm.review','Budget & Cost Management: confirm, correct, override and exclude classifications, and propose mappings from decisions','Budget & Cost',['costing']],
   ['bcm.master','Budget & Cost Management: propose WBS master, rule and threshold changes','Budget & Cost',[]],
-  ['bcm.approve','Budget & Cost Management: approve WBS master, rule, mapping and threshold changes (never their own)','Budget & Cost',[]]];
+  ['bcm.approve','Budget & Cost Management: approve WBS master, rule, mapping and threshold changes (never their own)','Budget & Cost',[]],
+  ['bcm.budget','Budget & Cost Management: prepare, import and submit budget versions (Tender estimate, Rev 0, revisions)','Budget & Cost',['costing']],
+  ['bcm.budget.approve','Budget & Cost Management: approve budget versions in ProTrackAI (never one they prepared or submitted)','Budget & Cost',[]]];
 /* what comes with a position, shown beside the right in the tables */
-const RIGHT_POS={'bcm.review':'Head of Planning and Cost Control','bcm.master':'Head of Planning and Cost Control','bcm.approve':'Head of Planning and Cost Control','boq.review':'Head of Planning and Cost Control','boq.approve':'Head of Planning and Cost Control','cashout.keep':'Head of Planning and Cost Control; costing coordinator','visual.keep':'Head of Planning and Cost Control','delay.keep':'Head of Planning and Cost Control','materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
+const RIGHT_POS={'bcm.review':'Head of Planning and Cost Control','bcm.master':'Head of Planning and Cost Control','bcm.approve':'Head of Planning and Cost Control','bcm.budget.approve':'Head of Planning and Cost Control','boq.review':'Head of Planning and Cost Control','boq.approve':'Head of Planning and Cost Control','cashout.keep':'Head of Planning and Cost Control; costing coordinator','visual.keep':'Head of Planning and Cost Control','delay.keep':'Head of Planning and Cost Control','materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
   'report.cost.approve':'Head of Planning and Cost Control','logs.upload':'costing coordinator','issues.keep':'Head of Planning and Cost Control',
   'issues.review':'Head of Planning and Cost Control','docs.contract':'Head of Planning and Cost Control','docs.planning':'Head of Planning and Cost Control',
   'docs.cost':'Head of Planning and Cost Control','tender.register':'Head of Planning and Cost Control; costing coordinator','tender.noa':'costing coordinator'};
@@ -8103,13 +8105,13 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.36';
+const APP_VERSION='3.37';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
-const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis',3],
-  ['recon','Reconciliation Centre',3],['master','WBS Mapping Master'],['learn','Mapping Learning History'],['sum','Cost Summary',4],['ver','Budget Versions',3],['sap','SAP Export & Import',4],['appr','Approval History',4],['audit','Audit Log']];
+const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
+  ['recon','Reconciliation Centre'],['master','WBS Mapping Master'],['learn','Mapping Learning History'],['sum','Cost Summary',4],['ver','Budget Versions'],['sap','SAP Export & Import',4],['appr','Approval History'],['audit','Audit Log']];
 const BCM_PLANNED={3:'Stage 3 (financial controls): duplicate and backup analysis, reconciliation, split allocation and budget versions come in the next release',
-  4:'Stage 4 (reporting and SAP preparation): the WBS cost summary, SAP report import, the SAP loading workbook and approval history follow stage 3'};
+  4:'Stage 4 (reporting and SAP preparation): the WBS cost summary, the SAP report import, the SAP loading workbook and its confirmation come in the next release'};
 const DOMAINS=[
   {k:'home',label:'Home',ic:'exec',items:[{v:'xr',label:'Executive report (released)'},{v:'rs',label:'Reporting status'},{v:'exec',label:'Live summary (working data)'},{v:'pv',sec:'live',label:'Project Visual: Live'},{v:'pv',sec:'rel',label:'Project Visual: Released'},{v:'pv',sec:'cfg',label:'Project Visual: Configuration and mapping'}]},
   {k:'projects',label:'Projects & Handover',ic:'proj',items:[
@@ -13060,7 +13062,89 @@ const ALL_ST=['Extracted','Normalized','Proposed','Auto-Classified','Pending Rev
 function bulkEligible(c){if(!c||!['Proposed','Auto-Classified'].includes(c.status))return 'not a proposal';if(!c.wbs)return 'no WBS';if(!c.cost_type)return 'no cost type';
   const f=(c.flags||[]).find(x=>/^(Mandatory review|High value|Conflicting|Combined cost|Close alternative)/.test(x)||FORCE_RE.test(x));return f?f:null}
 
-return {ENGINE,SAP_DEF,seedDelta,seedWbs,seedRules,SEED_CFG,MAX_BYTES,checkFile,readBook,dec,decStr,decSum,decMul,decAbs,money,curDp,normCur,normUnit,norm,lexicon,attrsOf,toks,hasPhrase,extractSheet,extractBook,findHeader,fingerprintText,
+/* ---------- 5. stage 3 (v3.37): sheet roles, duplicates and backups, allocations, tolerances, budget imports ---------- */
+const ROLES=['summary','breakdown','backup','alternative','previous','reference'];
+const ROLE_N={summary:'Authoritative summary',breakdown:'Detailed cost breakdown',backup:'Supporting backup',alternative:'Alternative quotation',previous:'Previous revision',reference:'Reference only'};
+const COUNTING_ROLES=['summary','breakdown'];   /* lines of these sheets count; the others are kept and shown, never added */
+/* a proposal of the role of each sheet of a file, with its evidence. sheets: [{sheet, hidden}], lines: the file's lines, control: the file's control total */
+function proposeRoles(fileName,sheets,lines,control){
+  const linked=new Map();lines.forEach(l=>(l.flags||[]).forEach(f=>{const m=/^Amount linked to sheet (.+) cell ([A-Z]+\d+)$/.exec(f);if(m&&m[1]!==l.sheet){const a=linked.get(m[1])||[];a.push(`${l.sheet} row ${l.row} takes its amount from ${m[1]} ${m[2]}`);linked.set(m[1],a)}}));
+  const items=s=>lines.filter(l=>l.sheet===s&&l.kind==='item').length;const fileBackup=/back.?up|calc|calculation|build.?up|breakdown|working|rate analysis/i.test(fileName||'');
+  return sheets.map(s=>{const n=s.sheet,ev=[];let role=null;
+    if(linked.has(n)){role='backup';ev.push(...linked.get(n).slice(0,3))}
+    else if(/back.?up|calc|calculation|build.?up|working|rate analysis/i.test(n)){role='backup';ev.push('the sheet name says it is a calculation or backup')}
+    else if(/\balt\b|alternative|option|quotation|quote/i.test(n)){role='alternative';ev.push('the sheet name says it is an alternative or a quotation')}
+    else if(/\bold\b|previous|superseded|rev\.?\s*\d+\s*old/i.test(n)){role='previous';ev.push('the sheet name says it is a previous revision')}
+    else if(/\bref\b|reference|\binfo\b|notes|instructions|cover/i.test(n)&&!items(n)){role='reference';ev.push('the sheet name says it is for reference')}
+    else if(s.hidden&&sheets.length>1){role='backup';ev.push('a hidden sheet beside the visible ones')}
+    else if(control&&control.sheet===n){role='summary';ev.push('its grand total is the control total of the file')}
+    else if(fileBackup){role='backup';ev.push('the file name says it is a backup or calculation file')}
+    else{role=sheets.length>1&&control?'breakdown':'summary';ev.push(sheets.length>1&&control?'cost lines beside the summary sheet':'the cost lines of the file')}
+    return {sheet:n,role,basis:ev,items:items(n)}})}
+/* a short, stable hash for candidate identifiers */
+const h32=s=>{let h=2166136261>>>0;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(36)};
+const jacc=(a,b)=>{const A=new Set(a),B=new Set(b);if(!A.size&&!B.size)return 1;let n=0;A.forEach(x=>{if(B.has(x))n++});return n/(A.size+B.size-n)};
+const sameAttrs=(a,b)=>JSON.stringify(Object.entries(a).sort())===JSON.stringify(Object.entries(b).sort());
+const BLOCKING=['exact','figures','backup'];
+const DUP_N={exact:'Exact duplicate',figures:'Same figures, similar description',spec:'Similar description, different specification',backup:'Summary line repeated in a backup',total:'Repeated total'};
+/* duplicate and backup candidates among the lines of a batch (current reading, cost lines and totals); nothing is decided here.
+   L: [{id, file, sheet, row, kind, desc, qty, unit_n, rate, amount, cur, flags}] with kind already corrected */
+function findDups(L,lex){
+  const out=[],add=(kind,lines,ev,score,extra)=>{const ids=[...lines];out.push(Object.assign({id:kind+'-'+h32(kind+'|'+ids.slice().sort().join('|')+'|'+((extra&&extra.backup_lines)||[]).slice().sort().join('|')),kind,lines:ids,evidence:ev,score,blocking:BLOCKING.includes(kind)},extra||{}))};
+  const it=L.filter(l=>l.kind==='item'),nm=new Map(it.map(l=>[l.id,norm(l.desc||'',lex)])),at=new Map(it.map(l=>[l.id,attrsOf(l.desc)])),tk=new Map(it.map(l=>[l.id,toks(nm.get(l.id))]));
+  const fig=l=>[l.qty??'',l.unit_n??'',l.rate??'',l.amount??'',l.cur??''].join('|');
+  /* 1. exact: the same normalized description and the same figures */
+  const G=new Map();it.forEach(l=>{if(l.amount==null||dec(l.amount)===0n)return;const k=nm.get(l.id)+'#'+fig(l);G.set(k,[...(G.get(k)||[]),l])});
+  const inExact=new Set();G.forEach(g=>{if(g.length<2)return;g.forEach(l=>inExact.add(l.id));add('exact',g.map(l=>l.id),[`"${g[0].desc}" with the same quantity, unit, rate and amount (${g[0].amount}) in ${g.map(l=>`${l.file} ${l.sheet} row ${l.row}`).join('; ')}`],1)});
+  /* 2. the same figures and a similar description with the same technical attributes */
+  const F=new Map();it.forEach(l=>{if(l.amount==null||dec(l.amount)===0n||l.qty==null)return;F.set(fig(l),[...(F.get(fig(l))||[]),l])});
+  F.forEach(g=>{for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){const a=g[i],b=g[j];if(inExact.has(a.id)&&inExact.has(b.id)&&nm.get(a.id)===nm.get(b.id))continue;
+    const s=jacc(tk.get(a.id),tk.get(b.id));if(s>=0.5&&sameAttrs(at.get(a.id),at.get(b.id)))add('figures',[a.id,b.id],[`"${a.desc}" and "${b.desc}": the same quantity, unit, rate and amount (${a.amount}); words ${Math.round(s*100)}% alike; same technical attributes`],Math.round(s*100)/100)}});
+  /* 3. similar descriptions whose technical attributes differ (not the same item; shown so a person sees it) */
+  const S=new Map();it.forEach(l=>{const k=tk.get(l.id).filter(w=>!/\d/.test(w)).sort().join(' ');if(!k)return;S.set(k,[...(S.get(k)||[]),l])});
+  S.forEach(g=>{if(g.length<2||g.length>12)return;for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){const a=g[i],b=g[j];if(sameAttrs(at.get(a.id),at.get(b.id)))continue;
+    add('spec',[a.id,b.id],[`"${a.desc}" and "${b.desc}" read alike but differ in ${Object.keys({...at.get(a.id),...at.get(b.id)}).filter(k=>at.get(a.id)[k]!==at.get(b.id)[k]).join(', ')}: likely different items`],0.5)}});
+  /* 4. a summary line whose amount is the total of another sheet (linked by formula, or equal to its lines' sum or its total row) */
+  const sheetKey=l=>l.file+'␟'+l.sheet,sums=new Map(),tots=new Map();
+  L.forEach(l=>{const k=sheetKey(l);if(l.kind==='item'){const x=dec(l.amount);if(x!=null)sums.set(k,(sums.get(k)||0n)+x)}else if((l.kind==='total'||l.kind==='subtotal')&&l.amount!=null)tots.set(k,[...(tots.get(k)||[]),l])});
+  it.forEach(l=>{const A=dec(l.amount);if(A==null||A===0n)return;const link=(l.flags||[]).map(f=>/^Amount linked to sheet (.+) cell/.exec(f)).find(Boolean);
+    for(const [k,sum] of sums){if(k===sheetKey(l))continue;const [file,sheet]=k.split('␟');const tl=(tots.get(k)||[]).find(t=>dec(t.amount)===A);const linked=link&&link[1]===sheet&&file===l.file;
+      if(sum===A||tl||linked){const B=it.filter(x=>sheetKey(x)===k).map(x=>x.id);if(!B.length||B.includes(l.id))continue;
+        add('backup',[l.id],[`${l.file} ${l.sheet} row ${l.row} "${l.desc}" (${l.amount}) ${linked?'takes its amount from':'equals the total of'} ${file} sheet ${sheet}${sum===A?` (its ${B.length} lines add up to ${decStr(sum)})`:tl?` (its total row ${tl.row})`:''}`],linked?1:0.9,{backup_lines:B})}}});
+  /* 5. repeated totals: the same total in two places (shown, not blocking) */
+  const T=[...tots.values()].flat(),TG=new Map();T.forEach(t=>{if(dec(t.amount)===0n)return;TG.set(t.amount+'|'+(t.cur||''),[...(TG.get(t.amount+'|'+(t.cur||''))||[]),t])});
+  TG.forEach(g=>{const files=new Set(g.map(sheetKey));if(g.length>1&&files.size>1)add('total',g.map(t=>t.id),[`The total ${g[0].amount} appears in ${g.map(t=>`${t.file} ${t.sheet} row ${t.row}`).join('; ')}`],0.5)});
+  const seen=new Set();return out.filter(c=>!seen.has(c.id)&&seen.add(c.id))}
+/* the lines that stop counting under a decision. keep: the line ids that count (duplicate, superseded, excluded); details: for a backup candidate, count the backup lines instead of the summary line */
+function dupTargets(c,decision,keep,details){const all=[...c.lines,...(c.backup_lines||[])];
+  if(decision==='valid')return [];
+  if(c.kind==='backup'&&decision==='backup')return details?[...c.lines]:[...(c.backup_lines||[])];
+  const K=new Set(keep||[]);if(!K.size||![...K].every(x=>all.includes(x)))throw new Error('Choose the line or lines that count');const t=all.filter(x=>!K.has(x));if(!t.length)throw new Error('At least one line stops counting under this decision; else choose "valid independent cost"');return t}
+/* the effect of a decision on which lines count: targets stop counting; includes count whatever their sheet's role
+   (a backup decision that counts the backup lines instead of the summary line, or a backup that is a valid independent cost) */
+function dupEffect(c,decision,keep,details){const targets=dupTargets(c,decision,keep,details);
+  const includes=c.kind==='backup'&&((decision==='backup'&&details)||decision==='valid')?[...(c.backup_lines||[])]:[];return {targets,includes}}
+/* the tolerance for a comparison: the larger of an absolute amount and a percentage of the expected value, by currency and project type */
+function tolOf(cfg,cur,ptype,base){const L=((cfg||{}).tols||[]).filter(t=>(t.cur||'SAR')===(cur||'SAR')&&(!t.ptype||t.ptype===ptype)).sort((a,b)=>(b.ptype?1:0)-(a.ptype?1:0));
+  const t=L[0]||(cfg||{}).tolerance||{abs:'1',pct:'0.01'};const abs=dec(t.abs??'1')??0n,pct=dec(t.pct??'0')??0n,b=base==null?0n:decAbs(dec(base)??0n);const p=decMul(b,pct)/100n;return abs>p?abs:p}
+/* allocations of one line: rows [{wbs_id, cost_type, amount} or {.., pct}] → exact amounts adding up to the line (percentages rounded to the currency, the remainder on the last row) */
+function allocate(amount,rows,cur,byPct){const A=dec(amount);if(A==null)throw new Error('The line has no amount to allocate');if(!rows.length)throw new Error('Add at least two allocations');
+  const dp=curDp(cur),unit=10n**BigInt(SCD-dp),rnd=x=>{const neg=x<0n,a=neg?-x:x,r=((a+unit/2n)/unit)*unit;return neg?-r:r};
+  let R;if(byPct){const P=rows.map(r=>dec(r.pct));if(P.some(p=>p==null||p<0n))throw new Error('Each percentage is a number of 0 or more');if(decSum(P)!==100n*SC)throw new Error('The percentages add up to '+decStr(decSum(P))+'%, not 100%');
+    let left=A;R=rows.map((r,i)=>{const v=i===rows.length-1?left:rnd(decMul(A,P[i])/100n);left-=v;return {...r,amount:decStr(v),pct:decStr(P[i])}})}
+  else{R=rows.map(r=>{const v=dec(r.amount);if(v==null)throw new Error('Each allocation needs an amount');return {...r,amount:decStr(v)}})}
+  const sum=decSum(R.map(r=>dec(r.amount)));return {rows:R,sum:decStr(sum),diff:decStr(A-sum),ok:sum===A}}
+/* a budget workbook of an existing project: one row per SAP WBS element. Columns are found by their names; the amount column is chosen */
+const BH={sap:/^(sap\s*wbs(\s*(id|element|no\.?|code))?|wbs\s*element|wbs\s*id|wbs\s*no\.?|wbs)$/,code:/^(wbs\s*code|protrack\s*code|code)$/,desc:/^(description|wbs\s*description|wbs\s*head|name|element\s*description)$/,uf:/^(user\s*field|uf)$/,ct:/^(cost\s*type)$/};
+function parseBudget(aoa){const H=(aoa||[]).slice(0,15);let hr=-1,map={};
+  for(let r=0;r<H.length&&hr<0;r++){const m={};(H[r]||[]).forEach((v,c)=>{const t=hnorm(v);for(const [k,re] of Object.entries(BH))if(m[k]==null&&re.test(t)){m[k]=c;break}});if(m.sap!=null&&(m.desc!=null||m.code!=null)){hr=r;map=m}}
+  if(hr<0)return {error:'No header row naming the SAP WBS (or WBS element) and the description was found in the first 15 rows'};
+  const used=new Set(Object.values(map)),body=aoa.slice(hr+1),amountCols=(aoa[hr]||[]).map((v,c)=>({c,name:String(v??'').trim()})).filter(x=>x.name&&!used.has(x.c)&&body.some(r=>r&&dec(r[x.c])!=null));
+  const rows=[];body.forEach((r,i)=>{if(!r||r.every(x=>x==null||String(x).trim()===''))return;const g=k=>map[k]==null?null:(r[map[k]]==null?null:String(r[map[k]]).trim()||null);
+    const desc=g('desc'),sap=g('sap');const isTotal=!sap&&/total/i.test(desc||String(r.find(x=>typeof x==='string')||''));rows.push({row:hr+i+2,sap,code:g('code'),desc,uf:g('uf'),ct:g('ct'),raw:r,total:isTotal})});
+  return {header_row:hr+1,map,amountCols,rows}}
+
+return {ENGINE,ROLES,ROLE_N,COUNTING_ROLES,BLOCKING,DUP_N,proposeRoles,findDups,dupTargets,dupEffect,tolOf,allocate,parseBudget,SAP_DEF,seedDelta,seedWbs,seedRules,SEED_CFG,MAX_BYTES,checkFile,readBook,dec,decStr,decSum,decMul,decAbs,money,curDp,normCur,normUnit,norm,lexicon,attrsOf,toks,hasPhrase,extractSheet,extractBook,findHeader,fingerprintText,
   COST_TYPES,COMBINED_RE,context,classify,similar,validateAi,wbsUsable,HUMAN,ENGINE_ST,ALL_ST,bulkEligible,FORCE_RE,UNIT_DEF}})();
 /* BCM-ENGINE-END */
 
@@ -13090,7 +13174,7 @@ let BCMS=null;
 const bcmDB=()=>CLOUD?(BCMS||(BCMS=bcmEmpty())):(DB.bcm||(DB.bcm=bcmEmpty()));
 const bcmUi=()=>state.bcmUi||(state.bcmUi={sec:'ov',F:{},sel:[],page:0,mtab:'wbs'});
 const bcmSees=pid=>!!pid&&navOn('bcm')&&accessIds().includes(pid);
-const bcmCan=(k,pid)=>(!pid||bcmSees(pid))&&can('money.view')&&can(k,['bcm.review','bcm.master','bcm.approve'].includes(k)&&isHead());
+const bcmCan=(k,pid)=>(!pid||bcmSees(pid))&&can('money.view')&&can(k,['bcm.review','bcm.master','bcm.approve','bcm.budget.approve'].includes(k)&&isHead());
 const bcmProjects=()=>PROJECTS.filter(p=>bcmSees(p.id));
 const bcmRow=id=>bcmDB().master.find(m=>m.id===id);
 const bcmOf=ent=>bcmDB().master.filter(m=>m.ent===ent);
@@ -13124,7 +13208,7 @@ async function cloudLoadBcm(){
   try{B.master=await selAll('bcm_master','*',null,['id']);B.batches=await selAll('bcm_batches','*',null,['created_at']);B.files=await selAll('bcm_files','*',null,['created_at']);
     const {data}=await SB.from('bcm_audit').select('*').order('id',{ascending:false}).limit(2000);B.audit=data||[];DB.bcmMissing=null}
   catch(e){DB.bcmMissing=srvMsg(e)}
-  B.loaded={};B.lines=[];B.cls={};B.chist=[]}
+  B.loaded={};B.lines=[];B.cls={};B.chist=[];await cloudLoadBcm3()}
 async function bcmLoadBatch(bid,force){const B=bcmDB();if(!CLOUD_ME||!bid||(B.loaded[bid]&&!force))return;
   const L=[];for(let off=0;;off+=2000){const r=await rpc('bcm_lines_read',{bid,off,cur_only:true});L.push(...(r||[]));if(!r||r.length<2000)break}
   const C=await selAll('bcm_class','*',q=>q.eq('batch_id',bid),['line_id']);
@@ -13327,14 +13411,15 @@ function bcmEnsure(bids){if(!CLOUD_ME)return true;const B=bcmDB(),need=bids.filt
 function renderBcm(){
   if(!navOn('bcm')){$('#view').innerHTML='<section class="panel"><p>Budget &amp; Cost Management is for people who see cost figures. The super admin can open it to other roles in Settings → Role access.</p></section>';return}
   const U=bcmCtx();if(state.navSec&&BCM_SECS.some(s=>s[0]===state.navSec&&!s[2])){U.sec=state.navSec;state.navSec=null}const sec=U.sec||'ov';
-  const bat=['intake','auto','review'].includes(sec);const B=bcmBatchesOf(U.pid);
-  const head=`<section class="panel boqtop"><div class="boqhead"><span class="boqic">${icon('bcm')}</span><div><h2>Budget &amp; Cost Management</h2><p class="muted">Automatic WBS Classification of tender costing files: extract, classify, review the exceptions</p></div></div>
+  const bat=['intake','auto','review','dup','recon'].includes(sec);const B=bcmBatchesOf(U.pid);
+  const head=`<section class="panel boqtop"><div class="boqhead"><span class="boqic">${icon('bcm')}</span><div><h2>Budget &amp; Cost Management</h2><p class="muted">Tender costing files to WBS budgets: extract, classify, review the exceptions, count each cost once, reconcile and approve budget versions</p></div></div>
     <div class="chips boqtabs" role="tablist">${BCM_SECS.map(([k,l,st])=>st?`<button type="button" class="chip" disabled aria-disabled="true" title="${esc(BCM_PLANNED[st])}">${esc(l)} <span class="pend sm">Stage ${st}</span></button>`:`<button type="button" role="tab" class="chip" data-bcmsec="${k}" aria-pressed="${k===sec}">${esc(l)}</button>`).join('')}</div>
     ${U.pid?`<div class="boqctx"><label class="field">Project<select data-bcmpid>${bcmProjOpts(U.pid)}</select></label>${bat?`<label class="field">Tender batch<select data-bcmbid>${B.length?B.map(b=>`<option value="${esc(b.id)}" ${b.id===U.bid?'selected':''}>${esc(bcmBatchLabel(b))}</option>`).join(''):'<option value="">No batch yet</option>'}</select></label>`:''}
-      <span class="small muted">TENDER COSTS by WBS: proposals and decisions, never an approved budget. Nothing here is sent to SAP.</span></div>`:''}</section>`;
+      <span class="small muted">Budget versions are approved in ProTrackAI only. Nothing here is sent to SAP.</span></div>`:''}</section>`;
   let warn='';if(CLOUD_ME&&!DB.bcmSrv)warn=`<div class="warn-box" style="margin-bottom:12px"><b>Budget &amp; Cost Management needs the v39 database update.</b> Run schema-update-v39.sql (STAGE-33-SETUP). Until then nothing here can be saved on the server.${DB.bcmMissing?` <span class="small">(${esc(DB.bcmMissing)})</span>`:''}</div>`;
+  if(CLOUD_ME&&DB.bcmSrv&&!DB.bcmV41&&['dup','recon','ver','appr'].includes(sec))warn+=`<div class="warn-box" style="margin-bottom:12px"><b>Stage 3 needs the v41 database update.</b> Run schema-update-v41.sql (STAGE-35-SETUP). Until then duplicate decisions, splits, reconciliation notes and budget versions cannot be saved.</div>`;
   if(!U.pid){$('#view').innerHTML=`${crumb()}${head}${warn}<section class="panel"><p class="muted">No project in your access. Budget &amp; Cost Management works on the projects of the ProTrackAI project master that you can see.</p></section>`;return}
-  const body={ov:bcmOvHTML,intake:bcmIntakeHTML,auto:bcmAutoHTML,review:bcmReviewHTML,master:bcmMasterHTML,learn:bcmLearnHTML,audit:bcmAuditHTML}[sec]||bcmOvHTML;
+  const body={ov:bcmOvHTML,intake:bcmIntakeHTML,auto:bcmAutoHTML,review:bcmReviewHTML,dup:bcmDupHTML,recon:bcmReconHTML,ver:bcmVerHTML,appr:bcmApprHTML,master:bcmMasterHTML,learn:bcmLearnHTML,audit:bcmAuditHTML}[sec]||bcmOvHTML;
   let html;try{html=body(U)}catch(e){console.error(e);html=`<section class="panel"><p class="err">This section could not be shown: ${esc(e.message)}</p></section>`}
   $('#view').innerHTML=`${crumb()}${head}${warn}${html}`;bcmPaintJobs()}
 
@@ -13360,8 +13445,10 @@ function bcmOvHTML(U){const B=bcmBatchesOf(U.pid).filter(b=>b.status==='Open');i
     ${bcmKpi('Awaiting review',fmt(S.wait.length),`${fmt(S.split.length)} need a split or a reason`,'review:wait')}
     ${bcmKpi('Master changes awaiting approval',fmt(pend),'WBS elements, rules, mappings, settings','master')}
     ${bcmKpi('Files needing attention',fmt(att),'header mapping, failed or unfinished reading','intake')}
-    ${bcmKpiPlan('Duplicate candidates',3)}${bcmKpiPlan('Reconciliation variances',3)}${bcmKpiPlan('Pending budget approvals',3)}${bcmKpiPlan('Available SAP exports',4)}</div>
-    <p class="small muted" style="margin:8px 0 0">Counted from the stored lines of the open batches of this project, by currency, exact. Excluded lines: ${fmt(S.excl.length)} (${bcmSumTxt(S.excl)}). Until the duplicate and backup analysis of stage 3, the lines of a backup sheet and the summary line they support are both counted in these totals: compare with each file's control total.${CLOUD?'':' On this demo page the sample batches are labelled sample.'}</p></section>
+    ${bcmKpi('Duplicate candidates',fmt(bcmS3().dups.filter(d=>B.some(b=>b.id===d.batch_id)&&d.status==='Open'&&d.blocking).length),'to decide before a budget version','dup')}
+    ${bcmKpi('Reconciliation variances',fmt(B.filter(b=>bcmLinesOf(b.id).length).reduce((n,b)=>n+bcmTotalsLocal(b.id).files.filter(x=>x.status==='Variance').length,0)),'control totals not matched or explained','recon')}
+    ${bcmKpi('Pending budget approvals',fmt(bcmVersOf(U.pid).filter(v=>['Submitted','Under Review'].includes(v.status)).length),'submitted or under review','ver')}${bcmKpiPlan('Available SAP exports',4)}</div>
+    <p class="small muted" style="margin:8px 0 0">Counted from the stored lines of the open batches of this project, by currency, exact. Excluded lines: ${fmt(S.excl.length)} (${bcmSumTxt(S.excl)}). These are the lines as read: the lines of a backup sheet and the summary line they support are both in them. The accepted total, with each valid cost counted once, is in the Reconciliation Centre.${CLOUD?'':' On this demo page the sample batches are labelled sample.'}</p></section>
   <section class="panel"><div class="card-head"><h2>Tender batches</h2></div>${B.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Tender</th><th>Currency</th><th>Project type</th><th class="n">Files</th><th class="n">Cost lines</th><th>Source control total</th><th>Classified</th><th>Still to resolve</th><th>Progress</th></tr></thead><tbody>
     ${B.map(b=>{const s=bcmStats(bcmLinesOf(b.id)),F=bcmFilesOf(b.id).filter(f=>f.status!=='Withdrawn');const ct=F.map(f=>f.control&&f.control.amount!=null?bcmMoney(f.control.amount,b.currency):null).filter(Boolean);
       return `<tr class="click" data-bcmopenb="${esc(b.id)}" tabindex="0"><td><b>${esc(b.tender_ref)}</b> rev ${esc(b.tender_rev)}${b.title?`<span class="t2">${esc(b.title)}</span>`:''}</td><td>${esc(b.currency)}</td><td>${esc(b.ptype||'—')}</td><td class="n">${F.length}</td><td class="n">${fmt(s.items)}</td>
@@ -13485,9 +13572,9 @@ function bcmReviewHTML(U){const b=bcmBatch(U.bid);if(!b)return '<section class="
     ${bcmKpi('Total source lines',fmt(S.rows),'every non-empty row read')}${bcmKpi('Extracted cost lines',fmt(S.items),'rows with an amount, quantity or rate')}
     ${bcmKpi('Automatically classified',fmt(S.auto.length),bcmSumTxt(S.auto),'review:Auto-Classified')}${bcmKpi('Awaiting review',fmt(S.wait.length),bcmSumTxt(S.wait),'review:wait')}
     ${bcmKpi('Confirmed',fmt(S.conf.length),bcmSumTxt(S.conf),'review:Confirmed')}${bcmKpi('Unclassified',fmt(S.unres.length),bcmSumTxt(S.unres),'review:unres')}
-    ${bcmKpiPlan('Duplicate candidates',3)}${bcmKpiPlan('Reconciliation failures',3)}
+    ${bcmKpi('Duplicate candidates',fmt(bcmS3().dups.filter(d=>d.batch_id===b.id&&d.status==='Open'&&d.blocking).length),'to decide','dup')}${bcmKpi('Reconciliation failures',fmt(bcmTotalsLocal(b.id).files.filter(x=>x.status==='Variance').length),'files whose control total differs','recon')}
     ${bcmKpi('Total source amount',bcmSumTxt(S.all),bcmMissing(S.all)?bcmMissing(S.all)+' without an amount':'')}${bcmKpi('Accepted WBS amount',bcmSumTxt(S.done),'automatic and confirmed')}${bcmKpi('Unresolved amount',bcmSumTxt(S.open),fmt(S.open.length)+' lines','review:open')}</div>
-    <p class="small muted" style="margin:8px 0 0">Amounts are as read, by currency. A backup sheet's lines and the summary line they support are both counted until the duplicate and backup analysis of stage 3.</p></section>
+    <p class="small muted" style="margin:8px 0 0">Amounts are as read, by currency. These are the lines as read. Which of them count (each valid cost once) is decided in Duplicate &amp; Backup Analysis; the accepted total is in the Reconciliation Centre.</p></section>
   ${HV.length?`<section class="panel"><div class="card-head"><h2>High-value and mandatory lines waiting</h2><span class="small muted">confirmed one by one</span></div><div class="scroll"><table class="tbl"><tbody>${HV.slice(0,10).map(l=>{const c=bcmCls(l.id)||{};return `<tr class="click" data-bcmline="${esc(l.id)}"><td>${esc(l.desc||'')}</td><td class="n a-c"><b>${esc(bcmMoney(l.amount,bcmCurOf(l)))}</b></td><td>${esc(bcmWLabel(c.wbs_id))}</td><td>${bcmPill(bcmStatus(l))}</td></tr>`}).join('')}</tbody></table></div></section>`:''}
   ${bcmTableHTML(U,L,'review')}`}
 /* ---------- one line: source, context, proposal, candidates, history and decisions ---------- */
@@ -13523,7 +13610,8 @@ function bcmPaintLine(lid){const l=bcmDB().lines.find(x=>x.id===lid);if(!l)retur
         <button class="btn sm" type="button" data-bcmdo="override" data-id="${esc(lid)}">Confirm with the WBS and cost type chosen</button>
         ${['Proposed','Auto-Classified','Pending Review','Split Required','Confirmed'].includes(s)?`<button class="btn sm" type="button" data-bcmdo="reject" data-id="${esc(lid)}">Reject the proposal</button>`:''}
         <button class="btn sm" type="button" data-bcmdo="exclude" data-id="${esc(lid)}">Exclude with the reason</button>${H.some(h=>!['Engine','Undo'].includes(h.action))?`<button class="btn sm" type="button" data-bcmdo="undo" data-id="${esc(lid)}">Undo the last decision</button>`:''}</div>
-      ${s==='Split Required'?'<p class="small muted">A combined line (supply and installation) is split in stage 3 with documented allocations. Until then it can be confirmed as one line only with a reason, for example a single subcontract price.</p>':''}</div>`:''}
+      ${s==='Split Required'?'<p class="small muted">A combined line (supply and installation) is split below into allocations that add up to it, approved by someone else. It can also be confirmed as one line with a reason, for example a single subcontract price.</p>':''}</div>`:''}
+    ${bcmS3Ready()&&bcmKind(l)==='item'&&(rev||bcmS3().allocs.some(a=>a.line_id===l.id))?bcmSplitHTML(l):''}
     ${rev?`<details><summary class="small">Correct the description or the row kind (the source stays as read)</summary><div class="fields"><label class="field">Description for matching<input id="bcmLD" maxlength="400" value="${esc((c.corr||{}).desc||'')}"></label>
       <label class="field">Row kind<select id="bcmLK"><option value="">Keep (${esc(bcmKind(l))})</option>${['item','section','subtotal','total','note'].map(k=>`<option value="${k}">${k==='item'?'cost line':k}</option>`).join('')}</select></label></div>
       <button class="btn sm" type="button" data-bcmdo="correct" data-id="${esc(lid)}">Save the correction (reason above)</button></details>`:''}
@@ -13858,6 +13946,350 @@ async function bcmAddSample(U){await loadLib(LIBS.xlsx);const p=projById(U.pid);
   const w2=mk([['T&C',[['Ref','Scope','No. of units','UOM','Price/Unit','Extended Price'],row('T1','Commissioning of 132kV GIS bays',6,'No.',65000),row('T2','Relay testing specialist services',1,'LS',140000),row('T3','Testing equipment rental (primary injection set)',3,'month',18000),row('T4','Contingency 3%',1,'LS',210000)]]]);
   const mkFile=(bytes,name)=>{const fl=new File([bytes],name,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});return fl};
   await bcmUpload(r.id,[mkFile(w1,'SAMPLE tender costing summary.xlsx'),mkFile(w2,'SAMPLE testing and commissioning.xlsx')]);U.sec='review';U.F={st:'open'};render()}
+/* =====================================================================================
+   v3.37: Budget & Cost Management, stage 3 (financial controls)
+   - Duplicate & Backup Analysis: sheet roles (proposed by ProTrack, confirmed by a reviewer) and candidates (exact,
+     same figures, different specification, summary in a backup, repeated totals), each decided by a reviewer.
+     Nothing is deleted: a decision only says which lines stop counting (or, for a backup, which count instead).
+   - Split allocations of combined lines: rows adding up to the line, approved by someone other than the proposer.
+   - Reconciliation Centre: control totals against the lines counted, by currency and tolerance, and the checks of the
+     specification; a variance is explained with a reason, never adjusted.
+   - Budget Versions: from a ready batch (on the server the figures are computed by the server) or imported for an
+     existing project with its actual SAP WBS IDs; Draft → Submitted → Under Review → Approved in ProTrackAI, with a
+     different person at each step; lines frozen once submitted. Approved in ProTrackAI is not loaded in SAP.
+   - Approval History. */
+const BCM_VKINDS=['Tender estimate','Rev 0','Revised Rev 0','Approved revision'];
+const BCM_VST_SEV={'Draft':'Low','Submitted':'Medium','Under Review':'Medium','Approved in ProTrackAI':'ok','Rejected':'High','Cancelled':'Low','Ready for SAP Loading':'ok','SAP Loading Confirmed':'ok'};
+const BCM_DEC={valid:'Valid independent cost',duplicate:'Duplicate of another line',backup:'Supporting backup only',superseded:'Superseded revision',excluded:'Excluded with justification'};
+const BCM_APPROVED_V=['Approved in ProTrackAI','Ready for SAP Loading','SAP Loading Confirmed'];
+const bcmS3=()=>{const B=bcmDB();['roles','dups','allocs','notes','versions','vhist'].forEach(k=>{B[k]=B[k]||[]});B.vlines=B.vlines||{};return B};
+async function cloudLoadBcm3(){if(!CLOUD_ME||!DB.bcmSrv)return;const B=bcmS3();
+  try{const f=await rpc('bcm_features',{});DB.bcmV41=+((f&&f.version)||0)>=41}catch(e){DB.bcmV41=false}
+  if(!DB.bcmV41)return;
+  try{[B.roles,B.dups,B.allocs,B.notes,B.versions,B.vhist]=await Promise.all([selAll('bcm_roles','*',null,['file_id','run','sheet']),selAll('bcm_dups','*',null,['id']),selAll('bcm_alloc','*',null,['id']),
+    selAll('bcm_recon_notes','*',null,['id']),selAll('bcm_versions','*',null,['prepared_at']),selAll('bcm_version_hist','*',null,['id'])]);B.vlines={};
+    B.versions.forEach(v=>{if(v.total!=null)v.total=BCME.decStr(BCME.dec(String(v.total)))})}catch(e){toast('Could not read the stage 3 records: '+srvMsg(e))}}
+async function bcmLoadVLines(vid){const B=bcmS3();if(!CLOUD_ME||B.vlines[vid])return;const L=await selAll('bcm_version_lines','version_id,n,wbs_id,wbs_code,sap_wbs_id,descr,user_field,cost_type,amount,src',q=>q.eq('version_id',vid),['n']);
+  B.vlines[vid]=L.map(x=>({...x,amount:BCME.decStr(BCME.dec(x.amount))}))}
+const bcmS3Ready=()=>!CLOUD_ME||DB.bcmV41;
+async function bcmCall3(fn,p){if(CLOUD_ME){if(!DB.bcmV41)throw new Error('Stage 3 needs the v41 database update (STAGE-35-SETUP)');const r=await rpc(fn==='stage3'?'bcm_stage3':'bcm_version_act',{p});await cloudLoadBcm3();
+    try{const {data}=await SB.from('bcm_audit').select('*').order('id',{ascending:false}).limit(2000);bcmDB().audit=data||bcmDB().audit}catch(e){}
+    if(p.batch_id||p.line_id){const bid=p.batch_id||((bcmDB().lines.find(l=>l.id===p.line_id)||{}).batch_id);if(bid)await bcmLoadBatch(bid,true)}else if(fn==='stage3')await bcmLoadBatch(bcmUi().bid,true);return r}
+  const r=BCML3[fn](p);save();return r}
+const bcmRole=(fid,run,sheet)=>bcmS3().roles.find(r=>r.file_id===fid&&r.run===run&&r.sheet===sheet)||null;
+
+/* ---------- which lines count: the same rules as pt_bcm_eval on the server ---------- */
+function bcmEval(bid){const B=bcmS3(),b=bcmBatch(bid)||{},D=B.dups.filter(d=>d.batch_id===bid&&d.status==='Decided'),T=new Map(),I=new Set();
+  D.forEach(d=>{(d.targets||[]).forEach(x=>{if(!T.has(x))T.set(x,d.decision)});(d.includes||[]).forEach(x=>I.add(x))});
+  const A=new Map(B.allocs.filter(a=>a.batch_id===bid&&a.status==='Approved').map(a=>[a.line_id,a.rows]));
+  return bcmLinesOf(bid).filter(l=>bcmKind(l)==='item').map(l=>{const c=bcmCls(l.id)||{},r=bcmRole(l.file_id,l.run,l.sheet),role=r?r.role:'summary',roleOk=BCME.COUNTING_ROLES.includes(role)||I.has(l.id);
+    const counts=roleOk&&!T.has(l.id)&&c.status!=='Excluded with Reason',alloc=A.get(l.id)||null;
+    return {l,counts,why:T.has(l.id)?'decision: '+(BCM_DEC[T.get(l.id)]||T.get(l.id)):!roleOk?'sheet role: '+BCME.ROLE_N[role]:c.status==='Excluded with Reason'?'excluded with reason':null,
+      resolved:!!alloc||(['Auto-Classified','Confirmed'].includes(c.status)&&!!c.wbs_id),wbs:c.wbs_id,ct:c.cost_type,alloc,role,roleStatus:r?r.status:null,cs:c.status||bcmStatus(l),cur:bcmCurOf(l)}})}
+const bcmCounted=bid=>new Set(bcmEval(bid).filter(e=>e.counts).map(e=>e.l.id));
+/* the batch's figures and what stops a budget version (the same as bcm_totals on the server) */
+function bcmTotalsLocal(bid){const b=bcmBatch(bid)||{},E=bcmEval(bid),cur=b.currency,P=[],add=(key,n,msg)=>{if(n)P.push({key,n,msg})},S=a=>BCME.decStr(BCME.decSum(a.map(e=>BCME.dec(e.l.amount))));
+  const C=E.filter(e=>e.counts);add('unresolved',C.filter(e=>!e.resolved).length,`${C.filter(e=>!e.resolved).length} counting lines are not classified yet (unclassified, waiting for review, or a split not approved)`);
+  add('no_amount',C.filter(e=>e.l.amount==null).length,`${C.filter(e=>e.l.amount==null).length} counting lines have no amount`);
+  add('currency',C.filter(e=>e.cur!==cur).length,`${C.filter(e=>e.cur!==cur).length} counting lines are in another currency than ${cur} (ProTrack does not convert)`);
+  add('wbs',C.filter(e=>e.resolved&&!e.alloc&&!bcmWOk(e.wbs)).length,`${C.filter(e=>e.resolved&&!e.alloc&&!bcmWOk(e.wbs)).length} lines are classified to an element that is no longer approved, active and postable`);
+  const od=bcmS3().dups.filter(d=>d.batch_id===bid&&d.status==='Open'&&d.blocking).length;add('dups',od,`${od} duplicate or backup candidates are not decided`);
+  const ur=new Set(E.filter(e=>e.roleStatus!=='Confirmed').map(e=>e.l.file_id+'|'+e.l.sheet)).size;add('roles',ur,`${ur} sheets have no confirmed role`);
+  const pa=bcmS3().allocs.filter(a=>a.batch_id===bid&&a.status==='Proposed').length;add('allocs',pa,`${pa} split allocations wait for approval`);
+  const files=bcmFilesOf(bid).filter(f=>f.status!=='Withdrawn').map(f=>{const ctl=f.control&&f.control.amount!=null?BCME.dec(f.control.amount):null,counted=BCME.decSum(E.filter(e=>e.counts&&e.l.file_id===f.id&&e.cur===cur).map(e=>BCME.dec(e.l.amount))),
+    tol=ctl==null?null:BCME.tolOf(bcmCfg(),cur,b.ptype,BCME.decStr(ctl)),v=ctl==null?null:ctl-counted,note=bcmS3().notes.filter(n=>n.batch_id===bid&&n.check_key==='src:'+f.id).slice(-1)[0]||null;
+    const st=ctl==null?'No control total':BCME.decAbs(v)<=tol?'Within tolerance':note?'Explained':'Variance';if(st==='Variance')add('src:'+f.id,1,`${f.name}: the control total ${BCME.decStr(ctl)} differs from the lines counted ${BCME.decStr(counted)} by ${BCME.decStr(v)} (tolerance ${BCME.decStr(tol)}), not explained`);
+    return {f,ctl:ctl==null?null:BCME.decStr(ctl),counted:BCME.decStr(counted),variance:v==null?null:BCME.decStr(v),tol:tol==null?null:BCME.decStr(tol),status:st,note,
+      excluded:S(E.filter(e=>!e.counts&&e.l.file_id===f.id)),unresolved:S(E.filter(e=>e.counts&&!e.resolved&&e.l.file_id===f.id))}});
+  const W=new Map(),put=(w,ct,a)=>{const k=w+'|'+(ct||'');W.set(k,(W.get(k)||0n)+(BCME.dec(a)||0n))};
+  C.filter(e=>e.resolved&&e.cur===cur).forEach(e=>{if(e.alloc)e.alloc.forEach(r=>put(r.wbs_id,r.cost_type,r.amount));else put(e.wbs,e.ct,e.l.amount)});
+  return {batch_id:bid,currency:cur,ready:!P.length,problems:P,files,wbs:[...W].map(([k,v])=>{const [w,ct]=k.split('|');return {wbs_id:w,cost_type:ct||null,amount:BCME.decStr(v)}}).sort((a,c)=>bcmSort(bcmRow(a.wbs_id),bcmRow(c.wbs_id))||String(a.cost_type).localeCompare(String(c.cost_type))),
+    counted:S(C.filter(e=>e.cur===cur)),not_counted:S(E.filter(e=>!e.counts&&e.cur===cur)),unresolved:S(C.filter(e=>!e.resolved&&e.cur===cur))}}
+/* on the server the server's figures decide; they are read when a page needs them */
+async function bcmSrvTotals(bid){const U=bcmUi();U.srvTot=U.srvTot||{};if(!CLOUD_ME||!DB.bcmV41)return null;try{U.srvTot[bid]=await rpc('bcm_totals',{bid})}catch(e){U.srvTot[bid]={error:srvMsg(e)}}return U.srvTot[bid]}
+
+/* ---------- the same rules in this browser (demo page) ---------- */
+const BCML3={
+  stage3(p){const B=bcmS3(),u=me(),a=p.action,now=new Date().toISOString(),rs=String(p.reason||'').trim().slice(0,1000);
+    if(a==='roles_propose'||a==='roles_confirm'){const f=bcmFile(p.file_id);if(!f)bcmFail('Unknown file');
+      if(a==='roles_propose'&&!(bcmCan('bcm.upload',f.project_id)||bcmCan('bcm.review',f.project_id)))bcmFail('You cannot propose sheet roles on this project');if(a==='roles_confirm'&&!bcmCan('bcm.review',f.project_id))bcmFail('Only a reviewer (bcm.review) confirms sheet roles');
+      if(+p.run!==f.run)bcmFail('That reading is no longer the current one');let n=0;
+      (p.roles||[]).forEach(x=>{if(!BCME.ROLES.includes(x.role))bcmFail('Unknown sheet role '+x.role);let r=bcmRole(f.id,f.run,x.sheet);if(a==='roles_propose'&&r&&r.status==='Confirmed'){n++;return}
+        if(!r){r={file_id:f.id,run:f.run,sheet:x.sheet,project_id:f.project_id,batch_id:f.batch_id};B.roles.push(r)}Object.assign(r,{role:x.role,status:a==='roles_confirm'?'Confirmed':'Proposed',basis:x.basis||r.basis||null,by_user:u.id,by_name:u.name,at_time:now});n++});
+      bcmLog(a==='roles_confirm'?'Sheet roles confirmed':'Sheet roles proposed','file',f.id,f.project_id,{n,roles:p.roles});return {ok:true,n}}
+    if(a==='dups_save'){const b=bcmBatch(p.batch_id);if(!b)bcmFail('Unknown batch');if(!(bcmCan('bcm.upload',b.project_id)||bcmCan('bcm.review',b.project_id)))bcmFail('You cannot run the analysis on this project');
+      const ok=new Set(bcmLinesOf(b.id).map(l=>l.id)),ids=new Set();(p.cands||[]).forEach(x=>{if([...x.lines,...(x.backup_lines||[])].some(i=>!ok.has(i)))bcmFail(`Candidate ${x.id} names a line that is not in the current reading of this batch`);ids.add(x.id);
+        let d=B.dups.find(y=>y.id===x.id);if(d&&d.status==='Decided')return;if(!d){d={id:x.id,batch_id:b.id,project_id:b.project_id,status:'Open'};B.dups.push(d)}Object.assign(d,{kind:x.kind,lines:x.lines,backup_lines:x.backup_lines||null,evidence:x.evidence,score:x.score,blocking:BCME.BLOCKING.includes(x.kind),status:'Open',updated_at:now})});
+      B.dups.filter(d=>d.batch_id===b.id&&d.status==='Open'&&!ids.has(d.id)).forEach(d=>{d.status='Obsolete'});bcmLog('Duplicate and backup analysis run','batch',b.id,b.project_id,{candidates:ids.size});return {ok:true,n:ids.size}}
+    if(a==='dup_decide'||a==='dup_reopen'){const d=B.dups.find(x=>x.id===p.id);if(!d)bcmFail('Unknown candidate');if(!bcmCan('bcm.review',d.project_id))bcmFail('Only a reviewer (bcm.review) decides duplicates and backups');
+      if(a==='dup_reopen'){if(d.status!=='Decided')bcmFail('The candidate is not decided');if(rs.length<5)bcmFail('Give the reason (at least 5 characters)');const prev=d.decision;Object.assign(d,{status:'Open',decision:null,keep:null,details:null,targets:null,includes:null,reason:rs,decided_by:u.id,decided_by_name:u.name,decided_at:now});
+        bcmLog('Duplicate decision reopened','dup',d.id,d.project_id,{previous:prev,reason:rs});return {ok:true}}
+      if(d.status!=='Open')bcmFail(`The candidate is ${d.status.toLowerCase()} (reopen it first)`);if(!BCM_DEC[p.decision])bcmFail('Choose a decision');if(p.decision!=='valid'&&rs.length<5)bcmFail('Give the reason (at least 5 characters)');
+      const e=BCME.dupEffect(d,p.decision,p.keep,!!p.details);Object.assign(d,{status:'Decided',decision:p.decision,keep:p.keep||null,details:!!p.details,targets:e.targets,includes:e.includes,reason:rs||null,decided_by:u.id,decided_by_name:u.name,decided_at:now});
+      bcmLog('Duplicate decided: '+p.decision,'dup',d.id,d.project_id,{kind:d.kind,not_counted:e.targets,reason:rs||null});return {ok:true,targets:e.targets}}
+    if(a==='alloc_propose'){const l=B.lines.find(x=>x.id===p.line_id);if(!l)bcmFail('Unknown line');if(!bcmCan('bcm.review',l.project_id))bcmFail('Only a reviewer (bcm.review) proposes a split');if(l.amount==null)bcmFail('The line has no amount to allocate');
+      if(!['Source breakdown','Approved allocation rule','Manual'].includes(p.method))bcmFail('Choose the allocation method');if(p.method==='Manual'&&String(p.evidence||'').trim().length<5)bcmFail('A manual allocation needs its basis written down');
+      if((p.rows||[]).length<2)bcmFail('A split has at least two allocations');(p.rows||[]).forEach(r=>{if(!bcmWOk(r.wbs_id))bcmFail(`${r.wbs_id||'No element'} is not an approved, active, postable WBS element`);if(!BCME.COST_TYPES.includes(r.cost_type))bcmFail('Each allocation needs its cost type');if(BCME.dec(r.amount)==null)bcmFail('Each allocation needs an amount')});
+      const sum=BCME.decSum(p.rows.map(r=>BCME.dec(r.amount))),A=BCME.dec(l.amount),b=bcmBatch(l.batch_id)||{},tol=(t=>t<1000000n?t:1000000n)(BCME.tolOf(bcmCfg(),bcmCurOf(l),b.ptype,l.amount));
+      if(BCME.decAbs(sum-A)>tol)bcmFail(`The allocations add up to ${BCME.decStr(sum)}, not the line amount ${l.amount} (difference ${BCME.decStr(A-sum)})`);
+      if(B.allocs.some(x=>x.line_id===l.id&&x.status==='Approved'))bcmFail('The line already has an approved split; reject it first');
+      const id='AL-'+Math.random().toString(36).slice(2,12);B.allocs.filter(x=>x.line_id===l.id&&x.status==='Proposed').forEach(x=>Object.assign(x,{status:'Withdrawn',reason:'Replaced by '+id}));
+      B.allocs.push({id,line_id:l.id,project_id:l.project_id,batch_id:l.batch_id,rows:p.rows,by_pct:!!p.by_pct,method:p.method,evidence:p.evidence||null,status:'Proposed',proposed_by:u.id,proposed_by_name:u.name,proposed_at:now});
+      bcmLog('Split proposed','alloc',id,l.project_id,{line:l.id,rows:p.rows.length,method:p.method});return {ok:true,id}}
+    if(['alloc_approve','alloc_reject','alloc_withdraw'].includes(a)){const x=B.allocs.find(y=>y.id===p.id);if(!x)bcmFail('Unknown split');
+      if(a==='alloc_withdraw'){if(x.proposed_by!==u.id||x.status!=='Proposed')bcmFail('Only its proposer withdraws a waiting split');Object.assign(x,{status:'Withdrawn',decided_by_name:u.name,decided_at:now,reason:rs||null});return {ok:true}}
+      if(!bcmCan('bcm.review',x.project_id))bcmFail('Only a reviewer (bcm.review) approves or rejects a split');if(x.proposed_by===u.id)bcmFail('You proposed this split, so someone else approves or rejects it');
+      const c=B.cls[x.line_id]||(B.cls[x.line_id]={line_id:x.line_id,project_id:x.project_id,batch_id:x.batch_id,seq:0}),hist=(action,st,why)=>{c.seq=(c.seq||0)+1;B.chist.push({id:B.chist.length+1,line_id:x.line_id,project_id:x.project_id,seq:c.seq,action,status:st,reason:why,by_user:u.id,by_name:u.name,at_time:now})};
+      if(a==='alloc_approve'){if(x.status!=='Proposed')bcmFail('The split is '+x.status.toLowerCase());x.rows.forEach(r=>{if(!bcmWOk(r.wbs_id))bcmFail(r.wbs_id+' is no longer an approved, active, postable element')});
+        Object.assign(x,{status:'Approved',decided_by:u.id,decided_by_name:u.name,decided_at:now});Object.assign(c,{status:'Confirmed',wbs_id:null,cost_type:null,layer:'split',conf:null,explain:`Split into ${x.rows.length} allocations (${x.method}), approved by ${u.name}`,reason:'Split '+x.id,decided_by:u.id,decided_by_name:u.name,decided_at:now});
+        hist('Split approved','Confirmed',x.id);bcmLog('Split approved','alloc',x.id,x.project_id,{line:x.line_id});return {ok:true}}
+      if(rs.length<5)bcmFail('Give the reason (at least 5 characters)');if(!['Proposed','Approved'].includes(x.status))bcmFail('The split is '+x.status.toLowerCase());
+      if(x.status==='Approved'){Object.assign(c,{status:'Split Required',layer:null,explain:`The approved split ${x.id} was rejected: ${rs}`,decided_by:u.id,decided_by_name:u.name,decided_at:now});hist('Split rejected','Split Required',rs)}
+      Object.assign(x,{status:'Rejected',decided_by:u.id,decided_by_name:u.name,decided_at:now,reason:rs});bcmLog('Split rejected','alloc',x.id,x.project_id,{reason:rs});return {ok:true}}
+    if(a==='recon_note'){const b=bcmBatch(p.batch_id);if(!b)bcmFail('Unknown batch');if(!bcmCan('bcm.review',b.project_id))bcmFail('Only a reviewer (bcm.review) explains a variance');if(rs.length<10)bcmFail('Explain the variance (at least 10 characters)');
+      B.notes.push({id:B.notes.length+1,batch_id:b.id,project_id:b.project_id,check_key:p.check_key,reason:rs,by_user:u.id,by_name:u.name,at_time:now});bcmLog('Variance explained','batch',b.id,b.project_id,{check:p.check_key,reason:rs});return {ok:true}}
+    bcmFail('Unknown action '+a)},
+  version(p){const B=bcmS3(),u=me(),a=p.action,now=new Date().toISOString(),rs=String(p.reason||'').trim().slice(0,1000),hist=(v,action,st,why)=>B.vhist.push({id:B.vhist.length+1,version_id:v.id,project_id:v.project_id,action,status:st,reason:why||null,by_user:u.id,by_name:u.name,at_time:now});
+    if(a==='from_batch'||a==='import'){if(!BCM_VKINDS.includes(p.kind))bcmFail('Choose the kind of version');if(String(p.justification||'').trim().length<5)bcmFail('Give the justification of the version');
+      let pid,cur,lines=[],b=null;
+      if(a==='from_batch'){b=bcmBatch(p.batch_id);if(!b)bcmFail('Unknown batch');pid=b.project_id;cur=b.currency;if(!bcmCan('bcm.budget',pid))bcmFail('You cannot prepare budget versions on this project (the bcm.budget right)');
+        const t=bcmTotalsLocal(b.id);if(!t.ready)bcmFail('The batch is not ready for a budget version: '+t.problems.map(x=>x.msg).join('; '));
+        lines=t.wbs.map((w,i)=>{const d=bcmData(bcmRow(w.wbs_id));return {n:i+1,wbs_id:w.wbs_id,wbs_code:d.code,sap_wbs_id:bcmSapId(w.wbs_id,pid),descr:d.desc,user_field:d.user_field||null,cost_type:w.cost_type,amount:w.amount,src:{batch:b.id,wbs_ver:(bcmRow(w.wbs_id)||{}).ver}}})}
+      else{pid=p.project_id;if(!projById(pid))bcmFail('Choose the project');if(!bcmCan('bcm.budget',pid))bcmFail('You cannot prepare budget versions on this project (the bcm.budget right)');if(!/^[A-Z]{3}$/.test(p.currency||''))bcmFail('Choose the currency');cur=p.currency;
+        if(!(p.lines||[]).length||p.lines.length>5000)bcmFail('Send 1 to 5000 lines');const seen=new Set();
+        lines=p.lines.map((x,i)=>{const n=i+1;if(!/^-?[0-9]+(\.[0-9]+)?$/.test(String(x.amount??'')))bcmFail(`Line ${n}: the amount is not a number`);const key=String(x.sap_wbs_id||x.wbs_code||'').toLowerCase();if(!key)bcmFail(`Line ${n}: give the SAP WBS ID or the WBS code`);
+          if(seen.has(key+'|'+(x.cost_type||'')))bcmFail(`Line ${n}: ${x.sap_wbs_id||x.wbs_code} (cost type ${x.cost_type||'none'}) is twice in the file`);seen.add(key+'|'+(x.cost_type||''));
+          if(x.cost_type&&!BCME.COST_TYPES.includes(x.cost_type))bcmFail(`Line ${n}: unknown cost type ${x.cost_type}`);if(x.wbs_id&&!(bcmRow(x.wbs_id)||{}).cur)bcmFail(`Line ${n}: ${x.wbs_id} is not an approved WBS element`);
+          if(x.user_field&&bcmUfList().length&&!bcmUfOf(x.user_field))bcmFail(`Line ${n}: the user field ${x.user_field} is not in the user field list`);
+          return {n,wbs_id:x.wbs_id||null,wbs_code:x.wbs_code||null,sap_wbs_id:x.sap_wbs_id||null,descr:x.descr||null,user_field:x.user_field||null,cost_type:x.cost_type||null,amount:BCME.decStr(BCME.dec(x.amount)),src:{row:x.row}}});
+        const tot=BCME.decSum(lines.map(l=>BCME.dec(l.amount)));if(p.file_total!=null&&p.file_total!==''&&BCME.decAbs(BCME.dec(p.file_total)-tot)>BCME.tolOf(bcmCfg(),cur,null,BCME.decStr(tot)))bcmFail(`The lines add up to ${BCME.decStr(tot)}, not the total ${p.file_total} stated in the file`)}
+      if(!lines.length)bcmFail('The version has no line');const rv=B.versions.filter(v=>v.project_id===pid&&v.kind===p.kind).reduce((m,v)=>Math.max(m,v.rev_no),-1)+1,id='BV-'+TODAY.slice(2).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,8),tot=BCME.decStr(BCME.decSum(lines.map(l=>BCME.dec(l.amount))));
+      const v={id,project_id:pid,kind:p.kind,rev_no:rv,title:p.title||null,currency:cur,status:'Draft',source:a==='from_batch'?'batch':'import',batch_id:b?b.id:null,file:p.file||null,prev_id:null,justification:p.justification,effective_date:p.effective_date||null,total:tot,n:lines.length,prepared_by:u.id,prepared_by_name:u.name,prepared_at:now};
+      B.versions.push(v);B.vlines[id]=lines;hist(v,a==='from_batch'?'Prepared from batch '+b.id:'Imported','Draft',p.justification);bcmLog('Budget version prepared','version',id,pid,{kind:p.kind,rev:rv,total:tot,lines:lines.length,source:a});return {ok:true,id,rev_no:rv,total:tot,n:lines.length}}
+    const v=B.versions.find(x=>x.id===p.id);if(!v)bcmFail('Unknown version');let ns;
+    if(a==='submit'){if(v.status!=='Draft')bcmFail('Only a draft is submitted');if(!bcmCan('bcm.budget',v.project_id))bcmFail('You cannot submit budget versions (the bcm.budget right)');Object.assign(v,{status:'Submitted',submitted_by:u.id,submitted_by_name:u.name,submitted_at:now});ns='Submitted'}
+    else if(a==='review'){if(v.status!=='Submitted')bcmFail('Only a submitted version is taken under review');if(!bcmCan('bcm.review',v.project_id))bcmFail('Only a reviewer (bcm.review) reviews budget versions');if([v.prepared_by,v.submitted_by].includes(u.id))bcmFail('You prepared or submitted this version, so someone else reviews it');
+      Object.assign(v,{status:'Under Review',reviewed_by:u.id,reviewed_by_name:u.name,reviewed_at:now});ns='Under Review'}
+    else if(a==='approve'){if(v.status!=='Under Review')bcmFail('Only a version under review is approved');if(!bcmCan('bcm.budget.approve',v.project_id))bcmFail('Only a budget approver (bcm.budget.approve) approves budget versions');if([v.prepared_by,v.submitted_by].includes(u.id))bcmFail('You prepared or submitted this version, so someone else approves it');
+      const prev=B.versions.filter(o=>o.project_id===v.project_id&&o.id!==v.id&&BCM_APPROVED_V.includes(o.status)).sort((x,y)=>String(y.approved_at).localeCompare(String(x.approved_at)))[0];Object.assign(v,{status:'Approved in ProTrackAI',approved_by:u.id,approved_by_name:u.name,approved_at:now,prev_id:prev?prev.id:null});ns='Approved in ProTrackAI'}
+    else if(a==='reject'||a==='cancel'){if(rs.length<5)bcmFail('Give the reason (at least 5 characters)');
+      if(a==='reject'){if(!['Submitted','Under Review'].includes(v.status))bcmFail('Only a submitted version or one under review is rejected');if(!(bcmCan('bcm.review',v.project_id)||bcmCan('bcm.budget.approve',v.project_id)))bcmFail('Only a reviewer or a budget approver rejects a version');if([v.prepared_by,v.submitted_by].includes(u.id))bcmFail('You prepared or submitted this version; cancel it instead');ns='Rejected'}
+      else{if(!['Draft','Submitted'].includes(v.status))bcmFail('Only a draft or a submitted version is cancelled');if(!([v.prepared_by,v.submitted_by].includes(u.id)||bcmCan('bcm.budget.approve',v.project_id)))bcmFail('Only its preparer or a budget approver cancels a version');ns='Cancelled'}
+      Object.assign(v,{status:ns,closed_by:u.id,closed_by_name:u.name,closed_at:now,close_reason:rs})}
+    else bcmFail('Unknown action '+a);
+    hist(v,a.charAt(0).toUpperCase()+a.slice(1),ns,rs);bcmLog('Budget version '+ns.toLowerCase(),'version',v.id,v.project_id,{kind:v.kind,rev:v.rev_no,reason:rs||null});return {ok:true,status:ns}}};
+
+/* ---------- the analysis: propose sheet roles and candidates for a batch ---------- */
+async function bcmAnalyse(bid){const b=bcmBatch(bid);if(!b)return;const F=bcmFilesOf(bid).filter(f=>f.status!=='Withdrawn'&&f.run>0),lines=bcmLinesOf(bid);
+  for(const f of F){const L=lines.filter(l=>l.file_id===f.id).map(l=>({...l,kind:bcmKind(l)}));const sheets=(f.sheets||[]).length?f.sheets.map(s=>({sheet:s.sheet,hidden:s.hidden})):[...new Set(L.map(l=>l.sheet))].map(s=>({sheet:s,hidden:L.some(l=>l.sheet===s&&l.hidden_sheet)}));
+    const R=BCME.proposeRoles(f.name,sheets.filter(s=>L.some(l=>l.sheet===s.sheet)),L,f.control);if(R.length)await bcmCall3('stage3',{action:'roles_propose',file_id:f.id,run:f.run,roles:R.map(r=>({sheet:r.sheet,role:r.role,basis:r.basis}))})}
+  const L=lines.map(l=>({...l,kind:bcmKind(l),file:(bcmFile(l.file_id)||{}).name,desc:((bcmCls(l.id)||{}).corr||{}).desc||l.desc,cur:bcmCurOf(l)}));
+  const C=BCME.findDups(L,BCME.lexicon(bcmCfg()));await bcmCall3('stage3',{action:'dups_save',batch_id:bid,cands:C});
+  const by={};C.forEach(c=>{by[c.kind]=(by[c.kind]||0)+1});return {n:C.length,msg:`Analysis run: ${C.length} candidate${C.length===1?'':'s'}${C.length?' ('+Object.entries(by).map(([k,n])=>`${n} ${BCME.DUP_N[k].toLowerCase()}`).join(', ')+')':''}; sheet roles proposed for ${F.length} file${F.length===1?'':'s'}`}}
+
+/* ---------- Duplicate & Backup Analysis ---------- */
+function bcmDupHTML(U){const b=bcmBatch(U.bid);if(!b)return '<section class="panel"><p class="muted">No tender batch yet.</p></section>';if(!bcmEnsure([b.id]))return '<section class="panel"><p class="muted">Reading the lines from the server…</p></section>';
+  if(!bcmS3Ready())return '<section class="panel"><p class="warn-box"><b>Stage 3 needs the v41 database update</b> (STAGE-35-SETUP).</p></section>';
+  const B=bcmS3(),rev=bcmCan('bcm.review',b.project_id),run=bcmCan('bcm.upload',b.project_id)||rev,E=bcmEval(b.id),ln=id=>bcmDB().lines.find(l=>l.id===id),cur=b.currency;
+  const sheets=[];bcmFilesOf(b.id).filter(f=>f.status!=='Withdrawn').forEach(f=>{[...new Set(bcmLinesOf(b.id).filter(l=>l.file_id===f.id).map(l=>l.sheet))].forEach(s=>{const e=E.filter(x=>x.l.file_id===f.id&&x.l.sheet===s);sheets.push({f,s,r:bcmRole(f.id,f.run,s),n:e.length,sum:bcmSumTxt(e.map(x=>x.l)),cnt:e.filter(x=>x.counts).length})})});
+  const F=U.dupF||'open',D=B.dups.filter(d=>d.batch_id===b.id&&d.status!=='Obsolete'&&(F==='all'||(F==='open'?d.status==='Open':d.status==='Decided'))).sort((x,y)=>(y.blocking-x.blocking)||String(x.kind).localeCompare(y.kind));
+  const lrow=(id,d,radio)=>{const l=ln(id);if(!l)return '';const c=bcmCls(id)||{},e=E.find(x=>x.l.id===id),keep=(d.keep||[]).includes(id);
+    return `<tr class="${e&&!e.counts?'boqsub':''}">${radio?`<td><input type="checkbox" data-bcmkeep="${esc(d.id)}" value="${esc(id)}" ${d.status==='Decided'?(keep?'checked':''):(d.lines[0]===id?'checked':'')} ${d.status==='Decided'?'disabled':''} aria-label="Counts"></td>`:''}
+      <td class="small">${esc((bcmFile(l.file_id)||{}).name||'')}<span class="t2">${esc(l.sheet)} row ${l.row}</span></td><td>${esc(l.desc||'')}${Object.keys(BCME.attrsOf(l.desc)).length?`<span class="t2">${esc(Object.entries(BCME.attrsOf(l.desc)).map(([k,v])=>v===true?k:k+' '+v).join(', '))}</span>`:''}</td>
+      <td class="n">${esc(l.qty??'')}</td><td>${esc(l.unit||'')}</td><td class="n">${l.rate!=null?esc(BCME.money(l.rate,bcmCurOf(l))):''}</td><td class="n"><b>${esc(bcmMoney(l.amount,bcmCurOf(l)))}</b></td><td>${esc(bcmCode(c.wbs_id)||'')}</td><td class="small">${e?(e.counts?'<span class="g-c">counts</span>':`<span class="muted">not counted: ${esc(e.why)}</span>`):''}</td></tr>`};
+  const card=d=>{const rad=d.kind!=='backup',bl=d.backup_lines||[],bsum=BCME.decStr(BCME.decSum(bl.map(i=>BCME.dec((ln(i)||{}).amount))));
+    return `<div class="boqasset"><div class="boqasset-h"><div><b>${esc(BCME.DUP_N[d.kind])}</b> ${d.blocking?'<span class="sev Medium">must be decided before a budget version</span>':'<span class="sev Low">for information</span>'} ${d.status==='Decided'?`<span class="sev ok">${esc(BCM_DEC[d.decision])}</span>`:''}</div><span class="small muted">${esc(d.id)}</span></div>
+      <p class="small" style="margin:4px 0">${(d.evidence||[]).map(esc).join('<br>')}</p>
+      <div class="scroll"><table class="tbl small"><thead><tr>${rad?'<th>Counts</th>':''}<th>Source</th><th>Description</th><th class="n">Qty</th><th>Unit</th><th class="n">Rate</th><th class="n">Amount</th><th>WBS</th><th></th></tr></thead><tbody>
+        ${d.lines.map(i=>lrow(i,d,rad)).join('')}${bl.length?`<tr><td colspan="${rad?9:8}" class="small"><b>Backup lines</b> (${bl.length}, adding up to ${esc(bcmMoney(bsum,cur))})</td></tr>${bl.map(i=>lrow(i,d,rad)).join('')}`:''}</tbody></table></div>
+      ${d.status==='Decided'?`<p class="small">Decided by ${esc(d.decided_by_name||'')} ${esc(tStamp(d.decided_at))}${d.reason?': '+esc(d.reason):''}. Not counted: ${(d.targets||[]).length} line${(d.targets||[]).length===1?'':'s'}${(d.includes||[]).length?`; counted whatever their sheet's role: ${(d.includes||[]).length}`:''}.</p>${rev?`<div class="actions"><input data-bcmdr="${esc(d.id)}" placeholder="Reason to reopen" maxlength="300"><button class="btn sm" type="button" data-bcmdupre="${esc(d.id)}">Reopen</button></div>`:''}`
+      :rev?`<div class="actions" style="flex-wrap:wrap"><input data-bcmdr="${esc(d.id)}" placeholder="Reason (needed except for a valid cost)" maxlength="300" style="min-width:260px">
+        <button class="btn sm" type="button" data-bcmdup="${esc(d.id)}" data-dec="valid">Valid independent cost${d.kind==='backup'?' (both count)':''}</button>
+        ${d.kind==='backup'?`<button class="btn sm primary" type="button" data-bcmdup="${esc(d.id)}" data-dec="backup">Supporting backup only: count the summary line</button><button class="btn sm" type="button" data-bcmdup="${esc(d.id)}" data-dec="backup" data-details="1">Count the backup lines instead</button>`
+          :`<button class="btn sm primary" type="button" data-bcmdup="${esc(d.id)}" data-dec="duplicate">Duplicate: only the ticked line counts</button><button class="btn sm" type="button" data-bcmdup="${esc(d.id)}" data-dec="superseded">Superseded revision</button><button class="btn sm" type="button" data-bcmdup="${esc(d.id)}" data-dec="excluded">Excluded with justification</button>`}</div>`:'<p class="small muted">Decided by a reviewer (bcm.review).</p>'}</div>`};
+  const open=B.dups.filter(d=>d.batch_id===b.id&&d.status==='Open'),blk=open.filter(d=>d.blocking).length;
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Duplicate &amp; backup analysis of ${esc(bcmBatchLabel(b))}</h2>${run?`<button class="btn primary sm" type="button" data-bcmanalyse="${esc(b.id)}">Run the analysis</button>`:''}</div>
+    <p class="small muted">ProTrack proposes the role of each sheet and the candidates, using several signals together: the file fingerprint, sheet and section, description, quantity, unit, rate, amount, technical attributes and formula links between sheets. A person decides. Nothing is deleted: a decision only says which lines stop counting. The accepted total counts each valid cost once.</p>
+    <div class="boqgrid">${bcmKpi('Candidates to decide',fmt(blk),`${open.length-blk} more for information`)}${bcmKpi('Lines not counted',fmt(E.filter(e=>!e.counts).length),bcmSumTxt(E.filter(e=>!e.counts).map(e=>e.l)))}${bcmKpi('Lines counted',fmt(E.filter(e=>e.counts).length),bcmSumTxt(E.filter(e=>e.counts).map(e=>e.l)))}${bcmKpi('Sheets without a confirmed role',fmt(sheets.filter(x=>!x.r||x.r.status!=='Confirmed').length),'confirmed by a reviewer')}</div></section>
+  <section class="panel"><div class="card-head"><h2>Sheet roles</h2></div><p class="small muted">Only the lines of an authoritative summary or a detailed cost breakdown count. Supporting backups, alternative quotations, previous revisions and reference sheets are kept and shown, never added.</p>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>File</th><th>Sheet</th><th class="n">Cost lines</th><th>Amount</th><th>Role</th><th>Basis</th><th>Status</th></tr></thead><tbody>
+    ${sheets.map(x=>`<tr><td>${esc(x.f.name)}</td><td>${esc(x.s)}</td><td class="n">${x.n}<span class="t2">${x.cnt} counted</span></td><td>${x.sum}</td>
+      <td>${rev?`<select data-bcmrole="${esc(x.f.id)}" data-sheet="${esc(x.s)}">${BCME.ROLES.map(r=>`<option value="${r}" ${(x.r?x.r.role:'summary')===r?'selected':''}>${esc(BCME.ROLE_N[r])}</option>`).join('')}</select>`:esc(BCME.ROLE_N[x.r?x.r.role:'summary'])}</td>
+      <td class="small">${esc(((x.r||{}).basis||[]).join('; ')||'—')}</td><td>${x.r?`<span class="sev ${x.r.status==='Confirmed'?'ok':'Medium'}">${esc(x.r.status)}</span><span class="t2">${esc(x.r.by_name||'')}</span>`:'<span class="muted">not proposed yet</span>'}</td></tr>`).join('')||'<tr><td colspan="7" class="muted">No file read yet.</td></tr>'}</tbody></table></div>
+    ${rev&&sheets.length?`<div class="actions"><button class="btn sm primary" type="button" data-bcmroleok="${esc(b.id)}">Confirm the roles shown</button></div>`:''}</section>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Candidates</h2><div class="chips">${[['open','To decide'],['done','Decided'],['all','All']].map(([k,l])=>`<button type="button" class="chip" data-bcmdupf="${k}" aria-pressed="${F===k}">${l}</button>`).join('')}</div></div>
+    ${D.map(card).join('')||'<p class="muted">Nothing here. Run the analysis after reading the files.</p>'}</section>`}
+
+/* ---------- Reconciliation Centre ---------- */
+function bcmChecks(b,T){const E=bcmEval(b.id),L=bcmLinesOf(b.id),out=[],add=(key,sev,title,o)=>out.push({key,sev,title,...o}),fl=(re)=>L.filter(l=>bcmKind(l)==='item'&&(l.flags||[]).some(f=>re.test(f)));
+  T.files.forEach(x=>{if(x.status==='No control total')add('src:'+x.f.id,'Low','No control total in the file',{file:x.f.name,calc:x.counted,cause:'The workbook has no single grand total ProTrack can take as its control total',action:'Nothing to do, or check the file total by hand',status:'Not available'});
+    else add('src:'+x.f.id,x.status==='Variance'?'High':'ok','Source control total against the lines counted',{file:x.f.name,sheet:(x.f.control||{}).sheet,expected:x.ctl,calc:x.counted,variance:x.variance,tol:x.tol,cause:x.status==='Variance'?'A line is missing, a subtotal was taken as a line, a backup is counted, or a duplicate decision removed a line the total includes':'',action:x.status==='Variance'?'Check the roles and decisions; explain the variance if the file total is itself wrong':'',status:x.status,note:x.note})});
+  [[/^Missing description/,'Missing descriptions'],[/^Quantity is not|^Formula error in the quantity/,'Missing or invalid quantities'],[/^Rate is not|^Formula error in the rate/,'Invalid or missing rates'],[/^Missing amount|^Amount is not a number/,'Missing amounts'],
+    [/^Formula error in the amount/,'Formula errors'],[/^Formula result missing/,'Formula results not verified (missing in the file)'],[/^Negative amount/,'Negative amounts (check they are intended)'],[/^Quantity × rate/,'Quantity × rate differing from the amount']].forEach(([re,t])=>{const X=fl(re);if(X.length)add('flag:'+t,/Negative/.test(t)?'Medium':'High',t,{calc:String(X.length)+' line'+(X.length===1?'':'s'),lines:X.map(l=>l.id),cause:'As read from the source file',action:'Correct the source and upload it again, or exclude the line with a reason',status:'Open'})});
+  bcmS3().dups.filter(d=>d.batch_id===b.id&&d.kind==='backup'&&d.status!=='Obsolete').forEach(d=>{const l=L.find(x=>x.id===d.lines[0]);if(!l)return;const s=BCME.decSum((d.backup_lines||[]).map(i=>BCME.dec((L.find(x=>x.id===i)||{}).amount)));const v=BCME.dec(l.amount)-s;
+    if(v!==0n)add('det:'+d.id,'High','Source-to-detail difference',{file:(bcmFile(l.file_id)||{}).name,sheet:l.sheet,expected:l.amount,calc:BCME.decStr(s),variance:BCME.decStr(v),cause:`"${l.desc}" and the backup lines it is linked to differ`,action:'Check which is right before deciding the backup candidate',status:d.status==='Decided'?'Decided':'Open'})});
+  const tot=bcmS3().dups.filter(d=>d.batch_id===b.id&&d.kind==='total'&&d.status!=='Obsolete').length;if(tot)add('rep','Low','Repeated totals',{calc:String(tot),cause:'The same total in several places',action:'Usually a summary and its backup: check the sheet roles',status:'Info'});
+  const unr=E.filter(e=>e.counts&&!e.resolved);if(unr.length)add('unres','High','Unclassified value',{calc:bcmSumTxt(unr.map(e=>e.l)),cause:unr.length+' counting lines are not classified (or wait for review or a split)',action:'Classification Review',status:'Open'});
+  const inv=E.filter(e=>e.counts&&e.resolved&&!e.alloc&&!bcmWOk(e.wbs));if(inv.length)add('wbs','High','Invalid WBS mapping',{calc:String(inv.length),cause:'Classified to an element no longer approved, active and postable',action:'Reassign the lines',status:'Open'});
+  const oc=E.filter(e=>e.counts&&e.cur!==b.currency);if(oc.length)add('cur','High','Lines in another currency',{calc:bcmSumTxt(oc.map(e=>e.l)),cause:'ProTrack does not convert currencies',action:'Convert in the source file, or exclude with a reason',status:'Open'});
+  const pa=bcmS3().allocs.filter(a=>a.batch_id===b.id&&a.status==='Proposed').length;if(pa)add('alloc','Medium','Splits waiting for approval',{calc:String(pa),action:'Someone other than the proposer approves them in the line view',status:'Open'});
+  /* the same item with different amounts in two files */
+  const G=new Map();E.filter(e=>e.counts).forEach(e=>{const k=BCME.norm(e.l.desc||'')+'|'+JSON.stringify(BCME.attrsOf(e.l.desc));G.set(k,[...(G.get(k)||[]),e])});
+  G.forEach(g=>{const files=new Set(g.map(e=>e.l.file_id)),amts=new Set(g.map(e=>e.l.amount));if(files.size>1&&amts.size>1)add('mat:'+h336(g.map(e=>e.l.id).join()),'Medium','Materially different amounts across source files',{calc:g.map(e=>`${(bcmFile(e.l.file_id)||{}).name}: ${bcmMoney(e.l.amount,e.cur)}`).join('; '),cause:`"${g[0].l.desc}" appears with different amounts`,action:'Check which file is authoritative; decide in Duplicate & Backup Analysis',status:'Open',lines:g.map(e=>e.l.id)})});
+  return out}
+const h336=s=>{let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return (h>>>0).toString(36)};
+/* the previous revision of the same tender: changes by item */
+function bcmRevCompare(b){const prev=bcmDB().batches.filter(x=>x.project_id===b.project_id&&x.tender_ref===b.tender_ref&&x.id!==b.id&&x.status==='Open'&&String(x.tender_rev)<String(b.tender_rev)).sort((x,y)=>String(y.tender_rev).localeCompare(String(x.tender_rev)))[0];
+  if(!prev)return null;if(!bcmEnsure([prev.id]))return {prev,loading:true};const key=l=>BCME.norm(l.desc||'')+'|'+JSON.stringify(BCME.attrsOf(l.desc)),A=new Map(),Bm=new Map();
+  bcmEval(prev.id).filter(e=>e.counts).forEach(e=>A.set(key(e.l),(A.get(key(e.l))||[]).concat(e)));bcmEval(b.id).filter(e=>e.counts).forEach(e=>Bm.set(key(e.l),(Bm.get(key(e.l))||[]).concat(e)));
+  const sum=g=>BCME.decSum((g||[]).map(e=>BCME.dec(e.l.amount))),rows=[];new Set([...A.keys(),...Bm.keys()]).forEach(k=>{const a=sum(A.get(k)),c=sum(Bm.get(k)),d=c-a,tol=BCME.tolOf(bcmCfg(),b.currency,b.ptype,BCME.decStr(a));
+    if(BCME.decAbs(d)>tol)rows.push({desc:((Bm.get(k)||A.get(k))[0]).l.desc,was:A.has(k)?BCME.decStr(a):null,now:Bm.has(k)?BCME.decStr(c):null,diff:BCME.decStr(d)})});
+  return {prev,rows:rows.sort((x,y)=>Number(BCME.decAbs(BCME.dec(y.diff))-BCME.decAbs(BCME.dec(x.diff)))>0?1:-1)}}
+function bcmReconHTML(U){const b=bcmBatch(U.bid);if(!b)return '<section class="panel"><p class="muted">No tender batch yet.</p></section>';if(!bcmEnsure([b.id]))return '<section class="panel"><p class="muted">Reading the lines from the server…</p></section>';
+  if(!bcmS3Ready())return '<section class="panel"><p class="warn-box"><b>Stage 3 needs the v41 database update</b> (STAGE-35-SETUP).</p></section>';
+  const T=bcmTotalsLocal(b.id),S=(U.srvTot||{})[b.id],rev=bcmCan('bcm.review',b.project_id),K=bcmChecks(b,T),RC=bcmRevCompare(b),cur=b.currency,M=a=>a==null?'—':esc(bcmMoney(a,cur));
+  if(CLOUD_ME&&!S&&!bcmReconHTML.p){bcmReconHTML.p=bcmSrvTotals(b.id).finally(()=>{bcmReconHTML.p=null;if(state.view==='bcm')render()})}
+  const sevP=s=>`<span class="sev ${s}">${s==='ok'?'OK':s}</span>`;
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Reconciliation of ${esc(bcmBatchLabel(b))}</h2><span class="small muted">${esc(cur)} · exact decimals · tolerances by currency and project type</span></div>
+    <div class="boqgrid">${bcmKpi('Accepted (counted) total',M(T.counted),'each valid cost once')}${bcmKpi('Not counted',M(T.not_counted),'backups, duplicates, other roles, exclusions')}${bcmKpi('Unresolved within the counted',M(T.unresolved),'not classified yet')}
+      ${bcmKpi('Ready for a budget version',T.ready?'Yes':'No',T.ready?'every control passes':T.problems.length+' thing'+(T.problems.length===1?'':'s')+' to do')}</div>
+    ${T.problems.length?`<ul class="small">${T.problems.map(p=>`<li>${esc(p.msg)}</li>`).join('')}</ul>`:''}
+    ${CLOUD_ME?`<p class="small">${S?S.error?`<span class="r-c">The server check could not run: ${esc(S.error)}</span>`:`<b>Server check:</b> ${S.ready?'<span class="g-c">ready</span>':'<span class="r-c">not ready</span>'}, counted ${M(S.counted)}${S.problems.length?': '+S.problems.map(p=>esc(p.msg)).join('; '):''}`:'<span class="muted">Asking the server for its figures…</span>'} <button class="btn sm" type="button" data-bcmsrvtot="${esc(b.id)}">Check on the server again</button></p>`:''}
+    <p class="small muted">A variance is explained with a reason, never hidden by adjusting a line. The figures of a budget version are worked out ${CLOUD?'by the server':'from these same rules'} when it is prepared.</p></section>
+  <section class="panel"><div class="card-head"><h2>Source files</h2></div><div class="scroll"><table class="tbl small"><thead><tr><th>File</th><th class="n">Control total</th><th class="n">Counted</th><th class="n">Variance</th><th class="n">Tolerance</th><th class="n">Not counted</th><th class="n">Unresolved</th><th>Status</th><th></th></tr></thead><tbody>
+    ${T.files.map(x=>`<tr><td>${esc(x.f.name)}<span class="t2">${esc((x.f.control||{}).sheet||'')} ${esc((x.f.control||{}).ref||'')}</span></td><td class="n">${M(x.ctl)}</td><td class="n">${M(x.counted)}</td><td class="n ${x.status==='Variance'?'r-c':''}">${M(x.variance)}</td><td class="n">${M(x.tol)}</td><td class="n">${M(x.excluded)}</td><td class="n">${M(x.unresolved)}</td>
+      <td><span class="sev ${({'Within tolerance':'ok','Explained':'Low','Variance':'High','No control total':'Low'})[x.status]}">${esc(x.status)}</span>${x.note?`<span class="t2">${esc(x.note.by_name)}: ${esc(x.note.reason)}</span>`:''}</td>
+      <td>${rev&&x.status==='Variance'?`<input data-bcmnote="src:${esc(x.f.id)}" placeholder="Why (at least 10 characters)" maxlength="300"><button class="btn sm" type="button" data-bcmexplain="src:${esc(x.f.id)}">Explain</button>`:''}</td></tr>`).join('')||'<tr><td colspan="9" class="muted">No file.</td></tr>'}</tbody></table></div></section>
+  <section class="panel"><div class="card-head"><h2>Accepted amounts by WBS</h2><span class="small muted">${esc(cur)} · counted and classified lines, splits by their allocations</span></div><div class="scroll"><table class="tbl small"><thead><tr><th>SAP WBS ID</th><th>WBS</th><th>User field</th><th>Cost type</th><th class="n">Amount</th></tr></thead><tbody>
+    ${T.wbs.map(w=>`<tr><td>${esc(bcmSapId(w.wbs_id,b.project_id)||'—')}</td><td>${esc(bcmWLabel(w.wbs_id))}</td><td>${esc(bcmData(bcmRow(w.wbs_id)).user_field||'')}</td><td>${esc(w.cost_type||'—')}</td><td class="n">${M(w.amount)}</td></tr>`).join('')||'<tr><td colspan="5" class="muted">Nothing accepted yet.</td></tr>'}
+    ${T.wbs.length?`<tr><td colspan="4"><b>Total accepted</b></td><td class="n"><b>${M(BCME.decStr(BCME.decSum(T.wbs.map(w=>BCME.dec(w.amount)))))}</b></td></tr><tr><td colspan="4">Unclassified value (counted, not resolved)</td><td class="n">${M(T.unresolved)}</td></tr>`:''}</tbody></table></div></section>
+  <section class="panel"><div class="card-head"><h2>Checks</h2></div><div class="scroll"><table class="tbl small"><thead><tr><th>Check</th><th>File and sheet</th><th class="n">Expected</th><th class="n">Calculated</th><th class="n">Variance</th><th>Possible cause</th><th>What to do</th><th>Status</th></tr></thead><tbody>
+    ${K.map(k=>`<tr><td>${sevP(k.sev)} ${esc(k.title)}</td><td>${esc(k.file||'')} ${esc(k.sheet||'')}</td><td class="n">${k.expected!=null?M(k.expected):''}</td><td class="n">${k.calc!=null?(/^-?\d/.test(k.calc)&&!/line/.test(k.calc)?M(k.calc):esc(k.calc)):''}</td><td class="n">${k.variance!=null?M(k.variance):''}</td>
+      <td class="small">${esc(k.cause||'')}</td><td class="small">${esc(k.action||'')}</td><td>${esc(k.status||'')}</td></tr>`).join('')}</tbody></table></div></section>
+  <section class="panel"><div class="card-head"><h2>Changes from the previous revision</h2></div>${!RC?'<p class="muted">No earlier revision of this tender in ProTrack.</p>':RC.loading?'<p class="muted">Reading the previous revision…</p>':`<p class="small muted">Against ${esc(bcmBatchLabel(RC.prev))}: items whose counted amount changed by more than the tolerance.</p>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>Item</th><th class="n">Was</th><th class="n">Now</th><th class="n">Change</th></tr></thead><tbody>${RC.rows.slice(0,100).map(r=>`<tr><td>${esc(r.desc||'')}</td><td class="n">${M(r.was)}</td><td class="n">${M(r.now)}</td><td class="n">${M(r.diff)}</td></tr>`).join('')||'<tr><td colspan="4" class="muted">No change beyond the tolerance.</td></tr>'}</tbody></table></div>`}</section>`}
+
+/* ---------- split allocations (in the line view) ---------- */
+function bcmSplitHTML(l){const B=bcmS3(),A=B.allocs.filter(a=>a.line_id===l.id&&['Proposed','Approved','Rejected'].includes(a.status)).sort((x,y)=>String(y.proposed_at).localeCompare(String(x.proposed_at))),rev=bcmCan('bcm.review',l.project_id),me_=(me()||{}).id;
+  const act=A.find(a=>a.status==='Approved'),wait=A.find(a=>a.status==='Proposed'),W=bcmUsableW(),cur=bcmCurOf(l);
+  const pre=(l.extra||[]).length?(l.extra||[]).map(e=>({wbs_id:'',cost_type:/labou?r|manpower|install|erect/i.test(e.name)?'Manpower':/equip|plant/i.test(e.name)?'Equipment':/subcontract/i.test(e.name)?'Subcontract':'Material',amount:e.amount,note:e.name+' '+e.ref})):[{wbs_id:'',cost_type:'Material',amount:''},{wbs_id:'',cost_type:'Manpower',amount:''}];
+  const show=a=>`<table class="tbl small"><tbody>${a.rows.map(r=>`<tr><td>${esc(bcmWLabel(r.wbs_id))}</td><td>${esc(r.cost_type)}</td><td class="n">${esc(bcmMoney(r.amount,cur))}${r.pct?` (${esc(r.pct)}%)`:''}</td></tr>`).join('')}</tbody></table>
+    <p class="small">${esc(a.method)}${a.evidence?': '+esc(a.evidence):''} · proposed by ${esc(a.proposed_by_name||'')} ${esc(tStamp(a.proposed_at))}${a.decided_by_name?` · ${esc(a.status.toLowerCase())} by ${esc(a.decided_by_name)}${a.reason?': '+esc(a.reason):''}`:''}</p>`;
+  return `<h3>Split into allocations</h3>${act?`<div class="boqasset"><span class="sev ok">Approved split</span>${show(act)}${rev&&act.proposed_by!==me_?`<div class="actions"><input id="bcmAlR" placeholder="Reason to reject" maxlength="300"><button class="btn sm" type="button" data-bcmalrej="${esc(act.id)}">Reject the split</button></div>`:''}</div>`:''}
+    ${wait?`<div class="boqasset"><span class="sev Medium">Split waiting for approval</span>${show(wait)}<div class="actions">${rev&&wait.proposed_by!==me_?`<button class="btn sm primary" type="button" data-bcmalok="${esc(wait.id)}">Approve the split</button><input id="bcmAlR" placeholder="Reason to reject" maxlength="300"><button class="btn sm" type="button" data-bcmalrej="${esc(wait.id)}">Reject</button>`:wait.proposed_by===me_?`<span class="small muted">Your proposal: someone else approves it.</span> <button class="btn sm" type="button" data-bcmalwd="${esc(wait.id)}">Withdraw</button>`:''}</div></div>`:''}
+    ${rev&&!act&&l.amount!=null?`<details ${l&&bcmStatus(l)==='Split Required'&&!wait?'open':''}><summary class="small">${wait?'Propose another split':'Propose a split'} of ${esc(bcmMoney(l.amount,cur))}</summary>
+      <p class="small muted">The allocations must add up to the line. Use the breakdown in the source file where there is one; otherwise an approved allocation rule, or a manual basis written down. No percentage is assumed.</p>
+      <label class="small"><input type="checkbox" id="bcmAlPct"> Enter percentages instead of amounts</label>
+      <div id="bcmAlRows">${pre.map((r,i)=>bcmAlRow(r,i,W)).join('')}</div><div class="actions"><button class="btn sm" type="button" data-bcmaladd>Add a row</button></div>
+      <div class="fields"><label class="field">Method<select id="bcmAlM">${['Source breakdown','Approved allocation rule','Manual'].map(m=>`<option ${m===((l.extra||[]).length?'Source breakdown':'Manual')?'selected':''}>${m}</option>`).join('')}</select></label><label class="field">Evidence or basis<input id="bcmAlE" maxlength="400" value="${esc((l.extra||[]).length?'Breakdown in the file: '+(l.extra||[]).map(e=>e.name+' '+e.ref).join(', '):'')}"></label></div>
+      <div class="actions"><button class="btn sm primary" type="button" data-bcmalprop="${esc(l.id)}">Propose the split</button><span class="small muted" id="bcmAlSum"></span></div></details>`:''}`}
+const bcmAlRow=(r,i,W)=>`<div class="fields bcmalrow" style="margin:4px 0"><label class="field">WBS<select data-al="wbs"><option value="">Choose…</option>${W.map(m=>`<option value="${esc(m.id)}" ${m.id===r.wbs_id?'selected':''}>${esc(m.cur.code+' '+m.cur.desc)}</option>`).join('')}</select></label>
+  <label class="field">Cost type<select data-al="ct">${BCME.COST_TYPES.map(t=>`<option ${t===r.cost_type?'selected':''}>${t}</option>`).join('')}</select></label><label class="field">Amount or %<input data-al="v" value="${esc(r.amount||'')}" inputmode="decimal"></label>${r.note?`<span class="small muted" style="align-self:end">${esc(r.note)}</span>`:''}</div>`;
+
+/* ---------- Budget Versions ---------- */
+const bcmVersOf=pid=>bcmS3().versions.filter(v=>v.project_id===pid).sort((a,b)=>String(b.prepared_at).localeCompare(String(a.prepared_at)));
+const bcmCurrentApproved=pid=>bcmVersOf(pid).filter(v=>BCM_APPROVED_V.includes(v.status)&&v.kind!=='Tender estimate').sort((a,b)=>String(b.approved_at).localeCompare(String(a.approved_at)));
+function bcmVerHTML(U){if(!bcmS3Ready())return '<section class="panel"><p class="warn-box"><b>Stage 3 needs the v41 database update</b> (STAGE-35-SETUP).</p></section>';
+  const pid=U.pid,V=bcmVersOf(pid),CA=bcmCurrentApproved(pid),can=bcmCan('bcm.budget',pid),Bs=bcmBatchesOf(pid).filter(b=>b.status==='Open'),p=projById(pid),vb=U.vbid&&Bs.some(b=>b.id===U.vbid)?U.vbid:(Bs[0]||{}).id;
+  if(vb&&!bcmEnsure([vb]))return '<section class="panel"><p class="muted">Reading the lines from the server…</p></section>';const T=vb?bcmTotalsLocal(vb):null,cur=(V[0]||bcmBatch(vb)||{currency:'SAR'}).currency;
+  const tender=V.filter(v=>v.kind==='Tender estimate'&&BCM_APPROVED_V.includes(v.status))[0];
+  return `<section class="panel"><div class="card-head"><h2>Budget versions of ${esc(pcode(p)+' · '+(p||{}).name)}</h2></div><div class="boqgrid">
+      ${bcmKpi('Current approved budget',CA[0]?esc(bcmMoney(CA[0].total,CA[0].currency)):'—',CA[0]?`${esc(CA[0].kind)} ${CA[0].rev_no}, approved ${esc(tStamp(CA[0].approved_at))}`:'none approved yet')}
+      ${bcmKpi('Previous approved budget',CA[1]?esc(bcmMoney(CA[1].total,CA[1].currency)):'—',CA[1]?`${esc(CA[1].kind)} ${CA[1].rev_no}`:'')}${bcmKpi('Tender estimate',tender?esc(bcmMoney(tender.total,tender.currency)):'—',tender?'approved':'')}
+      ${bcmKpi('Waiting for review or approval',fmt(V.filter(v=>['Submitted','Under Review'].includes(v.status)).length),'submitted or under review')}</div>
+    <p class="small muted">Draft → Submitted → Under Review (a reviewer, not the preparer) → Approved in ProTrackAI (a budget approver, not the preparer or submitter). Lines never change after the draft; a correction is a new version. <b>Approved in ProTrackAI is not loaded in SAP</b>: the SAP loading workbook and its confirmation come with stage 4.</p></section>
+  <section class="panel"><div class="scroll"><table class="tbl"><thead><tr><th>Version</th><th>Status</th><th>Source</th><th class="n">Lines</th><th class="n">Total</th><th>Prepared</th><th>Reviewed</th><th>Approved</th></tr></thead><tbody>
+    ${V.map(v=>`<tr class="click" data-bcmver="${esc(v.id)}" tabindex="0"><td><b>${esc(v.kind)} ${v.rev_no}</b>${v.title?`<span class="t2">${esc(v.title)}</span>`:''}${CA[0]&&CA[0].id===v.id?' <span class="sev ok">current</span>':''}</td><td><span class="sev ${BCM_VST_SEV[v.status]||'Low'}">${esc(v.status)}</span></td>
+      <td class="small">${v.source==='batch'?'Tender batch '+esc((bcmBatch(v.batch_id)?bcmBatchLabel(bcmBatch(v.batch_id)):v.batch_id)||''):'Imported '+esc((v.file||{}).name||'')}</td><td class="n">${v.n}</td><td class="n">${esc(bcmMoney(v.total,v.currency))}</td>
+      <td class="small">${esc(v.prepared_by_name||'')}<span class="t2">${esc(tStamp(v.prepared_at))}</span></td><td class="small">${esc(v.reviewed_by_name||'')}</td><td class="small">${esc(v.approved_by_name||'')}<span class="t2">${esc(tStamp(v.approved_at)||'')}</span></td></tr>`).join('')||'<tr><td colspan="8" class="muted">No budget version yet.</td></tr>'}</tbody></table></div></section>
+  ${can?`<section class="panel"><div class="card-head"><h2>Prepare a version from a classified tender</h2></div>${Bs.length?`
+    <div class="fields"><label class="field">Tender batch<select data-bcmvb>${Bs.map(b=>`<option value="${esc(b.id)}" ${b.id===vb?'selected':''}>${esc(bcmBatchLabel(b))}</option>`).join('')}</select></label>
+      <label class="field">Kind<select id="bcmVK">${BCM_VKINDS.map(k=>`<option>${k}</option>`).join('')}</select></label><label class="field">Title<input id="bcmVT" maxlength="200"></label><label class="field">Effective date<input id="bcmVD" type="date"></label></div>
+    <label class="field">Justification<input id="bcmVJ" maxlength="500" placeholder="Why this version (for the reviewer and the approver)"></label>
+    ${T?T.ready?`<p class="small g-c">Ready: ${esc(bcmMoney(T.counted,T.currency))} in ${T.wbs.length} WBS lines.</p>`:`<p class="small r-c">Not ready yet:</p><ul class="small">${T.problems.map(x=>`<li>${esc(x.msg)}</li>`).join('')}</ul>`:''}
+    <div class="actions"><button class="btn primary" type="button" data-bcmvmake="${esc(vb||'')}" ${T&&T.ready?'':'disabled'}>Prepare the draft version</button><span class="small muted">${CLOUD?'The server works out the figures again and refuses a batch that is not ready.':''}</span></div>`:'<p class="muted">No open tender batch on this project.</p>'}</section>
+  <section class="panel"><div class="card-head"><h2>Import the budget of an existing project</h2></div>
+    <p class="small muted">For projects already running in SAP: one row per SAP WBS element with its actual SAP WBS ID, description, user field, cost type (optional) and the amounts. ProTrack keeps the IDs as they are, links each row to a master element where its SAP WBS ID or WBS code matches, and refuses repeated IDs, amounts that are not numbers and user fields outside the list. Choose which amount column (Tender, Rev 0, Revised Rev 0…) this version takes.</p>
+    <div class="actions"><label class="btn" style="cursor:pointer">Choose the budget workbook<input type="file" id="bcmBudFile" accept=".xlsx,.xls" hidden></label><button class="btn sm" type="button" data-bcmbudtpl>Download the template</button></div>
+    ${U.bud?bcmBudPrevHTML(U):''}</section>`:'<section class="panel"><p class="muted">Preparing budget versions needs the <b>bcm.budget</b> right (costing engineers by default).</p></section>'}`}
+function bcmBudPrevHTML(U){const P=U.bud;if(P.error)return `<p class="err">${esc(P.error)}</p>`;const col=P.col!=null?P.col:(P.amountCols[0]||{}).c,R=bcmBudRows(P,col,U.pid);
+  return `<div class="fields"><label class="field">Amount column<select data-bcmbudcol>${P.amountCols.map(c=>`<option value="${c.c}" ${c.c===col?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>
+      <label class="field">Kind<select id="bcmBK">${BCM_VKINDS.map(k=>`<option ${new RegExp(k.replace(/ /g,'\\s*'),'i').test(((P.amountCols.find(c=>c.c===col)||{}).name||''))?'selected':''}>${k}</option>`).join('')}</select></label>
+      <label class="field">Currency<select id="bcmBC">${BCM_CURS.map(c=>`<option>${c}</option>`).join('')}</select></label><label class="field">Total stated in the file (optional)<input id="bcmBT" value="${esc(R.fileTotal||'')}" inputmode="decimal"></label></div>
+    <label class="field">Justification<input id="bcmBJ" maxlength="500" placeholder="e.g. Rev 0 as loaded in SAP"></label>
+    <p class="small">${R.rows.length} rows, ${esc(bcmMoney(R.total,'SAR').replace(/^SAR /,''))} in all · ${R.rows.filter(r=>r.wbs_id).length} linked to the master · ${R.rows.filter(r=>r.err).length} refused</p>
+    <div class="scroll" style="max-height:320px"><table class="tbl small"><thead><tr><th>Row</th><th>SAP WBS ID</th><th>Description</th><th>User field</th><th>Cost type</th><th class="n">Amount</th><th>Master element</th><th></th></tr></thead><tbody>
+      ${R.rows.map(r=>`<tr><td>${r.row}</td><td>${esc(r.sap_wbs_id||'')}</td><td>${esc(r.descr||'')}</td><td>${esc(r.user_field||'')}</td><td>${esc(r.cost_type||'')}</td><td class="n">${r.amount!=null?esc(BCME.money(r.amount,'SAR')):''}</td><td>${r.wbs_id?esc(bcmWLabel(r.wbs_id)):'<span class="muted">not linked</span>'}</td><td>${r.err?`<span class="r-c">${esc(r.err)}</span>`:''}</td></tr>`).join('')}</tbody></table></div>
+    <div class="actions"><button class="btn primary" type="button" data-bcmbudgo ${R.rows.length&&!R.rows.some(r=>r.err)?'':'disabled'}>Import as a draft version</button>${R.rows.some(r=>r.err)?'<span class="small r-c">Correct the refused rows in the file first.</span>':''}</div>`}
+function bcmBudRows(P,col,pid){const W=bcmOf('wbs').filter(m=>m.cur),bySap=new Map(W.map(m=>[String(bcmSapId(m.id,pid)||'').toLowerCase(),m.id]).filter(([k])=>k)),byCode=new Map(W.map(m=>[String(m.cur.code).toLowerCase(),m.id]));const seen=new Set();let fileTotal=null;
+  const rows=P.rows.filter(r=>{if(r.total){const v=BCME.dec(r.raw[col]);if(v!=null)fileTotal=BCME.decStr(v);return false}return true}).map(r=>{const v=r.raw[col],a=BCME.dec(v),o={row:r.row,sap_wbs_id:r.sap,wbs_code:r.code,descr:r.desc,user_field:r.uf?(bcmUfOf(r.uf)||[r.uf])[0]:null,cost_type:r.ct,amount:a==null?null:BCME.decStr(a)};
+    o.wbs_id=(r.code&&byCode.get(r.code.toLowerCase()))||(r.sap&&bySap.get(r.sap.toLowerCase()))||null;const k=String(r.sap||r.code||'').toLowerCase()+'|'+(r.ct||'');
+    if(!r.sap&&!r.code)o.err='no SAP WBS ID or WBS code';else if(a==null)o.err=v==null||v===''?'no amount':'the amount is not a number';else if(seen.has(k))o.err='repeated in the file';else if(r.uf&&bcmUfList().length&&!bcmUfOf(r.uf))o.err='user field not in the list';else if(r.ct&&!BCME.COST_TYPES.includes(r.ct))o.err='unknown cost type';seen.add(k);return o});
+  return {rows,fileTotal,total:BCME.decStr(BCME.decSum(rows.map(r=>BCME.dec(r.amount)||0n)))}}
+async function bcmOpenVer(id){const v=bcmS3().versions.find(x=>x.id===id);if(!v)return;if(CLOUD_ME){try{await bcmLoadVLines(id);if(v.prev_id)await bcmLoadVLines(v.prev_id)}catch(e){toast(srvMsg(e))}}
+  const B=bcmS3(),L=B.vlines[id]||[],prev=v.prev_id?B.versions.find(x=>x.id===v.prev_id):bcmCurrentApproved(v.project_id).find(x=>x.id!==id),PL=prev?(B.vlines[prev.id]||[]):[];if(prev&&CLOUD_ME&&!B.vlines[prev.id]){try{await bcmLoadVLines(prev.id)}catch(e){}}
+  const H=B.vhist.filter(h=>h.version_id===id).sort((a,b)=>a.id-b.id),u=(me()||{}).id,pid=v.project_id,M=a=>esc(bcmMoney(a,v.currency));
+  const key=l=>(l.sap_wbs_id||l.wbs_code||l.wbs_id||'')+'|'+(l.cost_type||''),PM=new Map((B.vlines[prev&&prev.id]||PL).map(l=>[key(l),l])),CM=new Map(L.map(l=>[key(l),l]));
+  const cmp=prev?[...new Set([...CM.keys(),...PM.keys()])].map(k=>{const a=PM.get(k),c=CM.get(k),d=BCME.dec((c||{}).amount||'0')-BCME.dec((a||{}).amount||'0');return {k,l:c||a,was:a?a.amount:null,now:c?c.amount:null,diff:BCME.decStr(d),st:!a?'Added':!c?'Removed':d!==0n?'Changed':'Same'}}).filter(x=>x.st!=='Same'):[];
+  const btn=(a,l,cls)=>`<button class="btn sm ${cls||''}" type="button" data-bcmvact="${a}" data-id="${esc(id)}">${l}</button>`,acts=[];
+  if(v.status==='Draft'&&bcmCan('bcm.budget',pid))acts.push(btn('submit','Submit for review','primary'));
+  if(v.status==='Submitted'&&bcmCan('bcm.review',pid)&&![v.prepared_by,v.submitted_by].includes(u))acts.push(btn('review','Take under review','primary'));
+  if(v.status==='Under Review'&&bcmCan('bcm.budget.approve',pid)&&![v.prepared_by,v.submitted_by].includes(u))acts.push(btn('approve','Approve in ProTrackAI','primary'));
+  if(['Submitted','Under Review'].includes(v.status)&&(bcmCan('bcm.review',pid)||bcmCan('bcm.budget.approve',pid))&&![v.prepared_by,v.submitted_by].includes(u))acts.push(btn('reject','Reject (reason)'));
+  if(['Draft','Submitted'].includes(v.status)&&([v.prepared_by,v.submitted_by].includes(u)||bcmCan('bcm.budget.approve',pid)))acts.push(btn('cancel','Cancel (reason)'));
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${esc(v.kind)} ${v.rev_no}${v.title?' · '+esc(v.title):''}</h2><span class="sev ${BCM_VST_SEV[v.status]||'Low'}">${esc(v.status)}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>
+    <p class="small">${esc(pcode(projById(pid)))} · ${esc(v.currency)} · ${v.source==='batch'?'from tender batch '+esc(v.batch_id):'imported from '+esc((v.file||{}).name||'a workbook')} · effective ${esc(v.effective_date||'—')} · ${esc(v.id)}<br>Justification: ${esc(v.justification||'')}${v.close_reason?`<br>${esc(v.status)}: ${esc(v.close_reason)}`:''}</p>
+    ${v.status==='Approved in ProTrackAI'?'<p class="small muted">Approved in ProTrackAI. It is not loaded in SAP: the SAP loading workbook and the confirmation with the SAP reference come with stage 4.</p>':''}
+    ${acts.length?`<div class="actions" style="flex-wrap:wrap"><input id="bcmVR" placeholder="Reason (to reject or cancel)" maxlength="300" style="min-width:240px">${acts.join('')}</div>`:''}<div class="actions"><button class="btn sm" type="button" data-bcmvexp="${esc(id)}">Export to Excel</button></div>
+    <h3>Lines (${L.length}) · ${M(v.total)}</h3><div class="scroll" style="max-height:340px"><table class="tbl small"><thead><tr><th>SAP WBS ID</th><th>WBS</th><th>Description</th><th>User field</th><th>Cost type</th><th class="n">Amount</th></tr></thead><tbody>
+      ${L.map(l=>`<tr><td>${esc(l.sap_wbs_id||'—')}</td><td>${esc(l.wbs_code||'')}</td><td>${esc(l.descr||'')}</td><td>${esc(l.user_field||'')}</td><td>${esc(l.cost_type||'')}</td><td class="n">${M(l.amount)}</td></tr>`).join('')}</tbody></table></div>
+    <h3>Against ${prev?esc(prev.kind+' '+prev.rev_no)+' (approved)':'the previous approved version'}</h3>${prev?`<p class="small">Total ${M(prev.total)} → ${M(v.total)} (${M(BCME.decStr(BCME.dec(v.total)-BCME.dec(prev.total)))})</p><div class="scroll" style="max-height:260px"><table class="tbl small"><thead><tr><th>Line</th><th>Change</th><th class="n">Was</th><th class="n">Now</th><th class="n">Difference</th></tr></thead><tbody>
+      ${cmp.map(x=>`<tr><td>${esc(x.l.sap_wbs_id||x.l.wbs_code||'')} ${esc(x.l.descr||'')} ${esc(x.l.cost_type||'')}</td><td>${esc(x.st)}</td><td class="n">${x.was!=null?M(x.was):''}</td><td class="n">${x.now!=null?M(x.now):''}</td><td class="n">${M(x.diff)}</td></tr>`).join('')||'<tr><td colspan="5" class="muted">No difference.</td></tr>'}</tbody></table></div>`:'<p class="muted small">No earlier approved version.</p>'}
+    <h3>History</h3><table class="tbl small"><tbody>${H.map(h=>`<tr><td>${esc(tStamp(h.at_time))}</td><td>${esc(h.action)}</td><td>${esc(h.status||'')}</td><td>${esc(h.by_name||'')}${h.reason?`<span class="t2">${esc(h.reason)}</span>`:''}</td></tr>`).join('')}</tbody></table>`;
+  $('#sheet').classList.add('wide');$('#drawer').hidden=false}
+async function bcmVerExport(id){await loadLib(LIBS.xlsx);const v=bcmS3().versions.find(x=>x.id===id);if(!v)return;if(CLOUD_ME)await bcmLoadVLines(id);const L=bcmS3().vlines[id]||[],wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['SAP WBS ID','WBS code','Description','User field','Cost type','Amount ('+v.currency+')']].concat(L.map(l=>[l.sap_wbs_id||'',l.wbs_code||'',l.descr||'',l.user_field||'',l.cost_type||'',Number(l.amount)]))),'Budget version');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ProTrack budget version'],['Project',pcode(projById(v.project_id))],['Version',v.kind+' '+v.rev_no],['Status',v.status],['Total',v.total],['Prepared',v.prepared_by_name+' '+tStamp(v.prepared_at)],['Approved',v.approved_by_name?v.approved_by_name+' '+tStamp(v.approved_at):''],
+    ['This is a ProTrackAI budget version. It is not loaded in SAP; the SAP loading workbook comes with stage 4.']]),'About');XLSX.writeFile(wb,`ProTrack budget ${pcode(projById(v.project_id))} ${v.kind} ${v.rev_no}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
+
+/* ---------- Approval History ---------- */
+function bcmApprHTML(U){const A=bcmDB().audit.filter(a=>(!a.project_id||bcmSees(a.project_id))&&/approved|rejected|budget version|duplicate decided|reopened|sheet roles confirmed|variance explained|split/i.test(a.action));
+  return `<section class="panel"><div class="card-head"><h2>Approval history</h2><span class="small muted">${A.length} decisions · master data, splits, duplicates, explanations and budget versions</span></div>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>When</th><th>Who</th><th>Decision</th><th>Record</th><th>Project</th><th>Detail</th></tr></thead><tbody>
+    ${A.slice(0,400).map(a=>`<tr><td>${esc(tStamp(a.at_time))}</td><td>${esc(a.by_name||'')}</td><td>${esc(a.action)}</td><td>${esc(a.ent||'')} ${esc(a.ref||'')}</td><td>${esc((projById(a.project_id)||{}).short||a.project_id||'')}</td><td class="small">${esc(Object.entries(a.detail||{}).filter(([,v])=>v!=null&&v!=='').map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join(' · ').slice(0,240))}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">No decision yet.</td></tr>'}</tbody></table></div></section>`}
+
+/* ---------- actions (stage 3) ---------- */
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcmanalyse],[data-bcmroleok],[data-bcmdupf],[data-bcmdup],[data-bcmdupre],[data-bcmexplain],[data-bcmsrvtot],[data-bcmaladd],[data-bcmalprop],[data-bcmalok],[data-bcmalrej],[data-bcmalwd],[data-bcmver],[data-bcmvmake],[data-bcmvact],[data-bcmvexp],[data-bcmbudgo],[data-bcmbudtpl]');if(!t)return;
+  const d=t.dataset,U=bcmUi();if(d.bcmdupf){U.dupF=d.bcmdupf;render();return}if(d.bcmver){bcmOpenVer(d.bcmver);return}if(d.bcmvexp){bcmVerExport(d.bcmvexp);return}
+  if(d.bcmaladd!==undefined){$('#bcmAlRows').insertAdjacentHTML('beforeend',bcmAlRow({wbs_id:'',cost_type:'Material',amount:''},0,bcmUsableW()));return}
+  if(d.bcmbudtpl!==undefined){await loadLib(LIBS.xlsx);const wb=XLSX.utils.book_new(),p=projById(U.pid),pe=pcode(p)||'PE-XXX';XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['SAP WBS ID','WBS code','Description','User field','Cost type','Tender','Rev 0','Revised Rev 0'],[pe+'-01','SM','Site Management','SM','',0,0,0],[pe+'-01-001','SM1','Salaries','SM','Overhead',0,0,0],['','','Total','','',0,0,0]]),'Budget');
+    XLSX.writeFile(wb,'ProTrack budget import template.xlsx');return}
+  t.disabled=true;
+  try{
+    if(d.bcmanalyse){const r=await bcmAnalyse(d.bcmanalyse);toast(r.msg);render();return}
+    if(d.bcmroleok){const b=bcmBatch(d.bcmroleok),by={};document.querySelectorAll('[data-bcmrole]').forEach(s=>{(by[s.dataset.bcmrole]=by[s.dataset.bcmrole]||[]).push({sheet:s.dataset.sheet,role:s.value})});
+      let n=0;for(const [fid,roles] of Object.entries(by)){const f=bcmFile(fid);await bcmCall3('stage3',{action:'roles_confirm',file_id:fid,run:f.run,roles,batch_id:b.id});n+=roles.length}toast(`${n} sheet role${n===1?'':'s'} confirmed`);render();return}
+    if(d.bcmdup){const keep=[...document.querySelectorAll(`[data-bcmkeep="${CSS.escape(d.bcmdup)}"]:checked`)].map(x=>x.value),rs=String((document.querySelector(`[data-bcmdr="${CSS.escape(d.bcmdup)}"]`)||{}).value||'').trim();
+      await bcmCall3('stage3',{action:'dup_decide',id:d.bcmdup,decision:d.dec,details:!!d.details,keep,reason:rs,batch_id:U.bid});toast('Decision recorded: '+BCM_DEC[d.dec]);render();return}
+    if(d.bcmdupre){const rs=String((document.querySelector(`[data-bcmdr="${CSS.escape(d.bcmdupre)}"]`)||{}).value||'').trim();await bcmCall3('stage3',{action:'dup_reopen',id:d.bcmdupre,reason:rs,batch_id:U.bid});toast('Reopened');render();return}
+    if(d.bcmexplain){const rs=String((document.querySelector(`[data-bcmnote="${CSS.escape(d.bcmexplain)}"]`)||{}).value||'').trim();await bcmCall3('stage3',{action:'recon_note',batch_id:U.bid,check_key:d.bcmexplain,reason:rs});if(CLOUD_ME)await bcmSrvTotals(U.bid);toast('Explanation recorded; the figures are unchanged');render();return}
+    if(d.bcmsrvtot){await bcmSrvTotals(d.bcmsrvtot);render();return}
+    if(d.bcmalprop){const l=bcmDB().lines.find(x=>x.id===d.bcmalprop),pct=$('#bcmAlPct').checked,rows=[...document.querySelectorAll('#bcmAlRows .bcmalrow')].map(r=>({wbs_id:r.querySelector('[data-al="wbs"]').value,cost_type:r.querySelector('[data-al="ct"]').value,[pct?'pct':'amount']:String(r.querySelector('[data-al="v"]').value||'').trim().replace(/,/g,'')})).filter(r=>r.wbs_id||r.amount||r.pct);
+      let A;try{A=BCME.allocate(l.amount,rows,bcmCurOf(l),pct)}catch(err){toast(err.message);return}if(!A.ok){toast(`The allocations add up to ${A.sum}, not ${l.amount} (difference ${A.diff})`);return}
+      await bcmCall3('stage3',{action:'alloc_propose',line_id:l.id,rows:A.rows.map(r=>({wbs_id:r.wbs_id,cost_type:r.cost_type,amount:r.amount,pct:r.pct||null})),by_pct:pct,method:$('#bcmAlM').value,evidence:$('#bcmAlE').value});toast('Split proposed: someone else approves it');bcmPaintLine(l.id);render();return}
+    if(d.bcmalok||d.bcmalrej||d.bcmalwd){const id=d.bcmalok||d.bcmalrej||d.bcmalwd,a=bcmS3().allocs.find(x=>x.id===id);await bcmCall3('stage3',{action:d.bcmalok?'alloc_approve':d.bcmalrej?'alloc_reject':'alloc_withdraw',id,reason:String($('#bcmAlR')?.value||'').trim(),line_id:a&&a.line_id});
+      toast(d.bcmalok?'Split approved: the line counts by its allocations':d.bcmalrej?'Split rejected':'Split withdrawn');if(a)bcmPaintLine(a.line_id);render();return}
+    if(d.bcmvmake){const r=await bcmCall3('version',{action:'from_batch',batch_id:d.bcmvmake,kind:$('#bcmVK').value,title:$('#bcmVT').value,effective_date:$('#bcmVD').value||null,justification:$('#bcmVJ').value});toast(`Draft ${$('#bcmVK').value} ${r.rev_no} prepared: ${r.n} lines`);render();bcmOpenVer(r.id);return}
+    if(d.bcmvact){const r=await bcmCall3('version',{action:d.bcmvact,id:d.id,reason:String($('#bcmVR')?.value||'').trim()});toast('Version '+r.status.toLowerCase());render();bcmOpenVer(d.id);return}
+    if(d.bcmbudgo!==undefined){const P=U.bud,col=P.col!=null?P.col:(P.amountCols[0]||{}).c,R=bcmBudRows(P,col,U.pid);
+      const r=await bcmCall3('version',{action:'import',project_id:U.pid,kind:$('#bcmBK').value,currency:$('#bcmBC').value,justification:$('#bcmBJ').value,file_total:$('#bcmBT').value||null,file:{name:P.name,sha256:P.sha,column:(P.amountCols.find(c=>c.c===col)||{}).name},
+        lines:R.rows.map(x=>({sap_wbs_id:x.sap_wbs_id,wbs_code:x.wbs_code,descr:x.descr,user_field:x.user_field,cost_type:x.cost_type,amount:x.amount,wbs_id:x.wbs_id,row:x.row}))});
+      U.bud=null;toast(`Imported as draft ${$('#bcmBK').value||''} ${r.rev_no}: ${r.n} lines`);render();bcmOpenVer(r.id);return}
+  }catch(err){toast(srvMsg(err))}finally{t.disabled=false}});
+document.addEventListener('change',async e=>{const t=e.target,U=state.bcmUi;if(!U)return;
+  if(t.matches('[data-bcmvb]')){U.vbid=t.value;render();return}if(t.matches('[data-bcmbudcol]')){U.bud.col=+t.value;render();return}
+  if(t.matches('#bcmBudFile')){const f=t.files[0];t.value='';if(!f)return;try{await loadLib(LIBS.xlsx);const bytes=new Uint8Array(await f.arrayBuffer()),chk=BCME.checkFile(f.name,bytes);if(!chk.ok){toast(chk.error);return}const rb=BCME.readBook(XLSX,bytes);if(rb.error){toast(rb.error);return}
+    const ws=rb.wb.Sheets[rb.wb.SheetNames[0]],P=BCME.parseBudget(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null}));U.bud={...P,name:f.name,sha:await sha256Hex(bytes)};if(!P.error&&!P.amountCols.length)U.bud.error='No column with amounts was found next to the SAP WBS IDs';render()}catch(err){toast(srvMsg(err))}}});
 
 /* =====================================================================================
    v3.25: BOQ Engine — drawing-based quantity take-off, engineering estimation and the Estimated BOQ
