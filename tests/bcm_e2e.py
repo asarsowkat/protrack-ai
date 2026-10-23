@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ProTrackAI v3.35 in server mode: Budget & Cost Management, Automatic WBS Classification, against a local PostgreSQL
-built from schema.sql and every update v2 to v39, through fake_supabase.py (files kept by the stand-in storage, under the
+built from schema.sql and every update v2 to v40, through fake_supabase.py (files kept by the stand-in storage, under the
 database's own storage rules). Every allow and refuse is the database's. The real SheetJS 0.18.5 reads the workbooks.
 Usage: python3 bcm_e2e.py APP_HTML SUPABASE_DIR XLSX_FULL_MIN_JS > results_bcm_e2e.json"""
 import json, os, subprocess, sys, time, urllib.request
@@ -21,7 +21,7 @@ def sql(q):
     return p.stdout.strip()
 subprocess.run(PG + ['-d', 'postgres', '-c', f'drop database if exists {DBN}'], capture_output=True)
 subprocess.run(PG + ['-d', 'postgres', '-c', f'create database {DBN}'], check=True, capture_output=True)
-for f in ['tests/TEST-ONLY-supabase-stub.sql', 'schema.sql'] + [f'schema-update-v{i}.sql' for i in range(2, 40)]:
+for f in ['tests/TEST-ONLY-supabase-stub.sql', 'schema.sql'] + [f'schema-update-v{i}.sql' for i in range(2, 41)]:
     path = os.path.join(DBDIR, f)
     if not os.path.exists(path): continue
     p = subprocess.run(PG + ['-d', DBN, '-f', path], capture_output=True, text=True)
@@ -70,7 +70,7 @@ with sync_playwright() as p:
 
     # ---- before approval: nothing classifies
     login('co'); open_sec('intake')
-    ck('Server', 'the app sees the v39 update', J("DB.bcmSrv") is True and J("bcmOf('wbs').length") == 50)
+    ck('Server', 'the app sees the v39 update', J("DB.bcmSrv") is True and J("bcmOf('wbs').length") == 57)
     ck('Server', 'the starting master is waiting for approval (overview says so)', J("bcmOf('wbs').every(m=>!m.cur)") and (J("bcmUi().sec='ov';render();document.querySelector('#view').innerText.includes('The WBS master is not approved yet')")))
     J("bcmUi().sec='intake';render()"); pg.wait_for_timeout(300)
     pg.fill('#bcmTr', 'T-2026-118'); pg.select_option('#bcmPt', '132 kV substation'); pg.click('[data-bcmnewbatch]'); pg.wait_for_timeout(1500)
@@ -88,7 +88,9 @@ with sync_playwright() as p:
     ck('Master', '...and the server refuses it', 'bcm.approve' in r, r)
     login('ap'); open_sec('master')
     J("window.confirmBox=()=>Promise.resolve(true)"); pg.click('[data-bcmapprall]'); pg.wait_for_timeout(6000)
-    ck('Master', 'the approver approves the whole starting master and rules (parents first) on the server', sql("select count(*) from bcm_master where cur is not null and ent in ('wbs','rule')") == '88' and sql("select count(*) from bcm_master_hist where action='Approved' and decided_by_name='Adam Approver'") == '88', toast())
+    ck('Master', 'the approver approves the whole starting master and rules (parents first) on the server', sql("select count(*) from bcm_master where cur is not null and ent in ('wbs','rule')") == '95' and sql("select count(*) from bcm_master_hist where action='Approved' and decided_by_name='Adam Approver'") == '95', toast())
+    v = pg.inner_text('#view')
+    ck('SAP WBS', 'after approval the tree shows SAP WBS IDs built on the project (P1-01-001-02 for Salaries - Site office team) and user fields', 'P1-01-001-02' in J("document.querySelector('#view').textContent") and sql("select cur ->> 'sap_seg' || '/' || (cur ->> 'user_field') from bcm_master where id='W-SM1-02'") == '02/SM')
     # ---- classification on the server
     login('co'); open_sec('auto')
     pg.click(f'[data-bcmrun="{bid}"]'); pg.wait_for_timeout(3000)
@@ -125,6 +127,14 @@ with sync_playwright() as p:
     ck('Intake', '...and the server refuses a second registration of the same fingerprint', 'already uploaded' in r, r)
     pg.click(f'[data-bcmverify="{fid}"]'); pg.wait_for_timeout(2500)
     ck('Intake', 'Verify reading downloads the stored file from the server and reads it again: the same rows', 'Verified' in toast(), toast())
+    # ---- v3.36 on the server: the order and the SAP segment, proposed and checked
+    login('sa'); open_sec('master')
+    pg.click('[data-bcmmove="W-SM3"][data-dir="up"]'); pg.wait_for_timeout(2500)
+    ck('Order', '▲ proposes the new order on the server; the approved order stays until approved', sql("select (pend -> 'data' ->> 'order') || '/' || (cur ->> 'order') from bcm_master where id='W-SM3'") == '20/30')
+    r = J("rpc('bcm_master_act',{p:{action:'propose',ent:'wbs',data:{code:'X9',desc:'Test',parent:'W-SM1',sap_seg:'3'}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('SAP WBS', 'the server refuses a segment with the wrong number of digits for its level', 'level 3 the SAP WBS segment has 2 digits' in r, r)
+    r = J("rpc('bcm_master_act',{p:{action:'propose',ent:'wbs',data:{code:'X9',desc:'Test',user_field:'XYZ'}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('User field', 'the server refuses a user field that is not in the user field list', 'not in the user field list' in r, r)
     # ---- people without the right
     login('pl'); open_sec('intake')
     ck('Rights', 'a planner sees the batch but is not offered uploads', J("!document.querySelector('#bcmFiles')") and 'T-2026-118' in pg.inner_text('#view'))

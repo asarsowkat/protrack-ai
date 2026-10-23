@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ProTrackAI v3.35 on the demo page: Budget & Cost Management, Automatic WBS Classification, through the screens.
+"""ProTrackAI v3.35 and v3.36 on the demo page: Budget & Cost Management, Automatic WBS Classification, through the screens.
 The real SheetJS 0.18.5 reads the test workbooks of tests/fixtures/bcm (the app's CDN address is answered with a local
 copy). Usage: python3 bcm_demo.py DEMO_HTML XLSX_FULL_MIN_JS > results_bcm_demo.json"""
 import json, os, sys, time
@@ -44,7 +44,7 @@ with sync_playwright() as p:
     nav = J("document.querySelector('#nav').textContent")
     ck('Navigation', 'Budget & Cost Management sits in the menu with its pages; stage 3 and 4 pages are marked planned', 'Budget & Cost Management' in nav and J("[...document.querySelectorAll('#nav .nav-item')].filter(x=>/Tender File Intake|WBS Mapping Master|Classification Review/.test(x.textContent)).length") == 3 and J("[...document.querySelectorAll('#nav .nav-item.planned')].some(x=>/Reconciliation Centre/.test(x.textContent))"))
     ck('Navigation', 'Cost Control keeps its own menu as before', all(x in nav for x in ['Cost Control dashboard', 'Earned value and EAC', 'Master Manpower Costing Sheet', 'Budget supplements']))
-    ck('Master', 'demo page: the starting master is approved by a sample approver, and one sample change waits', J("bcmOf('wbs').filter(m=>m.cur).length") == 50 and J("bcmOf('rule').filter(m=>m.cur).length") == 38 and J("!!bcmRow('W-SM10').pend"))
+    ck('Master', 'demo page: the starting master is approved by a sample approver, and one sample change waits', J("bcmOf('wbs').filter(m=>m.cur).length") == 56 and J("bcmOf('rule').filter(m=>m.cur).length") == 38 and J("!!bcmRow('W-SM10').pend"))
     # ---- intake
     J("bcmUi().sec='intake';render()"); pg.wait_for_timeout(300)
     pg.fill('#bcmTr', 'T-2026-118'); pg.fill('#bcmRev', '0'); pg.select_option('#bcmPt', '132 kV substation'); pg.click('[data-bcmnewbatch]'); pg.wait_for_timeout(500)
@@ -169,6 +169,38 @@ with sync_playwright() as p:
     ck('Master', '...and becomes a proposal under its parent', J("(m=>m&&!m.cur&&m.pend.data.parent==='W-CIV')(bcmOf('wbs').find(m=>m.pend&&m.pend.data.code==='CIV-11'))"))
     pg.click('[data-bcmmtab="cfg"]'); pg.wait_for_timeout(300)
     ck('Master', 'thresholds and value limits are shown and changeable only as a proposal', pg.input_value('#bcmCA') == '95' and 'SAR, , 1000000' in pg.input_value('#bcmCV'))
+    # ---- v3.36: order, SAP WBS ID and user field
+    pe = J("pcode(projById(bcmUi().pid))")
+    J("bcmUi().sec='master';bcmUi().mtab='wbs';render()"); pg.wait_for_timeout(400); v = pg.inner_text('#view')
+    ck('SAP WBS', 'the tree shows each element\'s SAP WBS ID on the chosen project and its user field', f'SAP WBS {pe}-01-001 · User field SM' in v and f'{pe}-01-001-02' in v and 'User field MTRL.ELC Electrical Material' in v, v[:400])
+    ck('SAP WBS', 'the starting master follows the company user field list: SM 01 … MGT.RES 16, Mechanical, Prime Cost and Provisional Sum', J("['SM','DES','TC','ELM','ELP','ELE','MEM','MEP','MEI','CIV','SAU','FIN','PC','PS','CON','MR'].map(c=>bcmData(bcmRow('W-'+c)).sap_seg).join()") == '01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16' and J("bcmOf('wbs').filter(m=>!bcmEff(m).parent).sort(bcmSort).map(m=>bcmEff(m).code).slice(0,3).join()") == 'SM,DES,TC')
+    ck('SAP WBS', 'Salaries has its two sub-elements: Project office team 01 and Site office team 02', J("bcmOf('wbs').filter(m=>bcmEff(m).parent==='W-SM1').sort(bcmSort).map(m=>bcmEff(m).desc+' '+bcmEff(m).sap_seg).join('|')") == 'Salaries - Project office team 01|Salaries - Site office team 02')
+    pg.click('[data-bcmmove="W-SM3"][data-dir="up"]'); pg.wait_for_timeout(600)
+    ck('Order', '▲ proposes the new order of the siblings (SM3 before SM2), applied once approved', J("bcmRow('W-SM3').pend.data.order") == 20 and J("bcmRow('W-SM2').pend.data.order") == 30 and J("bcmRow('W-SM2').cur.order") == 20)
+    ck('Order', '...and the tree shows the proposed order with the change waiting', J("bcmOf('wbs').filter(m=>bcmEff(m).parent==='W-SM').sort(bcmSort).slice(0,3).map(m=>bcmEff(m).code).join()") == 'SM1,SM3,SM2')
+    pg.click('[data-bcmedit="new"]'); pg.wait_for_timeout(300)
+    pg.fill('[data-bcmw="code"]', 'SM1-09'); pg.select_option('[data-bcmw="parent"]', 'W-SM1'); pg.fill('[data-bcmw="desc"]', 'Salaries - Camp staff'); pg.fill('[data-bcmw="sap_seg"]', '3'); pg.select_option('[data-bcmw="user_field"]', 'SM'); pg.click('[data-bcmwsave]'); pg.wait_for_timeout(400)
+    ck('SAP WBS', 'a segment with the wrong number of digits for its level is refused (level 3 has 2)', 'level 3 the SAP WBS segment has 2 digits' in toast(), toast())
+    pg.fill('[data-bcmw="sap_seg"]', '03'); pg.click('[data-bcmwsave]'); pg.wait_for_timeout(400)
+    ck('SAP WBS', '...with 03 it is proposed, with its user field from the list', J("(m=>m&&m.pend.data.sap_seg==='03'&&m.pend.data.user_field==='SM')(bcmOf('wbs').find(m=>m.pend&&m.pend.data.code==='SM1-09'))"))
+    J("closeDrawer()")
+    r = J("(async()=>{try{await bcmCall('master_act',{action:'propose',ent:'wbs',data:{code:'X9',desc:'Test',user_field:'XYZ'}});return 'ran'}catch(e){return e.message}})()")
+    ck('User field', 'a user field that is not in the user field list is refused', 'not in the user field list' in r, r)
+    pg.click('[data-bcmmtab="io"]'); pg.wait_for_timeout(300)
+    with pg.expect_download() as dl: pg.click('[data-bcmexport="wbs"]')
+    import openpyxl, tempfile; pth = os.path.join(tempfile.mkdtemp(), 'wbs.xlsx'); dl.value.save_as(pth); ws = openpyxl.load_workbook(pth)['WBS master']
+    hdr = [c.value for c in ws[1]]; rows = list(ws.iter_rows(min_row=2, values_only=True)); sm11 = next(r for r in rows if r[hdr.index('WBS code')] == 'SM1-01')
+    ck('Excel', 'the WBS master workbook has the order, SAP segment, user field and the SAP WBS ID of the project, in tree order', all(h in hdr for h in ['Order', 'SAP WBS segment', 'User field', f'SAP WBS ID ({pe})']) and sm11[hdr.index(f'SAP WBS ID ({pe})')] == f'{pe}-01-001-01' and rows[0][hdr.index('WBS code')] == 'SM', (hdr, sm11))
+    pg.set_input_files('#bcmWbsFile', fx('17_wbs_import_sap.xlsx')); pg.wait_for_timeout(1200); v = pg.inner_text('#view')
+    ck('Excel', 'an import with order, SAP segments and user fields: a bad segment and an unknown user field are refused, the reorder and the new element are offered', 'not 1 to 6 digits' in v and 'user field XYZ is not in the user field list' in v and 'Propose the 2 valid rows' in v, v[-500:])
+    pg.click('[data-bcmioprop]'); pg.wait_for_timeout(600)
+    ck('Excel', '...and become proposals: SM2 to order 5, SM1-03 under SM1 with segment 03', J("bcmRow('W-SM2').pend.data.order") == 5 and J("(m=>m&&m.pend.data.parent==='W-SM1'&&m.pend.data.sap_seg==='03')(bcmOf('wbs').find(m=>m.pend&&m.pend.data.code==='SM1-03'))"))
+    # a browser holding the v3.35 sample master is brought to the company layout
+    up = J("""(()=>{const B=bcmDB(),keep=JSON.stringify(B.master),drop=['W-SM1-01','W-SM1-02','W-MEM','W-MEP','W-MEI','W-PC','W-PS'];
+      B.master=B.master.filter(m=>!drop.includes(m.id));B.master.filter(m=>m.ent==='wbs'&&m.cur).forEach(m=>{delete m.cur.order;delete m.cur.sap_seg;delete m.cur.user_field;if(['W-SAU','W-FIN','W-CON','W-MR'].includes(m.id))m.cur.parent='W-OTH'});
+      B.master.push({id:'W-OTH',ent:'wbs',ver:1,cur:{code:'OTH',parent:null,desc:'Other approved categories',active:true,postable:false},pend:null,status:'Approved'});
+      DB.bcmSeeded336=false;seedBcm336();const r=[bcmData(bcmRow('W-SM1-02')).sap_seg,bcmData(bcmRow('W-SAU')).parent,bcmData(bcmRow('W-OTH')).active,bcmData(bcmRow('W-SM')).user_field,bcmRow('W-SM').ver,bcmRow('W-SM2').pend?'kept':'lost'];B.master=JSON.parse(keep);save();return r})()""")
+    ck('Upgrade', 'a demo browser holding the v3.35 master gets the company layout (new elements, top-level SAD/FNE/CONT/MGT.RES, OTH off), and keeps the changes people have waiting', up == ['02', None, False, 'SM', 2, 'kept'], up)
     # ---- read-only roles and the rest of the app
     ro = J("(DB.master.users.find(u=>u.role==='foreman'&&u.active!==false)||{}).email")
     login(ro)
