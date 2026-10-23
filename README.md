@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.34
+
+- **Approval and report emails really sent.** The server queues each email about a real event (a daily report or report the sender approved, a reminder he sent, a test) and works out the recipients itself; the new Edge Function `send-mail` sends it through Microsoft 365 (Graph) or an SMTP relay and records sent or failed. Settings → Email: mail service status, test email, Send again, settings kept on the server. Server: schema-update-v38.sql and supabase/functions/send-mail (STAGE-32-SETUP.md). See [RELEASE-NOTES-v3.34.md](RELEASE-NOTES-v3.34.md).
+
 ## Version 3.33
 
 - **RASA comes alive on the approved RASA badge** (helmet, Alfanar Projects and ProTrack branding, unchanged): it blinks, breathes, turns toward the pointer, lights its AI ear-cup while listening, runs a light round the ring while thinking, and moves its mouth with the browser voice, timed from the text and kept in step by the word boundaries. Every live layer is hidden at rest, so the badge shows exactly as approved. Ready for Phase 2 (a Live2D rig from a layered PSD takes the badge's place with the same pose) and Phase 3 (Azure Speech visemes and an enterprise AI through the ProTrack server, both off until IT and Cybersecurity approve them). New `tests/rasa_avatar_demo.js` (25 checks). See [RELEASE-NOTES-v3.33.md](RELEASE-NOTES-v3.33.md) and [AVATAR-RIG-HANDOVER.md](AVATAR-RIG-HANDOVER.md).

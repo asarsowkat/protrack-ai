@@ -66,7 +66,7 @@
     // off by default
     state.adminTab='system';go('admin');await wait(300);const v=$('#view').innerText;
     ok('24. Azure Speech and the enterprise AI are off by default, waiting for IT and Cybersecurity approval; Settings says so',!RASA_ENTERPRISE.speech.approved&&!RASA_ENTERPRISE.ai.approved&&!keep.tts&&!keep.llm&&/RASA avatar\tThe approved RASA badge/.test(v)&&/Azure Speech is off until IT and Cybersecurity approve it/.test(v)&&/Enterprise AI\tOff until IT and Cybersecurity approve it/.test(v));
-    ok('25. Version 3.33',APP_VERSION==='3.33'&&/ProTrackAI\tv3\.33/.test(v));
+    ok('25. Version 3.33 or later',+APP_VERSION.split('.')[0]===3&&+APP_VERSION.split('.')[1]>=33&&new RegExp('ProTrackAI\\tv'+APP_VERSION.replace(/\./g,'\\.')).test(v));
   }catch(x){ok('The checks ran to the end',false,x.message+' '+(x.stack||'').split('\n')[1])}
   finally{RASA.adapters.tts=keep.tts;RASA.adapters.llm=keep.llm;RASA.adapters.avatar=keep.avatar;speak=keep.speak;aiSpeakOn=keep.on;RasaLip.stop()}
   console.table(res);const f=res.filter(r=>r.result==='FAIL').length;console.log(`RASA live avatar: ${res.length-f} passed, ${f} failed. Reloading…`);
