@@ -238,6 +238,11 @@ ck('SAP loading', 'the control totals add up: previously loaded + supplements + 
 ck('SAP loading', 'the WBS Elements sheet adds the levels above with their parents', WB.sheets[1].aoa.some(r => r[0] === 'PE-555-01-001' && r[2] === 'PE-555-01' && r[1] === 2));
 ck('SAP loading', 'the header says nothing was sent to SAP', WB.sheets[0].aoa.some(r => /Nothing has been sent to SAP/.test(r[0] || '')));
 
+// ---------------- v3.39: the SAP CN41 structure overview
+const P41 = E.parseSapReport(sheet0('25_sap_cn41.xlsx')), C41 = E.sapCheck(P41, { period: '2026-09', cur: 'SAR' });
+ck('SAP reports', 'a CN41 export is read: ID, Budget, Act.costs and Tot.cst.cm (the currency columns beside them left out)', P41.kind === 'wbs' && P41.names.wbs === 'ID' && P41.names.commit === 'Tot.cst.cm' && P41.map.budget === 7 && P41.map.actual === 9, P41.names);
+ck('SAP reports', '...its levels counted once: the same totals as the by-WBS report (8,380,000 / 4,968,500 / 2,470,000)', C41.ok && E.decStr(C41.tot.budget) === '8380000' && E.decStr(C41.tot.actual) === '4968500' && E.decStr(C41.tot.commit) === '2470000', C41.errs);
+
 const passed = R.filter(r => r.result === 'PASS').length;
 console.log(JSON.stringify({ suite: 'bcm_engine', engine: E.ENGINE, passed, total: R.length, checks: R }, null, 1));
 process.exitCode = passed === R.length ? 0 : 1;

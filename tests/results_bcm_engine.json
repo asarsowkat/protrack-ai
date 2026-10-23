@@ -1,8 +1,8 @@
 {
  "suite": "bcm_engine",
  "engine": "ProTrack WBS classification engine 1.0 (ProTrackAI v3.35)",
- "passed": 130,
- "total": 130,
+ "passed": 132,
+ "total": 132,
  "checks": [
   {
    "area": "Money",
@@ -781,6 +781,18 @@
   {
    "area": "SAP loading",
    "check": "the header says nothing was sent to SAP",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "a CN41 export is read: ID, Budget, Act.costs and Tot.cst.cm (the currency columns beside them left out)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "SAP reports",
+   "check": "...its levels counted once: the same totals as the by-WBS report (8,380,000 / 4,968,500 / 2,470,000)",
    "result": "PASS",
    "detail": ""
   }

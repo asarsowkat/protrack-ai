@@ -1,0 +1,193 @@
+{
+ "suite": "wf_demo",
+ "passed": 31,
+ "total": 31,
+ "checks": [
+  {
+   "area": "Navigation",
+   "check": "Budget & change requests sits in Cost Control, after Budget supplements",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "List",
+   "check": "the page says the forms are approved in Approval Hub and posted to the logs, and that the hub is not connected on the demo page",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "BRF",
+   "check": "a planning engineer starts a Budget Supplement / Returns Request: BR-01, a draft, in the company layout (sections 01 to 06)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "BRF",
+   "check": "general information comes from the project master (name, PE number, region, contract value)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "BRF",
+   "check": "the lines are saved signed as in the log: supplements negative, the saving positive",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "BRF",
+   "check": "contingency adds the Vice President to the approval chain",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "BRF",
+   "check": "section 03 computes the request by user field: SM current 5,339,111, this request -120,000, revised estimate 5,459,111",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "BRF",
+   "check": "section 05 puts this request by unified category",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Excel",
+   "check": "the form downloads in the company layout: title, reference, lines, budget summary, impact and the approval box",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Submit",
+   "check": "a line without its description is refused, naming the line",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Submit",
+   "check": "submitted to Approval Hub (queued), with its totals; it is no longer changed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Submit",
+   "check": "the planning engineer cannot record the decision",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Record",
+   "check": "the WF number is needed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Record",
+   "check": "the costing coordinator records the approval by hand: approved, version of this month, posted",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Log",
+   "check": "three rows in the budget supplement log with the WF number, the version and the approval date",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Log",
+   "check": "a row posted from a WF is not removed on the log screen",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Log",
+   "check": "...nor is its amount changed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Version",
+   "check": "moving the version needs a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Version",
+   "check": "the version moves to the previous month: the form and its three rows",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Log",
+   "check": "the supplement log screen lists the posted rows",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "BRF",
+   "check": "the management reserve adds the Executive Vice President",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Record",
+   "check": "a return needs its reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Return",
+   "check": "the preparer sees it returned with the reason, and can correct it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Return",
+   "check": "submitted again, keeping the WF number",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "CRF",
+   "check": "a client approved price without the client approval is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "CRF",
+   "check": "CR-01 submitted",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "CRF",
+   "check": "approved: added to the change order and claim log with its prices, cost, client status and WF",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "List",
+   "check": "the list shows the forms with their status, WF and version",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Hub",
+   "check": "the Approval Hub tab explains the link (wf_hub_next, wf_hub_update) and the manual recording",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a foreman does not see the page",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

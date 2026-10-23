@@ -1,0 +1,382 @@
+{
+ "suite": "v43",
+ "passed": 75,
+ "total": 75,
+ "checks": [
+  {
+   "check": "Install: wf.initiate and wf.record are listed; wf.initiate is a planning and costing right by default",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: the costing coordinator holds wf.record by position",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Forms: a foreman cannot prepare a form",
+   "pass": true,
+   "detail": "psql:/tmp/tmpls648ne9.sql:4: ERROR:  You cannot prepare these forms on this project (the wf.initiate right)\nCONTEXT:  PL/pgSQL function wf_form_save(jsonb) line 17 at RAISE"
+  },
+  {
+   "check": "Forms: a project manager (no wf.initiate) cannot either",
+   "pass": true,
+   "detail": "psql:/tmp/tmpv5k5151p.sql:4: ERROR:  You cannot prepare these forms on this project (the wf.initiate right)\nCONTEXT:  PL/pgSQL function wf_form_save(jsonb) line 17 at RAISE"
+  },
+  {
+   "check": "Forms: a planning engineer prepares a BRF: BR-01, a draft, with the approval chain",
+   "pass": true,
+   "detail": "{'id': 'WF-261023-5b9c73', 'ref_no': 'BR-01'}"
+  },
+  {
+   "check": "Forms: the draft and its history",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Forms: the next one is BR-02",
+   "pass": true,
+   "detail": "{'id': 'WF-261023-939afc', 'ref_no': 'BR-02'}"
+  },
+  {
+   "check": "Forms: a reference used twice is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp88xsb1_b.sql:4: ERROR:  BR-02 is already used on this project\nCONTEXT:  PL/pgSQL function wf_form_save(jsonb) line 26 at RAISE"
+  },
+  {
+   "check": "Submit: a form without lines is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp8ed040i7.sql:4: ERROR:  Add at least one line\nCONTEXT:  PL/pgSQL function pt_wf_check(wf_forms) line 5 at RAISE\nPL/pgSQL function wf_form_act(jsonb) line 10 at assignment"
+  },
+  {
+   "check": "Submit: a user field outside the list is refused with its line",
+   "pass": true,
+   "detail": "psql:/tmp/tmpq3kul3y8.sql:4: ERROR:  Line 1: user field \"XYZ\" is not in the list\nCONTEXT:  PL/pgSQL function pt_wf_check(wf_forms) line 12 at RAISE\nPL/pgSQL function wf_form_act(jsonb) line 10 at assignment"
+  },
+  {
+   "check": "Submit: a zero amount is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpfqh6yfds.sql:4: ERROR:  Line 1: the amount is zero\nCONTEXT:  PL/pgSQL function pt_wf_check(wf_forms) line 13 at RAISE\nPL/pgSQL function wf_form_act(jsonb) line 10 at assignment"
+  },
+  {
+   "check": "Forms: the lines are saved; contingency adds the Vice President to the approvers",
+   "pass": true,
+   "detail": "{'id': 'WF-261023-5b9c73', 'ref_no': 'BR-01'}"
+  },
+  {
+   "check": "...the chain",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Hub: without a token nothing is taken",
+   "pass": true,
+   "detail": "psql:/tmp/tmpguxy3x7z.sql:4: ERROR:  Not authorised\nCONTEXT:  PL/pgSQL function wf_hub_next(jsonb) line 4 at RAISE"
+  },
+  {
+   "check": "Submit: submitted, with its totals (supplement -167,650, savings 1,939,967)",
+   "pass": true,
+   "detail": "{'status': 'Submitted', 'totals': {'net': 1772317, 'lines': 3, 'savings': 1939967, 'supplement': -167650}}"
+  },
+  {
+   "check": "Submit: queued for Approval Hub with the project and the lines",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Submit: a submitted form is not changed any more",
+   "pass": true,
+   "detail": "psql:/tmp/tmpxi63oimo.sql:4: ERROR:  The form is Submitted and is not changed any more\nCONTEXT:  PL/pgSQL function wf_form_save(jsonb) line 11 at RAISE"
+  },
+  {
+   "check": "Hub: only a super admin makes the token",
+   "pass": true,
+   "detail": "psql:/tmp/tmpqmb5aetc.sql:4: ERROR:  Only a super admin sets the Approval Hub link\nCONTEXT:  PL/pgSQL function wf_hub_setup(jsonb) line 4 at RAISE"
+  },
+  {
+   "check": "Hub: the super admin makes the token (shown once)",
+   "pass": true,
+   "detail": "{'token': 'pthub_b7c40cef57a3473da099a0490c0324c0956930f05135415b962bc7c5e647c319', 'active': True}"
+  },
+  {
+   "check": "Hub: the token is kept only as its hash",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Hub: a wrong token is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpcsserd3e.sql:3: ERROR:  Not authorised\nCONTEXT:  PL/pgSQL function wf_hub_next(jsonb) line 4 at RAISE"
+  },
+  {
+   "check": "Hub: with its token (the anon key), the hub takes the queued submission",
+   "pass": true,
+   "detail": "{'items': [{'action': 'submit', 'payload': {'data': {'date': '2026-10-24'}, 'form': 'Budget Supplement / Returns Request (AP/Planning-BRF)', 'kind': 'BRF', 'link': 'live.html#wf=WF-261023-5b9c73', 'lines': [{'amount': '-120000', 'wbs_id': 'PE-262-01-001-01', 'category': 'Project Execution', 'user_fi"
+  },
+  {
+   "check": "Hub: taken once: the next call gives nothing",
+   "pass": true,
+   "detail": "{'items': []}"
+  },
+  {
+   "check": "Hub: it reports the WF number: In approval",
+   "pass": true,
+   "detail": "{'ok': True, 'status': 'In approval'}"
+  },
+  {
+   "check": "...the form shows the WF number and the step",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Record: while the hub is connected, a decision is not recorded by hand",
+   "pass": true,
+   "detail": "psql:/tmp/tmpz3m7hyno.sql:4: ERROR:  Approval Hub is connected: its decision comes by itself. Record by hand only if the link is down (tick the box)\nCONTEXT:  PL/pgSQL function wf_form_act(jsonb) line 28 at RAISE"
+  },
+  {
+   "check": "Hub: approved: the form is approved and posted at once",
+   "pass": true,
+   "detail": "{'posted': {'rows': ['BR-01/1', 'BR-01/2', 'BR-01/3'], 'skipped': []}, 'status': 'Approved', 'version': '2026-10'}"
+  },
+  {
+   "check": "Post: three rows in the budget supplement log, BR-01/1 to /3, with the WF number and the version of the approval month",
+   "pass": true,
+   "detail": "BR-01/1:-120000:SM:2026-10:WF-1001,BR-01/2:-47650:MAN.ELC:2026-10:WF-1001,BR-01/3:1939967:CONT:2026-10:WF-1001"
+  },
+  {
+   "check": "Post: the log was started by the WF; the rows are approved, dated the approval",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Post: the cost report's budget change counts them (supplements raise the budget, savings lower it)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Post: the history says it",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Log: a row posted from a WF is not removed on the log screen",
+   "pass": true,
+   "detail": "psql:/tmp/tmpqeidghe4.sql:4: ERROR:  Supplement BR-01/1 was posted from the approved WF WF-1001; it is not removed here\nCONTEXT:  PL/pgSQL function pt_bsu_guard() line 6 at RAISE\nSQL statement \"delete from budget_supplements where id = r.id\"\nPL/pgSQL function supp_update(jsonb) line 37 at SQL statem"
+  },
+  {
+   "check": "Log: nor is its amount changed",
+   "pass": true,
+   "detail": "psql:/tmp/tmpy5f_p06p.sql:4: ERROR:  Supplement BR-01/1 was posted from the approved WF WF-1001; only its version and remarks change here\nCONTEXT:  PL/pgSQL function pt_bsu_guard() line 8 at RAISE\nSQL statement \"update budget_supplements set supp_no = n ->> 'supp_no', supp_date = pt_date(n ->> 'supp"
+  },
+  {
+   "check": "Log: its remarks change on the log screen",
+   "pass": true,
+   "detail": "{'row': {'id': 1, 'wf_no': 'WF-1001', 'amount': -120000, 'period': '2026-10', 'wbs_id': 'PE-262-01-001-01', 'remarks': 'see WF', 'supp_no': 'BR-01/1', 'version': '2026-10', 'wf_form': 'WF-261023-5b9c73', 'batch_id': '7b57c988-9225-46fe-a0b2-37cd9bdc7a8a', 'category': 'Project Execution', 'supp_date'"
+  },
+  {
+   "check": "Version: a project manager does not move it",
+   "pass": true,
+   "detail": "psql:/tmp/tmpeejcmirk.sql:4: ERROR:  Only the costing engineer or the costing coordinator moves the version\nCONTEXT:  PL/pgSQL function wf_form_act(jsonb) line 32 at RAISE"
+  },
+  {
+   "check": "Version: a reason is needed",
+   "pass": true,
+   "detail": "psql:/tmp/tmpj4lhhrd_.sql:4: ERROR:  Give the reason for moving the version (at least 5 characters)\nCONTEXT:  PL/pgSQL function wf_form_act(jsonb) line 39 at RAISE"
+  },
+  {
+   "check": "Version: not two months back",
+   "pass": true,
+   "detail": "psql:/tmp/tmp5dx8j0ti.sql:4: ERROR:  The version is from 2026-09 (the month before the approval) to 2026-10 (this month)\nCONTEXT:  PL/pgSQL function wf_form_act(jsonb) line 37 at RAISE"
+  },
+  {
+   "check": "Version: not in the future",
+   "pass": true,
+   "detail": "psql:/tmp/tmpjy9z2a_6.sql:4: ERROR:  The version is from 2026-09 (the month before the approval) to 2026-10 (this month)\nCONTEXT:  PL/pgSQL function wf_form_act(jsonb) line 37 at RAISE"
+  },
+  {
+   "check": "Version: the costing engineer moves it to the previous month, with the reason",
+   "pass": true,
+   "detail": "{'rows': 3, 'changed': True, 'version': '2026-09'}"
+  },
+  {
+   "check": "...the three rows and the form are in the previous month, and the log history says it",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Log: a new log carrying BR-01/1 keeps its link to the WF",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Hub: the super admin switches the link off",
+   "pass": true,
+   "detail": "{'active': False}"
+  },
+  {
+   "check": "Hub: the old token stops working",
+   "pass": true,
+   "detail": "psql:/tmp/tmpzsmfq9p7.sql:3: ERROR:  Not authorised\nCONTEXT:  PL/pgSQL function wf_hub_next(jsonb) line 4 at RAISE"
+  },
+  {
+   "check": "Submit: BR-02 (a saving, version asked: the previous month)",
+   "pass": true,
+   "detail": "{'status': 'Submitted', 'totals': {'net': 25000, 'lines': 1, 'savings': 25000, 'supplement': 0}}"
+  },
+  {
+   "check": "...no VP or EVP without contingency or management reserve",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Record: a planning engineer (no wf.record) does not record a decision",
+   "pass": true,
+   "detail": "psql:/tmp/tmpnxvp5dvh.sql:4: ERROR:  Only the costing coordinator (wf.record) records an Approval Hub decision by hand\nCONTEXT:  PL/pgSQL function wf_form_act(jsonb) line 26 at RAISE"
+  },
+  {
+   "check": "Record: the WF number is needed",
+   "pass": true,
+   "detail": "psql:/tmp/tmpxj3k2ikh.sql:4: ERROR:  Give the Approval Hub WF number (up to 40 characters)\nCONTEXT:  PL/pgSQL function pt_wf_decide(wf_forms,text,text,date,text,text,text,uuid,text) line 6 at RAISE\nPL/pgSQL function wf_form_act(jsonb) line 29 at RETURN"
+  },
+  {
+   "check": "Record: a decision date in the future is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp3u5gxlui.sql:4: ERROR:  The decision date 2099-01-01 is in the future\nCONTEXT:  PL/pgSQL function pt_wf_decide(wf_forms,text,text,date,text,text,text,uuid,text) line 8 at RAISE\nPL/pgSQL function wf_form_act(jsonb) line 29 at RETURN"
+  },
+  {
+   "check": "Record: a decision date before the submission is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpbx80_nkk.sql:4: ERROR:  The decision date 2020-01-01 is before the form was submitted\nCONTEXT:  PL/pgSQL function pt_wf_decide(wf_forms,text,text,date,text,text,text,uuid,text) line 9 at RAISE\nPL/pgSQL function wf_form_act(jsonb) line 29 at RETURN"
+  },
+  {
+   "check": "Record: the costing coordinator records the approval by hand: posted, in the version asked",
+   "pass": true,
+   "detail": "{'posted': {'rows': ['BR-02'], 'skipped': []}, 'status': 'Approved', 'version': '2026-09'}"
+  },
+  {
+   "check": "...the form says it was recorded by hand, and by whom",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Chain: the management reserve adds the Executive Vice President",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Record: a return needs its reason",
+   "pass": true,
+   "detail": "psql:/tmp/tmp1icy97xo.sql:4: ERROR:  Give the reason of the rejection or return (at least 5 characters)\nCONTEXT:  PL/pgSQL function pt_wf_decide(wf_forms,text,text,date,text,text,text,uuid,text) line 10 at RAISE\nPL/pgSQL function wf_form_act(jsonb) line 29 at RETURN"
+  },
+  {
+   "check": "Record: returned for correction",
+   "pass": true,
+   "detail": "{'posted': None, 'status': 'Returned', 'version': None}"
+  },
+  {
+   "check": "Forms: a returned form is corrected and submitted again, keeping its WF number",
+   "pass": true,
+   "detail": "{'id': 'WF-261023-5911f3', 'ref_no': 'BR-03'}"
+  },
+  {
+   "check": "...WF-3003 kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Record: rejected: nothing is posted",
+   "pass": true,
+   "detail": "{'posted': None, 'status': 'Rejected', 'version': None}"
+  },
+  {
+   "check": "...no row of BR-03 in the log",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Cancel: a reason is needed",
+   "pass": true,
+   "detail": "psql:/tmp/tmpu48bc3m1.sql:4: ERROR:  Give the reason (at least 5 characters)\nCONTEXT:  PL/pgSQL function wf_form_act(jsonb) line 19 at RAISE"
+  },
+  {
+   "check": "Cancel: a draft is cancelled with its reason",
+   "pass": true,
+   "detail": "{'status': 'Cancelled'}"
+  },
+  {
+   "check": "CRF: a change request is prepared: CR-01",
+   "pass": true,
+   "detail": "{'id': 'WF-261023-9e37fc', 'ref_no': 'CR-01'}"
+  },
+  {
+   "check": "CRF: a client approved price without the client approval is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpxdk36nvo.sql:4: ERROR:  A client approved price needs the client approval status Approved or Partially approved\nCONTEXT:  PL/pgSQL function pt_wf_check(wf_forms) line 25 at RAISE\nPL/pgSQL function wf_form_act(jsonb) line 10 at assignment"
+  },
+  {
+   "check": "CRF: submitted",
+   "pass": true,
+   "detail": "{'status': 'Submitted', 'totals': {'cost_current': 400000, 'price_submitted': 600000}}"
+  },
+  {
+   "check": "CRF: approved (recorded by hand): added to the change order and claim log",
+   "pass": true,
+   "detail": "{'posted': {'how': 'added', 'row': 1}, 'status': 'Approved', 'version': '2026-10'}"
+  },
+  {
+   "check": "...with the prices, the cost, the client status and the WF",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "CRF: a change request already in the log gets its WF number and date",
+   "pass": true,
+   "detail": "{'posted': {'how': 'updated', 'row': 2}, 'status': 'Approved', 'version': '2026-10'}"
+  },
+  {
+   "check": "...the row of the log is updated, with its history",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: a foreman reads no form; someone outside the project neither",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: a project manager reads the forms and their history; the outbox only a super admin",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "History: never changed",
+   "pass": true,
+   "detail": "ERROR:  wf_events is append-only\nCONTEXT:  PL/pgSQL function pt_append_only() line 2 at RAISE"
+  },
+  {
+   "check": "Hub: queued submissions are counted for the status",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: runs; the functions are gone; forms and posted rows kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Again: v43 runs (1)",
+   "pass": true,
+   "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v43.sql:54: NOTICE:  relation \"wf_forms\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v43.sql:57: NOTICE:  relation \"wf_events\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v43.sql:"
+  },
+  {
+   "check": "Again: v43 runs (2)",
+   "pass": true,
+   "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v43.sql:54: NOTICE:  relation \"wf_forms\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v43.sql:57: NOTICE:  relation \"wf_events\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v43.sql:"
+  },
+  {
+   "check": "Again: the guard of posted rows is back",
+   "pass": true,
+   "detail": "psql:/tmp/tmpme_3n1iz.sql:4: ERROR:  Supplement BR-01/1 was posted from the approved WF WF-1001; it is not removed here\nCONTEXT:  PL/pgSQL function pt_bsu_guard() line 6 at RAISE\nSQL statement \"delete from budget_supplements where id = r.id\"\nPL/pgSQL function supp_update(jsonb) line 37 at SQL statem"
+  }
+ ]
+}

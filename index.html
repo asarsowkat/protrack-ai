@@ -865,7 +865,7 @@ tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,13
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.38</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.39</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1441,7 +1441,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
+    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -3444,7 +3444,7 @@ function suppActLocal(a){
     let id=DB.suppLog.reduce((m,r)=>Math.max(m,+r.id||0),0);L.rows.forEach(({id:_,batch_id,period,...r})=>DB.suppLog.push({...r,version:r.version||period,id:++id,batch_id:b.id,project_id:pid,period:per}));
     logChange(`${p.short}: budget supplement log, ${MMMYY(per)} version started${L.b?` from ${MMMYY(L.b.source_period)}`:''}`);save();return {batch:b}}
   if(!L.b)fail('This project has no supplement log yet: upload one first');
-  if(a.action==='remove'){const r=L.rows.find(x=>x.id===a.id);if(!r)fail('That row is not in the latest log');const why=String(a.reason||'').trim();if(why.length<5)fail('Give the reason for removing it');
+  if(a.action==='remove'){const r=L.rows.find(x=>x.id===a.id);if(!r)fail('That row is not in the latest log');if(r.wf_form)fail(`Supplement ${r.supp_no} was posted from the approved WF ${r.wf_no||r.wf_form}; it is not removed here`);const why=String(a.reason||'').trim();if(why.length<5)fail('Give the reason for removing it');
     DB.suppLog=DB.suppLog.filter(x=>x!==r);log(r,'removed',[],why.slice(0,300));logChange(`${p.short}: budget supplement ${r.supp_no} removed from the ${MMMYY(r.period)} log (${why})`);save();return {removed:r}}
   const {row,err}=suppNormalize(a.values||{},null);if(err)fail(err[0].toUpperCase()+err.slice(1));
   if(L.rows.some(x=>x.supp_no===row.supp_no&&x.id!==a.id))fail(`${row.supp_no} is already in the log`);
@@ -3452,7 +3452,7 @@ function suppActLocal(a){
     log(n,'added',[['amount',null,n.amount]]);logChange(`${p.short}: budget supplement ${n.supp_no} added to the ${MMMYY(n.period)} log`);save();return {row:n}}
   if(a.action==='edit'){const r=L.rows.find(x=>x.id===a.id);if(!r)fail('That row is not in the latest log');if(!suppNew(r))fail('A row logged before v3.29 is changed by uploading the log again');
     if(row.version==null)row.version=suppRowVer(r);const cur=k=>k==='version'?suppRowVer(r):r[k];
-    const ch=Object.keys(SUPP_FIELD_N).filter(k=>String(cur(k)??'')!==String(row[k]??'')).map(k=>[k,cur(k)??null,row[k]??null]);if(!ch.length)return {row:r,changed:false};
+    const ch=Object.keys(SUPP_FIELD_N).filter(k=>String(cur(k)??'')!==String(row[k]??'')).map(k=>[k,cur(k)??null,row[k]??null]);if(!ch.length)return {row:r,changed:false};if(r.wf_form&&ch.some(c=>!['version','remarks'].includes(c[0])))fail(`Supplement ${r.supp_no} was posted from the approved WF ${r.wf_no||r.wf_form}; only its version and remarks change here`);
     Object.assign(r,row);log(r,'changed',ch);logChange(`${p.short}: budget supplement ${r.supp_no} changed (${ch.map(c=>SUPP_FIELD_N[c[0]]).join(', ')})`);save();return {row:r,changed:true}}
   fail('Unknown action')}
 async function suppAct(a){
@@ -6338,14 +6338,16 @@ const RIGHTS=[
   ['bcm.budget','Budget & Cost Management: prepare, import and submit budget versions (Tender estimate, Rev 0, revisions)','Budget & Cost',['costing']],
   ['bcm.budget.approve','Budget & Cost Management: approve budget versions in ProTrackAI (never one they prepared or submitted)','Budget & Cost',[]],
   ['bcm.sap.import','Budget & Cost Management: import the monthly SAP ECC reports (budget, actual, commitments) and keep their column templates','Budget & Cost',['costing']],
-  ['bcm.sap','Budget & Cost Management: SAP authorized user: prepare the SAP loading workbook of an approved budget version and record SAP Loading Confirmed with the SAP reference','Budget & Cost',[]]];
+  ['bcm.sap','Budget & Cost Management: SAP authorized user: prepare the SAP loading workbook of an approved budget version and record SAP Loading Confirmed with the SAP reference','Budget & Cost',[]],
+  ['wf.initiate','Budget & change requests: prepare and submit budget supplement / returns requests and change requests to Approval Hub','Cost',['plan','costing']],
+  ['wf.record','Budget & change requests: record an Approval Hub decision by hand while the link is not connected','Cost',[]]];
 /* what comes with a position, shown beside the right in the tables */
-const RIGHT_POS={'bcm.review':'Head of Planning and Cost Control','bcm.master':'Head of Planning and Cost Control','bcm.approve':'Head of Planning and Cost Control','bcm.budget.approve':'Head of Planning and Cost Control','boq.review':'Head of Planning and Cost Control','boq.approve':'Head of Planning and Cost Control','cashout.keep':'Head of Planning and Cost Control; costing coordinator','visual.keep':'Head of Planning and Cost Control','delay.keep':'Head of Planning and Cost Control','materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
+const RIGHT_POS={'wf.record':'costing coordinator','bcm.review':'Head of Planning and Cost Control','bcm.master':'Head of Planning and Cost Control','bcm.approve':'Head of Planning and Cost Control','bcm.budget.approve':'Head of Planning and Cost Control','boq.review':'Head of Planning and Cost Control','boq.approve':'Head of Planning and Cost Control','cashout.keep':'Head of Planning and Cost Control; costing coordinator','visual.keep':'Head of Planning and Cost Control','delay.keep':'Head of Planning and Cost Control','materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
   'report.cost.approve':'Head of Planning and Cost Control','logs.upload':'costing coordinator','issues.keep':'Head of Planning and Cost Control',
   'issues.review':'Head of Planning and Cost Control','docs.contract':'Head of Planning and Cost Control','docs.planning':'Head of Planning and Cost Control',
   'docs.cost':'Head of Planning and Cost Control','tender.register':'Head of Planning and Cost Control; costing coordinator','tender.noa':'costing coordinator'};
 const RIGHT_N=Object.fromEntries(RIGHTS.map(r=>[r[0],r[1]]));
-const SCREENS=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','inv','cfd','cash','cout','boq','rep','deck','perf'];
+const SCREENS=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','boq','rep','deck','perf'];
 const RIGHT_ROLES=['exec','rm','pf','plan','costing','pm','sm','eng','foreman','ro'];
 const rightsDB=()=>DB.rights||(DB.rights={roles:[],role:{},user:{},screen:{},audit:[]});
 const appRoles=()=>rightsDB().roles||[];
@@ -8070,8 +8072,8 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{bcm:'Budget & Cost Management',boq:'BOQ Engine',rs:'Reporting status',cout:'Cash-out forecast',cfd:'Cashflow Dashboard',dly:'Delay events register',pv:'Project Visual',mmcs:'Master Manpower Costing Sheet',po:'Subcontract purchase orders',inv:'Invoice register',cash:'Cash-inflow forecast',mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'E&P progress',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{bcm:'إدارة الميزانية والتكاليف',boq:'محرك جداول الكميات',rs:'حالة إصدار التقارير',cout:'توقعات التدفقات النقدية الصادرة',cfd:'لوحة التدفقات النقدية',dly:'سجل أحداث التأخير',pv:'العرض المرئي للمشروع',mmcs:'ورقة تكلفة القوى العاملة الرئيسية',po:'أوامر شراء المقاولين من الباطن',inv:'سجل الفواتير',cash:'توقعات التدفقات النقدية الواردة',mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'تقدم الهندسة والمشتريات',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{wfr:'Budget & change requests',bcm:'Budget & Cost Management',boq:'BOQ Engine',rs:'Reporting status',cout:'Cash-out forecast',cfd:'Cashflow Dashboard',dly:'Delay events register',pv:'Project Visual',mmcs:'Master Manpower Costing Sheet',po:'Subcontract purchase orders',inv:'Invoice register',cash:'Cash-inflow forecast',mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'E&P progress',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{wfr:'طلبات الميزانية والتغيير',bcm:'إدارة الميزانية والتكاليف',boq:'محرك جداول الكميات',rs:'حالة إصدار التقارير',cout:'توقعات التدفقات النقدية الصادرة',cfd:'لوحة التدفقات النقدية',dly:'سجل أحداث التأخير',pv:'العرض المرئي للمشروع',mmcs:'ورقة تكلفة القوى العاملة الرئيسية',po:'أوامر شراء المقاولين من الباطن',inv:'سجل الفواتير',cash:'توقعات التدفقات النقدية الواردة',mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'تقدم الهندسة والمشتريات',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',bcm:'<path d="M4 4h6v5H4zM14 4h6v5h-6zM14 15h6v5h-6z"/><path d="M7 9v8.5h7M17 9v6"/>',
   xr:'<path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 4-5"/>',rel:'<path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/><path d="M9 12l2 2 4-4"/>',logs:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>',
@@ -8107,7 +8109,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.38';
+const APP_VERSION='3.39';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -8125,7 +8127,7 @@ const DOMAINS=[
     {plan:'Governed baseline register'},{plan:'Look-ahead and alerts'}]},
   {k:'cost',label:'Cost Control',ic:'eva',items:[
     {v:'cdash',label:'Cost Control dashboard'},{v:'eva',label:'Earned value and EAC'},{v:'mmcs',label:'Master Manpower Costing Sheet'},{v:'rep',rep:'unitrate',label:'Unit rate analysis'},
-    {v:'cdash',sec:'recon',label:'Cost reconciliation'},{v:'rel',sec:'cost',label:'Monthly cost report'},{v:'logs',sec:'supp',label:'Budget supplements'},{plan:'Accruals'}]},
+    {v:'cdash',sec:'recon',label:'Cost reconciliation'},{v:'rel',sec:'cost',label:'Monthly cost report'},{v:'logs',sec:'supp',label:'Budget supplements'},{v:'wfr',label:'Budget & change requests'},{plan:'Accruals'}]},
   {k:'bcm',label:'Budget & Cost Management',ic:'bcm',badge:'NEW',items:BCM_SECS.map(([sec,label,st])=>st?{plan:label,needs:'bcm',note:BCM_PLANNED[st]}:{v:'bcm',sec,label})},
   {k:'daily',label:'Daily Reports',ic:'dpr',items:[
     {v:'dpr',label:'Daily reports'},{v:'new',label:'New report'},{v:'rep',rep:'timing',label:'Report handling time'}]},
@@ -8408,16 +8410,16 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- shell ---------- */
-const NAV_ALL=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','inv','cfd','cash','cout','boq','rep','deck','perf','admin'];
+const NAV_ALL=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','boq','rep','deck','perf','admin'];
 let NAV_VIEWS=[];
 /* the screens a person sees under today's rules (v3.6), for their role and rights */
-function navDefault(v){if(v==='mat'&&!ROLE_VIEWS[state.role])return canMatView();return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='boq'||PLAN_ROLES.includes(state.role))&&(v!=='bcm'||can('money.view'))&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='po'||canCost())&&(v!=='mmcs'||canCost()||canBaseline())&&(v!=='pv'||canPvView())&&(v!=='inv'||canCost()||canBaseline())&&(v!=='cash'||canCashView())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())&&(v!=='dly'||canDlyView())&&(v!=='cout'||canCoView())&&(v!=='cfd'||canCfdView())&&(v!=='rs'||canRsView())}
+function navDefault(v){if(v==='mat'&&!ROLE_VIEWS[state.role])return canMatView();return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='boq'||PLAN_ROLES.includes(state.role))&&(v!=='bcm'||can('money.view'))&&(v!=='wfr'||can('money.view'))&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='po'||canCost())&&(v!=='mmcs'||canCost()||canBaseline())&&(v!=='pv'||canPvView())&&(v!=='inv'||canCost()||canBaseline())&&(v!=='cash'||canCashView())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())&&(v!=='dly'||canDlyView())&&(v!=='cout'||canCoView())&&(v!=='cfd'||canCfdView())&&(v!=='rs'||canRsView())}
 /* v3.7: the super admin may show or hide a screen for a role; Administration stays with super admins */
 function navOn(v){if(v==='admin')return state.role==='sa';const o=screenOv(v);return (o!==undefined?o:navDefault(v))&&(v!=='new'||canCreate())}
 function renderNav(){
   const L=T[state.lang];const views=NAV_ALL.filter(navOn);NAV_VIEWS=views;
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=`<button type="button" data-mnav aria-label="Open the full menu">${icon('menu')}<span>Menu</span></button>`+views.filter(v=>!['bcm','boq','pv','mat','po','inv','mmcs','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','dly','cout','cfd','rs','xr'].includes(v)).map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=`<button type="button" data-mnav aria-label="Open the full menu">${icon('menu')}<span>Menu</span></button>`+views.filter(v=>!['wfr','bcm','boq','pv','mat','po','inv','mmcs','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','dly','cout','cfd','rs','xr'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=state.view==='logs'&&(state.navSec==='supp'||(!state.navSec&&state.logTab==='supp'))?'Budget supplements':L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -8445,7 +8447,7 @@ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
   if(screenOv(state.view)===false){state.view=NAV_VIEWS.find(v=>v!==state.view)||'dash';renderNav()}   /* v3.7: a hidden screen sends the person to an allowed one */
-  ({bcm:renderBcm,boq:renderBoq,rs:renderRs,cout:renderCout,cfd:renderCfd,dly:renderDly,pv:renderPv,mmcs:renderMmcs,po:renderPo,inv:renderInv,cash:renderCash,mat:renderMat,xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpdMoved,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({wfr:renderWfr,bcm:renderBcm,boq:renderBoq,rs:renderRs,cout:renderCout,cfd:renderCfd,dly:renderDly,pv:renderPv,mmcs:renderMmcs,po:renderPo,inv:renderInv,cash:renderCash,mat:renderMat,xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpdMoved,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -13150,11 +13152,11 @@ function parseBudget(aoa){const H=(aoa||[]).slice(0,15);let hr=-1,map={};
    Monthly SAP ECC reports come in as Excel: budget, actual and commitment by WBS element (as S_ALR_87013558 gives), or
    line items (actual costs as CJI3, open commitments as CJI5). Each report is checked and then frozen. Nothing is sent to
    SAP: the loading workbook is prepared for the SAP team, and "loaded" is recorded only with the SAP reference. */
-const SAP_H={wbs:/^(wbs\s*element|wbs\s*elem\.?|wbs|wbs\s*id|sap\s*wbs(\s*(id|element))?|object|object\s*id|wbs\s*no\.?|project\s*\/\s*wbs)$/,
+const SAP_H={wbs:/^(wbs\s*element|wbs\s*elem\.?|wbs|wbs\s*id|sap\s*wbs(\s*(id|element))?|object|object\s*id|wbs\s*no\.?|project\s*\/\s*wbs|id)$/,
   desc:/^(description|name|object\s*name|wbs\s*description|wbs\s*name|short\s*text|text)$/,
   budget:/^(budget|current\s*budget|overall\s*budget|annual\s*budget|released\s*budget|budget\s*\(.*\))$/,
   actual:/^(actual|actuals|actual\s*costs?|act\.?\s*costs?|actual\s*\(.*\)|cumulative\s*actuals?|actual\s*to\s*date)$/,
-  commit:/^(commitments?|open\s*commitments?|commitment\s*\(.*\)|purchase\s*order\s*commitments?|obligo)$/,
+  commit:/^(commitments?|open\s*commitments?|commitment\s*\(.*\)|purchase\s*order\s*commitments?|obligo|tot\.?\s*cst\.?\s*cm\.?|total\s*commitments?)$/,
   eac:/^(forecast|forecast\s*at\s*completion|eac|estimate\s*at\s*completion|forecast\s*\(.*\))$/,
   etc:/^(etc|estimate\s*to\s*complete|cost\s*to\s*complete|rem\.?\s*order\s*plan|remaining\s*order\s*plan|remaining\s*plan)$/,
   value:/^(value|amount|val\.?\s*in\s*obj\.?\s*crcy|value\s*in\s*obj\.?\s*crcy|value\s*obj\.?\s*crcy|val\.?\s*in\s*rep\.?\s*cur\.?|value\s*in\s*report\s*currency|value\s*\(.*\)|total\s*value)$/,
@@ -14689,6 +14691,288 @@ document.addEventListener('change',async e=>{const t=e.target,U=state.bcmUi;if(!
   if(t.matches('#bcmSapKind')){I.kind=t.value;I.kindSet=true;bcmSapParse(U);render();return}if(t.matches('#bcmSapCum')){I.cum=t.checked;bcmSapParse(U);render();return}if(t.matches('#bcmSapHier')){I.hier=t.checked;bcmSapParse(U);render();return}
   if(t.matches('[data-bcmsapcol]')){const heads=(I.aoa[I.P.header_row-1]||[]).map(x=>String(x??'').trim()),m=Object.fromEntries(Object.entries(I.P.map).map(([k,c])=>[k,heads[c]]));if(t.value)m[t.dataset.bcmsapcol]=t.value;else delete m[t.dataset.bcmsapcol];
     I.map=m;I.kindSet=true;I.mapOpen=true;bcmSapParse(U);render();return}});
+
+/* =====================================================================================
+   v3.39: Budget & change requests. The Budget Supplement / Returns Request (BRF, the company form AP/Planning-BRF) and
+   the Change Request (CRF) are started in ProTrack and approved in Approval Hub. The hub (or IT's connector) takes the
+   submissions and reports the WF number and the decision; until it is connected, the costing coordinator records the
+   decision by hand. An approved BRF is posted to the budget supplement log (one row per line, its version the month of
+   the approval, movable to the month before or up to this month); an approved CRF to the change order and claim log. */
+const WF_ST_SEV={Draft:'Low',Submitted:'Medium','In approval':'Medium',Approved:'ok',Rejected:'High',Returned:'Medium',Cancelled:'Low'};
+const WF_KIND={BRF:'Budget Supplement / Returns Request',CRF:'Change Request'};
+const WF_DOC={ref:'AP/Planning-BRF',rev:'OCT.25'};
+const WF_UNIS=['External Factors','Under Estimation','Project Execution','Change Order','Claim','Prolongation Cost','Finance','Saudization','Contingency','Management Reserve'];
+const wfDB=()=>{['wfForms','wfEvents','wfOutbox'].forEach(k=>{DB[k]=DB[k]||[]});return DB};
+const wfUi=()=>state.wfUi||(state.wfUi={tab:'list',pid:'',kind:'',st:'',open:null});
+const wfCan=(k,pid)=>can('money.view')&&(!pid||accessIds().includes(pid))&&can(k,k==='wf.record'&&isCoord());
+const wfReady=()=>!CLOUD_ME||!!DB.wfV43;
+const wfN=v=>{if(v==null||v==='')return null;const n=+String(v).replace(/,/g,'');return isFinite(n)?n:NaN};
+const wfAmt=v=>v==null||v===''||!isFinite(v)?'—':(v<0?'-':'')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const wfPct=v=>v==null||!isFinite(v)?'—':(v*100).toFixed(1)+'%';
+const wfPrev=m=>{let [y,mm]=m.split('-').map(Number);mm--;if(!mm){mm=12;y--}return `${y}-${String(mm).padStart(2,'0')}`};
+const wfForm=id=>wfDB().wfForms.find(f=>f.id===id)||null;
+const wfEventsOf=id=>wfDB().wfEvents.filter(e=>e.form_id===id).sort((a,b)=>(a.id>b.id?1:-1));
+async function cloudLoadWf(){if(!CLOUD_ME||!rasaMoneyOk())return;
+  try{DB.wfHub=await rpc('wf_hub_status',{});DB.wfV43=true;DB.wfMissing=null}catch(e){DB.wfV43=false;DB.wfMissing=srvMsg(e);return}
+  try{[DB.wfForms,DB.wfEvents]=await Promise.all([selAll('wf_forms','*',null,['prepared_at']),selAll('wf_events','*',null,['id'])]);DB.wfOutbox=state.role==='sa'?await selAll('wf_outbox','*',null,['id']):[]}
+  catch(e){toast('Could not read the forms: '+srvMsg(e))}}
+async function wfCall(fn,p){if(CLOUD_ME){if(!DB.wfV43)throw new Error('The forms need the v43 database update (STAGE-37-SETUP)');const r=await rpc(fn,{p});await cloudLoadWf();try{await cloudLoadReleases()}catch(e){}return r}
+  const r=WFL[fn](p);save();return r}
+
+/* ---------- the approval chain of the company's approval box ---------- */
+function wfChain(kind,lines){if(kind==='CRF')return ['Project Manager','Costing Manager','Portfolio Manager','Regional Manager'];
+  const L=lines||[],c=['Project Manager','Costing Manager','Portfolio Manager','Planning Manager','Regional Manager'];
+  if(L.some(l=>String(l.user_field||'').toUpperCase()==='CONT'||/^cont-|contingency/i.test(l.category||'')))c.push('Vice President');
+  if(L.some(l=>String(l.user_field||'').toUpperCase()==='MGT.RES'||/mgmt res|mgt\.? ?res|management reserve/i.test(l.category||'')))c.push('Executive Vice President');return c}
+/* the checks before submitting (the same as the server's pt_wf_check) */
+function wfCheck(f){
+  if(f.kind==='BRF'){const L=f.lines||[];if(!L.length)throw new Error('Add at least one line');if(L.length>200)throw new Error('A form has at most 200 lines');let s=0,v=0;
+    L.forEach((l,i)=>{const n=i+1;if(String(l.description||'').trim().length<3)throw new Error(`Line ${n}: give the short description`);
+      const {err}=suppNormalize({supp_no:f.ref_no+'/'+n,supp_date:TODAY,user_field:l.user_field,category:l.category,description:l.description,amount:l.amount,wbs_id:l.wbs_id,wbs_description:l.wbs_description,linked_ref:l.linked_ref,remarks:l.remarks},null);
+      if(err)throw new Error(`Line ${n}: ${err}`);const a=wfN(l.amount);if(a===0)throw new Error(`Line ${n}: the amount is zero`);if(a<0)s+=a;else v+=a});
+    return {supplement:s,savings:v,net:s+v,lines:L.length}}
+  const d=f.data||{};if(String(d.description||'').trim().length<5)throw new Error('Give the detailed description of the change');
+  if(d.sub_date&&!isoOk(d.sub_date))throw new Error('The submission date is not a date');if(d.sub_date&&d.sub_date>TODAY)throw new Error('The submission date is in the future');
+  ['price_submitted','price_client','price_internal','cost_rev0','cost_current'].forEach(k=>{if(d[k]!=null&&d[k]!==''&&Number.isNaN(wfN(d[k])))throw new Error(`The ${k.replace('_',' ')} is not a number`)});
+  const e=voCheck({client_status:d.client_status,client_price:wfN(d.price_client),internal_price:null,est_price:wfN(d.price_submitted)});if(e)throw new Error(e[0].toUpperCase()+e.slice(1));
+  return {price_submitted:wfN(d.price_submitted),cost_current:wfN(d.cost_current)}}
+
+/* ---------- the same rules in this browser (demo page) ---------- */
+const WFL={
+  wf_form_save(p){const D=wfDB(),u=me(),ev=(f,a,st,d)=>D.wfEvents.push({id:D.wfEvents.length+1,form_id:f.id,project_id:f.project_id,action:a,status:st,detail:d||null,source:'app',by_user:u.id,by_name:u.name,at_time:new Date().toISOString()});
+    if(p.version_pref&&!/^\d{4}-(0[1-9]|1[0-2])$/.test(p.version_pref))throw new Error('The version must be a month such as 2026-10');
+    if(p.id){const f=wfForm(p.id);if(!f)throw new Error('Unknown form');if(!wfCan('wf.initiate',f.project_id))throw new Error('You cannot prepare these forms on this project (the wf.initiate right)');
+      if(!['Draft','Returned'].includes(f.status))throw new Error(`The form is ${f.status} and is not changed any more`);
+      Object.assign(f,{title:p.title??f.title,data:p.data||f.data,lines:p.lines||f.lines,version_pref:p.version_pref||null,updated_at:new Date().toISOString()});f.approvers=wfChain(f.kind,f.lines);return {id:f.id,ref_no:f.ref_no}}
+    if(!projById(p.project_id))throw new Error('Choose the project');if(!wfCan('wf.initiate',p.project_id))throw new Error('You cannot prepare these forms on this project (the wf.initiate right)');if(!WF_KIND[p.kind])throw new Error('Choose the form');
+    let rn=String(p.ref_no||'').trim().toUpperCase();if(!rn){const n=D.wfForms.filter(f=>f.project_id===p.project_id&&f.kind===p.kind).map(f=>+(String(f.ref_no).match(/-(\d+)$/)||[])[1]||0).reduce((m,x)=>Math.max(m,x),0)+1;rn=(p.kind==='BRF'?'BR-':'CR-')+String(n).padStart(2,'0')}
+    if(D.wfForms.some(f=>f.project_id===p.project_id&&f.kind===p.kind&&f.ref_no===rn))throw new Error(`${rn} is already used on this project`);
+    const f={id:'WF-'+TODAY.slice(2).replace(/-/g,'')+'-'+Math.random().toString(36).slice(2,8),project_id:p.project_id,kind:p.kind,ref_no:rn,title:p.title||null,status:'Draft',data:p.data||{},lines:p.lines||[],version_pref:p.version_pref||null,
+      prepared_by:u.id,prepared_by_name:u.name,prepared_at:new Date().toISOString()};f.approvers=wfChain(f.kind,f.lines);D.wfForms.push(f);ev(f,'Prepared','Draft',{ref_no:rn});return {id:f.id,ref_no:rn}},
+  wf_form_act(p){const D=wfDB(),u=me(),f=wfForm(p.id);if(!f)throw new Error('Unknown form');const now=new Date().toISOString(),rs=String(p.reason||'').trim();
+    const ev=(a,st,d,src,who)=>D.wfEvents.push({id:D.wfEvents.length+1,form_id:f.id,project_id:f.project_id,action:a,status:st,detail:d||null,source:src||'app',by_user:u.id,by_name:who||u.name,at_time:now});
+    if(p.action==='submit'){if(!wfCan('wf.initiate',f.project_id))throw new Error('You cannot submit these forms on this project (the wf.initiate right)');if(!['Draft','Returned'].includes(f.status))throw new Error(`The form is ${f.status} (only a draft or a returned form is submitted)`);
+      const t=wfCheck(f);Object.assign(f,{status:'Submitted',totals:t,approvers:wfChain(f.kind,f.lines),submitted_by:u.id,submitted_by_name:u.name,submitted_at:now,submitted_day:TODAY,hub_status:'Queued for Approval Hub',wf_no:f.status==='Returned'?f.wf_no:null});
+      D.wfOutbox.push({id:D.wfOutbox.length+1,form_id:f.id,action:'submit',status:'Queued',attempts:0,at_time:now,payload:{form_id:f.id,ref_no:f.ref_no,kind:f.kind}});ev('Submitted to Approval Hub','Submitted',{totals:t,approvers:f.approvers});return {status:'Submitted',totals:t}}
+    if(p.action==='cancel'){if(!(wfCan('wf.initiate',f.project_id)||wfCan('wf.record',f.project_id)))throw new Error('You cannot cancel this form');if(!['Draft','Returned','Submitted'].includes(f.status))throw new Error(`The form is ${f.status} (a draft, a returned or a submitted form is cancelled)`);
+      if(rs.length<5)throw new Error('Give the reason (at least 5 characters)');Object.assign(f,{status:'Cancelled',hub_comment:rs});ev('Cancelled','Cancelled',{reason:rs});return {status:'Cancelled'}}
+    if(p.action==='record'){if(!wfCan('wf.record',f.project_id))throw new Error('Only the costing coordinator (wf.record) records an Approval Hub decision by hand');
+      if(!['Submitted','In approval'].includes(f.status))throw new Error(`The form is ${f.status} (only a submitted form is decided)`);const dcn=String(p.decision||'').toLowerCase(),wfno=String(p.wf_no||'').trim(),d=p.date;
+      if(!['approved','rejected','returned'].includes(dcn))throw new Error('The decision is approved, rejected or returned');if(!wfno||wfno.length>40)throw new Error('Give the Approval Hub WF number (up to 40 characters)');
+      if(!d||!isoOk(d))throw new Error('Give the date of the decision');if(d>TODAY)throw new Error(`The decision date ${d} is in the future`);if(d<(f.submitted_day||String(f.submitted_at).slice(0,10)))throw new Error('The decision date is before the form was submitted');
+      if(dcn!=='approved'&&String(p.comment||'').trim().length<5)throw new Error('Give the reason of the rejection or return (at least 5 characters)');
+      const ns={approved:'Approved',rejected:'Rejected',returned:'Returned'}[dcn],m=d.slice(0,7),ver=ns==='Approved'?(f.version_pref&&f.version_pref>=wfPrev(m)&&f.version_pref<=curMonth()?f.version_pref:m):null;
+      Object.assign(f,{status:ns,wf_no:wfno,decided_on:d,decided_by_name:p.approver||null,hub_comment:p.comment||null,hub_status:ns,decision_source:'manual',version:ver,recorded_by:u.id,recorded_by_name:u.name});
+      ev('Approval Hub decision recorded by hand: '+ns.toLowerCase(),ns,{wf_no:wfno,date:d,approver:p.approver,comment:p.comment,version:ver},'manual');D.wfOutbox.filter(o=>o.form_id===f.id).forEach(o=>{o.status='Done'});
+      const posted=ns==='Approved'?wfPostLocal(f,ev):null;return {status:ns,version:ver,posted}}
+    if(p.action==='set_version'){if(!(wfCan('wf.record',f.project_id)||canLogUpload()&&accessIds().includes(f.project_id)))throw new Error('Only the costing engineer or the costing coordinator moves the version');
+      if(f.status!=='Approved'||f.kind!=='BRF')throw new Error('Only an approved budget supplement request has a version');const m=p.version||'';if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(m))throw new Error('The version must be a month such as 2026-10');
+      const lo=wfPrev(f.decided_on.slice(0,7));if(m<lo||m>curMonth())throw new Error(`The version is from ${lo} (the month before the approval) to ${curMonth()} (this month)`);if(m===f.version)return {version:m,changed:false};
+      if(rs.length<5)throw new Error('Give the reason for moving the version (at least 5 characters)');const L=suppLatestAny(f.project_id);let n=0;L.rows.filter(r=>r.wf_form===f.id).forEach(r=>{r.version=m;n++});
+      (DB.suppAudit=DB.suppAudit||[]).unshift({id:'SUA'+Date.now().toString(36),row_id:null,project_id:f.project_id,supp_no:f.ref_no,period:m,action:'changed',changes:[['version',f.version,m]],reason:rs,by:u.name,by_id:u.id,at:now});
+      ev(`Version moved from ${f.version||'—'} to ${m}`,f.status,{reason:rs,rows:n});f.version=m;return {version:m,changed:true,rows:n}}
+    throw new Error('Unknown action '+p.action)}};
+/* posting an approved form to its log, on the demo page (the server's pt_wf_post) */
+function wfPostLocal(f,ev){const p=projById(f.project_id),now=new Date().toISOString();
+  if(f.kind==='BRF'){let L=suppLatestAny(f.project_id);if(!L.b){logBatch({kind:'supplements',project_id:f.project_id,file_name:'Started by the approved WF '+f.wf_no,file_hash:'wf-'+f.id,source_period:curMonth(),rows_total:0,rows_accepted:0,rows_rejected:0,total_source:0,total_accepted:0,recon_status:'Matched',detail:{wf_form:f.id}});L=suppLatestAny(f.project_id)}
+    DB.suppLog=DB.suppLog||[];let id=DB.suppLog.reduce((m,r)=>Math.max(m,+r.id||0),0);const done=[],skip=[];
+    f.lines.forEach((l,i)=>{const sn=f.ref_no.toUpperCase()+(f.lines.length>1?'/'+(i+1):'');if(L.rows.some(r=>r.supp_no===sn)){skip.push(sn);return}
+      const {row}=suppNormalize({supp_no:sn,supp_date:f.decided_on,user_field:l.user_field,category:l.category,description:l.description,amount:l.amount,wbs_id:l.wbs_id,wbs_description:l.wbs_description,linked_ref:l.linked_ref,remarks:l.remarks},null);
+      DB.suppLog.push({...row,id:++id,batch_id:L.b.id,project_id:f.project_id,period:L.b.source_period,version:f.version,wf_form:f.id,wf_no:f.wf_no});done.push(sn)});
+    logChange(`${p.short}: ${f.ref_no} (WF ${f.wf_no}) posted to the budget supplement log, version ${MMMYY(f.version)}`);f.posted={log:'supplements',batch_id:L.b.id,rows:done,skipped:skip};f.posted_at=now;
+    ev('Posted to the budget supplement log','Approved',{rows:done,skipped:skip,version:f.version});return {rows:done,skipped:skip}}
+  const d=f.data||{};let L=voLatest(f.project_id,'9999-12');if(!L.b){logBatch({kind:'volog',project_id:f.project_id,file_name:'Started by the approved WF '+f.wf_no,file_hash:'wf-'+f.id,source_period:curMonth(),rows_total:0,rows_accepted:0,rows_rejected:0,total_source:0,total_accepted:0,detail:{wf_form:f.id}});L=voLatest(f.project_id,'9999-12')}
+  DB.coLog=DB.coLog||[];const ex=L.rows.find(r=>String(r.ref_no).toUpperCase()===f.ref_no.toUpperCase());let how;
+  if(ex){(DB.coAudit=DB.coAudit||[]).unshift({id:'CA'+Date.now().toString(36),row_id:ex.id,project_id:f.project_id,ref:ex.ref_no,period:L.b.source_period,changes:[['wf_no',ex.wf_no||null,f.wf_no],['wf_date',ex.wf_date||null,f.decided_on]],by:me().name,by_id:me().id,at:now});
+    Object.assign(ex,{wf_no:f.wf_no,wf_date:f.decided_on});how='updated'}
+  else{const id=DB.coLog.reduce((m,r)=>Math.max(m,+r.id||0),0)+1;DB.coLog.push({id,batch_id:L.b.id,project_id:f.project_id,period:L.b.source_period,ref_no:f.ref_no.toUpperCase(),kind:'VO',description:d.description||'',submission_status:d.sub_date?'Submitted':null,submitted_on:d.sub_date||null,
+      client_status:d.client_status||null,est_price:wfN(d.price_submitted),est_cost:wfN(d.cost_current),rev0_change:wfN(d.cost_rev0),internal_wf:'Approved',overall_status:`Approved internally (WF ${f.wf_no})`,remarks:[d.client_ref,d.remarks].filter(Boolean).join(' · ')||null,
+      client_price:wfN(d.price_client),internal_price:wfN(d.price_internal),wf_no:f.wf_no,wf_date:f.decided_on});how='added'}
+  logChange(`${p.short}: ${f.ref_no} (WF ${f.wf_no}) ${how} in the change order and claim log`);f.posted={log:'volog',batch_id:L.b.id,how};f.posted_at=now;ev(`Posted to the change order and claim log (${how})`,'Approved',{ref:f.ref_no});return {how}}
+
+/* ---------- the figures of section 03 (budget summary by user field), prefilled from ProTrack, editable ---------- */
+function wfUfFigures(pid){const ufs=suppLists().uf.filter(([c])=>c!==SUPP_CONT),key=c=>String(c||'').trim().toLowerCase(),out={};ufs.forEach(([c,d])=>{out[key(c)]={uf:c,desc:d}});
+  const V=(typeof bcmS3==='function'?bcmS3().versions:[]).filter(v=>v.project_id===pid&&['Approved in ProTrackAI','Ready for SAP Loading','SAP Loading Confirmed'].includes(v.status)).sort((a,b)=>String(a.approved_at).localeCompare(String(b.approved_at)));
+  const last=k=>V.filter(v=>v.kind===k).slice(-1)[0],lines=v=>v?((bcmS3().vlines||{})[v.id]||[]):[],by=(v,col)=>{lines(v).forEach(l=>{const k=key(l.user_field);if(out[k])out[k][col]=(out[k][col]||0)+(+l.amount||0)})};
+  const T=last('Tender estimate'),R0=last('Rev 0');by(T,'A');by(R0,'B');
+  const S=suppAsOf(pid,'9999-12'),rows=(S.rows||[]).map(suppView).filter(r=>r.counts);rows.forEach(r=>{const k=key(r.uf);if(out[k])out[k].chg=(out[k].chg||0)+r.budget});
+  Object.values(out).forEach(o=>{if(o.B!=null||o.chg!=null)o.C=(o.B||0)+(o.chg||0)});
+  try{if(typeof bcmSummary==='function'&&bcmS4Ready()){const per=bcmPeriodsOf(pid)[0];if(per){const VV=bcmVersOf(pid).filter(v=>BCM_APPROVED_V.includes(v.status)).map(v=>({...v,lines:lines(v)}));
+    const Sm=bcmSummary(pid,per,VV);Sm.rows.filter(r=>!r.kids&&r.uf).forEach(r=>{const k=key(r.uf);if(!out[k])return;const N=x=>x==null?null:Number(BCME.decStr(x));if(r.c.actual!=null)out[k].D=(out[k].D||0)+N(r.c.actual);if(r.c.commit!=null)out[k].E=(out[k].E||0)+N(r.c.commit)});out._sap=per}}}catch(e){}
+  const prev=wfDB().wfForms.filter(f=>f.project_id===pid&&f.kind==='BRF'&&f.status==='Approved').sort((a,b)=>String(b.decided_on).localeCompare(String(a.decided_on)))[0];
+  if(prev){(prev.lines||[]).forEach(l=>{const k=key(l.user_field);if(out[k])out[k].N=(out[k].N||0)+(wfN(l.amount)||0)});out._prev={ref:prev.ref_no,date:prev.decided_on}}
+  out._src={tender:T?`${T.kind} ${T.rev_no}`:null,rev0:R0?`${R0.kind} ${R0.rev_no}`:null};return out}
+/* the computed columns of a summary row: F = C-D-E, I = this request, H = C-I, G = H-D-E, J = A-C, % = (A-H)/A */
+function wfUfRow(s,lines){const I=(lines||[]).filter(l=>String(l.user_field||'').toLowerCase()===String(s.uf).toLowerCase()).reduce((t,l)=>t+(wfN(l.amount)||0),0),n=v=>v==null||v===''?null:+v;
+  const A=n(s.A),B=n(s.B),C=n(s.C),D=n(s.D),E=n(s.E),F=C!=null?C-(D||0)-(E||0):null,H=C!=null?C-I:null,G=H!=null?H-(D||0)-(E||0):null,J=A!=null&&C!=null?A-C:null,P=A&&H!=null?(A-H)/A:null;return {A,B,C,D,E,F,G,H,I,N:n(s.N),J,P}}
+function wfNewData(pid,kind){const p=projById(pid)||{},tcc=(p.milestones||[]).find(m=>m.t==='TCC')||{};
+  if(kind==='CRF')return {sub_date:TODAY,description:'',client_ref:'',price_submitted:'',client_status:'',price_client:'',price_internal:'',cost_rev0:'',cost_current:'',remarks:''};
+  const U=wfUfFigures(pid);
+  return {date:TODAY,client:p.client||'',region:regName(p),contract_no:p.contract_no||'',contract_start:p.start||'',
+    summary:Object.values(U).filter(o=>o&&o.uf).map(o=>({uf:o.uf,desc:o.desc,A:o.A??'',B:o.B??'',C:o.C??'',D:o.D??'',E:o.E??'',N:o.N??''})),prev:U._prev||null,sources:{...U._src,sap:U._sap||null},
+    impact:{ocv:p.value?p.value*1e6:'',rcv:p.value?p.value*1e6:'',tcc:tcc.plan||p.finish||'',eot_prev:p.eot&&/approv/i.test(p.eot.status||'')?p.eot.days||0:0,eot_this:0,rev_completion:'',forecast_finish:tcc.fc||'',plan_pct:'',actual_pct:'',target_poc:'',revised_poc:'',actual_poc:''}}}
+
+/* ---------- the screen ---------- */
+function renderWfr(){const U=wfUi();
+  if(!can('money.view')){$('#view').innerHTML='<section class="panel"><p>Budget and change requests are for people who see cost figures.</p></section>';return}
+  const warn=!wfReady()?`<div class="warn-box" style="margin-bottom:12px"><b>Budget and change requests need the v43 database update.</b> Run schema-update-v43.sql (STAGE-37-SETUP).${DB.wfMissing?` <span class="small">(${esc(DB.wfMissing)})</span>`:''}</div>`:'';
+  if(U.open){const f=wfForm(U.open);if(f){$('#view').innerHTML=`${crumb()}${warn}${wfFormHTML(f)}`;return}U.open=null}
+  const hub=DB.wfHub||{},tabs=[['list','Requests'],['hub','Approval Hub']];
+  $('#view').innerHTML=`${crumb()}${warn}<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Budget &amp; change requests</h2><div class="chips">${tabs.map(([k,l])=>`<button type="button" class="chip" data-wftab="${k}" aria-pressed="${U.tab===k}">${l}</button>`).join('')}</div></div>
+    <p class="small muted">The Budget Supplement / Returns Request (${WF_DOC.ref}) and the Change Request are started here and approved in Approval Hub. ${CLOUD_ME&&hub.active?'<span class="g-c">Approval Hub is connected.</span>':'Approval Hub is not connected yet: the costing coordinator records its decision on the form.'} An approved request is posted at once to the budget supplement log, or the change order and claim log.</p></section>
+  ${U.tab==='hub'?wfHubHTML():wfListHTML(U)}`}
+function wfListHTML(U){const ps=scopeProjects(),F=wfDB().wfForms.filter(f=>ps.some(p=>p.id===f.project_id)&&(!U.pid||f.project_id===U.pid)&&(!U.kind||f.kind===U.kind)&&(!U.st||f.status===U.st)).sort((a,b)=>String(b.prepared_at).localeCompare(String(a.prepared_at)));
+  const pid=U.pid||(ps.length===1?ps[0].id:''),canNew=pid&&wfCan('wf.initiate',pid)&&wfReady(),n=s=>wfDB().wfForms.filter(f=>ps.some(p=>p.id===f.project_id)&&f.status===s).length;
+  return `<section class="panel"><div class="fields"><label class="field">Project<select data-wff="pid"><option value="">${ps.length>1?'All projects in scope':''}</option>${ps.map(p=>`<option value="${esc(p.id)}" ${p.id===U.pid?'selected':''}>${esc(pcode(p)+' · '+p.short)}</option>`).join('')}</select></label>
+      <label class="field">Form<select data-wff="kind"><option value="">Both</option>${Object.entries(WF_KIND).map(([k,l])=>`<option value="${k}" ${U.kind===k?'selected':''}>${esc(l)}</option>`).join('')}</select></label>
+      <label class="field">Status<select data-wff="st"><option value="">Any</option>${Object.keys(WF_ST_SEV).map(s=>`<option ${U.st===s?'selected':''}>${s}</option>`).join('')}</select></label></div>
+    <div class="actions">${canNew?`<button class="btn primary" type="button" data-wfnew="BRF">New budget supplement / returns request</button><button class="btn" type="button" data-wfnew="CRF">New change request</button>`:`<span class="small muted">${pid?'Preparing a form needs the wf.initiate right (planning and costing engineers).':'Choose a project to start a form.'}</span>`}</div>
+    <div class="g g-kpi" style="margin-top:10px">${kpi('wfd','Drafts and returned',fmt(n('Draft')+n('Returned')),'to complete')}${kpi('wfa','In Approval Hub',fmt(n('Submitted')+n('In approval')),'submitted or in approval')}${kpi('wfo','Approved',fmt(n('Approved')),'posted to the logs')}${kpi('wfr','Rejected',fmt(n('Rejected')),'')}</div></section>
+  <section class="panel"><div class="scroll"><table class="tbl"><thead><tr><th>Reference</th><th>Form</th><th>Project</th><th>Title</th><th class="n">Amount</th><th>Status</th><th>WF</th><th>Version</th><th>Prepared</th></tr></thead><tbody>
+    ${F.map(f=>{const p=projById(f.project_id)||{},t=f.totals||(f.kind==='BRF'?{net:(f.lines||[]).reduce((s,l)=>s+(wfN(l.amount)||0),0)}:{price_submitted:wfN((f.data||{}).price_submitted)});
+      return `<tr class="click" data-wfopen="${esc(f.id)}" tabindex="0"><td><b>${esc(f.ref_no)}</b></td><td>${esc(f.kind)}</td><td>${esc(pcode(p))}</td><td>${esc(f.title||(f.data||{}).description||'')}</td>
+        <td class="n">${f.kind==='BRF'?wfAmt(t.net):wfAmt(t.price_submitted)}</td><td><span class="sev ${WF_ST_SEV[f.status]}">${esc(f.status)}</span>${f.hub_status&&!['Approved','Rejected','Cancelled'].includes(f.status)?`<span class="t2">${esc(f.hub_status)}</span>`:''}</td>
+        <td>${esc(f.wf_no||'')}</td><td>${f.version?esc(MMMYY(f.version)):''}</td><td class="small">${esc(f.prepared_by_name||'')}<span class="t2">${esc(tStamp(f.prepared_at))}</span></td></tr>`}).join('')||'<tr><td colspan="9" class="muted">No form yet.</td></tr>'}</tbody></table></div></section>`}
+/* ---------- a form ---------- */
+const wfIn=(k,v,o)=>`<input data-wfd="${k}" value="${esc(v??'')}" ${o||''}>`;
+function wfFormHTML(f){const p=projById(f.project_id)||{},ed=['Draft','Returned'].includes(f.status)&&wfCan('wf.initiate',f.project_id),d=f.data||{},E=wfEventsOf(f.id);
+  const head=`<section class="panel"><div class="card-head" style="flex-wrap:wrap"><div><button class="btn sm" type="button" data-wfback>← Requests</button> <b style="font-size:18px;margin-left:8px">${esc(WF_KIND[f.kind])}</b> <span class="sev ${WF_ST_SEV[f.status]}">${esc(f.status)}</span></div>
+      <div class="actions">${ed?`<button class="btn sm" type="button" data-wfsave>Save</button><button class="btn sm primary" type="button" data-wfsubmit>Submit to Approval Hub</button>`:''}<button class="btn sm" type="button" data-wfxl>Download the form (Excel)</button></div></div>
+    <p class="small muted">${esc(f.kind==='BRF'?`Doc. Ref. No ${WF_DOC.ref} · Rev. ${WF_DOC.rev}`:'Change Request')} · ${esc(pcode(p))} | ${esc(f.ref_no)} · prepared by ${esc(f.prepared_by_name||'')} ${esc(tStamp(f.prepared_at))}${f.submitted_at?` · submitted by ${esc(f.submitted_by_name||'')} ${esc(tStamp(f.submitted_at))}`:''}</p>
+    ${f.status==='Returned'?`<p class="warn-box">Returned from Approval Hub${f.wf_no?' (WF '+esc(f.wf_no)+')':''}: ${esc(f.hub_comment||'')}. Correct the form and submit it again.</p>`:''}</section>`;
+  return head+(f.kind==='BRF'?wfBrfHTML(f,p,d,ed):wfCrfHTML(f,p,d,ed))+wfStatusHTML(f,E)}
+function wfBrfHTML(f,p,d,ed){const L=f.lines||[],ufs=suppLists().uf,cats=suppLists().cats,S=d.summary||[],I=d.impact||{},tot=L.reduce((t,l)=>{const a=wfN(l.amount)||0;a<0?t.s+=a:t.v+=a;return t},{s:0,v:0});
+  const rows=S.map(s=>({s,r:wfUfRow(s,L)})),sum=k=>rows.reduce((t,x)=>t+(x.r[k]||0),0),overall=tot.s&&tot.v?'Supplement / Savings':tot.s?'Supplement':tot.v?'Savings':'—';
+  const sumA=sum('A'),sumB=sum('B'),sumC=sum('C'),sumH=sum('H'),sumI=sum('I'),ocv=wfN(I.ocv),rcv=wfN(I.rcv),gp=(c,x)=>c&&x!=null?(c-x)/c:null;
+  const prevByUni={},curByUni={};(suppAsOf(f.project_id,'9999-12').rows||[]).map(suppView).filter(r=>r.counts&&r.uf!==SUPP_CONT&&(!f.posted||!(f.posted.rows||[]).includes(r.supp_no))).forEach(r=>{prevByUni[r.uni]=(prevByUni[r.uni]||0)+r.amt});
+  L.forEach(l=>{const u=suppUni(suppCat(l.category))||'—';curByUni[u]=(curByUni[u]||0)+(wfN(l.amount)||0)});const unis=[...new Set([...WF_UNIS,...Object.keys(prevByUni),...Object.keys(curByUni)])];
+  return `<section class="panel"><h3>01. General Information</h3><div class="fields">
+      <label class="field">Budget Revision Ref. No<input value="${esc(pcode(p)+' | '+f.ref_no)}" disabled></label><label class="field">Date${wfIn('date',d.date,`type="date" ${ed?'':'disabled'}`)}</label><label class="field">Overall WF<input value="${overall}" disabled></label>
+      <label class="field">Title${ed?`<input data-wft value="${esc(f.title||'')}" maxlength="200">`:`<input value="${esc(f.title||'')}" disabled>`}</label></div>
+    <div class="fields"><label class="field">Project Name<input value="${esc(p.name||'')}" disabled></label><label class="field">Project No.<input value="${esc(pcode(p))}" disabled></label>
+      <label class="field">Client Name${wfIn('client',d.client,ed?'':'disabled')}</label><label class="field">Contract No.${wfIn('contract_no',d.contract_no,ed?'':'disabled')}</label>
+      <label class="field">Region${wfIn('region',d.region,ed?'':'disabled')}</label><label class="field">Contract Start Date${wfIn('contract_start',d.contract_start,`type="date" ${ed?'':'disabled'}`)}</label></div></section>
+  <section class="panel"><h3>02. Brief Description of this Supplement / Returns</h3><p class="small muted">A supplement is entered as a supplement (it raises the budget: shown negative, as in the log); a saving as a saving. Each line goes to the budget supplement log with its user field and category once the WF is approved.</p>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>S.No</th><th>Short Description</th><th>Category</th><th>User field</th><th>WBS (SAP WBS ID)</th><th class="n">Supplement</th><th class="n">Savings</th><th class="n">Total</th><th>Linked VO / claim</th><th>Remarks</th>${ed?'<th></th>':''}</tr></thead><tbody>
+    ${L.map((l,i)=>{const a=wfN(l.amount);return ed?`<tr data-wfl="${i}"><td>${i+1}</td><td><input data-wl="description" value="${esc(l.description||'')}" maxlength="400" style="min-width:220px"></td>
+        <td><select data-wl="category"><option value=""></option>${cats.map(([c])=>`<option ${c===l.category?'selected':''}>${esc(c)}</option>`).join('')}</select></td>
+        <td><select data-wl="user_field"><option value=""></option>${ufs.map(([c,n])=>`<option value="${esc(c)}" ${c===l.user_field?'selected':''}>${esc(c)} · ${esc(n)}</option>`).join('')}</select></td>
+        <td><input data-wl="wbs_id" value="${esc(l.wbs_id||'')}" maxlength="100" style="width:140px"></td>
+        <td class="n"><input data-wl="supp" value="${a!=null&&a<0?-a:''}" inputmode="decimal" style="width:110px"></td><td class="n"><input data-wl="sav" value="${a!=null&&a>0?a:''}" inputmode="decimal" style="width:110px"></td>
+        <td class="n">${wfAmt(a)}</td><td><input data-wl="linked_ref" value="${esc(l.linked_ref||'')}" maxlength="60" style="width:90px"></td><td><input data-wl="remarks" value="${esc(l.remarks||'')}" maxlength="300"></td><td><button class="iconbtn" type="button" data-wfldel="${i}" aria-label="Remove the line">✕</button></td></tr>`
+      :`<tr><td>${i+1}</td><td>${esc(l.description||'')}</td><td>${esc(l.category||'')}</td><td>${esc(l.user_field||'')}</td><td>${esc(l.wbs_id||'')}</td><td class="n">${a<0?wfAmt(a):''}</td><td class="n">${a>0?wfAmt(a):''}</td><td class="n">${wfAmt(a)}</td><td>${esc(l.linked_ref||'')}</td><td>${esc(l.remarks||'')}</td></tr>`}).join('')}
+    <tr><td colspan="5"><b>Total Value</b></td><td class="n"><b>${wfAmt(tot.s)}</b></td><td class="n"><b>${wfAmt(tot.v)}</b></td><td class="n"><b>${wfAmt(tot.s+tot.v)}</b></td><td colspan="${ed?3:2}"></td></tr></tbody></table></div>
+    ${ed?'<div class="actions"><button class="btn sm" type="button" data-wfladd>Add a line</button></div>':''}</section>
+  <section class="panel"><div class="card-head"><h3>03. Budget Summary &amp; Supplement / Return Request Details</h3>${ed?'<button class="btn sm" type="button" data-wfrefresh>Refresh the figures from ProTrack</button>':''}</div>
+    <p class="small muted">Prefilled from ProTrack: Tender and Rev-0 from the approved budget versions (${esc((d.sources||{}).tender||'none')}, ${esc((d.sources||{}).rev0||'none')}); current budget = Rev-0 + the budget supplement log; actual and commitment from the SAP report ${esc((d.sources||{}).sap||'(none imported)')}; previous request ${d.prev?esc(d.prev.ref+' of '+d.prev.date):'(none)'}. Type over a figure to correct it.</p>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>User Field</th><th>WBS Head</th><th class="n">Tender Budget<br>A</th><th class="n">Rev-0 Budget<br>B</th><th class="n">Current Budget<br>C</th><th class="n">Actual Cost<br>D</th><th class="n">Commitment<br>E</th><th class="n">Balance<br>F=C-D-E</th><th class="n">ETC<br>G</th><th class="n">Revised Estimate<br>H=D+E+G</th><th class="n">This Request<br>I=C-H</th><th class="n">Prev. Request</th><th class="n">Cumm. Approved upto Prev<br>J=A-C</th><th class="n">% Var from TND</th></tr></thead><tbody>
+    ${rows.map(({s,r},i)=>`<tr><td><b>${esc(s.uf)}</b></td><td>${esc(s.desc||'')}</td>${['A','B','C','D','E'].map(k=>`<td class="n">${ed?`<input data-wfs="${i}" data-k="${k}" value="${esc(s[k]??'')}" inputmode="decimal" style="width:100px">`:wfAmt(r[k])}</td>`).join('')}
+      <td class="n">${wfAmt(r.F)}</td><td class="n">${wfAmt(r.G)}</td><td class="n">${wfAmt(r.H)}</td><td class="n"><b>${r.I?wfAmt(r.I):'—'}</b></td><td class="n">${wfAmt(r.N)}</td><td class="n">${wfAmt(r.J)}</td><td class="n">${wfPct(r.P)}</td></tr>`).join('')}
+    <tr><td colspan="2"><b>Total</b></td>${['A','B','C','D','E','F','G','H','I','N','J'].map(k=>`<td class="n"><b>${wfAmt(sum(k))}</b></td>`).join('')}<td class="n"><b>${wfPct(sumA?(sumA-sumH)/sumA:null)}</b></td></tr></tbody></table></div>
+    ${Math.abs(sumI-(tot.s+tot.v))>0.005?`<p class="small r-c">The lines with a user field outside this table add up to ${wfAmt(tot.s+tot.v-sumI)}.</p>`:''}</section>
+  <section class="panel"><h3>04. Impact on Project Margin and Milestones</h3><div class="scroll"><table class="tbl small"><tbody>
+      ${[['A','Original contract value',ocv,null],['B','Revised contract value',rcv,null],['C','Tender',sumA,gp(ocv,sumA)],['D','Rev 0',sumB,gp(ocv,sumB)],['F','Current budget',sumC,gp(rcv,sumC)],['G','This request',sumI,null],['H','Revised estimate',sumH,gp(rcv,sumH)]]
+        .map(([k,l,v,g])=>`<tr><td>${k}</td><td>${l}</td><td class="n">${k==='A'||k==='B'?(ed?wfIn('impact.'+(k==='A'?'ocv':'rcv'),k==='A'?I.ocv:I.rcv,'inputmode="decimal" style="width:130px"'):wfAmt(v)):wfAmt(v)}</td><td class="n">${g!=null?'GP '+wfPct(g):''}</td></tr>`).join('')}
+      <tr><td></td><td>Gross profit change of this request</td><td></td><td class="n">${rcv&&sumC?wfPct(gp(rcv,sumH)-gp(rcv,sumC)):'—'}</td></tr></tbody></table></div>
+    <div class="fields">${[['tcc','Contract Completion Date (TCC)','date'],['eot_prev','Previously Approved EOT (days)',''],['eot_this','EOT approved in this Request (days)',''],['rev_completion','Revised Completion Date','date'],['forecast_finish','Forecasted Finish','date']]
+        .map(([k,l,t])=>`<label class="field">${l}${wfIn('impact.'+k,I[k],`${t?`type="${t}"`:'inputmode="numeric"'} ${ed?'':'disabled'}`)}</label>`).join('')}</div>
+    <div class="fields">${[['plan_pct','Progress: plan %'],['actual_pct','Progress: actual %'],['target_poc','Target POC %'],['revised_poc','Revised POC %'],['actual_poc','Actual POC %']].map(([k,l])=>`<label class="field">${l}${wfIn('impact.'+k,I[k],`inputmode="decimal" ${ed?'':'disabled'}`)}</label>`).join('')}
+      <label class="field">POC after this WF<input value="${wfN(I.actual_poc)!=null&&sumH?((wfN(I.actual_poc)*sumC/sumH)).toFixed(2)+'%':''}" disabled></label></div></section>
+  <section class="panel"><h3>05. Category wise Details</h3><div class="scroll"><table class="tbl small"><thead><tr><th>Description</th><th class="n">Previous</th><th class="n">Current</th><th class="n">Cumulative</th></tr></thead><tbody>
+    ${unis.map(u=>`<tr><td>${esc(u)}</td><td class="n">${wfAmt(prevByUni[u]||0)}</td><td class="n">${wfAmt(curByUni[u]||0)}</td><td class="n">${wfAmt((prevByUni[u]||0)+(curByUni[u]||0))}</td></tr>`).join('')}
+    <tr><td><b>Total</b></td>${[prevByUni,curByUni].map(o=>`<td class="n"><b>${wfAmt(Object.values(o).reduce((a,b)=>a+b,0))}</b></td>`).join('')}<td class="n"><b>${wfAmt([...Object.values(prevByUni),...Object.values(curByUni)].reduce((a,b)=>a+b,0))}</b></td></tr></tbody></table></div>
+    <p class="small muted">Previous: the budget supplement log of the project (as approved so far); current: this request.</p></section>
+  <section class="panel"><h3>06. Final Agreement for Adjustment to Contract Value and Budget</h3>${wfChainHTML(f)}
+    <p class="small muted">1. VP approval is mandatory to release or utilise the contingency budget. 2. EVP approval is mandatory to release or utilise any management reserve budget. The approvals are given in Approval Hub.</p>
+    ${ed?`<label class="field">Log version (month)<select data-wfvp><option value="">The month of the approval (default)</option>${[curMonth(),wfPrev(curMonth())].map(m=>`<option value="${m}" ${f.version_pref===m?'selected':''}>${MMMYY(m)}</option>`).join('')}</select></label>`:''}</section>`}
+function wfChainHTML(f){const ch=f.approvers||wfChain(f.kind,f.lines);return `<div class="scroll"><table class="tbl small"><thead><tr><th>Prepared By</th>${ch.map(r=>`<th>${esc(r)}</th>`).join('')}</tr></thead><tbody><tr><td>${esc(f.prepared_by_name||'')}<span class="t2">${f.kind==='BRF'?'Planning Engineer':'Costing'}</span></td>${ch.map(()=>`<td class="small">${f.status==='Approved'?'Approved in Approval Hub':f.status==='In approval'||f.status==='Submitted'?'In Approval Hub':''}</td>`).join('')}</tr></tbody></table></div>`}
+function wfCrfHTML(f,p,d,ed){const dis=ed?'':'disabled',st=['','Not submitted','Submitted','Under review','Approved','Partially approved','Rejected'];
+  return `<section class="panel"><h3>Change Request</h3><div class="fields"><label class="field">CRF #<input value="${esc(pcode(p)+'/ '+f.ref_no)}" disabled></label><label class="field">Submission date${wfIn('sub_date',d.sub_date,`type="date" ${dis}`)}</label>
+      <label class="field">Client reference${wfIn('client_ref',d.client_ref,dis)}</label><label class="field">Title${ed?`<input data-wft value="${esc(f.title||'')}" maxlength="200">`:`<input value="${esc(f.title||'')}" disabled>`}</label></div>
+    <label class="field">Detailed description<textarea data-wfd="description" rows="3" ${dis}>${esc(d.description||'')}</textarea></label>
+    <h3>Price</h3><div class="fields"><label class="field">Submitted${wfIn('price_submitted',d.price_submitted,`inputmode="decimal" ${dis}`)}</label><label class="field">Approved by the client${wfIn('price_client',d.price_client,`inputmode="decimal" ${dis}`)}</label><label class="field">Considered internally${wfIn('price_internal',d.price_internal,`inputmode="decimal" ${dis}`)}</label></div>
+    <h3>Cost</h3><div class="fields"><label class="field">Rev 00${wfIn('cost_rev0',d.cost_rev0,`inputmode="decimal" ${dis}`)}</label><label class="field">Current budget${wfIn('cost_current',d.cost_current,`inputmode="decimal" ${dis}`)}</label>
+      <label class="field">Status of client approval<select data-wfd="client_status" ${dis}>${st.map(s=>`<option ${s===(d.client_status||'')?'selected':''}>${s}</option>`).join('')}</select></label></div>
+    <label class="field">Remarks<input data-wfd="remarks" value="${esc(d.remarks||'')}" maxlength="400" ${dis}></label>
+    <p class="small muted">Once approved in Approval Hub, the change request goes to the change order and claim log (a new row, or the WF number and date on the row already there).</p>
+    <h3>Approvals</h3>${wfChainHTML(f)}</section>`}
+function wfStatusHTML(f,E){const recCan=['Submitted','In approval'].includes(f.status)&&wfCan('wf.record',f.project_id),hubOn=CLOUD_ME&&(DB.wfHub||{}).active,verCan=f.kind==='BRF'&&f.status==='Approved'&&(wfCan('wf.record',f.project_id)||canLogUpload()&&accessIds().includes(f.project_id));
+  const lo=f.decided_on?wfPrev(f.decided_on.slice(0,7)):null,months=[];if(lo){let m=curMonth();while(m>=lo){months.push(m);m=wfPrev(m)}}
+  return `<section class="panel"><div class="card-head"><h3>Approval Hub</h3>${f.wf_no?`<span><b>WF ${esc(f.wf_no)}</b></span>`:''}</div>
+    <p class="small">${esc(f.hub_status||(f.status==='Draft'?'Not submitted yet':f.status))}${f.hub_step?' · step: '+esc(f.hub_step):''}${f.decided_on?` · decided ${esc(f.decided_on)}${f.decided_by_name?' by '+esc(f.decided_by_name):''}${f.decision_source==='manual'?` (recorded by hand by ${esc(f.recorded_by_name||'')})`:''}`:''}${f.hub_comment?' · '+esc(f.hub_comment):''}</p>
+    ${f.posted?`<p class="small g-c">Posted ${f.posted.log==='supplements'?`to the budget supplement log: ${esc((f.posted.rows||[]).join(', '))}${(f.posted.skipped||[]).length?` (already there: ${esc(f.posted.skipped.join(', '))})`:''}, version <b>${esc(MMMYY(f.version))}</b>`:`to the change order and claim log (${esc(f.posted.how)})`}.</p>`:''}
+    ${recCan?`<details ${hubOn?'':'open'}><summary class="small">Record the Approval Hub decision by hand</summary><div class="fields"><label class="field">Decision<select id="wfRD"><option value="approved">Approved</option><option value="returned">Returned for correction</option><option value="rejected">Rejected</option></select></label>
+        <label class="field">WF number<input id="wfRW" value="${esc(f.wf_no||'')}" maxlength="40"></label><label class="field">Date<input id="wfRT" type="date" max="${TODAY}" value="${TODAY}"></label><label class="field">Approved / decided by<input id="wfRA" maxlength="100" placeholder="e.g. Regional Manager"></label></div>
+        <label class="field">Comment (needed to return or reject)<input id="wfRC" maxlength="400"></label>${hubOn?'<label class="small"><input type="checkbox" id="wfRH"> Approval Hub is connected but its decision did not arrive: record it by hand</label>':''}
+        <div class="actions"><button class="btn sm primary" type="button" data-wfrecord>Record the decision</button></div></details>`:''}
+    ${verCan?`<div class="fields"><label class="field">Version in the budget supplement log<select id="wfVer">${months.map(m=>`<option value="${m}" ${m===f.version?'selected':''}>${MMMYY(m)}${m===f.decided_on.slice(0,7)?' (month of approval)':''}</option>`).join('')}</select></label>
+        <label class="field">Reason<input id="wfVerR" maxlength="300" placeholder="e.g. management approved the values in September"></label></div><div class="actions"><button class="btn sm" type="button" data-wfver>Move the version</button></div>`:''}
+    ${['Draft','Returned','Submitted'].includes(f.status)&&(wfCan('wf.initiate',f.project_id)||wfCan('wf.record',f.project_id))?`<div class="actions"><input id="wfCR" placeholder="Reason to cancel" maxlength="300"><button class="btn sm" type="button" data-wfcancel>Cancel the form</button></div>`:''}
+    <h3>History</h3><table class="tbl small"><tbody>${E.map(e=>`<tr><td>${esc(tStamp(e.at_time))}</td><td>${esc(e.action)}</td><td>${esc(e.status||'')}</td><td>${esc(e.by_name||'')}${e.source==='hub'?' <span class="sev Low">hub</span>':e.source==='manual'?' <span class="sev Medium">by hand</span>':''}</td></tr>`).join('')||'<tr><td class="muted">No history.</td></tr>'}</tbody></table></section>`}
+/* ---------- Approval Hub: the link ---------- */
+function wfHubHTML(){const h=DB.wfHub||{},sa=state.role==='sa',O=wfDB().wfOutbox.slice().reverse().slice(0,50);
+  return `<section class="panel"><div class="card-head"><h2>Approval Hub link</h2><span class="sev ${h.active?'ok':'Low'}">${CLOUD_ME?(h.active?'Connected':'Not connected'):'Demo page: not connected'}</span></div>
+    <p class="small">${CLOUD_ME?`${h.set_at?`Token made by ${esc(h.set_by||'')} on ${esc(tStamp(h.set_at))}. `:''}${h.last_seen?`Last call from the hub ${esc(tStamp(h.last_seen))}. `:'No call from the hub yet. '}${h.queued||0} submission${h.queued===1?'':'s'} waiting${h.failed?`, ${h.failed} failed`:''}.`:'On the live site the super admin connects Approval Hub here.'}</p>
+    <p class="small muted">How it works: a submitted form waits in the queue. Approval Hub (or IT's connector) takes it with <code>wf_hub_next</code> and reports each step with <code>wf_hub_update</code> (received with the WF number, in approval, approved, rejected or returned), using the token made here. An approval posts the request to its log at once. The details are in APPROVAL-HUB-INTEGRATION.md for the IT team. Until it is connected, the costing coordinator records each decision on the form.</p>
+    ${CLOUD_ME&&sa?`<div class="actions"><button class="btn sm primary" type="button" data-wfhub="new_token">${h.active?'Make a new token (the old one stops)':'Connect: make the token'}</button>${h.active?'<button class="btn sm" type="button" data-wfhub="off">Switch the link off</button>':''}</div><div id="wfTok"></div>`:''}</section>
+  ${sa&&O.length?`<section class="panel"><div class="card-head"><h2>Queue</h2></div><table class="tbl small"><thead><tr><th>#</th><th>Form</th><th>Action</th><th>Status</th><th>Taken</th><th>Error</th></tr></thead><tbody>${O.map(o=>{const f=wfForm(o.form_id)||{};return `<tr><td>${o.id}</td><td>${esc(f.ref_no||o.form_id)}</td><td>${esc(o.action)}</td><td>${esc(o.status)}</td><td>${o.attempts||0}</td><td class="small">${esc(o.error||'')}</td></tr>`}).join('')}</tbody></table></section>`:''}`}
+
+/* ---------- reading the screen into the form ---------- */
+function wfRead(f){const d=JSON.parse(JSON.stringify(f.data||{}));
+  document.querySelectorAll('[data-wfd]').forEach(x=>{const k=x.dataset.wfd;if(k.startsWith('impact.')){d.impact=d.impact||{};d.impact[k.slice(7)]=x.value}else d[k]=x.value});
+  document.querySelectorAll('[data-wfs]').forEach(x=>{const r=(d.summary||[])[+x.dataset.wfs];if(r)r[x.dataset.k]=x.value.replace(/,/g,'').trim()});
+  const lines=[...document.querySelectorAll('[data-wfl]')].map(tr=>{const g=k=>(tr.querySelector(`[data-wl="${k}"]`)||{}).value||'',s=wfN(g('supp')),v=wfN(g('sav'));
+    const amount=s?-Math.abs(s):v?Math.abs(v):(g('supp')||g('sav'))?NaN:null;return {description:g('description').trim(),category:g('category'),user_field:g('user_field'),wbs_id:g('wbs_id').trim()||null,linked_ref:g('linked_ref').trim()||null,remarks:g('remarks').trim()||null,amount:amount==null||Number.isNaN(amount)?amount:String(amount)}});
+  const t=document.querySelector('[data-wft]'),vp=document.querySelector('[data-wfvp]');return {id:f.id,title:t?t.value:f.title,data:d,lines:f.kind==='BRF'?lines:[],version_pref:vp?vp.value||null:f.version_pref}}
+/* ---------- the form in the company's Excel layout ---------- */
+async function wfExcel(f){await loadLib(LIBS.xlsx);const p=projById(f.project_id)||{},d=f.data||{},wb=XLSX.utils.book_new(),N=v=>{const n=wfN(v);return n==null||Number.isNaN(n)?null:n};
+  if(f.kind==='CRF'){const aoa=[['Change Request'],['Project',pcode(p),p.name],['CRF#',`${pcode(p)}/ ${f.ref_no}`],['Status',f.status],['WF number',f.wf_no||''],[],['Sub Date','Detailed Description','Client Ref','Price Submitted','Price Approved by Client','Price Considered Internally','Cost Rev 00','Cost Current Budget','Status of Client Approval','Remarks'],
+      [d.sub_date||'',d.description||'',d.client_ref||'',N(d.price_submitted),N(d.price_client),N(d.price_internal),N(d.cost_rev0),N(d.cost_current),d.client_status||'',d.remarks||''],[],['Approvals'],['Prepared By',...(f.approvers||wfChain('CRF'))],[f.prepared_by_name||'']];
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'Change Request');XLSX.writeFile(wb,`${pcode(p)} ${f.ref_no} Change Request.xlsx`.replace(/[\\/:*?"<>|]/g,'-'));return}
+  const L=f.lines||[],S=(d.summary||[]).map(s=>({s,r:wfUfRow(s,L)})),I=d.impact||{},tot=L.reduce((t,l)=>{const a=N(l.amount)||0;a<0?t.s+=a:t.v+=a;return t},{s:0,v:0}),sum=k=>S.reduce((t,x)=>t+(x.r[k]||0),0);
+  const aoa=[['','','','','','','','','','','Doc. Ref. No:',WF_DOC.ref],['','','','','','','','','','','Rev.',WF_DOC.rev],['','','','','BUDGET SUPPLEMENT/ RETURNS REQUEST'],[],
+    ['01. General Information'],['Budget Revion Ref. No:',`${pcode(p)}| ${f.ref_no}`,'','Date',d.date||'','','Overall WF:',tot.s&&tot.v?'Supplement / Savings':tot.s?'Supplement':'Savings'],
+    ['Project Name',p.name||'','','','','','Project No.',pcode(p)],['Client Name',d.client||'','','','','','Contract No.',d.contract_no||''],['Region',d.region||'','','','','','Contract Start Date',d.contract_start||''],[],
+    ['02. Brief Description of this Supplement / Returns'],['S.No','Short Description','Category','Supplement','Savings','Total','Remarks','User Field','WBS','Linked VO / claim'],
+    ...L.map((l,i)=>{const a=N(l.amount);return [i+1,l.description||'',l.category||'',a<0?a:null,a>0?a:null,a,l.remarks||'',l.user_field||'',l.wbs_id||'',l.linked_ref||'']}),['','Total Value','',tot.s,tot.v,tot.s+tot.v],[],
+    ['03. Budget Summary & Supplemen / Return Request Details'],['User Field','WBS Head','Tender Budget','Rev-0 Budget','Current Budget','Actual Cost','Commitment','Balance','ETC','Revised Estimate','This Request','Prev. Request','Cumm. Approved upto Prev','% Var from TND'],
+    ['','','A','B','C','D','E','F=C-D-E','G','H=D+E+G','I = C-H',d.prev?d.prev.date:'(DD-MMM-YY)','J=A-C'],
+    ...S.map(({s,r})=>[s.uf,s.desc||'',r.A,r.B,r.C,r.D,r.E,r.F,r.G,r.H,r.I,r.N,r.J,r.P]),['Total','',...['A','B','C','D','E','F','G','H','I','N','J'].map(sum),sum('A')?(sum('A')-sum('H'))/sum('A'):null],[],
+    ['04. Impact on Project Margin and Milestones'],['A','ORIGINAL CONTRACT VALUE',N(I.ocv),'','Contract Completion Date (TCC)',I.tcc||''],['B','REVISED CONTRACT VALUE',N(I.rcv),'','Previously Approved EOT (Days)',N(I.eot_prev)],
+    ['C','TENDER',sum('A'),N(I.ocv)?(N(I.ocv)-sum('A'))/N(I.ocv):null,'EOT approved in this Request',N(I.eot_this)],['D','REV 0',sum('B'),N(I.ocv)?(N(I.ocv)-sum('B'))/N(I.ocv):null,'Revised Completion Date',I.rev_completion||''],
+    ['F','CURRENT BUDGET',sum('C'),N(I.rcv)?(N(I.rcv)-sum('C'))/N(I.rcv):null,'Forecasted Finish',I.forecast_finish||''],['G','THIS REQUEST',sum('I'),'','Progress plan %',N(I.plan_pct),'Actual %',N(I.actual_pct)],
+    ['H=F-G','REVISED ESTIMATE',sum('H'),N(I.rcv)?(N(I.rcv)-sum('H'))/N(I.rcv):null,'Target POC',N(I.target_poc),'Revised POC',N(I.revised_poc),'Actual POC',N(I.actual_poc)],[],
+    ['06. Final Agreement for Adjustment to Contract Value and Budget'],['Prepared By',...(f.approvers||wfChain('BRF',L))],[f.prepared_by_name||'',...(f.approvers||[]).map(()=>f.status==='Approved'?'Approved (Approval Hub)':'')],
+    [],['Approval Hub WF',f.wf_no||'',f.decided_on||'',f.status],[],['Note: 1. VP Approval is mandatory: To release or utilize the Contingency Budget. 2. EVP Approval is mandatory: To release or utilize any Management Reserve Budget.']];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:14},{wch:46},{wch:20},{wch:16},{wch:16},{wch:16},{wch:16},{wch:16},{wch:16},{wch:16},{wch:16},{wch:16},{wch:16},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,`${pcode(p)}_${f.ref_no}`.replace(/[\\/:*?\[\]]/g,'-').slice(0,31));
+  const prevByUni={},curByUni={};(suppAsOf(f.project_id,'9999-12').rows||[]).map(suppView).filter(r=>r.counts&&r.uf!==SUPP_CONT&&(!f.posted||!(f.posted.rows||[]).includes(r.supp_no))).forEach(r=>{prevByUni[r.uni]=(prevByUni[r.uni]||0)+r.amt});
+  L.forEach(l=>{const u=suppUni(suppCat(l.category))||'—';curByUni[u]=(curByUni[u]||0)+(N(l.amount)||0)});const unis=[...new Set([...WF_UNIS,...Object.keys(prevByUni),...Object.keys(curByUni)])];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['05. Category wise Details'],['Description','Previous','Current','Cummulative']].concat(unis.map(u=>[u,prevByUni[u]||0,curByUni[u]||0,(prevByUni[u]||0)+(curByUni[u]||0)]))),'Category details');
+  XLSX.writeFile(wb,`${pcode(p)} ${f.ref_no} Budget Supplement Request.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
+
+/* ---------- actions ---------- */
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-wftab],[data-wfopen],[data-wfback],[data-wfnew],[data-wfsave],[data-wfsubmit],[data-wfxl],[data-wfladd],[data-wfldel],[data-wfrefresh],[data-wfrecord],[data-wfver],[data-wfcancel],[data-wfhub]');if(!t||state.view!=='wfr')return;
+  const d=t.dataset,U=wfUi(),f=U.open?wfForm(U.open):null;
+  if(d.wftab){U.tab=d.wftab;render();return}if(d.wfopen){U.open=d.wfopen;render();window.scrollTo(0,0);return}if(d.wfback!==undefined){U.open=null;render();return}
+  if(d.wfxl!==undefined&&f){wfExcel(f).catch(err=>toast(srvMsg(err)));return}
+  t.disabled=true;
+  try{
+    if(d.wfnew){const pid=U.pid||(scopeProjects()[0]||{}).id;if(CLOUD_ME&&d.wfnew==='BRF'){try{await Promise.all(bcmVersOf(pid).filter(v=>BCM_APPROVED_V.includes(v.status)).map(v=>bcmLoadVLines(v.id)))}catch(err){}}
+      const r=await wfCall('wf_form_save',{project_id:pid,kind:d.wfnew,data:wfNewData(pid,d.wfnew),lines:d.wfnew==='BRF'?[{description:'',category:'',user_field:'',amount:null}]:[]});U.open=r.id;toast(`${r.ref_no} prepared as a draft`);render();return}
+    if(d.wfhub){const r=await rpc('wf_hub_setup',{p:{action:d.wfhub}});await cloudLoadWf();render();if(r.token)$('#wfTok').innerHTML=`<p class="warn-box small">Give this token to the IT team now; it is not shown again:<br><code style="user-select:all;word-break:break-all">${esc(r.token)}</code></p>`;return}
+    if(!f)return;
+    if(d.wfladd!==undefined||d.wfldel!==undefined||d.wfrefresh!==undefined){const x=wfRead(f);if(d.wfladd!==undefined)x.lines.push({description:'',category:'',user_field:'',amount:null});if(d.wfldel!==undefined)x.lines.splice(+d.wfldel,1);
+      if(d.wfrefresh!==undefined){if(CLOUD_ME){try{await Promise.all(bcmVersOf(f.project_id).filter(v=>BCM_APPROVED_V.includes(v.status)).map(v=>bcmLoadVLines(v.id)))}catch(err){}}const n=wfNewData(f.project_id,'BRF');x.data.summary=n.summary;x.data.prev=n.prev;x.data.sources=n.sources}
+      await wfCall('wf_form_save',x);render();return}
+    if(d.wfsave!==undefined){await wfCall('wf_form_save',wfRead(f));toast('Saved');render();return}
+    if(d.wfsubmit!==undefined){await wfCall('wf_form_save',wfRead(f));const r=await wfCall('wf_form_act',{action:'submit',id:f.id});toast(`${f.ref_no} submitted to Approval Hub`);render();return}
+    if(d.wfrecord!==undefined){const r=await wfCall('wf_form_act',{action:'record',id:f.id,decision:$('#wfRD').value,wf_no:$('#wfRW').value.trim(),date:$('#wfRT').value,approver:$('#wfRA').value.trim(),comment:$('#wfRC').value.trim(),confirm_hub_down:!!($('#wfRH')||{}).checked});
+      toast(r.status==='Approved'?`Approved: posted to the ${f.kind==='BRF'?'budget supplement':'change order and claim'} log${r.version?', version '+MMMYY(r.version):''}`:'Recorded: '+r.status.toLowerCase());render();return}
+    if(d.wfver!==undefined){const r=await wfCall('wf_form_act',{action:'set_version',id:f.id,version:$('#wfVer').value,reason:$('#wfVerR').value.trim()});toast(r.changed?`Version moved to ${MMMYY(r.version)}`:'The version is already that month');render();return}
+    if(d.wfcancel!==undefined){await wfCall('wf_form_act',{action:'cancel',id:f.id,reason:$('#wfCR').value.trim()});toast('Cancelled');render();return}
+  }catch(err){toast(srvMsg(err))}finally{t.disabled=false}});
+document.addEventListener('change',e=>{const t=e.target;if(state.view!=='wfr')return;const U=wfUi();if(t.matches('[data-wff]')){U[t.dataset.wff]=t.value;render();return}});
 
 /* =====================================================================================
    v3.25: BOQ Engine — drawing-based quantity take-off, engineering estimation and the Estimated BOQ
