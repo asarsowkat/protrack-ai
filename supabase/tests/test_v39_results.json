@@ -1,0 +1,532 @@
+{
+ "suite": "test_v39",
+ "passed": 105,
+ "total": 105,
+ "checks": [
+  {
+   "check": "Install: bcm_features gives version 39",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: the rights and the screen are listed",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: the System seed arrives as proposals, nothing approved (50 WBS elements, 38 rules)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: the settings are in force (95% automatic, 80% review)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Master: a costing engineer without bcm.master cannot propose a WBS element",
+   "pass": true,
+   "detail": "psql:/tmp/tmpjsso1k_o.sql:4: ERROR:  You cannot propose master-data changes (the bcm.master right)\nCONTEXT:  PL/pgSQL function bcm_master_act(jsonb) line 16 at RAISE"
+  },
+  {
+   "check": "Master: a rule cannot point at an element that is not approved yet",
+   "pass": true,
+   "detail": "psql:/tmp/tmp56nj5h_u.sql:4: ERROR:  Choose an approved, active, postable WBS element (got W-SM4)\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 21 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Master: the proposer of the seed is System, but the approver must hold bcm.approve",
+   "pass": true,
+   "detail": "psql:/tmp/tmp99kfx4l3.sql:4: ERROR:  You cannot approve master-data changes (the bcm.approve right)\nCONTEXT:  PL/pgSQL function bcm_master_act(jsonb) line 35 at RAISE"
+  },
+  {
+   "check": "Master: a child is not approved before its parent",
+   "pass": true,
+   "detail": "psql:/tmp/tmpc9wou0fp.sql:4: ERROR:  Approve the parent element W-SM first\nCONTEXT:  PL/pgSQL function bcm_master_act(jsonb) line 39 at RAISE"
+  },
+  {
+   "check": "Master: an approver approves the seed in bulk (parents first)",
+   "pass": true,
+   "detail": "{'results': [{'id': 'W-SM', 'ok': True}, {'id': 'W-SM4', 'ok': True}, {'id': 'W-CIV', 'ok': True}, {'id': 'W-CIV-06', 'ok': True}, {'id': 'W-CIV-08', 'ok': True}, {'id': 'W-OTH', 'ok': True}, {'id': 'W-FIN', 'ok': True}, {'id': 'W-ELM', 'ok': True}, {'id': 'W-ELM-02', 'ok': True}]}"
+  },
+  {
+   "check": "Master: approved elements are version 1, with their history kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Master: approve the villa and rebar rules",
+   "pass": true,
+   "detail": "{'results': [{'id': 'R-001', 'ok': True}, {'id': 'R-002', 'ok': True}, {'id': 'R-026', 'ok': True}, {'id': 'R-011', 'ok': True}]}"
+  },
+  {
+   "check": "Master: a planner with bcm.master proposes a change of SM4 (the approved version stays in force)",
+   "pass": true,
+   "detail": "{'id': 'W-SM4', 'ok': True}"
+  },
+  {
+   "check": "...the approved description stays until the change is approved",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Master: the proposer cannot approve his own change",
+   "pass": true,
+   "detail": "psql:/tmp/tmp1vhf3suv.sql:4: ERROR:  You cannot approve master-data changes (the bcm.approve right)\nCONTEXT:  PL/pgSQL function bcm_master_act(jsonb) line 35 at RAISE"
+  },
+  {
+   "check": "Master: ...even holding bcm.approve",
+   "pass": true,
+   "detail": "psql:/tmp/tmp7wkr2mjt.sql:4: ERROR:  You proposed this change, so someone else approves it\nCONTEXT:  PL/pgSQL function bcm_master_act(jsonb) line 36 at RAISE"
+  },
+  {
+   "check": "Master: another approver approves it: version 2",
+   "pass": true,
+   "detail": "{'id': 'W-SM4', 'ok': True, 'ver': 2}"
+  },
+  {
+   "check": "Master: both versions are kept for reproducing past classifications",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Master: a duplicate code is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpclx_ci20.sql:4: ERROR:  The WBS code sm4 is already used by another element\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 11 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Master: an unknown parent is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmplzm7qhzu.sql:4: ERROR:  The parent element W-NOPE does not exist\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 14 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Master: an element cannot be put under its own child",
+   "pass": true,
+   "detail": "psql:/tmp/tmpaa7bht15.sql:4: ERROR:  An element cannot sit under itself\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 17 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Master: a bad code is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp2h_aqojf.sql:4: ERROR:  A WBS code is 1 to 30 letters, digits, dots, dashes or slashes (got \"bad code!\")\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 8 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Master: a rule must match something",
+   "pass": true,
+   "detail": "psql:/tmp/tmpyadkangd.sql:4: ERROR:  A rule needs at least one phrase to match\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 25 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Master: thresholds out of range are refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpnmmqn6y2.sql:4: ERROR:  The automatic threshold is from 50% to 100%\nCONTEXT:  PL/pgSQL function pt_bcm_check(text,jsonb,text) line 35 at RAISE\nSQL statement \"SELECT pt_bcm_check(e, d, rid)\"\nPL/pgSQL function bcm_master_act(jsonb) line 23 at PERFORM"
+  },
+  {
+   "check": "Master: a rejection needs a reason and leaves the element as it was",
+   "pass": true,
+   "detail": "{'id': 'W-cc0788fc', 'ok': True}"
+  },
+  {
+   "check": "...no reason, no rejection",
+   "pass": true,
+   "detail": "psql:/tmp/tmp03ae_phj.sql:4: ERROR:  Give the reason\nCONTEXT:  PL/pgSQL function bcm_master_act(jsonb) line 47 at RAISE"
+  },
+  {
+   "check": "...with a reason",
+   "pass": true,
+   "detail": "{'id': 'W-cc0788fc', 'ok': True}"
+  },
+  {
+   "check": "...a rejected new element has no version in force",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Master: nobody writes master data directly",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Intake: a planner (no bcm.upload) cannot create a batch",
+   "pass": true,
+   "detail": "psql:/tmp/tmpeic1hb8c.sql:4: ERROR:  You cannot upload tender files on this project (the bcm.upload right)\nCONTEXT:  PL/pgSQL function bcm_batch_save(jsonb) line 17 at RAISE"
+  },
+  {
+   "check": "Intake: someone outside the project cannot",
+   "pass": true,
+   "detail": "psql:/tmp/tmpy2l0p_g2.sql:4: ERROR:  You cannot upload tender files on this project (the bcm.upload right)\nCONTEXT:  PL/pgSQL function bcm_batch_save(jsonb) line 17 at RAISE"
+  },
+  {
+   "check": "Intake: the currency is required",
+   "pass": true,
+   "detail": "psql:/tmp/tmpj55e5cja.sql:4: ERROR:  Choose the reporting currency\nCONTEXT:  PL/pgSQL function bcm_batch_save(jsonb) line 18 at RAISE"
+  },
+  {
+   "check": "Intake: a costing engineer creates a batch (project, tender, revision, currency, project type)",
+   "pass": true,
+   "detail": "{'id': 'TB-261023-b3f8b2', 'ok': True}"
+  },
+  {
+   "check": "Intake: a file is registered only once it is stored",
+   "pass": true,
+   "detail": "psql:/tmp/tmpmb94i5wh.sql:4: ERROR:  Upload the file to storage first\nCONTEXT:  PL/pgSQL function bcm_file_add(jsonb) line 13 at RAISE"
+  },
+  {
+   "check": "Storage: the costing engineer may store the file in the batch folder",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Storage: ...a planner may not",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Storage: ...nor anything that is not a workbook",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Intake: the path must be the batch folder and the fingerprint",
+   "pass": true,
+   "detail": "psql:/tmp/tmp32o2223e.sql:4: ERROR:  The stored file path must be bcm/P1/TB-261023-b3f8b2/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.xlsx\nCONTEXT:  PL/pgSQL function bcm_file_add(jsonb) line 12 at RAISE"
+  },
+  {
+   "check": "Intake: the file is registered with its name, SHA-256 and size",
+   "pass": true,
+   "detail": "{'id': 'TF-bac51d3fba', 'ok': True}"
+  },
+  {
+   "check": "Intake: a second batch",
+   "pass": true,
+   "detail": "{'id': 'TB-261023-7f456c', 'ok': True}"
+  },
+  {
+   "check": "Intake: the same file (same SHA-256) is refused a second time in the project, naming the first upload",
+   "pass": true,
+   "detail": "psql:/tmp/tmpkijyr2fp.sql:4: ERROR:  This file was already uploaded: costing.xlsx in batch TB-261023-b3f8b2 on 2026-10-23 12:27. The same file is not taken twice.\nCONTEXT:  PL/pgSQL function bcm_file_add(jsonb) line 10 at RAISE"
+  },
+  {
+   "check": "Lines: a reading starts (run 1)",
+   "pass": true,
+   "detail": "{'ok': True, 'run': 1}"
+  },
+  {
+   "check": "Lines: the lines are stored with the numbers exact",
+   "pass": true,
+   "detail": "{'n': 7, 'ok': True}"
+  },
+  {
+   "check": "...amounts are decimals, not floats",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Lines: the reading closes only with the right count",
+   "pass": true,
+   "detail": "psql:/tmp/tmpvlzit6d9.sql:4: ERROR:  The server holds 7 lines of this reading, not 8; read the file again\nCONTEXT:  PL/pgSQL function bcm_file_run(jsonb) line 31 at RAISE"
+  },
+  {
+   "check": "Lines: the reading closes (Extracted)",
+   "pass": true,
+   "detail": "{'n': 7, 'ok': True, 'status': 'Extracted'}"
+  },
+  {
+   "check": "Lines: a source line can never be changed...",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "...not even by the database owner (trigger)",
+   "pass": true,
+   "detail": "ERROR:  Source lines, classification history, master-data history and the audit log are never changed or deleted\nCONTEXT:  PL/pgSQL function pt_bcm_frozen() line 5 at RAISE"
+  },
+  {
+   "check": "...nor deleted",
+   "pass": true,
+   "detail": "ERROR:  Source lines, classification history, master-data history and the audit log are never changed or deleted\nCONTEXT:  PL/pgSQL function pt_bcm_frozen() line 5 at RAISE"
+  },
+  {
+   "check": "Classify: an auto-classification from the approved rebar rule is accepted",
+   "pass": true,
+   "detail": "{'n': 1, 'ok': True, 'kept': 0}"
+  },
+  {
+   "check": "Classify: automatic from a similarity match is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpmhfu7f6l.sql:4: ERROR:  Line TF-bac51d3fba:1:2: only an approved mapping or rule classifies automatically\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 23 at RAISE"
+  },
+  {
+   "check": "Classify: automatic naming a rule that leads elsewhere is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpcvzl7060.sql:4: ERROR:  Line TF-bac51d3fba:1:2: the approved mapping or rule it names does not lead to W-CIV-08\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 25 at RAISE"
+  },
+  {
+   "check": "Classify: automatic below the threshold is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpm4hvioek.sql:4: ERROR:  Line TF-bac51d3fba:1:2: below the automatic threshold\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 26 at RAISE"
+  },
+  {
+   "check": "Classify: a destination that is not approved is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpnys1l597.sql:4: ERROR:  Line TF-bac51d3fba:1:2: W-SM5 is not an approved, active, postable WBS element\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 18 at RAISE"
+  },
+  {
+   "check": "Classify: a parent (not postable) destination is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp6n9s8_ke.sql:4: ERROR:  Line TF-bac51d3fba:1:2: W-CIV is not an approved, active, postable WBS element\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 18 at RAISE"
+  },
+  {
+   "check": "Classify: the engine cannot confirm",
+   "pass": true,
+   "detail": "psql:/tmp/tmp7mspxq4y.sql:4: ERROR:  The engine cannot set the status Confirmed\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 15 at RAISE"
+  },
+  {
+   "check": "Classify: high value cannot be automatic (SAR 5.7 million, the server reads the amount itself)",
+   "pass": true,
+   "detail": "psql:/tmp/tmpl2b5p3bl.sql:4: ERROR:  Line TF-bac51d3fba:1:3: high value (at or above 1000000 SAR), so it needs individual review\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 29 at RAISE"
+  },
+  {
+   "check": "Classify: a line with a data problem (negative amount) cannot be automatic, even if the app sends no flag",
+   "pass": true,
+   "detail": "psql:/tmp/tmpp5xtt91k.sql:4: ERROR:  Line TF-bac51d3fba:1:5: the source line has a data problem to check, so it needs individual review\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 29 at RAISE"
+  },
+  {
+   "check": "Classify: a mandatory-review element (Financing) cannot be automatic",
+   "pass": true,
+   "detail": "psql:/tmp/tmpxw3g4m88.sql:4: ERROR:  Line TF-bac51d3fba:1:6: FIN always needs individual review, so it needs individual review\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 29 at RAISE"
+  },
+  {
+   "check": "Classify: a total row is not a cost line",
+   "pass": true,
+   "detail": "psql:/tmp/tmp44tu0u50.sql:4: ERROR:  Line TF-bac51d3fba:1:7 is a total row, not a cost line\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 16 at RAISE"
+  },
+  {
+   "check": "Classify: someone outside the project cannot classify its lines",
+   "pass": true,
+   "detail": "psql:/tmp/tmpjshos0yz.sql:4: ERROR:  You cannot classify lines of this project\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 11 at RAISE"
+  },
+  {
+   "check": "Classify: proposals and review states are stored",
+   "pass": true,
+   "detail": "{'n': 6, 'ok': True, 'kept': 0}"
+  },
+  {
+   "check": "Review: a planner without bcm.review cannot confirm",
+   "pass": true,
+   "detail": "psql:/tmp/tmpmwuapgjr.sql:4: ERROR:  You cannot review lines of this project (the bcm.review right)\nCONTEXT:  PL/pgSQL function bcm_review(jsonb) line 18 at RAISE"
+  },
+  {
+   "check": "Review: a bulk confirmation confirms the clean lines and skips the high-value, negative and financing ones, saying why",
+   "pass": true,
+   "detail": "{'ok': True, 'done': 3, 'skipped': [{'id': 'TF-bac51d3fba:1:3', 'why': 'Pending Review lines are confirmed one by one'}, {'id': 'TF-bac51d3fba:1:5', 'why': 'Pending Review lines are confirmed one by one'}, {'id': 'TF-bac51d3fba:1:6', 'why': 'Pending Review lines are confirmed one by one'}]}"
+  },
+  {
+   "check": "...the skipped reasons",
+   "pass": true,
+   "detail": "[{'id': 'TF-bac51d3fba:1:3', 'why': 'Pending Review lines are confirmed one by one'}, {'id': 'TF-bac51d3fba:1:5', 'why': 'Pending Review lines are confirmed one by one'}, {'id': 'TF-bac51d3fba:1:6', 'why': 'Pending Review lines are confirmed one by one'}]"
+  },
+  {
+   "check": "...the clean lines are Confirmed, with who and when",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Review: a high-value line is confirmed on its own",
+   "pass": true,
+   "detail": "{'ok': True, 'done': 1, 'skipped': []}"
+  },
+  {
+   "check": "Classify: a new engine run never overwrites a person's decision",
+   "pass": true,
+   "detail": "{'n': 0, 'ok': True, 'kept': 1}"
+  },
+  {
+   "check": "...still Confirmed",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Review: an override needs a reason",
+   "pass": true,
+   "detail": "psql:/tmp/tmpyfb07703.sql:4: ERROR:  Give the reason (at least 5 characters)\nCONTEXT:  PL/pgSQL function bcm_review(jsonb) line 9 at RAISE"
+  },
+  {
+   "check": "Review: an override to an element that is not approved is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpv1id22g5.sql:4: ERROR:  W-SM5 is not an approved, active, postable WBS element\nCONTEXT:  PL/pgSQL function bcm_review(jsonb) line 12 at RAISE"
+  },
+  {
+   "check": "Review: an override with a reason confirms the new destination, marked as overridden",
+   "pass": true,
+   "detail": "{'ok': True, 'done': 1, 'skipped': []}"
+  },
+  {
+   "check": "...",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Review: a bulk reassignment of a line that needs individual review only proposes it",
+   "pass": true,
+   "detail": "{'ok': True, 'done': 2, 'skipped': [{'id': 'TF-bac51d3fba:1:5', 'why': 'the source line has a data problem to check: proposed, waits for individual confirmation'}]}"
+  },
+  {
+   "check": "...the negative line waits for individual confirmation; the other (no longer a mandatory element, normal value) is confirmed with the reason",
+   "pass": true,
+   "detail": "{'ok': True, 'done': 2, 'skipped': [{'id': 'TF-bac51d3fba:1:5', 'why': 'the source line has a data problem to check: proposed, waits for individual confirmation'}]}"
+  },
+  {
+   "check": "Review: undo restores the state before the last decision, as a new action",
+   "pass": true,
+   "detail": "{'ok': True, 'done': 1, 'skipped': []}"
+  },
+  {
+   "check": "...back to the proposal, and both actions are in the history",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Review: excluding needs a reason",
+   "pass": true,
+   "detail": "psql:/tmp/tmpfunizhsh.sql:4: ERROR:  Give the reason (at least 5 characters)\nCONTEXT:  PL/pgSQL function bcm_review(jsonb) line 9 at RAISE"
+  },
+  {
+   "check": "Review: exclude with a reason",
+   "pass": true,
+   "detail": "{'ok': True, 'done': 1, 'skipped': []}"
+  },
+  {
+   "check": "Review: correct a row kind (the source row stays as read)",
+   "pass": true,
+   "detail": "{'ok': True, 'done': 1, 'skipped': []}"
+  },
+  {
+   "check": "...the source line is unchanged, the correction is beside it",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Review: the history of a line cannot be changed",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Learning: a reviewer (bcm.review, no bcm.master) proposes a project mapping from his decision",
+   "pass": true,
+   "detail": "{'id': 'M-cfc5be44', 'ok': True}"
+  },
+  {
+   "check": "Learning: ...but not a WBS element",
+   "pass": true,
+   "detail": "psql:/tmp/tmpc7o4pjzp.sql:4: ERROR:  You cannot propose master-data changes (the bcm.master right)\nCONTEXT:  PL/pgSQL function bcm_master_act(jsonb) line 16 at RAISE"
+  },
+  {
+   "check": "Learning: ...nor a mapping for a project he cannot see",
+   "pass": true,
+   "detail": "psql:/tmp/tmpatk34hu1.sql:4: ERROR:  You cannot propose master-data changes (the bcm.master right)\nCONTEXT:  PL/pgSQL function bcm_master_act(jsonb) line 16 at RAISE"
+  },
+  {
+   "check": "Runs: reading a file again when people have decided lines needs a confirmation",
+   "pass": true,
+   "detail": "psql:/tmp/tmp72goxnwt.sql:4: ERROR:  People have already decided lines of this file; reading it again starts new lines without those decisions. Confirm to go on.\nCONTEXT:  PL/pgSQL function bcm_file_run(jsonb) line 11 at RAISE"
+  },
+  {
+   "check": "Runs: with the confirmation, a new run starts beside the old lines",
+   "pass": true,
+   "detail": "{'ok': True, 'run': 2}"
+  },
+  {
+   "check": "Runs: the old run cannot receive lines any more",
+   "pass": true,
+   "detail": "psql:/tmp/tmp4g7on_47.sql:4: ERROR:  That reading is no longer the current one\nCONTEXT:  PL/pgSQL function bcm_file_run(jsonb) line 16 at RAISE"
+  },
+  {
+   "check": "Runs: lines of the old run cannot be classified any more",
+   "pass": true,
+   "detail": "psql:/tmp/tmprc2vlttf.sql:4: ERROR:  Line TF-bac51d3fba:1:3 is from an earlier reading or a withdrawn file\nCONTEXT:  PL/pgSQL function bcm_classify(jsonb) line 10 at RAISE"
+  },
+  {
+   "check": "Runs: the old lines and their decisions are all kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: the costing engineer sees the lines of his project",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: bcm_lines_read gives exact amounts as text, current run only (none yet in run 2), or every run",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: ...and nothing for someone outside the project",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: a foreman (no cost figures) sees none",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: someone outside the project sees none of its batches or lines",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: the executive sees them (cost figures, all projects)",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: master data is readable by people with cost figures, not by a foreman",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Read: the audit log records who did what",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Storage: a foreman cannot read a stored tender file",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Withdraw: needs a reason",
+   "pass": true,
+   "detail": "psql:/tmp/tmptlgmdsxh.sql:4: ERROR:  Give the reason\nCONTEXT:  PL/pgSQL function bcm_batch_save(jsonb) line 9 at RAISE"
+  },
+  {
+   "check": "Withdraw: the uploader withdraws a batch; its data stays",
+   "pass": true,
+   "detail": "{'id': 'TB-261023-7f456c', 'ok': True}"
+  },
+  {
+   "check": "Withdraw: a withdrawn batch takes no file",
+   "pass": true,
+   "detail": "psql:/tmp/tmp2lgxwh42.sql:4: ERROR:  The batch is withdrawn\nCONTEXT:  PL/pgSQL function bcm_file_add(jsonb) line 7 at RAISE"
+  },
+  {
+   "check": "Rollback: runs",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: nothing can be written, everything is kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Again: v39 runs a second time and keeps every record (no second seed)",
+   "pass": true,
+   "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v39.sql:60: NOTICE:  relation \"bcm_master\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v39.sql:61: NOTICE:  relation \"bcm_master_ent\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v"
+  },
+  {
+   "check": "Again: the check query",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

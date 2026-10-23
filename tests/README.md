@@ -83,3 +83,14 @@ python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 | `mail_e2e.py` (`python3 mail_e2e.py ../live.html ../supabase`) | 27 | The real app in Chromium against PostgreSQL with every update v2 to v38: the approver's and the report approver's emails queued with the server's recipients and handed to the function by id only; others refused; Settings → Email, test email, failed reason, Send again, Send queued emails now; settings saved on the server by the super admin only; after the rollback, listed as not sent with the reason |
 
 `e2e_server.py` also has an Email (v38) section, but that script has stopped earlier, at the costing sheet upload, since v3.9.1 moved the costing sheet to its own page; `mail_e2e.py` is the one to run.
+
+## v3.35: Budget & Cost Management, Automatic WBS Classification
+
+| Test | Checks | What it proves |
+|---|---|---|
+| `../supabase/tests/test_v39.py` | 105 | The server on PostgreSQL 16 with every update v2 to v39: rights and access, master data proposed and approved by different people and versioned, the starting master waiting, storage rules, the same file refused, frozen lines, runs, every server check of an automatic classification, decisions kept, bulk rules, undo, corrections, rollback |
+| `bcm_engine_test.cjs` (`node bcm_engine_test.cjs ../live.html path/to/xlsx.js`) | 74 | The engine taken from live.html with the real SheetJS 0.18.5 on `fixtures/bcm`: extraction, normalization, classification layers, controls, thresholds, mappings, failed or invalid AI output |
+| `bcm_demo.py` (`python3 bcm_demo.py ../demo.html path/to/xlsx.full.min.js`) | see results | The demo page through the screens, from upload to approved mappings, with Cost Control still opening |
+| `bcm_e2e.py` (`python3 bcm_e2e.py ../live.html ../supabase path/to/xlsx.full.min.js`) | see results | The live app against the database through the stand-in Supabase with its storage |
+
+`fixtures/bcm/make_fixtures.py` makes the test workbooks (openpyxl, then LibreOffice to store calculated values; file 13 keeps formulas without values on purpose). SheetJS 0.18.5 is the version the app loads: `git clone --depth 1 --branch v0.18.5 https://github.com/SheetJS/sheetjs` gives `xlsx.js` and `dist/xlsx.full.min.js`.

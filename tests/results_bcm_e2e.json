@@ -1,0 +1,169 @@
+{
+ "suite": "bcm_e2e",
+ "passed": 27,
+ "total": 27,
+ "checks": [
+  {
+   "area": "Server",
+   "check": "the app sees the v39 update",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Server",
+   "check": "the starting master is waiting for approval (overview says so)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "the costing engineer creates a batch on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "the file is stored in the private bucket under the batch folder and registered with its SHA-256",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "its rows are on the server, exact, with their cells",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "nothing is classified while no element is approved, and the person is told why",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "the text file is refused before anything is stored",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "the costing engineer (no bcm.approve) is not offered approval",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "...and the server refuses it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Master",
+   "check": "the approver approves the whole starting master and rules (parents first) on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "run on the server: rebar automatic (CIV-06), transformer held for review, excavation waiting for a cost type",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Classification",
+   "check": "the server refuses an automatic classification of the high-value line even when the app sends no flag",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "bulk confirmation of the automatic lines is recorded on the server, with who",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "an override with a reason is stored on the server, marked overridden",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Learning",
+   "check": "...and the project mapping is proposed on the server, waiting",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "the high-value line is confirmed on its own",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Review",
+   "check": "the line history comes from the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Learning",
+   "check": "someone else approves the mapping on the server (version 1)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Learning",
+   "check": "Rev 1 is classified by the approved mapping: automatic, accepted by the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "the same file again is refused (the app checks; the server would refuse it too)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "...and the server refuses a second registration of the same fingerprint",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Intake",
+   "check": "Verify reading downloads the stored file from the server and reads it again: the same rows",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a planner sees the batch but is not offered uploads",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "...and the server refuses a batch from him",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "...or a review decision",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a foreman does not see the module, and the server gives him no line",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}
