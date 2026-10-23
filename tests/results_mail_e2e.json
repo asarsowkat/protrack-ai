@@ -1,0 +1,169 @@
+{
+ "suite": "mail_e2e",
+ "passed": 27,
+ "total": 27,
+ "checks": [
+  {
+   "area": "Server",
+   "check": "the app sees the v38 mail queue",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Daily report",
+   "check": "the approver's email is queued on the server with the recipients the server worked out (roles with access; site roles only from the chain; no foreman)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Daily report",
+   "check": "the app then asks the send-mail function to send that email, by its id only",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Daily report",
+   "check": "the outbox shows the server's email; the approver is not told it was emailed while it is not sent",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Daily report",
+   "check": "the approver sees why it is not sent yet",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Daily report",
+   "check": "approving twice does not queue a second email",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Refusals",
+   "check": "someone who did not approve the report cannot queue its email",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Refusals",
+   "check": "...nor read the recipients of one already queued",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Refusals",
+   "check": "a person sees only the emails he queued",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Refusals",
+   "check": "nobody writes the outbox directly",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Refusals",
+   "check": "only the super admin changes the approval email settings",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Report email",
+   "check": "the approved internal report email goes to the default internal report list (roles with access)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Report email",
+   "check": "...and is handed to the function by its id",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Settings",
+   "check": "Settings \u2192 Email shows the mail service and every email, with Send again for the ones not sent",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Settings",
+   "check": "the mail service check asks the function, and says when it is not ready",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Settings",
+   "check": "a super admin's test email is queued to himself and handed to the function",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Settings",
+   "check": "a failed email shows its reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Settings",
+   "check": "opening an email shows its recipients and fetches its body for the preview",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Settings",
+   "check": "Send again puts it back in the queue on the server and hands it to the function",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Settings",
+   "check": "Send queued emails now asks the function to send the queue",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Settings",
+   "check": "the approval email settings are saved on the server by the super admin",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Settings",
+   "check": "...including switching it off",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Without v38",
+   "check": "the rollback runs",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Without v38",
+   "check": "the email is listed as not sent with the reason, and nothing is handed to a function",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Without v38",
+   "check": "Settings \u2192 Email says emails are not sent until the v38 update and the function are installed",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Without v38",
+   "check": "v38 runs again and keeps every email",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

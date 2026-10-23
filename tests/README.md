@@ -73,3 +73,13 @@ python3 test_v4.py                                    # run from the folder with
 python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 ```
 `fake_supabase.py` stands in for Supabase's sign-in, web layer and Storage file handling only; every permission decision comes from the database's own rules. It is a test tool and must never be deployed.
+
+## v3.34: emails really sent
+
+| Test | Checks | What it proves |
+|---|---|---|
+| `../supabase/tests/test_v38.py` | 46 | The mail queue on PostgreSQL 16 with every update v2 to v38: who may queue which email, the recipients the server works out, queued once, no direct writes, own emails only, Send again, rollback |
+| `../supabase/functions/send-mail/test.mjs` | 27 | The send-mail Edge Function in Node 22 with Microsoft Graph, SMTP and the database simulated: settings, who may send, sent once, failures recorded, 5 attempts, the queue |
+| `mail_e2e.py` (`python3 mail_e2e.py ../live.html ../supabase`) | 27 | The real app in Chromium against PostgreSQL with every update v2 to v38: the approver's and the report approver's emails queued with the server's recipients and handed to the function by id only; others refused; Settings → Email, test email, failed reason, Send again, Send queued emails now; settings saved on the server by the super admin only; after the rollback, listed as not sent with the reason |
+
+`e2e_server.py` also has an Email (v38) section, but that script has stopped earlier, at the costing sheet upload, since v3.9.1 moved the costing sheet to its own page; `mail_e2e.py` is the one to run.

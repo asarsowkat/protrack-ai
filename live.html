@@ -865,7 +865,7 @@ tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,13
     <div class="brand"><img class="logo-word" alt="ProTrack"><button class="mnavx" type="button" data-mnav aria-label="Close the menu">✕</button></div>
     <nav class="nav" id="nav"></nav>
     <div class="side-foot">
-      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.32</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
+      <span class="side-ver" id="sideVer"><i></i>ProTrackAI v3.34</span><span id="whoami"></span><span id="sideNote">Prototype with sample data. Your changes stay in this browser.</span>
       <button type="button" data-signout>Sign out</button>
       <button type="button" data-reset id="resetBtn">Reset demo data</button>
     </div>
@@ -1441,7 +1441,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();
+    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -8099,7 +8099,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.33';
+const APP_VERSION='3.34';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const DOMAINS=[
@@ -10531,16 +10531,85 @@ ${d.remarks?`<tr><td style="padding:14px 24px 0;font:14px Arial,sans-serif;color
 <tr><td style="background:#F4F6F9;padding:12px 24px;font:11px Arial,sans-serif;color:#8A97A8">Sent automatically by ProTrack because you have access to ${esc(p.short)}. Figures are as approved; later corrections appear in the app.</td></tr>
 </table></td></tr></table></body></html>`;
 }
+/* ---------- v3.34: emails really sent, and only to the right people (schema-update-v38.sql, Edge Function send-mail) ----------
+   On the server the app asks mail_queue() to queue an email about an event it really made: a daily report it approved,
+   an internal or cost report it approved, a Reporting status reminder it sent, or a super admin's test. The server
+   checks the event and works out the recipients itself (the approval email settings, the approval chain, the report
+   email lists), keeps the email in mail_outbox and the Edge Function send-mail sends it through the company mailbox
+   (Microsoft Graph) or an SMTP relay, recording sent or failed. Settings -> Email shows the mail service, the outbox with
+   each error, Send again and a test email. On the demo page emails are prepared and listed, never sent. */
+const MAIL_ST={queued:'Queued',sending:'Sending',sent:'Sent',failed:'Failed'};
+const mailStatusText=x=>x.status==='failed'?'Failed: '+(x.error||'unknown error'):x.status==='queued'&&x.error?'Queued: '+x.error:(MAIL_ST[x.status]||String(x.status||''));
+function mailRowOf(x){return {id:x.id,srv:true,kind:x.kind,ref:x.ref,dpr:x.label||x.ref,p:x.project_id,at:tStamp(x.queued_at),to:Array.isArray(x.recipients)?x.recipients:[],subject:x.subject,
+  html:x.html||null,status:mailStatusText(x),st:x.status,attempts:x.attempts||0,queued_by:x.queued_by,sent_at:x.sent_at||null}}
+const mailSrv=()=>DB.mailSrv||(DB.mailSrv={});
+async function cloudLoadMail(){
+  try{const {data,error}=await SB.from('mail_config').select('*').eq('id',1);if(!error&&data&&data[0])DB.mailCfg={on:data[0].enabled!==false,roles:data[0].roles||[],siteDisc:data[0].chain_only!==false}}catch(e){}
+  const S=mailSrv();
+  try{await rpc('mail_features',{});S.queue=true}catch(e){S.queue=false;return}
+  try{const {data,error}=await SB.from('mail_outbox').select('id,kind,ref,project_id,label,subject,recipients,status,attempts,error,provider,queued_by,queued_at,sent_at').order('queued_at',{ascending:false}).limit(150);
+    if(!error&&data)DB.outbox=data.map(mailRowOf)}catch(e){}}
+/* the Edge Function: {id} sends one email, {pending:true} the queue, {ping:true} says which service is set up */
+async function mailInvoke(body){
+  try{const {data,error}=await SB.functions.invoke('send-mail',{body});
+    if(error){let m=error.message||String(error);try{const c=error.context&&typeof error.context.json==='function'?await error.context.json():null;if(c&&c.error)m=c.error}catch(e){}
+      return {error:/Failed to send a request|not found|404|FunctionsFetchError|FunctionsRelayError/i.test(m)?'the send-mail function is not deployed yet (STAGE-32-SETUP)':m}}
+    return data||{}}
+  catch(e){return {error:e.message||String(e)}}}
+const mailFromFn=(s,m)=>{const st=s&&s.status?s.status:m.st;return {st,status:s&&s.error&&!s.status?'Queued: '+s.error:mailStatusText({status:st,error:s&&s.error})}};
+/* queue (server) or prepare (demo page) one email. o: {kind, ref, label, p, subject, html, to (the demo page's own list)} */
+async function mailOut(o){
+  DB.outbox=DB.outbox||[];
+  const local=(st,to)=>{const m={id:'M'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),kind:o.kind,dpr:o.label,p:o.p,at:stamp(),to:to||o.to||[],subject:o.subject,html:o.html,status:st};if(o.kind==='release')m.rel=o.ref;
+    DB.outbox.unshift(m);if(DB.outbox.length>150)DB.outbox.length=150;save();return m};
+  if(!CLOUD){const m=local('Demo: not sent');return {n:m.to.length,m,sent:false,demo:true}}
+  if(!mailSrv().queue){const m=local('Not sent: the server needs the v38 update (STAGE-32-SETUP)');return {n:0,m,sent:false}}
+  let r;try{r=await rpc('mail_queue',{p:{kind:o.kind,ref:o.kind==='test'?'':String(o.ref||''),label:o.label||'',subject:o.subject,html:o.html}})}
+  catch(e){const m=local('Not queued: '+srvMsg(e),[]);return {n:0,m,sent:false,err:srvMsg(e)}}
+  if(!r||!r.id)return {n:0,sent:false,skipped:r&&r.skipped};
+  const m=mailRowOf({id:r.id,kind:o.kind,ref:o.ref,project_id:o.p,label:o.label,subject:o.subject,html:o.html,recipients:r.to||[],status:r.status||'queued',queued_at:new Date().toISOString(),queued_by:(me()||{}).id});
+  DB.outbox=DB.outbox.filter(x=>x.id!==m.id);DB.outbox.unshift(m);save();
+  if(m.st!=='sent')Object.assign(m,mailFromFn(await mailInvoke({id:r.id}),m));
+  save();if(state.view==='admin')render();
+  if(m.st!=='sent'&&o.kind!=='test')toast(`The email about ${o.label} is not sent yet: ${m.status.replace(/^(Queued|Failed): /,'')}. Settings → Email lists it.`);
+  return {n:r.n||m.to.length,m,sent:m.st==='sent'}}
+/* the approval email settings: on the server in mail_config (changed by a super admin) */
+async function mailCfgSave(){if(!CLOUD_ME)return;const c=mailCfg();
+  const {data,error}=await SB.from('mail_config').update({enabled:!!c.on,roles:c.roles,chain_only:!!c.siteDisc,updated_at:new Date().toISOString()}).eq('id',1).select('id');
+  if(error||!data||!data.length){toast('The server did not save the email settings'+(error?': '+srvMsg(error):': only a super admin changes them'));await cloudLoadMail();render()}}
+const mailTestHTML=()=>`<!doctype html><html><body style="margin:0;background:#EEF1F5;padding:20px 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center">
+<table role="presentation" width="640" cellspacing="0" cellpadding="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:640px">
+<tr><td style="background:#04101F;padding:18px 24px;font:bold 22px Arial,sans-serif;color:#fff">Pro<span style="color:#4DA3FF">Track</span><span style="float:right;font:13px Arial,sans-serif;color:#9FB6D6;padding-top:6px">Test email</span></td></tr>
+<tr><td style="padding:22px 24px 26px;font:14px Arial,sans-serif;color:#1F2A37">This is a test email from ProTrack, sent by ${esc((me()||{}).name||'')} from Settings → Email on ${esc(stamp())}.<br><br>If you can read it, approval and report emails from ProTrack reach your mailbox.</td></tr>
+<tr><td style="background:#F4F6F9;padding:12px 24px;font:11px Arial,sans-serif;color:#8A97A8">${esc(siteUrl())}</td></tr></table></td></tr></table></body></html>`;
+function mailSrvHTML(){
+  if(!CLOUD)return '';const S=mailSrv(),P=S.ping,sa=state.role==='sa';
+  if(!S.queue)return `<div class="warn-box" style="margin-bottom:16px"><b>Emails are not sent yet.</b> The server needs the v38 database update and the send-mail function (STAGE-32-SETUP). Until then emails are prepared and listed below as not sent.</div>`;
+  const pv={graph:'Microsoft 365 (Microsoft Graph)',smtp:'SMTP relay'}[P&&P.provider]||'none';
+  return `<section class="panel" style="margin-bottom:16px"><div class="card-head" style="flex-wrap:wrap"><h2>Mail service</h2>
+    <div class="actions" style="margin:0"><button class="btn sm" type="button" data-mailping>Check the mail service</button>${sa?`<button class="btn sm" type="button" data-mailtest>Send a test email to me</button><button class="btn sm" type="button" data-mailpending>Send queued emails now</button>`:''}</div></div>
+    <p style="margin:0" id="mailSrvState">${!P?'<span class="muted">Checking…</span>':P.error&&!P.provider?`<span class="r-c"><b>Not reachable:</b></span> ${esc(P.error)}`:P.ready?`<span class="g-c"><b>Ready.</b></span> ${esc(pv)}, sending from <b>${esc(P.from)}</b>.`:`<span class="r-c"><b>Not ready:</b></span> ${esc(P.problem||'the mail service is not set up')}.`}</p>
+    <p class="small muted" style="margin:8px 0 0">The server decides who receives each email, from the settings below, and keeps every email with its status. Without a mail service emails stay queued and are listed below; <b>Send again</b> or <b>Send queued emails now</b> sends them once it is set up.</p></section>`}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-mailping],[data-mailtest],[data-mailpending],[data-mailretry]');if(!t)return;const ds=t.dataset;t.disabled=true;
+  try{
+    if('mailping' in ds){mailSrv().ping=await mailInvoke({ping:true});render();return}
+    if('mailtest' in ds){const r=await mailOut({kind:'test',ref:'',label:'Test email',p:null,subject:'ProTrack test email',html:mailTestHTML()});
+      toast(r.sent?'Test email sent to '+((r.m&&r.m.to[0]||{}).email||'you'):r.m?'Test email not sent: '+r.m.status.replace(/^(Queued|Failed): /,''):'Test email not queued'+(r.err?': '+r.err:''));render();return}
+    if('mailpending' in ds){const r=await mailInvoke({pending:true});toast(r.error?'Not sent: '+r.error:`${r.sent||0} queued email${r.sent===1?'':'s'} sent`+((r.results||[]).some(x=>x.status!=='sent')?`; ${(r.results||[]).filter(x=>x.status!=='sent').length} not sent, see their status`:''));await cloudLoadMail();render();return}
+    if(ds.mailretry){try{await rpc('mail_retry',{p:{id:ds.mailretry}})}catch(err){toast('The server refused this: '+srvMsg(err));return}
+      const m=(DB.outbox||[]).find(x=>x.id===ds.mailretry)||{};const s=await mailInvoke({id:ds.mailretry});Object.assign(m,mailFromFn(s,Object.assign(m,{st:'queued'})));
+      toast(m.st==='sent'?'Email sent':'Not sent: '+m.status.replace(/^(Queued|Failed): /,''));await cloudLoadMail();render()}}
+  finally{t.disabled=false}});
+/* the body of a server email is fetched when it is opened */
+async function mailLoadHTML(id){const m=(DB.outbox||[]).find(x=>x.id===id);if(!m||!m.srv||m.html)return;
+  try{const {data}=await SB.from('mail_outbox').select('html').eq('id',id);if(data&&data[0]){m.html=data[0].html;render()}}catch(e){}}
+
 async function sendApprovalMail(d){
   const c=mailCfg();if(!c.on)return 0;
-  const to=mailRecipients(d);if(!to.length)return 0;
-  const m={id:'M'+Date.now().toString(36),dpr:d.id,p:d.p,at:stamp(),to:to.map(u=>({name:u.name,email:u.email,role:u.role})),subject:mailSubject(d),html:mailHTML(d),
-    status:CLOUD?'Sending':'Demo: not sent'};
-  DB.outbox=DB.outbox||[];DB.outbox.unshift(m);if(DB.outbox.length>150)DB.outbox.length=150;
-  d.mailed={id:m.id,n:to.length,at:m.at};save();
-  if(CLOUD){try{const {error}=await SB.functions.invoke('send-daily-report',{body:{to:m.to.map(x=>x.email),subject:m.subject,html:m.html}});
-      m.status=error?'Failed: '+(error.message||String(error)):'Sent'}catch(e){m.status='Failed: '+e.message}save();if(state.view==='admin')render()}
-  return to.length;
+  const to=CLOUD?[]:mailRecipients(d).map(u=>({name:u.name,email:u.email,role:u.role}));if(!CLOUD&&!to.length)return 0;
+  const r=await mailOut({kind:'dpr',ref:d.id,label:d.id,p:d.p,subject:mailSubject(d),html:mailHTML(d),to});
+  if(r.m){d.mailed={id:r.m.id,n:r.n,at:r.m.at};save()}
+  return r.sent||r.demo?r.n:0;
 }
 /* ---------- v3.17: emails when an internal report (monthly or weekly) or a monthly cost report is approved ----------
    The super admin sets who receives each: roles (people in the role with access to the project), named people and
@@ -10588,12 +10657,10 @@ ${body}
 <tr><td style="background:#F4F6F9;padding:12px 24px;font:11px Arial,sans-serif;color:#8A97A8">Sent automatically by ProTrack when the report was approved, to the list set ${r.kind==='planning'?'by the super admin or the section planning manager':'by the super admin'}. Figures are as released.</td></tr>
 </table></td></tr></table></body></html>`}
 async function sendReleaseMail(r){
-  const to=relMailRecipients(r);if(!to.length)return 0;
-  const m={id:'M'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),dpr:`${REL_KIND[r.kind]} ${pcode(projById(r.project_id)||{})} ${perLabel(r.period_type,r.period)}`,rel:r.id,p:r.project_id,at:stamp(),
-    to,subject:relMailSubject(r),html:relMailHTML(r),status:CLOUD?'Sending':'Demo: not sent'};
-  DB.outbox=DB.outbox||[];DB.outbox.unshift(m);if(DB.outbox.length>150)DB.outbox.length=150;r.mailed={id:m.id,n:to.length,at:m.at};save();
-  if(CLOUD){try{const {error}=await SB.functions.invoke('send-daily-report',{body:{to:m.to.map(x=>x.email),subject:m.subject,html:m.html}});m.status=error?'Failed: '+(error.message||String(error)):'Sent'}catch(e){m.status='Failed: '+e.message}save();if(state.view==='admin')render()}
-  return to.length}
+  const to=CLOUD?[]:relMailRecipients(r);if(!CLOUD&&!to.length)return 0;
+  const x=await mailOut({kind:'release',ref:r.id,label:`${REL_KIND[r.kind]} ${pcode(projById(r.project_id)||{})} ${perLabel(r.period_type,r.period)}`,p:r.project_id,subject:relMailSubject(r),html:relMailHTML(r),to});
+  if(x.m){r.mailed={id:x.m.id,n:x.n,at:x.m.at};save()}
+  return x.sent||x.demo?x.n:0}
 /* the editor: kind 'planning' or 'cost'; region set for a section planning manager's own list */
 function relMailEditHTML(kind,region){
   const c=relMailCfg(),own=kind==='planning'&&region?c.regions[region]:null,cur=region?(own||c.planning):c[kind],dis=region&&!own?'disabled':'',key=`${kind}|${region||''}`;
@@ -10635,21 +10702,24 @@ document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
   if(t.matches('[data-rmpeople]')){relMailSave(t.dataset.rmpeople,o=>{o.people=[...t.selectedOptions].map(x=>x.value)});return}
   if(t.matches('[data-rmextra]')){const L=t.value.split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean),bad=L.filter(x=>!RM_EMAIL.test(x));if(bad.length)return toast('Not an email address: '+bad.join(', '));relMailSave(t.dataset.rmextra,o=>{o.extra=[...new Set(L)]})}});
 function mailAdminHTML(){
-  const c=mailCfg(),box=(DB.outbox||[]).filter(m=>SCOPE.has(m.p)),cur=box.find(m=>m.id===state.mailOpen);
-  return `<section class="panel" style="margin-bottom:16px"><h2>Approval email</h2>
+  const c=mailCfg(),box=(DB.outbox||[]).filter(m=>!m.p||SCOPE.has(m.p)),cur=box.find(m=>m.id===state.mailOpen);if(cur&&cur.srv&&!cur.html)mailLoadHTML(cur.id);
+  if(CLOUD_ME&&mailSrv().queue&&!mailSrv().ping&&!state.mailPinging){state.mailPinging=true;mailInvoke({ping:true}).then(p=>{mailSrv().ping=p;state.mailPinging=false;if(state.view==='admin')render()})}
+  return `${mailSrvHTML()}<section class="panel" style="margin-bottom:16px"><h2>Approval email</h2>
     <label class="chk"><input type="checkbox" data-mailcfg="on" ${c.on?'checked':''}><span><b>Send a summary email when a daily report is approved</b></span></label>
     <h3 style="margin-top:14px">Who receives it</h3><p class="small muted" style="margin:0 0 8px">Everyone in these roles who has access to the report's project.</p>
     <div class="checks" style="max-height:none">${MAIL_ROLES.map(([k,l])=>`<label class="chk"><input type="checkbox" data-mailrole="${k}" ${c.roles.includes(k)?'checked':''}><span>${l}</span></label>`).join('')}</div>
     <label class="chk" style="margin-top:8px"><input type="checkbox" data-mailcfg="siteDisc" ${c.siteDisc?'checked':''}><span>Site engineers and site managers receive only reports they review or approve</span></label>
-    <p class="small muted" style="margin-top:10px">Link in the email: <b>${esc(siteUrl())}</b>, set as SITE_URL in config.js. ${CLOUD?'Emails are sent through the server.':'This copy runs on demo data, so emails are prepared and listed below but not sent. Once the server mail function is set up, they go out automatically.'}</p></section>
+    <p class="small muted" style="margin-top:10px">Link in the email: <b>${esc(siteUrl())}</b>, set as SITE_URL in config.js. ${CLOUD?(mailSrv().queue?'These settings are kept on the server; only a super admin changes them.':'Emails are not sent until the server has the v38 update and the send-mail function.'):'This copy runs on demo data, so emails are prepared and listed below but not sent.'}</p></section>
   ${relMailAdminHTML()}
-  <section class="panel"><div class="card-head"><h2>Sent emails</h2><span class="small muted">${box.length} in your scope</span></div>
-    <div class="scroll"><table class="tbl"><thead><tr><th>When</th><th>Report</th><th>Subject</th><th class="n">Recipients</th><th>Status</th></tr></thead><tbody>
+  <section class="panel"><div class="card-head"><h2>Emails</h2><span class="small muted">${box.length} in your scope${CLOUD&&mailSrv().queue?' · '+box.filter(m=>m.st==='sent').length+' sent, '+box.filter(m=>m.st&&m.st!=='sent').length+' not sent yet':''}</span></div>
+    <div class="scroll"><table class="tbl"><thead><tr><th>When</th><th>About</th><th>Subject</th><th class="n">Recipients</th><th>Status</th><th></th></tr></thead><tbody>
     ${box.slice(0,60).map(m=>`<tr class="click ${m.id===state.mailOpen?'rowsel':''}" data-mailopen="${m.id}"><td class="small">${esc(m.at)}</td><td>${esc(m.dpr)}</td><td class="small">${esc(m.subject)}</td><td class="n">${m.to.length}</td>
-      <td><span class="sev ${m.status==='Sent'?'Low':/Fail/.test(m.status)?'High':'Medium'}">${esc(m.status)}</span></td></tr>`).join('')||'<tr><td colspan="5" class="muted">No report has been approved since email was switched on.</td></tr>'}
+      <td><span class="sev ${m.status==='Sent'?'Low':/Fail|Not/.test(m.status)?'High':'Medium'}">${esc(m.status)}</span></td>
+      <td>${m.srv&&m.st!=='sent'&&state.role==='sa'?`<button class="btn sm" type="button" data-mailretry="${esc(m.id)}">Send again</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">No email yet.</td></tr>'}
     </tbody></table></div>
     ${cur?`<h3 style="margin-top:16px">To</h3><p class="small">${cur.to.map(x=>`${esc(x.name)} &lt;${esc(x.email)}&gt;, ${esc(ROLES[x.role]||x.role)}`).join('<br>')}</p>
-      <h3>Preview</h3><iframe title="Email preview" style="width:100%;height:760px;border:1px solid var(--line);border-radius:10px;background:#EEF1F5" srcdoc="${esc(cur.html)}"></iframe>`:'<p class="small muted" style="margin-top:10px">Select an email to see its recipients and a preview.</p>'}
+      ${cur.srv?`<p class="small muted">${cur.attempts?`${cur.attempts} attempt${cur.attempts>1?'s':''}`:'Not tried yet'}${cur.sent_at?', sent '+esc(tStamp(cur.sent_at)):''}. Recipients worked out by the server.</p>`:''}
+      <h3>Preview</h3>${cur.html?`<iframe title="Email preview" style="width:100%;height:760px;border:1px solid var(--line);border-radius:10px;background:#EEF1F5" srcdoc="${esc(cur.html)}"></iframe>`:'<p class="muted small">Loading…</p>'}`:'<p class="small muted" style="margin-top:10px">Select an email to see its recipients and a preview.</p>'}
   </section>`;
 }
 function checkDeepLink(){
@@ -14761,7 +14831,7 @@ async function rsAct(kind,...a){rsAct.err='';const L={remind:rsRemindLocal,exemp
   if(CLOUD_ME){if(DB.rsMissing){rsAct.err='Reporting status needs the v29 database update (see STAGE-25-SETUP)';toast(rsAct.err);return null}
     let A=a;if(kind==='remind'){try{A=[a[0],a[1],a[2],a[4]||'',rsRemindPlan(...a)]}catch(e){rsAct.err=e.message;toast(e.message);return null}}
     let r;try{r=await rpc('reporting_act',{p:{kind,args:A}})}catch(e){rsAct.err='The server refused this: '+srvMsg(e);toast(rsAct.err);return null}
-    if(kind==='remind'&&r&&r.to){notify(`${me().name} reminded ${r.to.map(x=>x.name).join(', ')}: ${r.subject}`,true);try{await SB.functions.invoke('send-daily-report',{body:{to:r.to.map(x=>x.email),subject:r.subject,html:`<p>${esc(r.body)}</p>`}})}catch(e){}}
+    if(kind==='remind'&&r&&r.to){notify(`${me().name} reminded ${r.to.map(x=>x.name).join(', ')}: ${r.subject}`,true);const pp=projById(r.project_id)||{};await mailOut({kind:'remind',ref:r.id,label:`Reminder ${pcode(pp)} ${perLabel(r.period_type,r.period)}`,p:r.project_id,subject:r.subject,html:`<p>${esc(r.body||'')}</p><p style="color:#5B6B7F;font-size:12px">Sent by ${esc(me().name)} from ProTrackAI · Home → Reporting status</p>`})}
     try{await cloudLoadRs()}catch(e){}save();return r||true}
   try{return L(...a)}catch(e){rsAct.err=e.message;toast(e.message);return null}}
 async function cloudLoadRs(){try{const [c,x,r]=await Promise.all(['rs_config','rs_exemptions','rs_reminders'].map(t=>selAll(t,'*',null,['id'])));DB.rsCfg=c[0]?c[0].cfg:null;DB.rsEx=x;DB.rsRem=r;DB.rsMissing=false}catch(e){DB.rsMissing=srvMsg(e)}}
@@ -16808,8 +16878,8 @@ document.addEventListener('change',e=>{const el=e.target;
   if(el.name==='esecond'){execPrefs().second=el.value;savePrefs();return}
   if(el.name==='ebill'){execPrefs().hideBilling=el.value==='1';savePrefs();return}
   if(el.name==='emat'){execPrefs().hideMat=el.value==='1';savePrefs();return}
-  if(el.matches('[data-mailcfg]')){mailCfg()[el.dataset.mailcfg]=el.checked;logChange(`Approval email: ${el.dataset.mailcfg==='on'?(el.checked?'switched on':'switched off'):'site roles by discipline '+(el.checked?'on':'off')}`);save();return}
-  if(el.matches('[data-mailrole]')){const c=mailCfg(),k=el.dataset.mailrole;c.roles=el.checked?[...new Set(c.roles.concat(k))]:c.roles.filter(x=>x!==k);save();return}
+  if(el.matches('[data-mailcfg]')){mailCfg()[el.dataset.mailcfg]=el.checked;mailCfgSave();logChange(`Approval email: ${el.dataset.mailcfg==='on'?(el.checked?'switched on':'switched off'):'site roles by discipline '+(el.checked?'on':'off')}`);save();return}
+  if(el.matches('[data-mailrole]')){const c=mailCfg(),k=el.dataset.mailrole;c.roles=el.checked?[...new Set(c.roles.concat(k))]:c.roles.filter(x=>x!==k);save();mailCfgSave();return}
   if(el.matches('[data-mx]')&&CLOUD_ME){const [pid,kind,uid]=el.dataset.mx.split(':'),u=userById(uid),t=userById(el.value),to=el.value;el.disabled=true;
     cloudSetMatrix(pid,kind,uid,to).then(ok=>{if(!ok)return;logChange(`${projById(pid).short}: ${u.name}'s reports ${kind==='fm'?'reviewed':'approved'} by ${t?t.name:projById(pid).pm+' (project manager)'}`);save();toast('Approval matrix saved on the server')});return}
   if(el.matches('[data-mx]')){const [pid,kind,uid]=el.dataset.mx.split(':'),M=mx(pid),u=userById(uid),t=userById(el.value);if(el.value)M[kind][uid]=el.value;else delete M[kind][uid];

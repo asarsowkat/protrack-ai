@@ -52,6 +52,9 @@
 | `schema-rollback-v36.sql` | Only to undo v36. A row's version is the month of its log again; keeps the column |
 | `schema-update-v37.sql` | **Yes, on your live project, after v16.** STAGE-31-SETUP.md. The Cashflow Dashboard screen (`cfd` in pt_screens) and its finance cost rates (cf_rates, cf_settings, cf_rates_set). Check with `select cf_features();` |
 | `schema-rollback-v37.sql` | Only to undo v37. The dashboard shows no finance cost and leaves Role access; keeps the rates |
+| `schema-update-v38.sql` | **Yes, on your live project, after v16** (report emails need v23, reminders v29). STAGE-32-SETUP.md. Emails really sent: the mail queue (`mail_outbox`, `mail_queue`, `mail_retry`); the server checks each event and works out the recipients. Then deploy the Edge Function `functions/send-mail` with its settings |
+| `schema-rollback-v38.sql` | Only to undo v38. Emails are listed as not sent again; keeps the outbox |
+| `functions/send-mail/index.ts` | The Edge Function that sends a queued email through Microsoft 365 (Graph) or an SMTP relay on port 465. STAGE-32-SETUP.md steps 2 and 3. `functions/send-mail/test.mjs` tests it (Node 22) |
 
 **v3.26.1:** v24 (and its rollback), v27, v28, v29, v30, v32 and v33 were corrected in place after the module review (see `../REVIEW-v3.26.1.md`). None had been run on a database, so run them as they are now, in order, once.
 

@@ -1,0 +1,237 @@
+{
+ "suite": "test_v38",
+ "passed": 46,
+ "total": 46,
+ "checks": [
+  {
+   "check": "v38 is installed: mail_features",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the approver queues the approval email of the daily report he approved",
+   "pass": true,
+   "detail": "{'n': 8, 'id': '9cb7550c-fe5f-4728-93ab-bf6170e5ac6d', 'to': [{'id': '00000000-0000-0000-0000-000000003808', 'name': 'Carla Costing', 'role': 'costing', 'email': 'co@test.local'}, {'id': '00000000-0000-0000-0000-000000003810', 'name': 'Eva Executive', 'role': 'exec', 'email': 'ex@test.local'}, {'id'"
+  },
+  {
+   "check": "recipients worked out by the server: roles of the settings with access to the project; site roles only from the chain; no foreman, no outsider, nobody without an address",
+   "pass": true,
+   "detail": "['Carla Costing', 'Eva Executive', 'Omar Engineer', 'Paul Manager', 'Peter Planner', 'Rana RegionalPlanning', 'Samir SiteManager', 'Sara Admin']"
+  },
+  {
+   "check": "each recipient carries the address from the sign-in account and the role",
+   "pass": true,
+   "detail": "[{'id': '00000000-0000-0000-0000-000000003808', 'name': 'Carla Costing', 'role': 'costing', 'email': 'co@test.local'}, {'id': '00000000-0000-0000-0000-000000003810', 'name': 'Eva Executive', 'role': 'exec', 'email': 'ex@test.local'}]"
+  },
+  {
+   "check": "asking again returns the same email (queued once)",
+   "pass": true,
+   "detail": "{'n': 8, 'id': '9cb7550c-fe5f-4728-93ab-bf6170e5ac6d', 'to': [{'id': '00000000-0000-0000-0000-000000003808', 'name': 'Carla Costing', 'role': 'costing', 'email': 'co@test.local'}, {'id': '00000000-0000-0000-0000-000000003810', 'name': 'Eva Executive', 'role': 'exec', 'email': 'ex@test.local'}, {'id'"
+  },
+  {
+   "check": "one row in the outbox for that report",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "someone who did not approve it cannot send its email",
+   "pass": true,
+   "detail": "psql:/tmp/tmp7nphh4vi.sql:4: ERROR:  Only the person who approved daily report DPR-2 sends its email\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 22 at RAISE"
+  },
+  {
+   "check": "a report that is not approved is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp5l4pflwn.sql:4: ERROR:  Daily report DPR-3 is not approved\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 20 at RAISE"
+  },
+  {
+   "check": "an unknown report is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp_pz6ira9.sql:4: ERROR:  Unknown daily report DPR-404\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 19 at RAISE"
+  },
+  {
+   "check": "a super admin can send the email of a report he approved",
+   "pass": true,
+   "detail": "{'n': 9, 'id': '568045f4-01ce-4453-bb1d-c5f3e01862a8', 'to': [{'id': '00000000-0000-0000-0000-000000003808', 'name': 'Carla Costing', 'role': 'costing', 'email': 'co@test.local'}, {'id': '00000000-0000-0000-0000-000000003810', 'name': 'Eva Executive', 'role': 'exec', 'email': 'ex@test.local'}, {'id'"
+  },
+  {
+   "check": "with \"site roles only for their reports\" off, every site engineer with access receives it",
+   "pass": true,
+   "detail": "['Carla Costing', 'Eva Executive', 'Hadi Engineer', 'Omar Engineer', 'Paul Manager', 'Peter Planner', 'Rana RegionalPlanning', 'Samir SiteManager', 'Sara Admin']"
+  },
+  {
+   "check": "with the approval email switched off, nothing is queued",
+   "pass": true,
+   "detail": "{'n': 0, 'id': None, 'skipped': 'Approval email is switched off'}"
+  },
+  {
+   "check": "the roles of the settings decide who receives it",
+   "pass": true,
+   "detail": "{'n': 1, 'id': 'e3ef9cd9-ba87-4c96-9fe9-4074c854d281', 'to': [{'id': '00000000-0000-0000-0000-000000003802', 'name': 'Paul Manager', 'role': 'pm', 'email': 'pm@test.local'}], 'status': 'queued'}"
+  },
+  {
+   "check": "the approver queues the internal report email",
+   "pass": true,
+   "detail": "{'n': 4, 'id': '9dc6ff85-05ec-4517-996a-2ee68daf2023', 'to': [{'id': '00000000-0000-0000-0000-000000003810', 'name': 'Eva Executive', 'role': 'exec', 'email': 'ex@test.local'}, {'id': '00000000-0000-0000-0000-000000003802', 'name': 'Paul Manager', 'role': 'pm', 'email': 'pm@test.local'}, {'id': '000"
+  },
+  {
+   "check": "default internal report list: project managers, portfolio, regional managers, executives and planners with access",
+   "pass": true,
+   "detail": "['Eva Executive', 'Paul Manager', 'Peter Planner', 'Rana RegionalPlanning']"
+  },
+  {
+   "check": "only the person who approved the report sends its email",
+   "pass": true,
+   "detail": "psql:/tmp/tmpa43kndqw.sql:4: ERROR:  Only the person who approved this report sends its email\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 39 at RAISE"
+  },
+  {
+   "check": "a report that is not released is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmp41b49x26.sql:4: ERROR:  This report is not released\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 36 at RAISE"
+  },
+  {
+   "check": "an unknown or malformed report id is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpz0iwzmrj.sql:4: ERROR:  Unknown report not-a-uuid\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 34 at RAISE"
+  },
+  {
+   "check": "the cost report email goes to the cost list",
+   "pass": true,
+   "detail": "{'n': 5, 'id': 'bbf93ab6-0d9b-47d2-aedf-22a8d3915f5b', 'to': [{'id': '00000000-0000-0000-0000-000000003808', 'name': 'Carla Costing', 'role': 'costing', 'email': 'co@test.local'}, {'id': '00000000-0000-0000-0000-000000003810', 'name': 'Eva Executive', 'role': 'exec', 'email': 'ex@test.local'}, {'id'"
+  },
+  {
+   "check": "cost list: its roles with access, its named people, valid other addresses only, no address twice",
+   "pass": true,
+   "detail": "['Carla Costing', 'Eva Executive', 'Nora Named', 'Paul Manager', 'finance@company.com']"
+  },
+  {
+   "check": "a weekly internal report is not emailed when the region list says monthly only",
+   "pass": true,
+   "detail": "{'n': 0, 'id': None, 'skipped': 'Weekly internal reports are not emailed'}"
+  },
+  {
+   "check": "...and goes to the region list, not the default, when weekly is on",
+   "pass": true,
+   "detail": "{'n': 1, 'id': '98fb33eb-8b74-47c6-9cf7-0ea972539ab2', 'to': [{'id': '00000000-0000-0000-0000-000000003802', 'name': 'Paul Manager', 'role': 'pm', 'email': 'pm@test.local'}], 'status': 'queued'}"
+  },
+  {
+   "check": "a reminder email goes to the people it named who still have access",
+   "pass": true,
+   "detail": "{'n': 2, 'id': '8ae1a451-4940-4eac-a3fa-11e2b051a21a', 'to': [{'id': '00000000-0000-0000-0000-000000003806', 'name': 'Peter Planner', 'role': 'plan', 'email': 'pl@test.local'}, {'id': '00000000-0000-0000-0000-000000003808', 'name': 'Carla Costing', 'role': 'costing', 'email': 'co@test.local'}], 'sta"
+  },
+  {
+   "check": "someone else cannot email that reminder",
+   "pass": true,
+   "detail": "psql:/tmp/tmp_0v5onj_.sql:4: ERROR:  Only the person who sent this reminder emails it\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 60 at RAISE"
+  },
+  {
+   "check": "an old reminder is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpccgzanbu.sql:4: ERROR:  This reminder is more than an hour old; send a new one\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 61 at RAISE"
+  },
+  {
+   "check": "a super admin sends a test email to himself",
+   "pass": true,
+   "detail": "{'n': 1, 'id': 'ba3b6e37-5cf0-4b4c-8075-b99f271fa3e7', 'to': [{'id': '00000000-0000-0000-0000-000000003801', 'name': 'Sara Admin', 'role': 'sa', 'email': 'sa@test.local'}], 'status': 'queued'}"
+  },
+  {
+   "check": "...as many as he likes (each test is its own email)",
+   "pass": true,
+   "detail": "{'n': 1, 'id': '2f241f8c-e705-4e50-9f5b-69eda0d1b6d8', 'to': [{'id': '00000000-0000-0000-0000-000000003801', 'name': 'Sara Admin', 'role': 'sa', 'email': 'sa@test.local'}], 'status': 'queued'}"
+  },
+  {
+   "check": "only a super admin sends a test email",
+   "pass": true,
+   "detail": "psql:/tmp/tmppn83631i.sql:4: ERROR:  Only a super admin sends a test email\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 12 at RAISE"
+  },
+  {
+   "check": "a subject over 300 characters is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpi831fhc0.sql:4: ERROR:  The subject is missing or longer than 300 characters\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 9 at RAISE"
+  },
+  {
+   "check": "an empty body is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpbvhgdrpk.sql:4: ERROR:  The email body is missing or too long\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 10 at RAISE"
+  },
+  {
+   "check": "an unknown type is refused",
+   "pass": true,
+   "detail": "psql:/tmp/tmpx48clkn5.sql:4: ERROR:  Unknown email type spam\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 8 at RAISE"
+  },
+  {
+   "check": "nobody signed in is refused",
+   "pass": true,
+   "detail": "ERROR:  Sign in first\nCONTEXT:  PL/pgSQL function mail_queue(jsonb) line 7 at RAISE\n"
+  },
+  {
+   "check": "nobody writes the outbox directly",
+   "pass": true,
+   "detail": "psql:/tmp/tmpy5mai2ks.sql:5: ERROR:  syntax error at or near \"commit\"\nLINE 2: commit;\n        ^"
+  },
+  {
+   "check": "...or changes an email in it",
+   "pass": true,
+   "detail": "psql:/tmp/tmprdmfpnmj.sql:5: ERROR:  syntax error at or near \"commit\"\nLINE 2: commit;\n        ^"
+  },
+  {
+   "check": "a person sees only the emails he queued",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the super admin sees every email",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a foreman sees none",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "a super admin puts a failed email back in the queue",
+   "pass": true,
+   "detail": "{'id': '9cb7550c-fe5f-4728-93ab-bf6170e5ac6d', 'status': 'queued'}"
+  },
+  {
+   "check": "...its error is cleared and its attempts kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "only a super admin does",
+   "pass": true,
+   "detail": "psql:/tmp/tmpyey1zhmu.sql:4: ERROR:  Only a super admin sends an email again\nCONTEXT:  PL/pgSQL function mail_retry(jsonb) line 4 at RAISE"
+  },
+  {
+   "check": "an email already sent is not sent again",
+   "pass": true,
+   "detail": "psql:/tmp/tmp5ix8qkn2.sql:4: ERROR:  This email was sent already\nCONTEXT:  PL/pgSQL function mail_retry(jsonb) line 7 at RAISE"
+  },
+  {
+   "check": "the rollback runs",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "...the queue functions are gone and the outbox is kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "the rollback runs twice",
+   "pass": true,
+   "detail": "psql:/home/claude/protrack-ai/supabase/schema-rollback-v38.sql:4: NOTICE:  function mail_queue(jsonb) does not exist, skipping\npsql:/home/claude/protrack-ai/supabase/schema-rollback-v38.sql:5: NOTICE:  function mail_retry(jsonb) does not exist, skipping\npsql:/home/claude/protrack-ai/supabase/schema-"
+  },
+  {
+   "check": "v38 runs again after the rollback, keeping every email",
+   "pass": true,
+   "detail": "psql:/home/claude/protrack-ai/supabase/schema-update-v38.sql:45: NOTICE:  relation \"mail_outbox\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-update-v38.sql:46: NOTICE:  relation \"mail_outbox_once\" already exists, skipping\npsql:/home/claude/protrack-ai/supabase/schema-updat"
+  },
+  {
+   "check": "...and the queue works again",
+   "pass": true,
+   "detail": "{'n': 1, 'id': 'cbd23253-2410-437d-81a3-2876f5fe81ac', 'to': [{'id': '00000000-0000-0000-0000-000000003801', 'name': 'Sara Admin', 'role': 'sa', 'email': 'sa@test.local'}], 'status': 'queued'}"
+  }
+ ]
+}

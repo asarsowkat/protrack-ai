@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.33, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.34, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -316,7 +316,9 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.33</b>
+<div class="note" id="whatsnew"><b>New in version 3.34</b>
+    <b>Approval and report emails are really sent.</b> The server checks each email’s event and decides who receives it; the send-mail function sends it through the company mailbox (Microsoft 365) or an SMTP relay. Settings → Email shows the mail service, a test email, every email with its status and reason, and Send again. On the server: schema-update-v38.sql and the send-mail function (STAGE-32-SETUP).</div>
+  <div class="note"><b>New in version 3.33</b>
     <b>RASA comes alive on the approved RASA badge.</b> It blinks, breathes, turns toward the pointer, lights its AI ear-cup while listening, runs a light round the ring while thinking, and moves its mouth when it reads an answer aloud. At rest the badge shows exactly as approved. Azure Speech and an enterprise AI are ready but off until IT and Cybersecurity approve them. See <a href="#rasa-live">RASA's live avatar</a>.</div>
   <div class="note"><b>New in version 3.32</b>
     <b>Invoices &amp; Cash Flow → Cashflow Dashboard</b>, below the Invoice register: inflow and outflow together, actual and forecast, month by month and by project, sector and region, with the net cash flow as a surplus or a deficit and the <b>finance cost</b> treasury charges on a deficit (a surplus earns nothing). The super admin sets the interest rate (% per annum) of each month and an average rate for the forecast period. On the server: <code>schema-update-v37.sql</code> (STAGE-31-SETUP). See <a href="#cfdash">Cashflow Dashboard</a>.</div>
@@ -664,7 +666,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h3 id="email">Approval email</h3>
   <p>The moment a report is approved, ProTrack emails a summary to everyone with access to that project in the chosen roles: by default site engineers, site managers, project managers, portfolio managers, planning and costing engineers, executives and super admins. Site engineers and site managers receive only the reports they reviewed or approved. Recipients are blind-copied.</p>
   <p>The email carries the project, date, discipline and foreman; activities, manpower, manhours and productivity; each activity's quantity today, percent complete and index; anything below 85% productivity; site remarks; who prepared, reviewed and approved it and how long each took; and an <b>Open &lt;report number&gt; in ProTrack</b> button that goes straight to the report after sign-in.</p>
-  <p>The super admin chooses the roles, or switches it off, in <b>Settings → Email</b>, which also lists every email with its recipients, status and a preview. Sending needs the mail function set up on the server once; until then emails are prepared and listed but not sent. The menu item is <b>Administration → Approval email</b>; it opens Settings → Email. <b>Sent emails</b> lists the daily report emails, the report emails and the reporting status reminders, with recipients, status and a preview.</p>
+  <p>The super admin chooses the roles, or switches it off, in <b>Settings → Email</b>, which also lists every email with its recipients, status and a preview. The menu item is <b>Administration → Approval email</b>; it opens Settings → Email. <b>Emails</b> lists the daily report emails, the report emails and the reporting status reminders, with recipients, status and a preview.</p>
+  <p><b>How an email is sent (v3.34).</b> The app asks the server to queue it; the server checks that the event is real and that the person made it (approved the report, sent the reminder), and works out the recipients itself from these settings and the report email lists. The <b>send-mail</b> function then sends it through the company mailbox (Microsoft 365) or an SMTP relay and records <b>Sent</b> or <b>Failed</b> with the reason; an email is tried up to 5 times. <b>Mail service</b> at the top of Settings → Email says whether sending is ready; the super admin has <b>Send a test email to me</b>, <b>Send queued emails now</b> and <b>Send again</b> on an email not sent. The approval email settings are kept on the server and only a super admin changes them. Until the v38 update and the function are installed (STAGE-32-SETUP), emails are listed as not sent; on the demo page they are prepared and never sent.</p>
   <p><b>Report emails (v3.17).</b> When an <b>internal report</b> (monthly, and weekly unless switched off) or a <b>monthly cost report</b> is approved and released, ProTrack emails the released figures with a link that opens the report:</p>
   <ul>
     <li>an internal report: planned, actual, SPI, forecast finish, the baseline comparison and the narrative;</li>
@@ -2362,7 +2365,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <tr><td>Daily reports and their history</td><td>This browser</td><td>On the server. Every save, review and approval is checked by the server</td></tr>
       <tr><td>Baseline activities, costing, invoices, weekly progress</td><td>This browser</td><td>On the server. Imports are all-or-nothing and recorded with a file fingerprint</td></tr>
       <tr><td>Still in each browser</td><td>Everything</td><td>Trade rates, subcontractors and purchase orders, revised and recovery baselines, DCMA results, role access, email settings, notifications. Kept on the server once their updates are installed: roles, rights and screens (v16), report email lists (v23), delay register lists (v25), BOQ Engine (v31, v32) and the release strategy (v34). Project Visual stays in each browser until its server update (v19, not yet issued)</td></tr>
-      <tr><td>Approval email</td><td>Prepared and listed in Settings → Email, not sent</td><td>Sent once the mail function is set up on the server</td></tr>
+      <tr><td>Approval email</td><td>Prepared and listed in Settings → Email, not sent</td><td>Queued on the server, which decides the recipients, and sent by the send-mail function (v38, STAGE-32-SETUP)</td></tr>
       <tr><td>Password reset</td><td>Simulated</td><td>Real email</td></tr>
       <tr><td>Date everything is measured at</td><td>22 Sept 2026, fixed, so demonstrations always match</td><td>Same by default; set <code>DATE_MODE: 'live'</code> in config.js, or switch in Settings → System, to use today's date</td></tr>
     </tbody>
