@@ -21,22 +21,22 @@
   {
    "check": "Templates: a planner cannot keep templates",
    "pass": true,
-   "detail": "psql:/tmp/tmp1mtycfx5.sql:4: ERROR:  You cannot keep SAP report templates (the bcm.sap.import right)\nCONTEXT:  PL/pgSQL function bcm_sap_tpl(jsonb) line 5 at RAISE"
+   "detail": "psql:/tmp/tmpxolqcjto.sql:4: ERROR:  You cannot keep SAP report templates (the bcm.sap.import right)\nCONTEXT:  PL/pgSQL function bcm_sap_tpl(jsonb) line 5 at RAISE"
   },
   {
    "check": "Templates: a template needs the WBS element column",
    "pass": true,
-   "detail": "psql:/tmp/tmpbvz642ny.sql:4: ERROR:  The template needs at least the WBS element column\nCONTEXT:  PL/pgSQL function bcm_sap_tpl(jsonb) line 9 at RAISE"
+   "detail": "psql:/tmp/tmptm78ong7.sql:4: ERROR:  The template needs at least the WBS element column\nCONTEXT:  PL/pgSQL function bcm_sap_tpl(jsonb) line 9 at RAISE"
   },
   {
    "check": "Templates: a costing engineer saves one",
    "pass": true,
-   "detail": "{'id': 'ST-cef93cee', 'ok': True}"
+   "detail": "{'id': 'ST-ee2dbeda', 'ok': True}"
   },
   {
    "check": "Templates: saving the same name again updates it",
    "pass": true,
-   "detail": "{'id': 'ST-cef93cee', 'ok': True}"
+   "detail": "{'id': 'ST-ee2dbeda', 'ok': True}"
   },
   {
    "check": "Templates: one template, by its last author, read by anyone with cost figures",
@@ -46,42 +46,42 @@
   {
    "check": "Import: the file must be in storage first",
    "pass": true,
-   "detail": "psql:/tmp/tmpd0z3u8z9.sql:4: ERROR:  Upload the file to storage first\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 20 at RAISE"
+   "detail": "psql:/tmp/tmp2v_pm3po.sql:4: ERROR:  Upload the file to storage first\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 20 at RAISE"
   },
   {
    "check": "Import: a planner cannot import SAP reports",
    "pass": true,
-   "detail": "psql:/tmp/tmp9pzd_weq.sql:4: ERROR:  You cannot import SAP reports on this project (the bcm.sap.import right)\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 9 at RAISE"
+   "detail": "psql:/tmp/tmpfctac6ho.sql:4: ERROR:  You cannot import SAP reports on this project (the bcm.sap.import right)\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 9 at RAISE"
   },
   {
    "check": "Import: a future period is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp0n6r73me.sql:4: ERROR:  The period 2099-01 is in the future\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 11 at RAISE"
+   "detail": "psql:/tmp/tmpn3pz28mc.sql:4: ERROR:  The period 2099-01 is in the future\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 11 at RAISE"
   },
   {
    "check": "Import: an amount that is not a number is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpftxvgvw6.sql:4: ERROR:  Row 5: actual \"n/a\" is not a number\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 33 at RAISE"
+   "detail": "psql:/tmp/tmpb5zqw7rr.sql:4: ERROR:  Row 5: actual \"n/a\" is not a number\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 33 at RAISE"
   },
   {
    "check": "Import: a repeated WBS element is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp28gph8n3.sql:4: ERROR:  PE-555-04-001 is repeated in the report\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 51 at RAISE"
+   "detail": "psql:/tmp/tmp126gujy7.sql:4: ERROR:  PE-555-04-001 is repeated in the report\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 51 at RAISE"
   },
   {
    "check": "Import: a row without a WBS element is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpn77idt5a.sql:4: ERROR:  Row 5: no WBS element\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 30 at RAISE"
+   "detail": "psql:/tmp/tmpcpo0d1dw.sql:4: ERROR:  Row 5: no WBS element\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 30 at RAISE"
   },
   {
    "check": "Import: a total row that does not match the elements is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp5iwi4vy0.sql:4: ERROR:  The total row gives budget 8380000, the elements add up to 8370000.000000\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 75 at RAISE"
+   "detail": "psql:/tmp/tmp7d8zrsoa.sql:4: ERROR:  The total row gives budget 8380000, the elements add up to 8370000.000000\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 75 at RAISE"
   },
   {
    "check": "Import: a report without amount columns is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpr1p4o9wd.sql:4: ERROR:  The report has no Budget, Actual, Commitment or forecast column\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 22 at RAISE"
+   "detail": "psql:/tmp/tmpu2zlh8bb.sql:4: ERROR:  The report has no Budget, Actual, Commitment or forecast column\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 22 at RAISE"
   },
   {
    "check": "Import: nothing is kept from refused imports",
@@ -91,7 +91,7 @@
   {
    "check": "Import: the by-WBS report of 2026-08 is imported and frozen, with its totals checked against the total row",
    "pass": true,
-   "detail": "{'n': 12, 'id': 'SR-202608-1bde4c', 'ok': True, 'totals': {'actual': '4735000.000000', 'budget': '8370000.000000', 'commit': '2700000.000000'}}"
+   "detail": "{'n': 12, 'id': 'SR-202608-769cb8', 'ok': True, 'totals': {'actual': '4735000.000000', 'budget': '8370000.000000', 'commit': '2700000.000000'}}"
   },
   {
    "check": "Import: totals at each level are not counted twice: an element counts what is not in the elements below it",
@@ -101,12 +101,12 @@
   {
    "check": "Import: the same file again is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmpuzk17aql.sql:4: ERROR:  This file is already imported (report SR-202608-1bde4c)\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 17 at RAISE"
+   "detail": "psql:/tmp/tmpe6jks0l2.sql:4: ERROR:  This file is already imported (report SR-202608-769cb8)\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 17 at RAISE"
   },
   {
    "check": "Import: another report for the same period and kind is imported...",
    "pass": true,
-   "detail": "{'n': 2, 'id': 'SR-202608-b07fae', 'ok': True, 'totals': {'actual': '900000.000000', 'budget': '2070000.000000', 'commit': '200000.000000'}}"
+   "detail": "{'n': 2, 'id': 'SR-202608-7b6227', 'ok': True, 'totals': {'actual': '900000.000000', 'budget': '2070000.000000', 'commit': '200000.000000'}}"
   },
   {
    "check": "...and supersedes the first, which is kept",
@@ -116,7 +116,7 @@
   {
    "check": "Frozen: a costing engineer cannot change imported rows",
    "pass": true,
-   "detail": "psql:/tmp/tmph6hsk87e.sql:5: ERROR:  syntax error at or near \"commit\"\nLINE 2: commit;\n        ^"
+   "detail": "psql:/tmp/tmpdma4lsp4.sql:5: ERROR:  syntax error at or near \"commit\"\nLINE 2: commit;\n        ^"
   },
   {
    "check": "Frozen: not even the database owner changes them",
@@ -131,17 +131,17 @@
   {
    "check": "Line items: a posting after the period is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp4sjzbntk.sql:4: ERROR:  Row 4: posted on 2026-10-02, after the period 2026-09\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 39 at RAISE"
+   "detail": "psql:/tmp/tmp7hsls1ih.sql:4: ERROR:  Row 4: posted on 2026-10-02, after the period 2026-09\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 39 at RAISE"
   },
   {
    "check": "Line items: a posting before the period is refused (postings of the period)",
    "pass": true,
-   "detail": "psql:/tmp/tmpg4a8598d.sql:4: ERROR:  Row 4: posted on 2026-08-02, before the period 2026-09 (or choose postings to the end of the period)\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 40 at RAISE"
+   "detail": "psql:/tmp/tmp4i36p2rb.sql:4: ERROR:  Row 4: posted on 2026-08-02, before the period 2026-09 (or choose postings to the end of the period)\nCONTEXT:  PL/pgSQL function bcm_sap_import(jsonb) line 40 at RAISE"
   },
   {
    "check": "Line items: the actual postings of 2026-09 are summed by WBS element, the credit included",
    "pass": true,
-   "detail": "{'n': 5, 'id': 'SR-202609-89162b', 'ok': True, 'totals': {'actual': '233500.000000'}}"
+   "detail": "{'n': 5, 'id': 'SR-202609-cd5b3d', 'ok': True, 'totals': {'actual': '233500.000000'}}"
   },
   {
    "check": "Line items: by WBS element, with the number of postings",
@@ -151,7 +151,7 @@
   {
    "check": "Line items: a report to the end of the period accepts earlier postings, and keeps the part of the period apart",
    "pass": true,
-   "detail": "{'n': 2, 'id': 'SR-202609-3a3c18', 'ok': True, 'totals': {'actual': '110.000000'}}"
+   "detail": "{'n': 2, 'id': 'SR-202609-7377e0', 'ok': True, 'totals': {'actual': '110.000000'}}"
   },
   {
    "check": "...its figures: 110 to date, 10 in the period",
@@ -161,7 +161,7 @@
   {
    "check": "Line items: open commitments",
    "pass": true,
-   "detail": "{'n': 1, 'id': 'SR-202609-7faa3f', 'ok': True, 'totals': {'commit': '2380000.000000'}}"
+   "detail": "{'n': 1, 'id': 'SR-202609-500d99', 'ok': True, 'totals': {'commit': '2380000.000000'}}"
   },
   {
    "check": "Read: a foreman reads no SAP report; someone outside the project neither",
@@ -191,32 +191,32 @@
   {
    "check": "Workbook: a Tender estimate is not loaded in SAP",
    "pass": true,
-   "detail": "psql:/tmp/tmp5g1brdaf.sql:4: ERROR:  A Tender estimate is not loaded in SAP; load Rev 0 or a revision\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 10 at RAISE"
+   "detail": "psql:/tmp/tmps1to8wvy.sql:4: ERROR:  A Tender estimate is not loaded in SAP; load Rev 0 or a revision\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 10 at RAISE"
   },
   {
    "check": "Workbook: someone without bcm.sap cannot prepare it",
    "pass": true,
-   "detail": "psql:/tmp/tmpkifj0xmi.sql:4: ERROR:  Only a SAP authorized user (bcm.sap) prepares the SAP loading workbook\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 9 at RAISE"
+   "detail": "psql:/tmp/tmpkqpnlh07.sql:4: ERROR:  Only a SAP authorized user (bcm.sap) prepares the SAP loading workbook\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 9 at RAISE"
   },
   {
    "check": "Workbook: a draft is not prepared for SAP",
    "pass": true,
-   "detail": "psql:/tmp/tmpeizc285q.sql:4: ERROR:  Only a version approved in ProTrackAI is prepared for SAP (this one is Draft)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 11 at RAISE"
+   "detail": "psql:/tmp/tmp7yosg8sl.sql:4: ERROR:  Only a version approved in ProTrackAI is prepared for SAP (this one is Draft)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 11 at RAISE"
   },
   {
    "check": "Workbook: refused while an amount has no valid SAP WBS ID of the project, naming it",
    "pass": true,
-   "detail": "psql:/tmp/tmpfykvdzad.sql:4: ERROR:  Not every amount has a valid SAP WBS ID of the project: XX-13 (does not start with the project's PE number PE-555)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 18 at RAISE"
+   "detail": "psql:/tmp/tmpv39cnidj.sql:4: ERROR:  Not every amount has a valid SAP WBS ID of the project: XX-13 (does not start with the project's PE number PE-555)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 18 at RAISE"
   },
   {
    "check": "Workbook: ...or a segment with the wrong digits",
    "pass": true,
-   "detail": "psql:/tmp/tmpe9wzsmin.sql:4: ERROR:  Not every amount has a valid SAP WBS ID of the project: PE-555-1 (level 1 should be 2 digits (\"1\"))\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 18 at RAISE"
+   "detail": "psql:/tmp/tmp33ss046q.sql:4: ERROR:  Not every amount has a valid SAP WBS ID of the project: PE-555-1 (level 1 should be 2 digits (\"1\"))\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 18 at RAISE"
   },
   {
    "check": "Workbook: the SAP authorized user prepares the workbook of Rev 0: the original budget by SAP WBS ID",
    "pass": true,
-   "detail": "{'id': 'SX-261023-08528d', 'ok': True, 'seq': 1, 'check': 'ddb2300bd8c82590afe2220ed45a48ce', 'content': {'prev': None, 'items': [{'uf': 'SM', 'sap': 'PE-555-01-001-01', 'code': 'SM1-01', 'desc': 'Salaries - Project office team', 'amount': '1250000.000000'}, {'uf': 'SM', 'sap': 'PE-555-01-001-02', '"
+   "detail": "{'id': 'SX-261023-31d43a', 'ok': True, 'seq': 1, 'check': 'ddb2300bd8c82590afe2220ed45a48ce', 'content': {'prev': None, 'items': [{'uf': 'SM', 'sap': 'PE-555-01-001-01', 'code': 'SM1-01', 'desc': 'Salaries - Project office team', 'amount': '1250000.000000'}, {'uf': 'SM', 'sap': 'PE-555-01-001-02', '"
   },
   {
    "check": "Workbook: the version is Ready for SAP Loading, with its history",
@@ -226,27 +226,27 @@
   {
    "check": "Workbook: another version waits while one is ready for loading",
    "pass": true,
-   "detail": "psql:/tmp/tmppxqire_b.sql:4: ERROR:  Rev 0 0 is waiting for its SAP loading confirmation; confirm or return it first\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 13 at RAISE"
+   "detail": "psql:/tmp/tmp0gns3gq2.sql:4: ERROR:  Rev 0 0 is waiting for its SAP loading confirmation; confirm or return it first\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 13 at RAISE"
   },
   {
    "check": "Confirm: someone without bcm.sap cannot record the loading",
    "pass": true,
-   "detail": "psql:/tmp/tmp5f8zb2pq.sql:4: ERROR:  Only a SAP authorized user (bcm.sap) records the SAP loading\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 32 at RAISE"
+   "detail": "psql:/tmp/tmpkvkr16wq.sql:4: ERROR:  Only a SAP authorized user (bcm.sap) records the SAP loading\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 32 at RAISE"
   },
   {
    "check": "Confirm: the SAP reference is needed",
    "pass": true,
-   "detail": "psql:/tmp/tmp64ps7xaz.sql:4: ERROR:  Give the SAP reference (3 to 60 characters), as SAP gave it\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 35 at RAISE"
+   "detail": "psql:/tmp/tmp5n9t084v.sql:4: ERROR:  Give the SAP reference (3 to 60 characters), as SAP gave it\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 35 at RAISE"
   },
   {
    "check": "Confirm: a loading date in the future is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp9ky1tees.sql:4: ERROR:  The loading date 2099-01-01 is in the future\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 38 at RAISE"
+   "detail": "psql:/tmp/tmpm9q293k8.sql:4: ERROR:  The loading date 2099-01-01 is in the future\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 38 at RAISE"
   },
   {
    "check": "Confirm: a loading date before the workbook is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp31ghmzcf.sql:4: ERROR:  The loading date 2020-01-01 is before the workbook was prepared (2026-10-23)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 39 at RAISE"
+   "detail": "psql:/tmp/tmpqje6byg7.sql:4: ERROR:  The loading date 2020-01-01 is before the workbook was prepared (2026-10-23)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 39 at RAISE"
   },
   {
    "check": "Confirm: the SAP authorized user records the loading with the SAP reference",
@@ -261,17 +261,17 @@
   {
    "check": "Confirm: a confirmed workbook is not confirmed twice",
    "pass": true,
-   "detail": "psql:/tmp/tmptgkc0oul.sql:4: ERROR:  This workbook is confirmed (the version is SAP Loading Confirmed)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 33 at RAISE"
+   "detail": "psql:/tmp/tmpeo66_icn.sql:4: ERROR:  This workbook is confirmed (the version is SAP Loading Confirmed)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 33 at RAISE"
   },
   {
    "check": "Workbook: the revision is prepared as supplements and returns against the version loaded (Rev 0, CJ30-4711)",
    "pass": true,
-   "detail": "{'id': 'SX-261023-524aff', 'ok': True, 'seq': 1, 'check': 'ffd602dc961646f1bfdb471e67ddacb8', 'content': {'prev': {'id': 'BV-261023-9afde1', 'kind': 'Rev 0', 'rev_no': 0, 'sap_ref': 'CJ30-4711'}, 'items': [{'uf': 'SM', 'sap': 'PE-555-01-001-01', 'code': 'SM1-01', 'desc': 'Salaries - Project office t"
+   "detail": "{'id': 'SX-261023-b1f81c', 'ok': True, 'seq': 1, 'check': 'a9426ec02c9c0ee1fc008931db3854d4', 'content': {'prev': {'id': 'BV-261023-320421', 'kind': 'Rev 0', 'rev_no': 0, 'sap_ref': 'CJ30-4711'}, 'items': [{'uf': 'SM', 'sap': 'PE-555-01-001-01', 'code': 'SM1-01', 'desc': 'Salaries - Project office t"
   },
   {
    "check": "Return: a reason is needed",
    "pass": true,
-   "detail": "psql:/tmp/tmp849aiiqg.sql:4: ERROR:  Give the reason (at least 5 characters)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 46 at RAISE"
+   "detail": "psql:/tmp/tmplzsh2h61.sql:4: ERROR:  Give the reason (at least 5 characters)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 46 at RAISE"
   },
   {
    "check": "Return: the SAP team could not load it: returned with the reason, the version is approved again",
@@ -281,7 +281,7 @@
   {
    "check": "Workbook: prepared again: workbook 2 of the version",
    "pass": true,
-   "detail": "{'id': 'SX-261023-f81685', 'ok': True, 'seq': 2, 'check': 'ffd602dc961646f1bfdb471e67ddacb8', 'content': {'prev': {'id': 'BV-261023-9afde1', 'kind': 'Rev 0', 'rev_no': 0, 'sap_ref': 'CJ30-4711'}, 'items': [{'uf': 'SM', 'sap': 'PE-555-01-001-01', 'code': 'SM1-01', 'desc': 'Salaries - Project office t"
+   "detail": "{'id': 'SX-261023-ae1aa6', 'ok': True, 'seq': 2, 'check': 'a9426ec02c9c0ee1fc008931db3854d4', 'content': {'prev': {'id': 'BV-261023-320421', 'kind': 'Rev 0', 'rev_no': 0, 'sap_ref': 'CJ30-4711'}, 'items': [{'uf': 'SM', 'sap': 'PE-555-01-001-01', 'code': 'SM1-01', 'desc': 'Salaries - Project office t"
   },
   {
    "check": "Workbook: the earlier workbooks keep their status",
@@ -296,12 +296,12 @@
   {
    "check": "Workbook: an older approved version is not loaded after a later one",
    "pass": true,
-   "detail": "psql:/tmp/tmpa56ffn10.sql:4: ERROR:  A later version (Revised Rev 0 1) is already loaded in SAP\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 15 at RAISE"
+   "detail": "psql:/tmp/tmpxmvfjgee.sql:4: ERROR:  A later version (Revised Rev 0 1) is already loaded in SAP\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 15 at RAISE"
   },
   {
    "check": "Workbook: a version with no change from the version loaded is refused",
    "pass": true,
-   "detail": "psql:/tmp/tmp6zs3cv4y.sql:4: ERROR:  Nothing changes from the version last loaded (Revised Rev 0 1)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 19 at RAISE"
+   "detail": "psql:/tmp/tmprnzze5pn.sql:4: ERROR:  Nothing changes from the version last loaded (Revised Rev 0 1)\nCONTEXT:  PL/pgSQL function bcm_sap_export(jsonb) line 19 at RAISE"
   },
   {
    "check": "Read: the workbooks are read with the project",

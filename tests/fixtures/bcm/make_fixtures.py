@@ -208,6 +208,20 @@ head(ws, 1, ['WBS Element', 'Description', 'Budget', 'Actual', 'Currency'])
 for r in [['PE-555-01-001-01', 'Salaries', 1250000, 'n/a', 'SAR'], ['PE-555-04-001', 'Cables', 5100000, 10, 'SAR'], ['PE-555-04-001', 'Cables again', 1, 1, 'SAR'], ['PE-555-05-001', 'Manpower', 900000, 5, 'USD'], [None, 'No WBS', 1, 1, 'SAR'], ['Total', None, 99, 99, None]]: ws.append(r)
 wb.save(f'{OUT}/23_sap_invalid.xlsx')
 
+# 25. an SAP CN41 structure overview (v3.39): Level, Code (user field), Description, ID, ProCstPlan, Budget, Act.costs, Tot.cst.cm, each followed by its currency
+wb, ws = book(); ws.title = 'CN41'
+head(ws, 2, ['.', 'Level', 'Code', 'Description', 'ID', 'ProCstPlan', 'ProCstPlan', 'Budget', 'Budget', 'Act.costs', 'Act.costs', 'Tot.cst.cm', 'Tot.cst.cm'])
+for r in [['1', '00', 'Project', 'Old Line project', 'PE-555', 8380000, 'SAR', 8380000, 'SAR', 4968500, 'SAR', 2470000, 'SAR'],
+          ['2', '01', None, 'SITE MANAGEMENT', 'PE-555-01', 2070000, 'SAR', 2070000, 'SAR', 975000, 'SAR', 90000, 'SAR'],
+          ['3', '02', None, 'SM1|SALARIES', 'PE-555-01-001', 2070000, 'SAR', 2070000, 'SAR', 975000, 'SAR', 90000, 'SAR'],
+          ['4', '03', 'SM', 'Salaries.Project Office Team', 'PE-555-01-001-01', 1250000, 'SAR', 1250000, 'SAR', 675000, 'SAR', 0, 'SAR'],
+          ['5', '03', 'SM', 'Salaries Site Office Team', 'PE-555-01-001-02', 820000, 'SAR', 820000, 'SAR', 300000, 'SAR', 90000, 'SAR'],
+          ['6', '01', None, 'ELECTRICAL MATERIAL', 'PE-555-04', 5100000, 'SAR', 5100000, 'SAR', 3118500, 'SAR', 2380000, 'SAR'],
+          ['7', '02', 'MTRL.ELC', 'Cables material', 'PE-555-04-001', 5100000, 'SAR', 5100000, 'SAR', 3118500, 'SAR', 2380000, 'SAR'],
+          ['8', '01', 'MAN.ELC', 'Cable laying manpower', 'PE-555-05', 910000, 'SAR', 910000, 'SAR', 860000, 'SAR', 0, 'SAR'],
+          ['9', '01', 'PC ITEMS', 'Prime cost items', 'PE-555-13', 300000, 'SAR', 300000, 'SAR', 15000, 'SAR', 0, 'SAR']]: ws.append(r)
+wb.save(f'{OUT}/25_sap_cn41.xlsx')
+
 # LibreOffice recalculates and saves with cached values; 01 also as .xls and 02 also as .xlsm (a macro-enabled container, no macros)
 os.makedirs(OUT, exist_ok=True)
 calc = tempfile.mkdtemp()

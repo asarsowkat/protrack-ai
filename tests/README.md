@@ -95,6 +95,15 @@ python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 
 `fixtures/bcm/make_fixtures.py` makes the test workbooks (openpyxl, then LibreOffice to store calculated values; file 13 keeps formulas without values on purpose). SheetJS 0.18.5 is the version the app loads: `git clone --depth 1 --branch v0.18.5 https://github.com/SheetJS/sheetjs` gives `xlsx.js` and `dist/xlsx.full.min.js`.
 
+## v3.39: budget supplement and change request forms, Approval Hub
+
+| Test | Checks | What it proves |
+|---|---|---|
+| `../supabase/tests/test_v43.py` | 75 | v43 on PostgreSQL: rights and their defaults; forms prepared, numbered and checked line by line; the VP and EVP in the chain; submission and the queue; the hub token (super admin, kept as a hash, wrong token refused, switched off); the hub with the anon role taking a submission once, reporting the WF number and the approval; posting to the budget supplement log (rows, WF number, version, budget change); posted rows protected on the log screen; the version moved with its limits and reason; the link kept on a new log; decisions recorded by hand (rights, WF number, dates), returned, resubmitted, rejected; cancel; change requests added to or updating the change order log; read rules; rollback and again |
+| `wf_demo.py` (`python3 wf_demo.py ../demo.html path/to/xlsx.full.min.js`) | see results | The demo page: a BRF in the company layout, its lines, the summary by user field, the Excel form, submission, the coordinator's decision by hand, the rows in the log and their protection, the version moved, a return and resubmission, the EVP for the management reserve, a change request to the change order log, rights |
+| `wf_e2e.py` (`python3 wf_e2e.py ../live.html ../supabase path/to/xlsx.full.min.js`) | see results | The live app against the database v2 to v43, with Approval Hub played through the anon role and the token made on the screen |
+| `bcm_engine_test.cjs` | see results | Now reads the SAP CN41 layout (`fixtures/bcm/25_sap_cn41.xlsx`) |
+
 ## v3.38: Budget & Cost Management stage 4
 
 | Test | Checks | What it proves |

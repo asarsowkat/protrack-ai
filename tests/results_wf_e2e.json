@@ -1,0 +1,127 @@
+{
+ "suite": "wf_e2e",
+ "passed": 20,
+ "total": 20,
+ "checks": [
+  {
+   "area": "Server",
+   "check": "the app sees the v43 update",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "BRF",
+   "check": "the planning engineer prepares BR-01 on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Submit",
+   "check": "submitted on the server: queued for Approval Hub, with the VP in the chain",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Submit",
+   "check": "the server refuses a change after submission",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Hub",
+   "check": "the super admin sees the link not connected, with one submission waiting",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Hub",
+   "check": "connecting shows the token once",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Hub",
+   "check": "Approval Hub takes the submission with the token",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Hub",
+   "check": "the form shows In approval with the WF number and the step",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Hub",
+   "check": "Approval Hub approves: posted to the budget supplement log at once",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Form",
+   "check": "the form says approved by the hub and where it was posted",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Log",
+   "check": "the supplement log screen shows the rows posted by the WF",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Version",
+   "check": "the costing coordinator moves the version to the previous month on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Log",
+   "check": "the server refuses to remove a row posted from a WF",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "CRF",
+   "check": "the costing coordinator submits CR-01 on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Record",
+   "check": "the server refuses a decision recorded by someone without wf.record",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "CRF",
+   "check": "recorded by hand: added to the change order and claim log on the server",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a project manager reads the forms but does not start one",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "...and the server refuses it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Rights",
+   "check": "a foreman does not see the page, and the server gives him no form",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}
