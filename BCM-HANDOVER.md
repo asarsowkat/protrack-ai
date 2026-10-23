@@ -1,4 +1,4 @@
-# Budget & Cost Management, Automatic WBS Classification: engineering handover (ProTrackAI v3.35, October 2026)
+# Budget & Cost Management, Automatic WBS Classification: engineering handover (ProTrackAI v3.35 to v3.37, October 2026)
 
 A module of the existing ProTrackAI application (menu: after Cost Control). It is not a separate app. It adds no second project, user or WBS database for budgets, and it does not change Cost Control.
 
@@ -38,8 +38,10 @@ Reads: master data needs the cost-figures right; everything else also needs the 
 | Tender_Import_Batch, Source_Workbook, Extracted_Cost_Line | `bcm_batches`, `bcm_files`, `bcm_lines` |
 | Classification_Result | `bcm_class` + `bcm_class_hist` |
 | Audit_Log | `bcm_audit` |
-| Duplicate_Link, Cost_Allocation, Reconciliation_Result, Budget_Version, Budget_Change_Request | Stage 3 (not built) |
-| SAP_Import_Batch, SAP_Cost_Record, SAP_Export_Batch, Approval_History | Stage 4 (not built) |
+| Duplicate_Link, Cost_Allocation, Reconciliation_Result, Budget_Version | v3.37: `bcm_roles` + `bcm_dups`, `bcm_alloc`, `bcm_totals` (computed) + `bcm_recon_notes`, `bcm_versions` + `bcm_version_lines` + `bcm_version_hist` |
+| Budget_Change_Request | A new version of kind Approved revision, with its justification and comparison (v3.37) |
+| SAP_Import_Batch, SAP_Cost_Record, SAP_Export_Batch | Stage 4 (not built) |
+| Approval_History | Approval History page: the approvals and decisions of `bcm_audit` with the version histories (v3.37) |
 
 ## 3. The fifteen logical services
 
@@ -51,15 +53,15 @@ Reads: master data needs the cost-figures right; everything else also needs the 
 | 4. WBS master | WBS Mapping Master; `bcm_master_act` | Built |
 | 5. Rule-based classification | `BCME.classify` layers 1–2; checked again by `bcm_classify` | Built |
 | 6. AI classification | `BCME.classify` layer 3: similarity in ProTrack; provider hook validated by `BCME.validateAi`, **not configured** | Built as similarity; no outside AI (see 7) |
-| 7. Duplicate & backup analysis | Same-file refusal (SHA-256) only | Stage 3 |
-| 8. Reconciliation | Control totals captured per file | Stage 3 |
+| 7. Duplicate & backup analysis | Same-file refusal (SHA-256); `BCME.proposeRoles`, `findDups`, `dupEffect`; `bcm_stage3` | Built (v3.37) |
+| 8. Reconciliation | Control totals per file; Reconciliation Centre; `pt_bcm_eval`, `bcm_totals`, `pt_bcm_tol` | Built (v3.37) |
 | 9. Human review | Classification Review, line view; `bcm_review` | Built |
 | 10. Mapping learning | Remember-as on decisions; Mapping Learning History; performance report | Built |
-| 11. Budget versioning | — | Stage 3 |
+| 11. Budget versioning | Budget Versions; `bcm_version_act` (from a batch, import, submit, review, approve, reject, cancel) | Built (v3.37) |
 | 12. Cost summary | — | Stage 4 |
 | 13. Excel export | Exception list, all lines, WBS master | Built (the SAP loading workbook is stage 4) |
 | 14. SAP import | — | Stage 4 |
-| 15. Audit and approval | `bcm_audit`, histories; master-data approvals with segregation | Built (budget approvals are stage 3) |
+| 15. Audit and approval | `bcm_audit`, histories; master-data approvals with segregation | Built, with budget approvals (v3.37) |
 
 ## 4. Roles
 
@@ -69,7 +71,10 @@ Reads: master data needs the cost-figures right; everything else also needs the 
 | Cost Control Manager | A person given `bcm.master` and/or `bcm.approve` (Settings → Roles and rights), or the Head of Planning and Cost Control by position |
 | Administrator | Super admin; proposes and approves, never their own proposal |
 | Planning Engineer, Project Manager, Read-Only Executive | See the module with the cost-figures right; no write right by default |
-| Finance Reviewer, Budget Approver, SAP Authorized User | Rights to come with stages 3 and 4 |
+| Budget preparer | `bcm.budget` (costing engineers by default) |
+| Finance Reviewer | `bcm.review` |
+| Budget Approver | `bcm.budget.approve` (Head of Planning and Cost Control by position, or given by the super admin) |
+| SAP Authorized User | Right to come with stage 4 |
 | Foreman (site roles without cost figures) | Never see the module |
 
 Every rule is enforced by the server functions; hiding a button is only for convenience.
@@ -118,12 +123,12 @@ The engine has a provider hook. Its output must name an approved, active element
 |---|---|
 | Original source values and references remain available | **Met**: lines frozen, file kept, runs kept |
 | Every accepted amount can be traced to its source | **Met**: file, sheet, row, cells, formula on each line |
-| No backup cost is counted twice | **Not yet**: stage 3. The totals say so |
-| Accepted allocations reconcile to their source amounts | **Not yet**: split allocations are stage 3; no split is invented |
-| Unresolved items cannot silently enter an approved budget | **Met for this stage**: there is no budget yet; unresolved lines are counted apart |
+| No backup cost is counted twice | **Met** (v3.37): sheet roles and decided candidates; the server refuses a version while a blocking candidate is open |
+| Accepted allocations reconcile to their source amounts | **Met** (v3.37): a split must add up to the line (within the tolerance, at most 1) and is approved by someone else; no percentage is assumed |
+| Unresolved items cannot silently enter an approved budget | **Met** (v3.37): `bcm_totals` must be ready for a version from a batch |
 | AI cannot create or approve WBS codes | **Met**: no AI; the provider hook is validated; codes only through proposal and approval |
 | AI cannot alter financial amounts | **Met**: classification never writes an amount; outputs with amounts are refused |
-| Historical approved budgets remain reproducible | **Met for classifications** (versions kept); budgets are stage 3 |
+| Historical approved budgets remain reproducible | **Met** (v3.37): version lines frozen after the draft (trigger), with the WBS version they used |
 | The Excel export contains only eligible records | Stage 4 (SAP loading workbook) |
 | Failed AI processing does not destroy imported data | **Met** (tested) |
 | Unauthorized users cannot approve or change master data | **Met** (server tests) |
@@ -149,3 +154,11 @@ The engine has a provider hook. Its output must name an approved, active element
   - At approval, a segment already used by an approved sibling (not moving away) is refused.
 - **Ordering and numbering are proposals** like any master change. Someone else's waiting change is never overwritten by a reorder or a numbering.
 - **Upgrading the starting master:** `schema-update-v40.sql` brings it to the company layout through `pt_bcm_seed_upd`, as System seed proposals only. The demo page does the same through `seedBcm336`.
+
+## 12. v3.37: stage 3, financial controls
+- **Which lines count** is one rule, in `pt_bcm_eval` on the server and `bcmEval` in the app: a cost line counts when its sheet's role is summary or breakdown (no role yet means summary), or a decided candidate includes it; and it is not a target of a decided candidate; and it is not Excluded with Reason. It is resolved when it has an approved split, or is Auto-Classified or Confirmed with a WBS.
+- **Candidates** (`BCME.findDups`) have stable ids from their lines. Saving an analysis keeps decided candidates, refreshes open ones and marks the missing ones Obsolete. `dupEffect` (and the server, which works it out itself) gives `targets` (stop counting) and `includes` (count whatever their role).
+- **Tolerance** (`tolOf`, `pt_bcm_tol`) = the larger of the absolute amount and the percentage of the base, from the settings by currency and project type (default 1 and 0.01%).
+- **`bcm_totals(batch)`** returns readiness, the problems (unresolved, no amount, currency, WBS, open candidates, unconfirmed roles, waiting splits, unexplained file variances), the accepted amounts by WBS and cost type, and the counted, not counted and unresolved totals. `bcm_version_act` from_batch uses it and refuses a batch that is not ready.
+- **Versions**: one row per WBS (and cost type) with the SAP WBS ID (`pt_bcm_sap_id`) and user field at the time. Imports keep the SAP WBS IDs as written and link a master element by WBS code or SAP WBS ID. Lines can be inserted only while the version is a draft. `prev_id` is the previous approved version of the project at approval.
+- **Not built (stage 4):** the cost summary, the SAP report import, the SAP loading workbook, Ready for SAP Loading and SAP Loading Confirmed (the statuses exist).

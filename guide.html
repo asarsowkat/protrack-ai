@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.36, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.37, October 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -316,7 +316,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.36</b>
+<div class="note" id="whatsnew"><b>New in version 3.37</b>
+    <b>Budget &amp; Cost Management stage 3.</b> Duplicate &amp; Backup Analysis (sheet roles and candidates, decided by a reviewer, nothing deleted), split allocations approved by someone else, the Reconciliation Centre (each valid cost once, control totals within the tolerance), Budget Versions from a ready tender or imported for an existing project with its actual SAP WBS IDs (Draft → Submitted → Under Review → Approved in ProTrackAI), and Approval History. Nothing is sent to SAP.<br><b>Version 3.36</b>
     <b>The WBS master's order, SAP WBS ID and user field.</b> Reorder elements with ▲ ▼; give each a SAP WBS segment and a user field from the user field list (Settings → Supplement lists). The SAP WBS ID on a project is its PE number and the segments down the tree: PE-XXX-01 Site Management, PE-XXX-01-001 SM1 Salaries, PE-XXX-01-001-01 Salaries - Project office team. The Excel import and export carry Order, SAP WBS segment and User field. On the server: schema-update-v40.sql (STAGE-34-SETUP).</div>
   <div class="note"><b>New in version 3.35</b>
     <b>Budget &amp; Cost Management → Automatic WBS Classification.</b> Upload a tender's costing workbooks in one go; ProTrack keeps each file unchanged, reads every sheet and row with its cells, and classifies each cost line into the approved WBS master (approved mappings, approved rules, then a similarity proposal that is never automatic). Only the exceptions need a person: Classification Review lists them, high-value lines first. Every WBS, rule and threshold change is approved by someone other than the person who proposed it. No outside AI and no SAP connection are used. Stages 3 and 4 (duplicates, reconciliation, budget versions, cost summary, SAP files) are planned. On the server: schema-update-v39.sql (STAGE-33-SETUP). See <a href="#bcm">Budget &amp; Cost Management</a>.</div>
@@ -1404,17 +1405,21 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Automatic WBS Classification:</b> approved mappings, then approved rules, then a similarity proposal. Automatic only from an approved mapping or rule at 95% or more, below the value limit, with a cost type and no data problem.</li>
     <li><b>Classification Review:</b> the lines to look at, high-value ones first. Confirm, confirm with another WBS (a reason is needed), reject, exclude with a reason, correct the description or row kind (the source stays as read), or undo. A bulk confirmation takes only clean proposals.</li>
     <li><b>Order, SAP WBS ID and user field (v3.36):</b> each element has its order among its siblings (▲ ▼), a SAP WBS segment and a user field from the user field list. Its SAP WBS ID on a project is the project's PE number and the segments down the tree, for example PE-XXX-01-001-01 for Salaries - Project office team.</li>
+    <li><b>Duplicate &amp; Backup Analysis (v3.37):</b> press <b>Run the analysis</b>. ProTrack proposes the role of each sheet (only a summary and a detailed breakdown count; a supporting backup, alternative quotation, previous revision or reference sheet is kept but not added) and the candidates: the same line twice, the same figures under another description, similar lines with a different specification, a summary line backed by another sheet. A reviewer confirms the roles and decides each candidate with a reason; nothing is deleted.</li>
+    <li><b>Split allocations (v3.37):</b> in the line view of a combined line, <b>Propose a split</b> into WBS and cost types that add up to the line (amounts or percentages), with its basis. Someone else approves it.</li>
+    <li><b>Reconciliation Centre (v3.37):</b> the accepted total (each valid cost once), each file's control total against the lines counted, within the tolerance, the amounts by WBS with their SAP WBS IDs, and the checks. Explain a variance with a reason; it is never adjusted.</li>
+    <li><b>Budget Versions (v3.37):</b> Tender estimate, Rev 0, Revised Rev 0 or Approved revision, prepared from a ready tender batch or imported from Excel for an existing project (one row per SAP WBS element with its actual SAP WBS ID, user field and an amount column you choose). Draft → Submitted → Under Review (a reviewer) → Approved in ProTrackAI (a budget approver), never by the preparer. Each version is compared with the previous approved one and exports to Excel. Approved in ProTrackAI is not loaded in SAP.</li>
     <li><b>Mapping Learning History:</b> a decision you choose to remember (this project, this project type, all projects) becomes a mapping once someone else approves it; the next tender uses it.</li>
   </ol>
   <table><thead><tr><th>Status</th><th>Means</th></tr></thead><tbody>
     <tr><td>Auto-Classified</td><td>An approved mapping or rule decided it within every control</td></tr>
     <tr><td>Proposed</td><td>A match between the review and automatic thresholds: confirm or change it</td></tr>
     <tr><td>Pending Review</td><td>Needs a person whatever the score: high value, mandatory element (financing, contingency, reserve), conflict, data problem, no cost type</td></tr>
-    <tr><td>Split Required</td><td>Supply and installation (or material and labour) in one line. Splitting comes with stage 3; until then confirm it as one line only with a reason</td></tr>
+    <tr><td>Split Required</td><td>Supply and installation (or material and labour) in one line. Split it into allocations (approved by someone else), or confirm it as one line with a reason</td></tr>
     <tr><td>Unclassified</td><td>No approved destination fits well enough</td></tr>
     <tr><td>Confirmed, Rejected, Excluded with Reason</td><td>A person decided; a new run never changes it</td></tr>
   </tbody></table>
-  <p class="note">No outside AI is called, and nothing is sent to SAP. Stage 3 (duplicate and backup analysis, reconciliation, split allocations, budget versions) and stage 4 (cost summary, SAP report import, SAP loading workbook) are planned and shown as planned in the menu. Until stage 3, a backup sheet's lines and the summary line they support are both counted in the totals.</p>
+  <p class="note">No outside AI is called, and nothing is sent to SAP. Stage 4 (cost summary, SAP report import, SAP loading workbook) is planned and shown as planned in the menu.</p>
   <h2 id="cfdash">Cashflow Dashboard</h2>
   <p><b>Invoices &amp; Cash Flow → Cashflow Dashboard</b>, below the Invoice register, puts the money coming in and the money going out side by side, for the projects in your scope. It is for those who see both the cash-inflow and the cash-out forecasts: management, project managers, planning and costing.</p>
   <table><thead><tr><th>Side</th><th>Actual</th><th>Forecast</th></tr></thead><tbody>

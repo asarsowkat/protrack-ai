@@ -149,6 +149,46 @@ ck('AI provider', 'the amount of the line is never changed by classification', l
 ck('Review', 'bulk approval takes a clean auto-classification', E.bulkEligible(c1) === null);
 ck('Review', 'bulk approval never takes high-value, mandatory, conflicting or combined lines', [tr, fin, conf, comb[0]].every(c => E.bulkEligible(c)));
 
+// ---------------- v3.37 stage 3: sheet roles, duplicates and backups, tolerances, splits, budget import
+let lid = 0; const linesOf = f => { const bk = read(f).book; return { bk, L: bk.sheets.flatMap(s => s.lines.map(l => ({ ...l, sheet: s.sheet, id: 'L' + (++lid), file: f, file_id: f, cur: 'SAR' }))) }; };
+const f5 = linesOf('05_backup_in_summary.xlsx'), f6 = linesOf('06_similar_specs.xlsx'), f7 = linesOf('07_combined.xlsx'), f3 = linesOf('03_hidden_merged.xlsx');
+const roles = x => Object.fromEntries(E.proposeRoles(x.bk.name || 'f', x.bk.sheets.map(s => ({ sheet: s.sheet, hidden: s.hidden })), x.L, x.bk.control).map(r => [r.sheet, r.role]));
+ck('Sheet roles', 'a sheet a summary line takes its amount from is a supporting backup; the sheet of the control total is the summary', (r => r.Summary === 'summary' && r['Salaries backup'] === 'backup')(roles(f5)), roles(f5));
+ck('Sheet roles', 'a hidden calculation sheet next to a summary is proposed as a backup', roles(f3).Calc === 'backup', roles(f3));
+ck('Sheet roles', 'the basis of each proposal is given', E.proposeRoles('05.xlsx', f5.bk.sheets.map(s => ({ sheet: s.sheet })), f5.L, f5.bk.control).every(r => r.basis && r.basis.length));
+ck('Sheet roles', 'only summaries and detailed breakdowns count', JSON.stringify(E.COUNTING_ROLES) === '["summary","breakdown"]' && E.ROLES.length === 6);
+const C = E.findDups([...f5.L, ...f6.L, ...f7.L], E.lexicon(E.SEED_CFG)), byK = k => C.filter(c => c.kind === k);
+const d6 = f6.L.filter(l => l.kind === 'item'), s5 = f5.L.find(l => /Site staff salaries/.test(l.desc));
+ck('Duplicates', 'two descriptions of the same cable with the same quantity, rate and amount are a "same figures" candidate, to be decided', byK('figures').some(c => c.lines.join() === [d6[0].id, d6[1].id].join() && c.blocking), byK('figures'));
+ck('Duplicates', 'similar descriptions with a different size (630 against 300 mm2) are only shown as different specifications, not blocking', byK('spec').length >= 1 && byK('spec').every(c => !c.blocking && c.evidence[0].includes('mm2')), byK('spec'));
+ck('Duplicates', 'the 13.8 kV cable is not a candidate of the 132 kV cable', !C.some(c => c.lines.includes(d6[2].id)));
+const bk5 = byK('backup').find(c => c.lines[0] === s5.id);
+ck('Backups', 'the summary line linked to the backup sheet is a backup candidate with its three backup lines adding up to it', bk5 && bk5.backup_lines.length === 3 && bk5.blocking && /add up to 1656000/.test(bk5.evidence[0]), bk5);
+ck('Backups', 'a combined line equal to the total of a breakdown sheet is a backup candidate too', byK('backup').some(c => f7.L.find(l => l.id === c.lines[0] && /Supply and install cable/.test(l.desc)) && c.backup_lines.length === 1));
+ck('Duplicates', 'candidate ids are stable: the same lines give the same id', JSON.stringify(E.findDups([...f6.L], E.lexicon(E.SEED_CFG)).map(c => c.id)) === JSON.stringify(C.filter(c => c.lines.every(i => d6.some(l => l.id === i))).map(c => c.id)));
+const fig = byK('figures')[0];
+ck('Decisions', 'duplicate: every line not kept stops counting', JSON.stringify(E.dupEffect(fig, 'duplicate', [fig.lines[0]]).targets) === JSON.stringify([fig.lines[1]]));
+ck('Decisions', 'a valid independent cost keeps both lines counting', E.dupEffect(fig, 'valid', []).targets.length === 0);
+ck('Decisions', 'duplicate with no line kept is refused', (() => { try { E.dupEffect(fig, 'duplicate', []); return false } catch (e) { return /keep|count/i.test(e.message) } })());
+ck('Decisions', 'backup: the summary line counts and the backup lines do not', (x => x.targets.length === 3 && !x.targets.includes(s5.id) && x.includes.length === 0)(E.dupEffect(bk5, 'backup', null, false)));
+ck('Decisions', 'backup counted in detail: the backup lines count (whatever their sheet\'s role) and the summary line does not', (x => JSON.stringify(x.targets) === JSON.stringify([s5.id]) && x.includes.length === 3)(E.dupEffect(bk5, 'backup', null, true)));
+ck('Tolerance', 'the tolerance is the larger of the amount and the percentage, by currency and project type', E.decStr(E.tolOf({ tols: [{ cur: 'SAR', abs: '1', pct: '0.01' }] }, 'SAR', null, '1731000')) === '173.1' && E.decStr(E.tolOf({ tols: [{ cur: 'SAR', abs: '1', pct: '0.01' }] }, 'SAR', null, '500')) === '1'
+  && E.decStr(E.tolOf({ tols: [{ cur: 'SAR', abs: '1', pct: '0.01' }, { cur: 'SAR', ptype: '132 kV substation', abs: '5', pct: '0' }] }, 'SAR', '132 kV substation', '1731000')) === '5');
+const al = E.allocate('48000', [{ wbs_id: 'A', cost_type: 'Material', pct: '62.5' }, { wbs_id: 'B', cost_type: 'Manpower', pct: '37.5' }], 'SAR', true);
+ck('Splits', 'a split by percentages gives exact amounts that add up to the line', al.ok && al.rows.map(r => r.amount).join() === '30000,18000', al);
+const al3 = E.allocate('100', [{ wbs_id: 'A', pct: '33.33' }, { wbs_id: 'B', pct: '33.33' }, { wbs_id: 'C', pct: '33.34' }], 'SAR', true);
+ck('Splits', 'rounding to the currency goes to the last row, never lost', al3.ok && al3.sum === '100', al3);
+ck('Splits', 'amounts that do not add up to the line are shown with the difference', (x => !x.ok && x.diff === '1000')(E.allocate('48000', [{ wbs_id: 'A', amount: '30000' }, { wbs_id: 'B', amount: '17000' }], 'SAR', false)));
+ck('Splits', 'percentages that do not make 100 are refused', (() => { try { const x = E.allocate('100', [{ wbs_id: 'A', pct: '50' }, { wbs_id: 'B', pct: '40' }], 'SAR', true); return !x.ok } catch (e) { return true } })());
+const aoa = f => X.utils.sheet_to_json(E.readBook(X, new Uint8Array(fs.readFileSync(path.join(FX, f)))).wb.Sheets.Budget, { header: 1, raw: true, defval: null });
+const pb = E.parseBudget(aoa('18_budget_import.xlsx'));
+ck('Budget import', 'the header is found below a title row, with the SAP WBS ID, code, description, user field and cost type columns', pb.header_row === 3 && ['sap', 'code', 'desc', 'uf', 'ct'].every(k => pb.map[k] != null), pb.map);
+ck('Budget import', 'the three amount columns are offered (Tender, Rev 0, Revised Rev 0)', pb.amountCols.map(c => c.name).join() === 'Tender,Rev 0,Revised Rev 0', pb.amountCols);
+ck('Budget import', 'five element rows, with their actual SAP WBS IDs kept as written, and the total row recognised', pb.rows.filter(r => !r.total).map(r => r.sap).join() === 'PE-555-01-001-01,PE-555-01-001-02,PE-555-04-001,PE-555-05-001,PE-555-13' && pb.rows.filter(r => r.total).length === 1);
+ck('Budget import', 'a sheet without a SAP WBS column is refused with the reason', /No header row/.test(E.parseBudget([['a', 'b'], [1, 2]]).error || ''));
+const pi = E.parseBudget(aoa('19_budget_import_invalid.xlsx'));
+ck('Budget import', 'a workbook with mistakes is still parsed row by row, so each refused row can be shown with its reason', pi.rows.length === 5 && pi.amountCols.map(c => c.name).join() === 'Rev 0' && pi.rows[2].raw[3] === 'TBC' && pi.rows[4].sap === null, pi.rows.map(r => r.sap));
+
 const passed = R.filter(r => r.result === 'PASS').length;
 console.log(JSON.stringify({ suite: 'bcm_engine', engine: E.ENGINE, passed, total: R.length, checks: R }, null, 1));
 process.exitCode = passed === R.length ? 0 : 1;

@@ -1,8 +1,8 @@
 {
  "suite": "bcm_engine",
  "engine": "ProTrack WBS classification engine 1.0 (ProTrackAI v3.35)",
- "passed": 74,
- "total": 74,
+ "passed": 99,
+ "total": 99,
  "checks": [
   {
    "area": "Money",
@@ -445,6 +445,156 @@
   {
    "area": "Review",
    "check": "bulk approval never takes high-value, mandatory, conflicting or combined lines",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sheet roles",
+   "check": "a sheet a summary line takes its amount from is a supporting backup; the sheet of the control total is the summary",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sheet roles",
+   "check": "a hidden calculation sheet next to a summary is proposed as a backup",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sheet roles",
+   "check": "the basis of each proposal is given",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sheet roles",
+   "check": "only summaries and detailed breakdowns count",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Duplicates",
+   "check": "two descriptions of the same cable with the same quantity, rate and amount are a \"same figures\" candidate, to be decided",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Duplicates",
+   "check": "similar descriptions with a different size (630 against 300 mm2) are only shown as different specifications, not blocking",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Duplicates",
+   "check": "the 13.8 kV cable is not a candidate of the 132 kV cable",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Backups",
+   "check": "the summary line linked to the backup sheet is a backup candidate with its three backup lines adding up to it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Backups",
+   "check": "a combined line equal to the total of a breakdown sheet is a backup candidate too",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Duplicates",
+   "check": "candidate ids are stable: the same lines give the same id",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "duplicate: every line not kept stops counting",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "a valid independent cost keeps both lines counting",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "duplicate with no line kept is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "backup: the summary line counts and the backup lines do not",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "backup counted in detail: the backup lines count (whatever their sheet's role) and the summary line does not",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Tolerance",
+   "check": "the tolerance is the larger of the amount and the percentage, by currency and project type",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "a split by percentages gives exact amounts that add up to the line",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "rounding to the currency goes to the last row, never lost",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "amounts that do not add up to the line are shown with the difference",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "percentages that do not make 100 are refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Budget import",
+   "check": "the header is found below a title row, with the SAP WBS ID, code, description, user field and cost type columns",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Budget import",
+   "check": "the three amount columns are offered (Tender, Rev 0, Revised Rev 0)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Budget import",
+   "check": "five element rows, with their actual SAP WBS IDs kept as written, and the total row recognised",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Budget import",
+   "check": "a sheet without a SAP WBS column is refused with the reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Budget import",
+   "check": "a workbook with mistakes is still parsed row by row, so each refused row can be shown with its reason",
    "result": "PASS",
    "detail": ""
   }

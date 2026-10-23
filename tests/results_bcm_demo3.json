@@ -1,0 +1,307 @@
+{
+ "suite": "bcm_demo3",
+ "passed": 50,
+ "total": 50,
+ "checks": [
+  {
+   "area": "Navigation",
+   "check": "Duplicate & Backup Analysis, Reconciliation Centre, Budget Versions and Approval History are open; Cost Summary and SAP Export stay planned (stage 4)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Analysis",
+   "check": "the page explains that ProTrack proposes and a person decides, and that nothing is deleted",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Analysis",
+   "check": "running the analysis reports the candidates by kind",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sheet roles",
+   "check": "roles are proposed per sheet: the salaries backup is a supporting backup, the summaries are summaries",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Candidates",
+   "check": "five candidates: the same cable twice (same figures), two different sizes (information), and two summaries with their backups",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Candidates",
+   "check": "each candidate shows its evidence and its lines with source, amounts and whether they count",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Counting",
+   "check": "before any decision, the backup sheet's lines (by their role) already do not count; the rest counts",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Readiness",
+   "check": "the batch is not ready for a budget version: candidates to decide, roles to confirm, lines to resolve",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Readiness",
+   "check": "a budget version from a batch that is not ready is refused, naming what is missing",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "a duplicate decision without a reason is refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "duplicate: the ticked line counts, the other stops counting; the decision, the reason and who decided are kept",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "...and the line is kept and shown as not counted (nothing deleted)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "supporting backup only: the summary lines count, the backup and breakdown lines do not",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "a decision is reopened with a reason, and the candidate is open again",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Decisions",
+   "check": "count the backup lines instead: the three salary lines count (whatever their sheet's role) and the summary line does not",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Sheet roles",
+   "check": "a reviewer confirms the roles shown",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "a Split Required line offers the split, the allocations to add up to the line",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "allocations that do not add up to the line are refused with the difference",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "a split adding up to the line is proposed, with its method and evidence",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "the proposer cannot approve the split",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "a split by percentages becomes exact amounts (30,000 and 18,000)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Splits",
+   "check": "someone else approves the split: the line is confirmed and counts by its allocations",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reconciliation",
+   "check": "every control passes: the batch is ready for a budget version",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reconciliation",
+   "check": "the accepted total counts each valid cost once (SAR 3,113,000); 2,426,000 is not counted (the salaries summary line, the repeated cable and the breakdown line)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reconciliation",
+   "check": "the summary file's control total (1,731,000) equals the lines counted: within tolerance",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reconciliation",
+   "check": "by WBS: the salaries, the splits by their allocations, the cables and the subcontract",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Reconciliation",
+   "check": "the page shows the source files, the accepted amounts by WBS with their SAP WBS IDs, and the checks",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the costing engineer sees the batch ready, with its total and WBS lines",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "a draft Tender estimate 0 is prepared from the server-side rules: 3,113,000 in WBS lines with SAP WBS IDs and user fields",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the version opens with its lines, history and actions",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "submitted; the preparer cannot review it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the reviewer is offered review, not approval",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "under review; a reviewer without bcm.budget.approve cannot approve it",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the budget approver approves it: Approved in ProTrackAI (not loaded in SAP), with preparer, submitter, reviewer and approver kept",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import",
+   "check": "a budget workbook with mistakes: each refused row is shown with its reason, and nothing can be imported",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import",
+   "check": "the valid workbook: 5 rows, all linked to master elements by their WBS code, the stated total read from the total row",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import",
+   "check": "imported as a draft Rev 0 with the actual SAP WBS IDs as written (PE-555-\u2026), user fields and cost types",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import",
+   "check": "lines that do not add up to the total stated in the file are refused",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Import",
+   "check": "the Revised Rev 0 column is imported as its own draft, with the decimal kept exactly (8,295,000.50)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "cancelling needs a reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "approved: the previous approved version is recorded (Rev 0)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the comparison with the previous approved version gives the total change and the changed lines",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the page shows the current approved budget (Revised Rev 0) and the previous one (Rev 0)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the version exports to Excel with SAP WBS IDs, user fields and amounts, and says it is not loaded in SAP",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Versions",
+   "check": "the preparer cannot reject his own version; the reviewer rejects it with the reason",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Approval history",
+   "check": "lists the budget approvals, rejections, splits, duplicate decisions and confirmed roles with who and when",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "the overview counts duplicate candidates, reconciliation variances and pending budget approvals (no longer marked planned)",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Overview",
+   "check": "the stage 3 caveat about double counting is gone",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Audit",
+   "check": "the audit log has the stage 3 actions",
+   "result": "PASS",
+   "detail": ""
+  },
+  {
+   "area": "Page",
+   "check": "no script errors",
+   "result": "PASS",
+   "detail": ""
+  }
+ ]
+}

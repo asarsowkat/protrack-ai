@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""ProTrackAI v3.35 in server mode: Budget & Cost Management, Automatic WBS Classification, against a local PostgreSQL
-built from schema.sql and every update v2 to v40, through fake_supabase.py (files kept by the stand-in storage, under the
+"""ProTrackAI v3.35 to v3.37 in server mode: Budget & Cost Management (stages 1 to 3), against a local PostgreSQL
+built from schema.sql and every update v2 to v41, through fake_supabase.py (files kept by the stand-in storage, under the
 database's own storage rules). Every allow and refuse is the database's. The real SheetJS 0.18.5 reads the workbooks.
 Usage: python3 bcm_e2e.py APP_HTML SUPABASE_DIR XLSX_FULL_MIN_JS > results_bcm_e2e.json"""
 import json, os, subprocess, sys, time, urllib.request
@@ -21,7 +21,7 @@ def sql(q):
     return p.stdout.strip()
 subprocess.run(PG + ['-d', 'postgres', '-c', f'drop database if exists {DBN}'], capture_output=True)
 subprocess.run(PG + ['-d', 'postgres', '-c', f'create database {DBN}'], check=True, capture_output=True)
-for f in ['tests/TEST-ONLY-supabase-stub.sql', 'schema.sql'] + [f'schema-update-v{i}.sql' for i in range(2, 41)]:
+for f in ['tests/TEST-ONLY-supabase-stub.sql', 'schema.sql'] + [f'schema-update-v{i}.sql' for i in range(2, 42)]:
     path = os.path.join(DBDIR, f)
     if not os.path.exists(path): continue
     p = subprocess.run(PG + ['-d', DBN, '-f', path], capture_output=True, text=True)
@@ -33,7 +33,7 @@ sql("insert into profiles (id, name, role) values " + ",".join(f"('{U[k]}', '{n}
 sql("insert into regions (id, name) values ('R1','Central'); insert into sectors (id, name) values ('S1','Buildings')")
 sql("insert into projects (id, name, short, region, sector, start_date, finish_date, value_m, status) values ('P1','Test Tower','TT','R1','S1','2026-08-01','2027-12-31',50,'Active')")
 sql("insert into project_access (user_id, project_id) values " + ",".join(f"('{U[k]}','P1')" for k in ['co', 'ap', 'pl', 'fo']))
-sql(f"insert into user_rights (user_id, right_key, allow) values ('{U['ap']}', 'bcm.approve', true)")
+sql(f"insert into user_rights (user_id, right_key, allow) values ('{U['ap']}', 'bcm.approve', true), ('{U['ap']}', 'bcm.review', true)")
 
 srv = subprocess.Popen([sys.executable, os.path.join(HERE, 'fake_supabase.py'), APP, DBN, str(PORT)])
 import atexit; atexit.register(srv.terminate)
@@ -135,6 +135,75 @@ with sync_playwright() as p:
     ck('SAP WBS', 'the server refuses a segment with the wrong number of digits for its level', 'level 3 the SAP WBS segment has 2 digits' in r, r)
     r = J("rpc('bcm_master_act',{p:{action:'propose',ent:'wbs',data:{code:'X9',desc:'Test',user_field:'XYZ'}}}).then(()=>'ran',e=>'refused: '+e.message)")
     ck('User field', 'the server refuses a user field that is not in the user field list', 'not in the user field list' in r, r)
+    # ---- v3.37 stage 3 on the server: roles, candidates, decisions, a split, the server's totals and budget versions
+    login('co'); open_sec('intake')
+    pg.fill('#bcmTr', 'T-2026-300'); pg.select_option('#bcmPt', '132 kV substation'); pg.click('[data-bcmnewbatch]'); pg.wait_for_timeout(1500)
+    b2 = J("bcmUi().bid")
+    pg.set_input_files('#bcmFiles', fx('05_backup_in_summary.xlsx', '06_similar_specs.xlsx', '07_combined.xlsx')); wait_jobs(3)
+    lid = lambda d, sh=None: sql(f"select id from bcm_lines where batch_id='{b2}' and descr like '{d}%' and kind='item'" + (f" and sheet='{sh}'" if sh else '') + " order by row_no limit 1")
+    ck('Stage 3', 'the app sees the v41 update', J("DB.bcmV41") is True and sql("select bcm_features()->>'version'") == '41')
+    r = J(f"rpc('bcm_version_act',{{p:{{action:'from_batch',batch_id:'{b2}',kind:'Tender estimate',justification:'too early'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Stage 3', 'the server refuses a budget version from a batch that is not ready', 'not ready' in r, r)
+    open_sec('dup'); pg.click(f'[data-bcmanalyse="{b2}"]'); pg.wait_for_timeout(5000)
+    ck('Analysis', 'the analysis is stored on the server: five sheet roles proposed and five candidates', sql(f"select count(*) from bcm_roles where batch_id='{b2}' and status='Proposed'") == '5' and sql(f"select string_agg(kind, ',' order by kind) from bcm_dups where batch_id='{b2}' and status='Open'") == 'backup,backup,figures,spec,spec', sql(f"select string_agg(kind||':'||status, ',') from bcm_dups"))
+    ck('Analysis', 'the salaries sheet is proposed as a supporting backup, with its basis', sql(f"select role||'/'||(basis->>0) from bcm_roles where batch_id='{b2}' and sheet='Salaries backup'").startswith('backup/Summary row 2 takes its amount'))
+    fig = sql(f"select id from bcm_dups where batch_id='{b2}' and kind='figures'")
+    r = J(f"rpc('bcm_stage3',{{p:{{action:'dup_decide',id:'{fig}',decision:'duplicate',keep:[]}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Decisions', 'the server refuses a duplicate decision without a reason', 'reason' in r, r)
+    pg.fill(f'[data-bcmdr="{fig}"]', 'the same cable written twice'); pg.click(f'[data-bcmdup="{fig}"][data-dec="duplicate"]'); pg.wait_for_timeout(2500)
+    ck('Decisions', 'the decision is stored with the line that stops counting, worked out by the server', sql(f"select status||'/'||decision||'/'||(targets->>0)||'/'||decided_by_name from bcm_dups where id='{fig}'") == f"Decided/duplicate/{lid('XLPE cable 630mm2')}/Carla Costing")
+    for k, l in [('Site staff', None), ('Supply and install', 'Combined')]:
+        did = sql(f"select id from bcm_dups where batch_id='{b2}' and kind='backup' and lines->>0='{lid(k, l)}'")
+        pg.fill(f'[data-bcmdr="{did}"]', 'supporting backup of the summary line'); pg.click(f'[data-bcmdup="{did}"][data-dec="backup"]:not([data-details])'); pg.wait_for_timeout(2500)
+    pg.click(f'[data-bcmroleok="{b2}"]'); pg.wait_for_timeout(3000)
+    ck('Decisions', 'both backups decided and the roles confirmed on the server', sql(f"select count(*) from bcm_dups where batch_id='{b2}' and status='Decided'") == '3' and sql(f"select count(*) from bcm_roles where batch_id='{b2}' and status='Confirmed' and by_name='Carla Costing'") == '5')
+    # the salaries line (high value) confirmed; the combined lines: one split, two confirmed as one line with a reason
+    open_sec('review'); ss = lid('Site staff'); J(f"bcmOpenLine('{ss}')"); pg.wait_for_timeout(1500); pg.click('[data-bcmdo="confirm"]'); pg.wait_for_timeout(2000)
+    for d in ['S&I earthing', 'Cable ladder']:
+        J(f"bcmOpenLine('{lid(d)}')"); pg.wait_for_timeout(1500); pg.select_option('#bcmLT', 'Subcontract'); pg.fill('#bcmLR', 'single subcontract price'); pg.click('[data-bcmdo="override"]'); pg.wait_for_timeout(2000)
+    l1 = lid('Supply and install', 'Combined'); J(f"bcmOpenLine('{l1}')"); pg.wait_for_timeout(1500)
+    rw = pg.locator('#bcmAlRows .bcmalrow')
+    rw.nth(0).locator('[data-al="wbs"]').select_option('W-ELM-01'); rw.nth(0).locator('[data-al="ct"]').select_option('Material'); rw.nth(0).locator('[data-al="v"]').fill('190000')
+    rw.nth(1).locator('[data-al="wbs"]').select_option('W-ELP-01'); rw.nth(1).locator('[data-al="ct"]').select_option('Manpower'); rw.nth(1).locator('[data-al="v"]').fill('60000')
+    pg.select_option('#bcmAlM', 'Source breakdown'); pg.click(f'[data-bcmalprop="{l1}"]'); pg.wait_for_timeout(2500)
+    aid = sql(f"select id from bcm_alloc where line_id='{l1}' and status='Proposed'")
+    ck('Splits', 'the split is proposed on the server', bool(aid) and sql(f"select rows->1->>'amount' from bcm_alloc where id='{aid}'") == '60000')
+    r = J(f"rpc('bcm_stage3',{{p:{{action:'alloc_approve',id:'{aid}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Splits', 'the server refuses its approval by the proposer', 'someone else' in r, r)
+    r = J(f"rpc('bcm_stage3',{{p:{{action:'alloc_propose',line_id:'{l1}',method:'Manual',evidence:'bad sum test',rows:[{{wbs_id:'W-ELM-01',cost_type:'Material',amount:'1'}},{{wbs_id:'W-ELP-01',cost_type:'Manpower',amount:'2'}}]}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Splits', 'the server refuses allocations that do not add up to the line', 'add up to' in r, r)
+    J("closeDrawer()"); login('ap'); open_sec('review'); J(f"bcmOpenLine('{l1}')"); pg.wait_for_timeout(1500); pg.click(f'[data-bcmalok="{aid}"]'); pg.wait_for_timeout(2500)
+    ck('Splits', 'someone else approves it on the server: the line is confirmed by its split', sql(f"select a.status||'/'||c.status||'/'||c.layer from bcm_alloc a join bcm_class c on c.line_id=a.line_id where a.id='{aid}'") == 'Approved/Confirmed/split')
+    J("closeDrawer()")
+    T = json.loads(sql(f"select bcm_totals('{b2}')::text"))
+    ck('Reconciliation', 'the server\'s figures: ready, 3,113,000 counted, each valid cost once', T['ready'] and T['counted'] in ('3113000', '3113000.000000'), T)
+    open_sec('recon'); pg.wait_for_timeout(2500); v = pg.inner_text('#view')
+    ck('Reconciliation', 'the Reconciliation Centre shows the server check (ready) and the same figures in the browser', 'Server check: ready' in v and J(f"bcmTotalsLocal('{b2}').counted") == '3113000', v[:800])
+    # a budget version: prepared and submitted by the costing engineer, reviewed by the approver (bcm.review), approved by the super admin
+    login('co'); J(f"bcmUi().vbid='{b2}'"); open_sec('ver'); pg.wait_for_timeout(1000)
+    pg.select_option('#bcmVK', 'Tender estimate'); pg.fill('#bcmVJ', 'Tender estimate as reconciled'); pg.click(f'[data-bcmvmake="{b2}"]'); pg.wait_for_timeout(3000)
+    vid = sql("select id from bcm_versions where source='batch'")
+    ck('Versions', 'the draft is made on the server from its own figures, with the SAP WBS IDs of the project', sql(f"select status||'/'||total||'/'||n from bcm_versions where id='{vid}'") == 'Draft/3113000.000000/' + sql(f"select count(*) from bcm_version_lines where version_id='{vid}'") and sql(f"select count(*) from bcm_version_lines where version_id='{vid}' and sap_wbs_id like 'P1-04-001%'") == '1')
+    ck('Versions', 'the version drawer shows the lines read from the server', 'P1-04-001' in pg.inner_text('#sheet'))
+    pg.click('[data-bcmvact="submit"]'); pg.wait_for_timeout(2000)
+    r = J(f"rpc('bcm_version_act',{{p:{{action:'review',id:'{vid}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Versions', 'submitted; the server refuses its review by the preparer', sql(f"select status from bcm_versions where id='{vid}'") == 'Submitted' and 'someone else' in r, r)
+    r = J(f"SB.from('bcm_version_lines').update({{amount:1}}).eq('version_id','{vid}').then(x=>x.error?'refused':'ran')")
+    ck('Versions', 'nobody changes the lines of a version directly', r == 'refused' or sql(f"select sum(amount) from bcm_version_lines where version_id='{vid}'") == '3113000.000000', r)
+    login('ap'); J(f"go('bcm');bcmOpenVer('{vid}')"); pg.wait_for_timeout(2000); pg.click('[data-bcmvact="review"]'); pg.wait_for_timeout(2000)
+    r = J(f"rpc('bcm_version_act',{{p:{{action:'approve',id:'{vid}'}}}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Versions', 'under review; the server refuses approval by someone without bcm.budget.approve', sql(f"select status from bcm_versions where id='{vid}'") == 'Under Review' and 'bcm.budget.approve' in r, r)
+    login('sa'); J(f"go('bcm');bcmOpenVer('{vid}')"); pg.wait_for_timeout(2000); pg.click('[data-bcmvact="approve"]'); pg.wait_for_timeout(2000)
+    ck('Versions', 'the super admin approves it: Approved in ProTrackAI on the server, with its history', sql(f"select status||'/'||approved_by_name from bcm_versions where id='{vid}'") == 'Approved in ProTrackAI/Sara Admin' and sql(f"select string_agg(status, ',' order by id) from bcm_version_hist where version_id='{vid}'") == 'Draft,Submitted,Under Review,Approved in ProTrackAI')
+    # the budget of an existing project, imported with its actual SAP WBS IDs
+    login('co'); open_sec('ver'); pg.wait_for_timeout(800)
+    pg.set_input_files('#bcmBudFile', fx('18_budget_import.xlsx')); pg.wait_for_timeout(1500); pg.select_option('[data-bcmbudcol]', label='Rev 0'); pg.wait_for_timeout(400)
+    pg.fill('#bcmBJ', 'Rev 0 as loaded in SAP'); pg.click('[data-bcmbudgo]'); pg.wait_for_timeout(3000)
+    ck('Import', 'imported on the server as a draft Rev 0: five lines, the SAP WBS IDs as written, linked to the master, the total checked', sql("select kind||'/'||status||'/'||total||'/'||n from bcm_versions where source='import'") == 'Rev 0/Draft/8380000.000000/5' and sql("select string_agg(l.sap_wbs_id||'='||coalesce(l.wbs_id,''), ',' order by l.n) from bcm_version_lines l join bcm_versions v on v.id=l.version_id where v.source='import'").startswith('PE-555-01-001-01=W-SM1-01,PE-555-01-001-02=W-SM1-02'))
+    r = J("rpc('bcm_version_act',{p:{action:'import',project_id:'P1',kind:'Rev 0',currency:'SAR',justification:'bad user field',lines:[{sap_wbs_id:'PE-555-09',amount:'5',user_field:'XYZ'}]}}).then(()=>'ran',e=>'refused: '+e.message)")
+    ck('Import', 'the server refuses a user field that is not in the list', 'user field' in r, r)
+    login('sa'); open_sec('appr'); v = pg.inner_text('#view')
+    ck('Approval history', 'Approval History lists the server\'s decisions', all(x in v for x in ['Budget version approved in protrackai', 'Split approved', 'Duplicate decided: duplicate', 'Sheet roles confirmed']), v[:600])
     # ---- people without the right
     login('pl'); open_sec('intake')
     ck('Rights', 'a planner sees the batch but is not offered uploads', J("!document.querySelector('#bcmFiles')") and 'T-2026-118' in pg.inner_text('#view'))

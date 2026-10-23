@@ -151,6 +151,24 @@ for r in [[5, 'SM2', 'SM', 'Vehicles', '002', 'SM', 'Yes', 'Yes'],
           [50, 'SM1-05', 'SM1', 'Bad user field', '05', 'XYZ', 'Yes', 'Yes']]: ws.append(r)
 wb.save(f'{OUT}/17_wbs_import_sap.xlsx')
 
+# 18. the budget of an existing project, as kept for SAP (v3.37): actual SAP WBS IDs, user fields and three amount columns; no formulas
+wb, ws = book(); ws.title = 'Budget'
+ws['A1'] = 'PE-555 budget by SAP WBS element (test data)'
+head(ws, 3, ['SAP WBS ID', 'WBS code', 'Description', 'User field', 'Cost type', 'Tender', 'Rev 0', 'Revised Rev 0'])
+for r in [['PE-555-01-001-01', 'SM1-01', 'Salaries - Project office team', 'SM', 'Overhead', 1200000, 1250000, 1300000],
+          ['PE-555-01-001-02', 'SM1-02', 'Salaries - Site office team', 'SM', 'Overhead', 800000, 820000, 840000],
+          ['PE-555-04-001', 'ELM-01', 'Cables material', 'MTRL.ELC', 'Material', 5000000, 5100000, 4950000],
+          ['PE-555-05-001', 'ELP-01', 'Cable laying manpower', 'MAN.ELC', 'Manpower', 900000, 910000, 905000.5],
+          ['PE-555-13', 'PC', 'Prime cost items', 'PC ITEMS', None, 300000, 300000, 300000]]: ws.append(r)
+ws.append([None, None, 'Total', None, None, 8200000, 8380000, 8295000.5])
+wb.save(f'{OUT}/18_budget_import.xlsx')
+# 19. a budget workbook with mistakes: a repeated SAP WBS ID, an amount that is not a number, an unknown user field, a row without an ID
+wb, ws = book(); ws.title = 'Budget'
+head(ws, 1, ['SAP WBS ID', 'Description', 'User field', 'Rev 0'])
+for r in [['PE-555-01-001-01', 'Salaries - Project office team', 'SM', 1250000], ['PE-555-01-001-01', 'Salaries again', 'SM', 10],
+          ['PE-555-04-001', 'Cables material', 'MTRL.ELC', 'TBC'], ['PE-555-09', 'Unknown field', 'XYZ', 100], [None, 'No ID here', 'SM', 5]]: ws.append(r)
+wb.save(f'{OUT}/19_budget_import_invalid.xlsx')
+
 # LibreOffice recalculates and saves with cached values; 01 also as .xls and 02 also as .xlsm (a macro-enabled container, no macros)
 os.makedirs(OUT, exist_ok=True)
 calc = tempfile.mkdtemp()

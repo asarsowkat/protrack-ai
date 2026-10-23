@@ -95,6 +95,14 @@ python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 
 `fixtures/bcm/make_fixtures.py` makes the test workbooks (openpyxl, then LibreOffice to store calculated values; file 13 keeps formulas without values on purpose). SheetJS 0.18.5 is the version the app loads: `git clone --depth 1 --branch v0.18.5 https://github.com/SheetJS/sheetjs` gives `xlsx.js` and `dist/xlsx.full.min.js`.
 
+## v3.37: Budget & Cost Management stage 3
+
+| Test | Checks | What it proves |
+|---|---|---|
+| `../supabase/tests/test_v41.py` | 77 | v41 on PostgreSQL: roles, candidates and decisions (with the lines counted worked out by the server), splits that must add up and be approved by someone else, explanations, `bcm_totals`, budget versions from a batch and imported (unique IDs, numbers, user fields, the file total), the approval steps by different people, frozen lines, rollback and again |
+| `bcm_demo3.py` (`python3 bcm_demo3.py ../demo.html path/to/xlsx.full.min.js`) | see results | The demo page: analysis, decisions and reopening, splits, the Reconciliation Centre, a Tender estimate through its approval, the import of `fixtures/bcm/18_budget_import.xlsx` (and the refused rows of `19_budget_import_invalid.xlsx`), the comparison, the export, Approval History |
+| `bcm_e2e.py`, `bcm_engine_test.cjs` | see results | Now include stage 3 on the server and the engine functions (roles, candidates, decisions, tolerances, splits, the budget import) |
+
 ## v3.36: order, SAP WBS ID and user field
 
 | Test | Checks | What it proves |
