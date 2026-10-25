@@ -5061,7 +5061,8 @@ const docAuditOf=id=>(DB.docAudit||[]).filter(a=>a.doc_id===id).sort((a,b)=>(+a.
 /* demo: files stay in this browser */
 const DOCIDB={p:null,open(){return this.p||(this.p=new Promise((res,rej)=>{try{const r=indexedDB.open('protrack-docs-'+KEY,1);r.onupgradeneeded=()=>r.result.createObjectStore('files');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}))},
   async put(k,v){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction('files','readwrite');t.objectStore('files').put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})},
-  async get(k){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction('files','readonly'),r=t.objectStore('files').get(k);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error)})}};
+  async get(k){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction('files','readonly'),r=t.objectStore('files').get(k);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error)})},
+  async del(k){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction('files','readwrite');t.objectStore('files').delete(k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}};
 /* the same rules as doc_act, in this browser */
 function docActLocal(p){
   const a=p.action,meU=me(),fail=t=>{throw new Error(t)},now=new Date().toISOString();DB.docs=DB.docs||[];DB.docBoxes=DB.docBoxes||[];DB.docAudit=DB.docAudit||[];
@@ -8109,7 +8110,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.39';
+const APP_VERSION='3.40';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -13400,7 +13401,7 @@ async function bcmLoadLineHist(lid){if(!CLOUD_ME)return;const {data}=await SB.fr
 /* one call: the server function on the server, the same rules in this browser on the demo page */
 async function bcmCall(fn,p){
   if(CLOUD_ME){if(!DB.bcmSrv)throw new Error('Budget & Cost Management needs the v39 database update (STAGE-33-SETUP)');const r=await rpc('bcm_'+fn,{p});
-    if(fn==='master_act'){await bcmReloadMeta();await bcmLoadHist()}else if(fn==='batch_save'||fn==='file_add'||(fn==='file_run'&&p.step!=='lines'))await bcmReloadMeta();
+    if(fn==='master_act'){await bcmReloadMeta();await bcmLoadHist()}else if(fn==='batch_save'||fn==='file_add'||fn==='file_delete'||(fn==='file_run'&&p.step!=='lines'))await bcmReloadMeta();
     return r}
   const r=BCML[fn](p);save();return r}
 
@@ -13464,6 +13465,24 @@ const BCML={
     const id='TF-'+Math.random().toString(36).slice(2,12);B.files.push({id,batch_id:b.id,project_id:b.project_id,name:p.name,sha256:p.sha256,size:p.size,kind:p.kind,path:pth,status:'Uploaded',run:0,sheets:null,control:null,mappings:null,
       log:[{at:new Date().toISOString(),by:u.name,msg:'Uploaded'}],fingerprint:null,created_by:u.id,created_by_name:u.name,created_at:new Date().toISOString()});
     bcmLog('File uploaded','file',id,b.project_id,{name:p.name,sha256:p.sha256,size:p.size});return {ok:true,id}},
+  /* v3.40: delete an uploaded tender file with its lines (the uploader or a reviewer, with a reason). Refused while the batch is
+     withdrawn, while the file is read, and while a budget version prepared from the batch is not rejected or cancelled. Its lines'
+     classification, splits and sheet roles go with it, and the duplicate groups that used its lines become obsolete; the
+     classification history and the audit log keep a record, and the same file can be uploaded again. As bcm_file_delete (v44). */
+  file_delete(p){const B=bcmDB(),u=me(),f=bcmFile(p.file_id);if(!f)bcmFail('Unknown file');const b=bcmBatch(f.batch_id);
+    if(!b||b.status!=='Open')bcmFail('The batch is withdrawn: its files are kept with it');
+    if(!(bcmCan('bcm.review',f.project_id)||(f.created_by===u.id&&bcmCan('bcm.upload',f.project_id))))bcmFail('Only the person who uploaded the file, or a reviewer, deletes it');
+    if(f.status==='Extracting')bcmFail('The file is being read; wait until it finishes');
+    const S=bcmS3(),V=S.versions.filter(v=>v.batch_id===b.id&&!['Rejected','Cancelled'].includes(v.status));
+    if(V.length)bcmFail(`Budget version ${V.map(v=>`${v.kind} rev ${v.rev_no} (${v.status})`).join(', ')} was prepared from this batch. Reject or cancel it first; the file stays.`);
+    if(String(p.reason||'').trim().length<3)bcmFail('Give the reason');
+    const ids=new Set(B.lines.filter(l=>l.file_id===f.id).map(l=>l.id)),dec=[...ids].filter(id=>BCME.HUMAN.includes((B.cls[id]||{}).status)).length;
+    if(dec&&!p.confirm)bcmFail(`People have decided ${dec} line${dec===1?'':'s'} of this file. Deleting it removes those decisions too (their history is kept). Confirm to go on.`);
+    S.dups.forEach(d=>{if(d.batch_id===b.id&&d.status!=='Obsolete'&&(d.lines||[]).concat(d.backup_lines||[]).some(id=>ids.has(id)))d.status='Obsolete'});
+    S.allocs=S.allocs.filter(a=>!ids.has(a.line_id));S.roles=S.roles.filter(r=>r.file_id!==f.id);
+    B.lines=B.lines.filter(l=>!ids.has(l.id));ids.forEach(id=>{delete B.cls[id]});B.files=B.files.filter(x=>x.id!==f.id);
+    bcmLog('File deleted','file',f.id,f.project_id,{name:f.name,sha256:f.sha256,size:f.size,batch:b.id,runs:f.run,lines:ids.size,decided:dec,reason:String(p.reason).trim()});
+    return {ok:true,id:f.id,lines:ids.size,decided:dec,path:f.path}},
   file_run(p){const B=bcmDB(),u=me(),f=bcmFile(p.file_id);if(!f)bcmFail('Unknown file');if(f.status==='Withdrawn')bcmFail('The file is withdrawn');if(!bcmCan('bcm.upload',f.project_id))bcmFail('You cannot process tender files on this project');
     const now=new Date().toISOString();
     if(p.step==='start'){if(B.lines.some(l=>l.file_id===f.id&&l.run===f.run&&['Confirmed','Rejected','Excluded with Reason'].includes((bcmCls(l.id)||{}).status))&&!p.confirm_rerun)bcmFail('People have already decided lines of this file; reading it again starts new lines without those decisions. Confirm to go on.');
@@ -13526,6 +13545,9 @@ async function bcmStoreFile(path,bytes,kind){const blob=new Blob([bytes],{type:k
 async function bcmFetchFile(f){if(CLOUD_ME){const {data,error}=await SB.storage.from('bcm-tender').createSignedUrl(f.path,300);if(error||!data)throw new Error('The stored file could not be opened: '+((error&&error.message)||'not found'));
     const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('The stored file could not be downloaded');return new Uint8Array(await r.arrayBuffer())}
   const b=await DOCIDB.get('bcm:'+f.path);if(!b)throw new Error('The stored file is not in this browser');return new Uint8Array(await b.arrayBuffer())}
+async function bcmDropFile(p){try{if(CLOUD_ME){const {error}=await SB.storage.from('bcm-tender').remove([p]);return !error}await DOCIDB.del('bcm:'+p);return true}catch(e){return false}}
+/* who may delete an uploaded file (v3.40): its uploader holding bcm.upload, or a reviewer; on the server only after the v44 update */
+const bcmCanDel=(f,b)=>!!b&&b.status==='Open'&&f.status!=='Extracting'&&(bcmCan('bcm.review',f.project_id)||(f.created_by===(me()||{}).id&&bcmCan('bcm.upload',f.project_id)))&&(!CLOUD_ME||!!DB.bcmV44);
 const bcmSheetSumm=ex=>ex.sheets.map(s=>({sheet:s.sheet,hidden:s.hidden,status:s.status,header:s.header,warnings:s.warnings,totals:s.totals,extra:s.extra,preview:s.preview||null,
   n:s.lines.length,items:s.lines.filter(l=>l.kind==='item').length}));
 /* read the stored bytes of a registered file (a new run), send its lines, then classify them */
@@ -13653,10 +13675,10 @@ function bcmIntakeHTML(U){const b=bcmBatch(U.bid),canUp=bcmCan('bcm.upload',U.pi
       <td>${esc(f.created_by_name||'')}<span class="t2">${esc(tStamp(f.created_at))}</span></td>
       <td><div class="actions" style="margin:0;flex-wrap:wrap">${n?`<button class="btn sm" type="button" data-bcmlines="${esc(f.id)}">View lines</button>`:''}<button class="btn sm" type="button" data-bcmflog="${esc(f.id)}">Log</button>
         ${canUp&&f.status!=='Withdrawn'?`<button class="btn sm" type="button" data-bcmmap="${esc(f.id)}">${need?'Map columns':'Columns'}</button><button class="btn sm" type="button" data-bcmreread="${esc(f.id)}">Read again</button>`:''}
-        ${f.status==='Extracted'||need?`<button class="btn sm" type="button" data-bcmverify="${esc(f.id)}">Verify reading</button>`:''}</div></td></tr>`};
+        ${f.status==='Extracted'||need?`<button class="btn sm" type="button" data-bcmverify="${esc(f.id)}">Verify reading</button>`:''}${bcmCanDel(f,b)?`<button class="btn sm danger" type="button" data-bcmfdel="${esc(f.id)}" title="Delete this file and the rows read from it">Delete</button>`:''}</div></td></tr>`};
   return `${form}<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Batch ${esc(bcmBatchLabel(b))}</h2><span class="small muted">${esc(b.currency)} · ${esc(b.ptype||'project type not set')} · created by ${esc(b.created_by_name||'')} ${esc(tStamp(b.created_at))} · ${esc(b.id)}</span></div>
     ${b.status==='Open'&&canUp?`<div class="actions"><label class="btn primary" style="cursor:pointer">Upload tender workbooks<input type="file" id="bcmFiles" multiple accept=".xlsx,.xls,.xlsm" hidden></label>
-      <span class="small muted">Several .xlsx, .xls or .xlsm files at once, up to 25 MB each. Macros are never run. The same file is never taken twice.</span></div>`:b.status!=='Open'?`<p class="warn-box">Withdrawn: ${esc(b.note||'')}</p>`:''}
+      <span class="small muted">Several .xlsx, .xls or .xlsm files at once, up to 25 MB each. Macros are never run. The same file is never taken twice; a file uploaded by mistake can be deleted (Delete, with a reason) and uploaded again.</span></div>`:b.status!=='Open'?`<p class="warn-box">Withdrawn: ${esc(b.note||'')}</p>`:''}
     <div id="bcmJobs"></div>
     <div class="scroll"><table class="tbl"><thead><tr><th>File</th><th>Status</th><th class="n">Run</th><th class="n">Sheets</th><th class="n">Rows</th><th>Control total</th><th>Uploaded</th><th></th></tr></thead><tbody>
     ${F.map(fileRow).join('')||'<tr><td colspan="8" class="muted">No file in this batch yet.</td></tr>'}</tbody></table></div>
@@ -14007,7 +14029,7 @@ async function bcmApproveAll(){const M=bcmDB().master.filter(m=>m.pend&&m.ent!==
   toast(`${ok} approved${bad.length?`; ${bad.length} not: ${bad[0].id} ${bad[0].error}`:''}`);render()}
 
 /* ---------- actions ---------- */
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcmsec],[data-bcmgo],[data-bcmopenb],[data-bcmnewbatch],[data-bcmsample],[data-bcmlines],[data-bcmflog],[data-bcmmap],[data-bcmmapclose],[data-bcmmapsheet],[data-bcmmapsave],[data-bcmreread],[data-bcmverify],[data-bcmwithdraw],[data-bcmviewclose],[data-bcmviewsheet],[data-bcmviewpg],[data-bcmrun],[data-bcmline],[data-bcmsel],[data-bcmselall],[data-bcmselnone],[data-bcmbulk],[data-bcmexport],[data-bcmsort],[data-bcmpage],[data-bcmdo],[data-bcmmtab],[data-bcmtog],[data-bcmedit],[data-bcmredit],[data-bcmwsave],[data-bcmrsave],[data-bcmappr],[data-bcmrej],[data-bcmapprall],[data-bcmhist],[data-bcmcfgsave],[data-bcmioprop],[data-bcmexpire],[data-bcmmove],[data-bcmsapfill]');
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcmsec],[data-bcmgo],[data-bcmopenb],[data-bcmnewbatch],[data-bcmsample],[data-bcmlines],[data-bcmflog],[data-bcmmap],[data-bcmmapclose],[data-bcmmapsheet],[data-bcmmapsave],[data-bcmreread],[data-bcmfdel],[data-bcmverify],[data-bcmwithdraw],[data-bcmviewclose],[data-bcmviewsheet],[data-bcmviewpg],[data-bcmrun],[data-bcmline],[data-bcmsel],[data-bcmselall],[data-bcmselnone],[data-bcmbulk],[data-bcmexport],[data-bcmsort],[data-bcmpage],[data-bcmdo],[data-bcmmtab],[data-bcmtog],[data-bcmedit],[data-bcmredit],[data-bcmwsave],[data-bcmrsave],[data-bcmappr],[data-bcmrej],[data-bcmapprall],[data-bcmhist],[data-bcmcfgsave],[data-bcmioprop],[data-bcmexpire],[data-bcmmove],[data-bcmsapfill]');
   if(!t)return;const d=t.dataset,U=bcmUi();
   if(d.bcmsel!==undefined){e.stopPropagation();const s=new Set(U.sel||[]);t.checked?s.add(d.bcmsel):s.delete(d.bcmsel);U.sel=[...s];render();return}
   if(d.bcmsec){U.sec=d.bcmsec;U.sel=[];U.mapFile=null;U.viewFile=null;render();return}
@@ -14037,6 +14059,12 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcms
     if(d.bcmnewbatch!==undefined){const r=await bcmCall('batch_save',{project_id:U.pid,tender_ref:$('#bcmTr').value,tender_rev:$('#bcmRev').value,currency:$('#bcmCur').value,ptype:$('#bcmPt').value||null,title:$('#bcmTi').value||null});U.bid=r.id;toast('Batch created: now upload its workbooks');render();return}
     if(d.bcmsample!==undefined){await bcmAddSample(U);return}
     if(d.bcmwithdraw){await bcmCall('batch_save',{action:'withdraw',id:d.bcmwithdraw,reason:$('#bcmWdr').value});toast('Batch withdrawn; its files and lines are kept');render();return}
+    if(d.bcmfdel){const f=bcmFile(d.bcmfdel);if(!f)return;const ids=bcmDB().lines.filter(l=>l.file_id===f.id),dec=ids.filter(l=>BCME.HUMAN.includes(bcmStatus(l))).length;
+      const why=await bcmAsk(`Why is ${f.name} deleted?`);if(why==null)return;
+      if(!await confirmBox(`Delete ${f.name}?\nIts ${fmt(ids.length)} row${ids.length===1?'':'s'} read and their classification are removed, with the stored workbook.${dec?`\nPeople have decided ${dec} line${dec===1?'':'s'} of this file: those decisions go too.`:''}\nThe classification history and the audit log keep a record. The same file can be uploaded again.`,'Delete the file'))return;
+      const r=await bcmCall('file_delete',{file_id:f.id,reason:why,confirm:true});if(U.viewFile===f.id)U.viewFile=null;if(U.mapFile===f.id){U.mapFile=null;U.mapPrev=null}
+      if(CLOUD_ME){await bcmLoadBatch(f.batch_id,true);await cloudLoadBcm3()}else save();
+      const gone=await bcmDropFile(r.path);toast(`Deleted ${f.name}: ${fmt(r.lines)} row${r.lines===1?'':'s'} removed${gone?'':'; the stored workbook could not be removed'}`);render();return}
     if(d.bcmreread){const f=bcmFile(d.bcmreread);const dec=bcmLinesOf(f.batch_id).some(l=>l.file_id===f.id&&BCME.HUMAN.includes(bcmStatus(l)));
       if(dec&&!await confirmBox('People have already decided lines of this file.\nReading it again starts new lines (a new run) without those decisions; the old lines and decisions are kept in the history. Go on?','Read again'))return;
       await bcmRead(f,await bcmFetchFile(f),null,dec);render();return}
@@ -14480,7 +14508,7 @@ document.addEventListener('change',async e=>{const t=e.target,U=state.bcmUi;if(!
 const bcmS4=()=>{const B=bcmS3();['sapTpls','sapReps','sapExps'].forEach(k=>{B[k]=B[k]||[]});B.sapLines=B.sapLines||{};return B};
 const bcmS4Ready=()=>!CLOUD_ME||DB.bcmV42;
 async function cloudLoadBcm4(){if(!CLOUD_ME||!DB.bcmSrv)return;const B=bcmS4();
-  try{const f=await rpc('bcm_features',{});DB.bcmV42=+((f&&f.version)||0)>=42}catch(e){DB.bcmV42=false}
+  try{const f=await rpc('bcm_features',{});DB.bcmV42=+((f&&f.version)||0)>=42;DB.bcmV44=+((f&&f.version)||0)>=44}catch(e){DB.bcmV42=false;DB.bcmV44=false}
   if(!DB.bcmV42)return;
   try{[B.sapTpls,B.sapReps,B.sapExps]=await Promise.all([selAll('bcm_sap_tpls','*',null,['name']),selAll('bcm_sap_reports','*',null,['imported_at']),selAll('bcm_sap_exports','*',null,['generated_at'])]);B.sapLines={}}
   catch(e){toast('Could not read the SAP reports: '+srvMsg(e))}}
