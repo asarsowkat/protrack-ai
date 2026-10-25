@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.40
+
+- **Budget & Cost Management → Tender File Intake: Delete an uploaded tender costing file.** The uploader or a reviewer deletes a workbook uploaded by mistake, with a reason: its rows, their classification, splits and sheet roles go with it, the duplicate groups that used them become obsolete, and the same workbook can be uploaded again. Refused while the batch is withdrawn, while the file is being read, and while a budget version prepared from the batch is not rejected or cancelled. The classification history and the audit log keep a record. Server: `schema-update-v44.sql` (STAGE-38-SETUP.md). New `tests/bcm_file_delete_demo.js` (15 checks). See [RELEASE-NOTES-v3.40.md](RELEASE-NOTES-v3.40.md).
+
 ## Version 3.39
 
 - **Cost Control → Budget & change requests.** The Budget Supplement / Returns Request (the company form AP/Planning-BRF: general information, lines by category, user field and WBS, the budget summary by user field, impact on margin and milestones, category details, the approval chain with VP for contingency and EVP for the management reserve) and the Change Request are started in ProTrack and downloaded in the company Excel layout. Submitted forms wait for Approval Hub, which (or IT's connector) takes them and reports the WF number and the decision with a token the super admin makes (APPROVAL-HUB-INTEGRATION.md); until it is connected, the costing coordinator records the decision on the form. An approved request is posted at once: a BRF to the budget supplement log (one row per line with the WF number, version the month of the approval, movable to the month before or up to now with a reason; its amounts locked on the log screen), a CRF to the change order and claim log. The SAP report import also reads CN41. Server: schema-update-v43.sql (STAGE-37-SETUP.md). See [RELEASE-NOTES-v3.39.md](RELEASE-NOTES-v3.39.md).
