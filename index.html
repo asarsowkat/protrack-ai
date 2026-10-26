@@ -8110,7 +8110,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.40';
+const APP_VERSION='3.40.1';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -13918,9 +13918,16 @@ const BCM_IO_COLS=['Order','WBS code','Parent code','Description','SAP WBS segme
 function bcmIoHTML(U,canP){const P=U.ioPrev;
   return `<section class="panel"><div class="card-head"><h2>Excel import and export</h2></div>
     <div class="actions"><button class="btn" type="button" data-bcmexport="wbs">Download the WBS master (Excel)</button>${canP?`<label class="btn" style="cursor:pointer">Import a WBS master workbook<input type="file" id="bcmWbsFile" accept=".xlsx,.xls" hidden></label>`:''}</div>
-    <p class="small muted">The import reads the columns ${BCM_IO_COLS.map(esc).join(', ')}. Each valid row becomes a proposal (a new element, or a change of the element with that code) for someone else to approve. Rows with a blank or repeated code, an unknown parent, a wrong date, a SAP segment that is not digits or a user field that is not in the list are refused with the reason. Lists are separated by semicolons. Without an Order column, the order is the order of the rows. The export also shows each element's SAP WBS ID for the project chosen above.</p>
-    ${P?`<div class="scroll"><table class="tbl small"><thead><tr><th>Row</th><th>Code</th><th>Description</th><th>Parent</th><th>Result</th></tr></thead><tbody>${P.rows.map(r=>`<tr><td>${r.row}</td><td>${esc(r.code||'')}</td><td>${esc(r.desc||'')}</td><td>${esc(r.parent||'')}</td><td>${r.err?`<span class="r-c">Refused: ${esc(r.err)}</span>`:`<span class="g-c">${r.id?'Change of '+esc(r.id):'New element'}</span>`}</td></tr>`).join('')}</tbody></table></div>
-      ${P.rows.some(r=>!r.err)?`<div class="actions"><input id="bcmIoN" placeholder="Note for the approver" maxlength="300" style="min-width:260px"><button class="btn primary" type="button" data-bcmioprop>Propose the ${P.rows.filter(r=>!r.err).length} valid rows</button></div>`:''}`:''}</section>`}
+    <p class="small muted">The import reads the columns ${BCM_IO_COLS.map(esc).join(', ')}. Each new or changed row becomes a proposal (a new element, or a change of the element with that code) for someone else to approve; a row that matches the master says <b>No change</b> and is not proposed, so you can download the master, change some rows and import it back. Rows with a blank or repeated code, an unknown parent, a wrong date, a SAP segment that is not digits or a user field that is not in the list are refused with the reason. Lists are separated by semicolons. Without an Order column, the order is the order of the rows. The export also shows each element's SAP WBS ID for the project chosen above.</p>
+    ${P?`<div class="scroll"><table class="tbl small"><thead><tr><th>Row</th><th>Code</th><th>Description</th><th>Parent</th><th>Result</th></tr></thead><tbody>${P.rows.map(r=>`<tr><td>${r.row}</td><td>${esc(r.code||'')}</td><td>${esc(r.desc||'')}</td><td>${esc(r.parent||'')}</td><td>${r.err?`<span class="r-c">Refused: ${esc(r.err)}</span>`:r.same?'<span class="muted">No change</span>':`<span class="g-c">${r.id?'Change of '+esc(r.id):'New element'}</span>`}</td></tr>`).join('')}</tbody></table></div>
+      ${P.rows.some(r=>!r.err&&!r.same)?`<div class="actions"><input id="bcmIoN" placeholder="Note for the approver" maxlength="300" style="min-width:260px"><button class="btn primary" type="button" data-bcmioprop>Propose the ${P.rows.filter(r=>!r.err&&!r.same).length} new or changed row${P.rows.filter(r=>!r.err&&!r.same).length===1?'':'s'}</button></div>`:P.rows.some(r=>r.same)?'<p class="small muted">Nothing to propose: every valid row matches the master.</p>':''}`:''}</section>`}
+/* v3.40.1: a row is "No change" when it says what the element already says (its waiting proposal, else its approved content):
+   the master downloaded, a few rows changed and imported back proposes only those rows. A blank order matches an element without one; a user field matches
+   ignoring capital letters, as the list does. */
+function bcmWbsSame(d,b,ordBlank){if(!b)return false;const A=v=>(v||[]).map(x=>String(x).trim()).filter(Boolean).join('; '),S=v=>v==null?'':String(v).trim();
+  return d.code===S(b.code)&&S(d.parentCode).toLowerCase()===(b.parent?S(bcmCode(b.parent)).toLowerCase():'')&&d.desc===S(b.desc)&&A(d.aliases)===A(b.aliases)&&A(d.keywords)===A(b.keywords)
+    &&S(d.cost_category)===S(b.cost_category)&&A(d.ptypes)===A(b.ptypes)&&S(d.sap_seg)===S(b.sap_seg)&&S(d.user_field).toLowerCase()===S(b.user_field).toLowerCase()&&((ordBlank&&b.order==null)||S(d.order)===S(b.order))
+    &&S(d.eff_from)===S(b.eff_from)&&S(d.eff_to)===S(b.eff_to)&&d.active===(b.active!==false)&&d.postable===(b.postable!==false)&&d.mandatory_review===!!b.mandatory_review}
 function bcmParseWbs(aoa){const H=(aoa[0]||[]).map(x=>String(x||'').trim().toLowerCase()),ix=k=>H.indexOf(k.toLowerCase()),W=bcmOf('wbs'),byCode=new Map(W.map(m=>[String(bcmData(m).code).toLowerCase(),m]));
   if(ix('WBS code')<0||ix('Description')<0)return {rows:[{row:1,err:'The first row must name the columns "WBS code" and "Description"'}]};
   const L=v=>String(v??'').split(';').map(s=>s.trim()).filter(Boolean),yes=(v,d)=>v==null||v===''?d:/^(y|yes|true|1)$/i.test(String(v).trim()),dt=v=>{if(v==null||v==='')return null;if(typeof v==='number'){const d=new Date(Math.round((v-25569)*864e5));return d.toISOString().slice(0,10)}const s=String(v).trim();return /^\d{4}-\d{2}-\d{2}$/.test(s)?s:'bad'};
@@ -13928,11 +13935,12 @@ function bcmParseWbs(aoa){const H=(aoa[0]||[]).map(x=>String(x||'').trim().toLow
     if(!code)o.err='no WBS code';else if(seen.has(code.toLowerCase()))o.err='the code '+code+' is repeated (row '+seen.get(code.toLowerCase())+')';else if(!/^[A-Za-z0-9][A-Za-z0-9._/-]{0,29}$/.test(code))o.err='the code has characters that are not allowed';
     else if(o.desc.length<2)o.err='no description';else if(o.parent&&!byCode.has(o.parent.toLowerCase())&&!aoa.slice(1).some(x=>String(x[ix('WBS code')]??'').trim().toLowerCase()===o.parent.toLowerCase()))o.err='unknown parent '+o.parent;
     const ef=dt(g('Effective from')),et=dt(g('Effective to'));if(!o.err&&(ef==='bad'||et==='bad'))o.err='a date is not YYYY-MM-DD';if(!o.err&&ef&&et&&et<ef)o.err='effective-to is before effective-from';
-    const seg=String(g(sapc)??'').trim()||null,ufr=String(g('User field')??'').trim()||null,ufx=ufr?bcmUfOf(ufr):null,ordv=hasOrd&&g('Order')!=null&&String(g('Order')).trim()!==''?Number(g('Order')):(i+1)*10;
+    const seg=String(g(sapc)??'').trim()||null,ufr=String(g('User field')??'').trim()||null,ufx=ufr?bcmUfOf(ufr):null,ordBlank=!(hasOrd&&g('Order')!=null&&String(g('Order')).trim()!==''),ordv=!ordBlank?Number(g('Order')):(i+1)*10;
     if(!o.err&&seg&&!/^[0-9]{1,6}$/.test(seg))o.err='the SAP WBS segment "'+seg+'" is not 1 to 6 digits';if(!o.err&&ufr&&!ufx)o.err='the user field '+ufr+' is not in the user field list';if(!o.err&&!(Number.isInteger(ordv)&&ordv>=0&&ordv<=99999))o.err='the order is not a whole number';
     if(code)seen.set(code.toLowerCase(),i+2);const ex=byCode.get(code.toLowerCase());o.id=ex?ex.id:null;
     o.data={code,parent:null,parentCode:o.parent||null,desc:o.desc,aliases:L(g('Aliases')),keywords:L(g('Keywords')),cost_category:String(g('Cost category')??'').trim()||null,ptypes:L(g('Project types')),sap_seg:seg,user_field:ufx?ufx[0]:null,order:ordv,
-      eff_from:ef==='bad'?null:ef,eff_to:et==='bad'?null:et,active:yes(g('Active'),true),postable:yes(g('Postable'),true),mandatory_review:yes(g('Mandatory review'),false)};rows.push(o)});return {rows}}
+      eff_from:ef==='bad'?null:ef,eff_to:et==='bad'?null:et,active:yes(g('Active'),true),postable:yes(g('Postable'),true),mandatory_review:yes(g('Mandatory review'),false)};
+    o.same=!o.err&&!!ex&&bcmWbsSame(o.data,ex.pend?ex.pend.data:ex.cur,ordBlank);rows.push(o)});return {rows}}
 async function bcmExport(kind){try{await loadLib(LIBS.xlsx);const U=bcmUi(),wb=XLSX.utils.book_new();let name;
   if(kind==='wbs'){const W=bcmOf('wbs').sort((a,b)=>String(bcmData(a).code).localeCompare(String(bcmData(b).code),undefined,{numeric:true}));
     const tree=[],walk=(par,lvl)=>W.filter(x=>(bcmData(x).parent||null)===par).sort(bcmSort).forEach(x=>{tree.push([x,lvl]);walk(x.id,lvl+1)});walk(null,1);W.filter(x=>!tree.some(([y])=>y===x)).forEach(x=>tree.push([x,0]));
@@ -13947,7 +13955,7 @@ async function bcmExport(kind){try{await loadLib(LIBS.xlsx);const U=bcmUi(),wb=X
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ProTrack, Budget & Cost Management: '+(kind==='all'?'all cost lines':'exception list')],['Tender',b.tender_ref+' rev '+b.tender_rev],['Project',(projById(b.project_id)||{}).name||b.project_id],['Exported',stamp()+' by '+(me()||{}).name],['Engine',BCME.ENGINE],
       ['Amounts are as read from the source files (exact); classifications are proposals and decisions, not an approved budget. Nothing in this file has been sent to SAP.']]),'About');
     name=`ProTrack ${kind==='all'?'lines':'exceptions'} ${b.tender_ref} rev ${b.tender_rev} ${TODAY}.xlsx`;bcmLog(kind==='all'?'Lines exported':'Exceptions exported','batch',b.id,b.project_id,{n:L.length});if(!CLOUD)save()}
-  XLSX.writeFile(wb,name.replace(/[\\/:*?"<>|]/g,'-'))}catch(e){toast('The export failed: '+srvMsg(e))}}
+  saveBook(wb,name.replace(/[\\/:*?"<>|]/g,'-'))}catch(e){toast('The export failed: '+srvMsg(e))}}
 
 /* ---------- Mapping Learning History ---------- */
 function bcmLearnHTML(U){const Mp=bcmOf('map'),pend=Mp.filter(m=>m.pend),app=Mp.filter(m=>m.cur),canA=bcmCan('bcm.approve'),canP=bcmCan('bcm.master')||bcmCan('bcm.review');
@@ -14103,7 +14111,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcms
     if(d.bcmapprall!==undefined){await bcmApproveAll();return}
     if(d.bcmhist){await bcmShowHist(d.bcmhist);return}
     if(d.bcmexpire){const m=bcmRow(d.bcmexpire);const n=await bcmAsk('Why should this mapping stop being used?');if(n==null)return;await bcmPropose('map',m.id,{...m.cur,eff_to:TODAY},n);return}
-    if(d.bcmioprop!==undefined){const P=U.ioPrev;if(!P)return;const ok=P.rows.filter(r=>!r.err),note=$('#bcmIoN').value||'Imported from a WBS master workbook';let n=0,bad=[];
+    if(d.bcmioprop!==undefined){const P=U.ioPrev;if(!P)return;const ok=P.rows.filter(r=>!r.err&&!r.same),note=$('#bcmIoN').value||'Imported from a WBS master workbook';let n=0,bad=[];
       const ord=ok.sort((a,b)=>(a.parent?1:0)-(b.parent?1:0));
       for(const r of ord){const pid=r.parent?(bcmOf('wbs').find(m=>String(bcmData(m).code).toLowerCase()===r.parent.toLowerCase())||{}).id:null;const D={...r.data,parent:pid||null};delete D.parentCode;
         try{await bcmCall('master_act',{action:'propose',ent:'wbs',id:r.id||null,data:D,note});n++}catch(err){bad.push(r.code+': '+srvMsg(err))}}
@@ -14458,7 +14466,7 @@ async function bcmOpenVer(id){const v=bcmS3().versions.find(x=>x.id===id);if(!v)
 async function bcmVerExport(id){await loadLib(LIBS.xlsx);const v=bcmS3().versions.find(x=>x.id===id);if(!v)return;if(CLOUD_ME)await bcmLoadVLines(id);const L=bcmS3().vlines[id]||[],wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['SAP WBS ID','WBS code','Description','User field','Cost type','Amount ('+v.currency+')']].concat(L.map(l=>[l.sap_wbs_id||'',l.wbs_code||'',l.descr||'',l.user_field||'',l.cost_type||'',Number(l.amount)]))),'Budget version');
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ProTrack budget version'],['Project',pcode(projById(v.project_id))],['Version',v.kind+' '+v.rev_no],['Status',v.status],['Total',v.total],['Prepared',v.prepared_by_name+' '+tStamp(v.prepared_at)],['Approved',v.approved_by_name?v.approved_by_name+' '+tStamp(v.approved_at):''],
-    [v.status==='SAP Loading Confirmed'?'This budget version was loaded in SAP with reference '+(v.sap_ref||'')+'.':'This is a ProTrackAI budget version. It is not loaded in SAP until SAP Loading Confirmed is recorded with the SAP reference.']]),'About');XLSX.writeFile(wb,`ProTrack budget ${pcode(projById(v.project_id))} ${v.kind} ${v.rev_no}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
+    [v.status==='SAP Loading Confirmed'?'This budget version was loaded in SAP with reference '+(v.sap_ref||'')+'.':'This is a ProTrackAI budget version. It is not loaded in SAP until SAP Loading Confirmed is recorded with the SAP reference.']]),'About');saveBook(wb,`ProTrack budget ${pcode(projById(v.project_id))} ${v.kind} ${v.rev_no}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
 
 /* ---------- Approval History ---------- */
 function bcmApprHTML(U){const A=bcmDB().audit.filter(a=>(!a.project_id||bcmSees(a.project_id))&&/approved|rejected|budget version|duplicate decided|reopened|sheet roles confirmed|variance explained|split|sap loading/i.test(a.action));
@@ -14471,7 +14479,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcma
   const d=t.dataset,U=bcmUi();if(d.bcmdupf){U.dupF=d.bcmdupf;render();return}if(d.bcmver){bcmOpenVer(d.bcmver);return}if(d.bcmvexp){bcmVerExport(d.bcmvexp);return}
   if(d.bcmaladd!==undefined){$('#bcmAlRows').insertAdjacentHTML('beforeend',bcmAlRow({wbs_id:'',cost_type:'Material',amount:''},0,bcmUsableW()));return}
   if(d.bcmbudtpl!==undefined){await loadLib(LIBS.xlsx);const wb=XLSX.utils.book_new(),p=projById(U.pid),pe=pcode(p)||'PE-XXX';XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['SAP WBS ID','WBS code','Description','User field','Cost type','Tender','Rev 0','Revised Rev 0'],[pe+'-01','SM','Site Management','SM','',0,0,0],[pe+'-01-001','SM1','Salaries','SM','Overhead',0,0,0],['','','Total','','',0,0,0]]),'Budget');
-    XLSX.writeFile(wb,'ProTrack budget import template.xlsx');return}
+    saveBook(wb,'ProTrack budget import template.xlsx');return}
   t.disabled=true;
   try{
     if(d.bcmanalyse){const r=await bcmAnalyse(d.bcmanalyse);toast(r.msg);render();return}
@@ -14612,7 +14620,7 @@ async function bcmCsExport(U){await loadLib(LIBS.xlsx);const S=U.csLast;if(!S)re
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Column','Definition']].concat(BCME.CS_COLS.slice(5).map(([k,l])=>[l,BCME.CS_DEF[k]]))),'Definitions');
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ProTrack cost summary'],['Project',bcmPcode(U.pid)],['Period',U.csPer||'none'],['Currency',cur],['Current approved budget',S.current?`${S.current.kind} ${S.current.rev_no}`:''],
     ['Actual',S.basis.actual||''],['Actual of the period',S.basis.actual_p||''],['Commitments',S.basis.commit||''],['SAP budget',S.basis.sap_budget||''],['Reports used',(S.used||[]).join(', ')],[],['Figures from the frozen SAP reports imported into ProTrackAI. Nothing was read from or sent to SAP.']]),'Sources');
-  XLSX.writeFile(wb,`ProTrack cost summary ${bcmPcode(U.pid)} ${U.csPer||'budget'}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
+  saveBook(wb,`ProTrack cost summary ${bcmPcode(U.pid)} ${U.csPer||'budget'}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
 
 /* ---------- SAP Export & Import ---------- */
 function bcmSapHTML(U){if(!bcmS4Ready())return '<section class="panel"><p class="warn-box"><b>Stage 4 needs the v42 database update</b> (STAGE-36-SETUP).</p></section>';
@@ -14693,7 +14701,7 @@ async function bcmSapDownload(eid){await loadLib(LIBS.xlsx);const B=bcmS4(),e=B.
   const p=projById(v.project_id)||{},W=BCME.sapWorkbook({content:e.content,project:{code:bcmPcode(v.project_id),name:p.name},version:v,prev:e.content.prev,gen:{by:e.generated_by_name,at:e.generated_at,seq:e.seq,check:e.check_md5},
     hist:B.vhist.filter(h=>h.version_id===v.id).sort((a,b)=>a.id-b.id),names:bcmNamesOf(v.project_id),sep:bcmSap().sep}),wb=XLSX.utils.book_new();
   W.sheets.forEach(s=>{const ws=XLSX.utils.aoa_to_sheet(s.aoa);ws['!cols']=(s.aoa[0]||[]).map((_,i)=>({wch:i===0?24:i===1&&s.name==='Header'?70:18}));XLSX.utils.book_append_sheet(wb,ws,s.name)});
-  XLSX.writeFile(wb,`SAP loading ${bcmPcode(v.project_id)} ${v.kind} ${v.rev_no} workbook ${e.seq}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
+  saveBook(wb,`SAP loading ${bcmPcode(v.project_id)} ${v.kind} ${v.rev_no} workbook ${e.seq}.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
 
 /* ---------- actions (stage 4) ---------- */
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-bcmcsf],[data-bcmcsexp],[data-bcmsaptab],[data-bcmsaprep],[data-bcmsapgo],[data-bcmsaptplsave],[data-bcmsaptpldrop],[data-bcmsapgen],[data-bcmsapdl],[data-bcmsapok],[data-bcmsapret]');if(!t)return;
@@ -14956,7 +14964,7 @@ function wfRead(f){const d=JSON.parse(JSON.stringify(f.data||{}));
 async function wfExcel(f){await loadLib(LIBS.xlsx);const p=projById(f.project_id)||{},d=f.data||{},wb=XLSX.utils.book_new(),N=v=>{const n=wfN(v);return n==null||Number.isNaN(n)?null:n};
   if(f.kind==='CRF'){const aoa=[['Change Request'],['Project',pcode(p),p.name],['CRF#',`${pcode(p)}/ ${f.ref_no}`],['Status',f.status],['WF number',f.wf_no||''],[],['Sub Date','Detailed Description','Client Ref','Price Submitted','Price Approved by Client','Price Considered Internally','Cost Rev 00','Cost Current Budget','Status of Client Approval','Remarks'],
       [d.sub_date||'',d.description||'',d.client_ref||'',N(d.price_submitted),N(d.price_client),N(d.price_internal),N(d.cost_rev0),N(d.cost_current),d.client_status||'',d.remarks||''],[],['Approvals'],['Prepared By',...(f.approvers||wfChain('CRF'))],[f.prepared_by_name||'']];
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'Change Request');XLSX.writeFile(wb,`${pcode(p)} ${f.ref_no} Change Request.xlsx`.replace(/[\\/:*?"<>|]/g,'-'));return}
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),'Change Request');saveBook(wb,`${pcode(p)} ${f.ref_no} Change Request.xlsx`.replace(/[\\/:*?"<>|]/g,'-'));return}
   const L=f.lines||[],S=(d.summary||[]).map(s=>({s,r:wfUfRow(s,L)})),I=d.impact||{},tot=L.reduce((t,l)=>{const a=N(l.amount)||0;a<0?t.s+=a:t.v+=a;return t},{s:0,v:0}),sum=k=>S.reduce((t,x)=>t+(x.r[k]||0),0);
   const aoa=[['','','','','','','','','','','Doc. Ref. No:',WF_DOC.ref],['','','','','','','','','','','Rev.',WF_DOC.rev],['','','','','BUDGET SUPPLEMENT/ RETURNS REQUEST'],[],
     ['01. General Information'],['Budget Revion Ref. No:',`${pcode(p)}| ${f.ref_no}`,'','Date',d.date||'','','Overall WF:',tot.s&&tot.v?'Supplement / Savings':tot.s?'Supplement':'Savings'],
@@ -14977,7 +14985,7 @@ async function wfExcel(f){await loadLib(LIBS.xlsx);const p=projById(f.project_id
   const prevByUni={},curByUni={};(suppAsOf(f.project_id,'9999-12').rows||[]).map(suppView).filter(r=>r.counts&&r.uf!==SUPP_CONT&&(!f.posted||!(f.posted.rows||[]).includes(r.supp_no))).forEach(r=>{prevByUni[r.uni]=(prevByUni[r.uni]||0)+r.amt});
   L.forEach(l=>{const u=suppUni(suppCat(l.category))||'—';curByUni[u]=(curByUni[u]||0)+(N(l.amount)||0)});const unis=[...new Set([...WF_UNIS,...Object.keys(prevByUni),...Object.keys(curByUni)])];
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['05. Category wise Details'],['Description','Previous','Current','Cummulative']].concat(unis.map(u=>[u,prevByUni[u]||0,curByUni[u]||0,(prevByUni[u]||0)+(curByUni[u]||0)]))),'Category details');
-  XLSX.writeFile(wb,`${pcode(p)} ${f.ref_no} Budget Supplement Request.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
+  saveBook(wb,`${pcode(p)} ${f.ref_no} Budget Supplement Request.xlsx`.replace(/[\\/:*?"<>|]/g,'-'))}
 
 /* ---------- actions ---------- */
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-wftab],[data-wfopen],[data-wfback],[data-wfnew],[data-wfsave],[data-wfsubmit],[data-wfxl],[data-wfladd],[data-wfldel],[data-wfrefresh],[data-wfrecord],[data-wfver],[data-wfcancel],[data-wfhub]');if(!t||state.view!=='wfr')return;
@@ -18101,6 +18109,9 @@ async function saveFile(name,blob){
   if(dl){try{await dl.save({filename:name,data:blob});toast(`${name} saved`)}catch(e){toast(e.code==='declined'?'Download cancelled':e.code==='rate_limited'?'A download is already waiting for your confirmation':'Downloads are not available here')}return}
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast(`${name} downloaded`);
 }
+/* a workbook through saveFile, so it downloads wherever the page runs: in a browser tab, from a saved file, or inside a host that
+   offers its own downloads (v3.40.1: the Budget & Cost Management and form workbooks wrote the file directly, which such a host blocks) */
+function saveBook(wb,name){const a=XLSX.write(wb,{bookType:'xlsx',type:'array'});return saveFile(String(name).replace(/[\\/:*?"<>|]/g,'-'),new Blob([a],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}))}
 const fileBase=k=>`ProTrack_${k}_${ASOF}`;
 function sheetFor(XLSX,title,rep){
   const aoa=[[`ProTrack: ${title}`],[`Scope: ${scopeLabel()}`],[`Measured against: ${baseLabel()}`],[`Progress as of ${fmtDY(ASOF)}. Generated by ${me().name} on ${stamp()}`],[]];

@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.40.1
+
+- **The WBS master in Excel.** "Download the WBS master (Excel)" now downloads wherever ProTrack runs, including inside a host that offers its own downloads (the shared demo link): the Budget & Cost Management and form workbooks wrote the file directly, which such a host blocks; they now save like every other export. Importing the master back proposes only the new and changed rows; a row that matches the master says **No change**. No server change. New `tests/bcm_wbs_excel_demo.js` (10 checks). See [RELEASE-NOTES-v3.40.1.md](RELEASE-NOTES-v3.40.1.md).
+
 ## Version 3.40
 
 - **Budget & Cost Management → Tender File Intake: Delete an uploaded tender costing file.** The uploader or a reviewer deletes a workbook uploaded by mistake, with a reason: its rows, their classification, splits and sheet roles go with it, the duplicate groups that used them become obsolete, and the same workbook can be uploaded again. Refused while the batch is withdrawn, while the file is being read, and while a budget version prepared from the batch is not rejected or cancelled. The classification history and the audit log keep a record. Server: `schema-update-v44.sql` (STAGE-38-SETUP.md). New `tests/bcm_file_delete_demo.js` (15 checks). See [RELEASE-NOTES-v3.40.md](RELEASE-NOTES-v3.40.md).
