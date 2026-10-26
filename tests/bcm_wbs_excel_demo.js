@@ -9,7 +9,7 @@
     go('bcm');const U=bcmUi();U.sec='master';U.mtab='io';render();await wait(200);await loadLib(LIBS.xlsx);
     // 1-3: the download goes through saveFile, like every other export (a host that offers its own downloads gets it too)
     let saved=null;saveFile=async(n,b)=>{saved={n,b}};$('[data-bcmexport="wbs"]').click();for(let i=0;i<25&&!saved;i++)await wait(200);saveFile=keep;
-    ok('1. Version 3.40.1',APP_VERSION==='3.40.1');
+    ok('1. Version 3.40.1 or later',/^3\.(40\.[1-9]|4[1-9]|[5-9]\d)/.test(APP_VERSION));
     ok('2. Download the WBS master (Excel) hands an Excel workbook to saveFile',!!saved&&/^ProTrack WBS master .*\.xlsx$/.test(saved.n)&&saved.b.type==='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'&&saved.b.size>1000,saved&&{n:saved.n,t:saved.b.type,s:saved.b.size});
     ok('3. No export writes a file directly any more (the Budget & Cost Management and form workbooks included)',![...document.scripts].some(s=>/XLSX\.writeFile\(/.test(s.textContent)));
     const wb=XLSX.read(new Uint8Array(await saved.b.arrayBuffer()),{type:'array'}),rows=XLSX.utils.sheet_to_json(wb.Sheets['WBS master'],{header:1,defval:''}),W=bcmOf('wbs');
@@ -34,6 +34,10 @@
     // 10: a row that matches a waiting proposal is not proposed again
     P=await up(R2.slice(0,-1),'again.xlsx');
     ok('10. Imported again: the rows that match the waiting proposals say No change too',P.rows.filter(r=>!r.err&&!r.same).length===0,P.rows.filter(r=>!r.err&&!r.same).map(r=>r.code));
+    // 11 (v3.40.2): the first download, untouched, after SM3 got a waiting change: SM3 says what it says approved, so No change, and
+    // its waiting change is not replaced
+    P=await up(rows,'untouched.xlsx');const s3=P.rows.find(r=>r.code==='SM3');
+    ok('11. An untouched download imported while a change waits: No change, and nothing is proposed (the waiting change stays)',!!s3&&s3.same&&P.rows.filter(r=>!r.err&&!r.same).length===0&&!$('[data-bcmioprop]')&&/and stationery/.test(sm3.pend.data.desc),{s3:s3&&{same:s3.same,id:s3.id},open:P.rows.filter(r=>!r.err&&!r.same).map(r=>r.code)});
   }catch(x){ok('The checks ran to the end',false,x.message+' '+(x.stack||'').split('\n')[1])}
   finally{saveFile=keep;try{localStorage.setItem(KEY,KEYDATA)}catch(x){}}
   console.table(res);const f=res.filter(r=>r.result==='FAIL').length;console.log(`WBS master in Excel: ${res.length-f} passed, ${f} failed. Restoring the demo data and reloading…`);

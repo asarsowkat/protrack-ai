@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.40.2
+
+- **An untouched WBS master never undoes a waiting change.** Importing a WBS master workbook now says **No change** for a row that matches either the element's approved content (what the download writes) or its waiting change; in v3.40.1 an untouched download, imported while a change waited, would have proposed the approved content again and replaced that change. No server change. `tests/bcm_wbs_excel_demo.js` now has 11 checks. See [RELEASE-NOTES-v3.40.2.md](RELEASE-NOTES-v3.40.2.md).
+
 ## Version 3.40.1
 
 - **The WBS master in Excel.** "Download the WBS master (Excel)" now downloads wherever ProTrack runs, including inside a host that offers its own downloads (the shared demo link): the Budget & Cost Management and form workbooks wrote the file directly, which such a host blocks; they now save like every other export. Importing the master back proposes only the new and changed rows; a row that matches the master says **No change**. No server change. New `tests/bcm_wbs_excel_demo.js` (10 checks). See [RELEASE-NOTES-v3.40.1.md](RELEASE-NOTES-v3.40.1.md).
