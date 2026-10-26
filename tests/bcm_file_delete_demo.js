@@ -16,7 +16,7 @@
     await bcmUpload(bid,[file(bytesA,'Check A.xlsx'),file(bytesB,'Check B.xlsx')]);
     const fa=()=>bcmFilesOf(bid).find(f=>f.name==='Check A.xlsx'),fb=()=>bcmFilesOf(bid).find(f=>f.name==='Check B.xlsx');
     U.sec='intake';render();await wait(200);
-    ok('1. Version 3.40; each file of an open batch has Delete for its uploader',APP_VERSION==='3.40'&&!!fa()&&!!fb()&&!!$(`[data-bcmfdel="${fa().id}"]`)&&!!$(`[data-bcmfdel="${fb().id}"]`));
+    ok('1. Version 3.40 or later; each file of an open batch has Delete for its uploader',+APP_VERSION.split('.')[0]===3&&+APP_VERSION.split('.')[1]>=40&&!!fa()&&!!fb()&&!!$(`[data-bcmfdel="${fa().id}"]`)&&!!$(`[data-bcmfdel="${fb().id}"]`));
     ok('2. The batch says a file uploaded by mistake can be deleted and uploaded again',/can be deleted \(Delete, with a reason\) and uploaded again/.test($('#view').innerText));
     // refusals
     ok('3. A reason of 3 characters at least',/Give the reason/.test(err(()=>BCML.file_delete({file_id:fa().id,reason:'x'}))));
