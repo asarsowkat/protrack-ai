@@ -8110,7 +8110,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.40.1';
+const APP_VERSION='3.40.2';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -13921,8 +13921,9 @@ function bcmIoHTML(U,canP){const P=U.ioPrev;
     <p class="small muted">The import reads the columns ${BCM_IO_COLS.map(esc).join(', ')}. Each new or changed row becomes a proposal (a new element, or a change of the element with that code) for someone else to approve; a row that matches the master says <b>No change</b> and is not proposed, so you can download the master, change some rows and import it back. Rows with a blank or repeated code, an unknown parent, a wrong date, a SAP segment that is not digits or a user field that is not in the list are refused with the reason. Lists are separated by semicolons. Without an Order column, the order is the order of the rows. The export also shows each element's SAP WBS ID for the project chosen above.</p>
     ${P?`<div class="scroll"><table class="tbl small"><thead><tr><th>Row</th><th>Code</th><th>Description</th><th>Parent</th><th>Result</th></tr></thead><tbody>${P.rows.map(r=>`<tr><td>${r.row}</td><td>${esc(r.code||'')}</td><td>${esc(r.desc||'')}</td><td>${esc(r.parent||'')}</td><td>${r.err?`<span class="r-c">Refused: ${esc(r.err)}</span>`:r.same?'<span class="muted">No change</span>':`<span class="g-c">${r.id?'Change of '+esc(r.id):'New element'}</span>`}</td></tr>`).join('')}</tbody></table></div>
       ${P.rows.some(r=>!r.err&&!r.same)?`<div class="actions"><input id="bcmIoN" placeholder="Note for the approver" maxlength="300" style="min-width:260px"><button class="btn primary" type="button" data-bcmioprop>Propose the ${P.rows.filter(r=>!r.err&&!r.same).length} new or changed row${P.rows.filter(r=>!r.err&&!r.same).length===1?'':'s'}</button></div>`:P.rows.some(r=>r.same)?'<p class="small muted">Nothing to propose: every valid row matches the master.</p>':''}`:''}</section>`}
-/* v3.40.1: a row is "No change" when it says what the element already says (its waiting proposal, else its approved content):
-   the master downloaded, a few rows changed and imported back proposes only those rows. A blank order matches an element without one; a user field matches
+/* v3.40.1: a row is "No change" when it says what the element already says, so the master downloaded, a few rows changed and
+   imported back proposes only those rows. v3.40.2: it matches either the element's approved content (what the download writes)
+   or its waiting proposal, so a file left untouched never replaces a waiting change with the approved content. A blank order matches an element without one; a user field matches
    ignoring capital letters, as the list does. */
 function bcmWbsSame(d,b,ordBlank){if(!b)return false;const A=v=>(v||[]).map(x=>String(x).trim()).filter(Boolean).join('; '),S=v=>v==null?'':String(v).trim();
   return d.code===S(b.code)&&S(d.parentCode).toLowerCase()===(b.parent?S(bcmCode(b.parent)).toLowerCase():'')&&d.desc===S(b.desc)&&A(d.aliases)===A(b.aliases)&&A(d.keywords)===A(b.keywords)
@@ -13940,7 +13941,7 @@ function bcmParseWbs(aoa){const H=(aoa[0]||[]).map(x=>String(x||'').trim().toLow
     if(code)seen.set(code.toLowerCase(),i+2);const ex=byCode.get(code.toLowerCase());o.id=ex?ex.id:null;
     o.data={code,parent:null,parentCode:o.parent||null,desc:o.desc,aliases:L(g('Aliases')),keywords:L(g('Keywords')),cost_category:String(g('Cost category')??'').trim()||null,ptypes:L(g('Project types')),sap_seg:seg,user_field:ufx?ufx[0]:null,order:ordv,
       eff_from:ef==='bad'?null:ef,eff_to:et==='bad'?null:et,active:yes(g('Active'),true),postable:yes(g('Postable'),true),mandatory_review:yes(g('Mandatory review'),false)};
-    o.same=!o.err&&!!ex&&bcmWbsSame(o.data,ex.pend?ex.pend.data:ex.cur,ordBlank);rows.push(o)});return {rows}}
+    o.same=!o.err&&!!ex&&(bcmWbsSame(o.data,ex.cur,ordBlank)||bcmWbsSame(o.data,ex.pend&&ex.pend.data,ordBlank));rows.push(o)});return {rows}}
 async function bcmExport(kind){try{await loadLib(LIBS.xlsx);const U=bcmUi(),wb=XLSX.utils.book_new();let name;
   if(kind==='wbs'){const W=bcmOf('wbs').sort((a,b)=>String(bcmData(a).code).localeCompare(String(bcmData(b).code),undefined,{numeric:true}));
     const tree=[],walk=(par,lvl)=>W.filter(x=>(bcmData(x).parent||null)===par).sort(bcmSort).forEach(x=>{tree.push([x,lvl]);walk(x.id,lvl+1)});walk(null,1);W.filter(x=>!tree.some(([y])=>y===x)).forEach(x=>tree.push([x,0]));
