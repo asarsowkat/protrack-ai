@@ -135,7 +135,7 @@ with sync_playwright() as p:
     ck('Overview','site engineer: no cost figures',pg.locator('[data-kpi="cpi"]').count()==0 and 'Contract and financial summary' not in v and 'Open PO' not in v)
     ck('Navigation v2.3','site engineer sees no planned items',pg.locator('#nav .nav-item.planned').count()==0)
     as_('U18')
-    ck('Navigation v2.3','foreman domains: actions, daily reports, reports, RASA (v2.7)',[t.split('\n')[0] for t in pg.locator('#nav .nav-top').all_inner_texts()]==['Projects & Handover','Daily Reports','Reports & Dashboards','RASA AI Assistant'],pg.locator('#nav .nav-top').all_inner_texts())
+    ck('Navigation v2.3','foreman domains: actions, daily reports, reports, RASA (v2.7)',[t.split('\n')[0] for t in pg.locator('#nav .nav-top').all_inner_texts()]==['Projects & Handover','Daily Reports','Reports & Dashboards','RASA Intelligence'],pg.locator('#nav .nav-top').all_inner_texts())
     ck('Navigation v2.3','foreman cannot open the overview',pg.evaluate("[...document.querySelectorAll('#nav [data-go]')].map(b=>b.dataset.go).includes('proj')")==False)
     # --- RASA
     as_('U28');pg.click('#aiFab');pg.wait_for_timeout(600)

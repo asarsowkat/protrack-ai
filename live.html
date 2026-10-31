@@ -870,6 +870,83 @@ tr.boqsub td{background:rgba(127,127,127,.06)}
 @media (max-width:1100px){.pgrid2{grid-template-columns:1fr}.pkpis{grid-template-columns:repeat(2,minmax(0,1fr))}.lc-strip{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:760px){.g-row{grid-template-columns:96px 1fr 70px}.pgrid3{grid-template-columns:1fr}.fins{grid-template-columns:1fr 1fr}.lc-grid{grid-template-columns:1fr 1fr}.lc-strip{display:flex;overflow-x:auto}.lc-chip{flex:0 0 170px}.g-today{display:none}.ptitle{font-size:18px}}
 
+/* v3.47: RASA Intelligence */
+:root{--rk-ok:#1f9d55;--rk-warn:#d98a1c;--rk-bad:#d1453b;--rk-off:#8a94a0;--rk-glow:#46bdf5}
+.rk{display:flex;flex-direction:column;gap:14px;min-width:0}
+.rk-tabs{display:flex;gap:4px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px;position:sticky;top:0;z-index:5}
+.rk-tabs button{all:unset;cursor:pointer;padding:8px 13px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px}
+.rk-tabs button:hover{background:var(--bg)}.rk-tabs button[aria-selected="true"]{background:var(--rasa-navy2);color:#fff;box-shadow:0 0 0 1px rgba(70,189,245,.35),0 6px 18px -8px rgba(29,99,216,.8)}
+.rk-tabs button:focus-visible{outline:2px solid var(--rasa-blue);outline-offset:2px}
+.rk-badge{background:var(--rk-bad);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px}
+.rk-hero{position:relative;overflow:hidden;border-radius:16px;padding:28px 30px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr);gap:24px;align-items:center;color:#e8f2ff;
+  background:radial-gradient(1200px 400px at 85% 50%,rgba(70,189,245,.22),transparent 60%),radial-gradient(600px 300px at 10% 0%,rgba(29,99,216,.35),transparent 60%),linear-gradient(135deg,var(--rasa-navy) 0%,var(--rasa-navy2) 100%)}
+.rk-hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(70,189,245,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(70,189,245,.07) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(90deg,transparent,#000 40%,#000);pointer-events:none}
+.rk-hero::after{content:"";position:absolute;left:-30%;top:0;width:30%;height:100%;background:linear-gradient(90deg,transparent,rgba(70,189,245,.12),transparent);animation:rkSweep 7s linear infinite;pointer-events:none}
+.rk-hero-l{position:relative;z-index:1;min-width:0}.rk-hero-r{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:12px}
+.rk-kick{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--rk-glow);font-weight:700}.rk-live{animation:rkBlink 1.2s ease-in-out infinite}
+.rk-hero h1{margin:6px 0 8px;font-size:clamp(24px,3vw,34px);line-height:1.15;color:#fff}.rk-sub{margin:0 0 16px;color:#b9cbe6;max-width:62ch}
+.rk-hello{margin:12px 0 0;font-size:13px;color:#9fb4d4}
+.rk-askbar{display:flex;gap:8px;background:rgba(255,255,255,.96);border-radius:12px;padding:6px;box-shadow:0 10px 30px -12px rgba(0,0,0,.6),0 0 0 1px rgba(70,189,245,.4)}
+.rk-askbar input{flex:1;min-width:0;border:0;background:transparent;font-size:15px;padding:8px 10px;color:#0b1b33}.rk-askbar input:focus{outline:none}
+.rk-askbar select{border:1px solid var(--line);border-radius:8px;max-width:220px;background:#fff;color:#0b1b33}
+.rk-askbar.light{background:var(--surface);box-shadow:0 0 0 1px var(--line)}.rk-askbar.light input,.rk-askbar.light select{color:var(--ink);background:var(--surface)}
+.rk-short{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.rk-short button{all:unset;cursor:pointer;font-size:12.5px;font-weight:600;color:#dcebff;border:1px solid rgba(70,189,245,.35);background:rgba(13,40,86,.55);border-radius:999px;padding:6px 12px;transition:background .2s,transform .2s}
+.rk-short button:hover{background:rgba(29,99,216,.55);transform:translateY(-1px)}.rk-short button:focus-visible{outline:2px solid var(--rk-glow)}
+.rk-orb{position:relative;width:200px;height:200px;display:grid;place-items:center}
+.rk-orb img{width:132px;height:132px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px rgba(70,189,245,.5),0 0 40px 6px rgba(70,189,245,.45);animation:rkFloat 5s ease-in-out infinite}
+.rk-r{position:absolute;inset:0;border-radius:50%;border:2px solid transparent}
+.rk-r.r1{border-top-color:var(--rk-glow);border-right-color:rgba(70,189,245,.3);animation:rkSpin 6s linear infinite}
+.rk-r.r2{inset:12px;border-bottom-color:#7aa8ff;border-left-color:rgba(122,168,255,.25);animation:rkSpin 9s linear infinite reverse}
+.rk-r.r3{inset:-12px;border:1px dashed rgba(70,189,245,.35);animation:rkSpin 30s linear infinite}
+.rk-dots{position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle,rgba(70,189,245,.9) 0 2px,transparent 3px) 50% 0/100% 100% no-repeat;animation:rkSpin 4s linear infinite}
+.rk-tag{text-align:center;font-weight:800;letter-spacing:.16em;font-size:11.5px;color:#cfe4ff}.rk-tag small{display:block;margin-top:4px;font-weight:600;color:var(--rk-glow);letter-spacing:.2em}
+.rk-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.rk-kpi{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;animation:rkIn .5s both;animation-delay:var(--d)}
+.rk-kpi b{display:block;font-size:22px;line-height:1.1}.rk-kpi em{display:block;font-style:normal;font-weight:600;font-size:13px}.rk-kpi small{color:var(--ink-2);font-size:11.5px}
+.rk-kpi-ic{flex:none;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--rasa-blue),var(--rasa-navy2))}
+.rk-kpi-ic svg{width:22px;height:22px}.rk-kpi.k4 .rk-kpi-ic{background:linear-gradient(135deg,#8b5cf6,#4c1d95)}.rk-kpi.k5 .rk-kpi-ic{background:linear-gradient(135deg,#f59e0b,#b45309)}.rk-kpi.k6 .rk-kpi-ic{background:linear-gradient(135deg,#22c55e,#166534)}.rk-kpi.k7 .rk-kpi-ic{background:linear-gradient(135deg,#ef4444,#991b1b)}
+.rk-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.rk-col{border-radius:14px;padding:14px;border:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:10px;min-width:0}
+.rk-col.bad{border-color:color-mix(in srgb,var(--rk-bad) 45%,var(--line));box-shadow:inset 0 3px 0 var(--rk-bad)}.rk-col.good{border-color:color-mix(in srgb,var(--rk-ok) 45%,var(--line));box-shadow:inset 0 3px 0 var(--rk-ok)}
+.rk-col-h{display:flex;justify-content:space-between;align-items:center;gap:8px}.rk-col-h h2{margin:0;font-size:16px}.rk-col.bad h2{color:var(--rk-bad)}.rk-col.good h2{color:var(--rk-ok)}
+.rk-cnt{font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px;color:#fff;background:var(--rk-ok)}.rk-col.bad .rk-cnt{background:var(--rk-bad)}
+.rk-mc{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:var(--bg);transition:transform .2s,box-shadow .2s;animation:rkIn .45s both}
+.rk-mc:hover{transform:translateY(-2px);box-shadow:0 10px 24px -16px rgba(13,40,86,.6)}
+.rk-mc-ic{flex:none;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--rasa-blue),var(--rasa-navy2))}.rk-mc-ic svg{width:22px;height:22px}
+.rk-mc.attention-required .rk-mc-ic,.rk-mc.configuring .rk-mc-ic{background:linear-gradient(135deg,#f59e0b,#b45309)}.rk-mc.not-connected .rk-mc-ic{background:linear-gradient(135deg,#ef4444,#991b1b)}.rk-mc.disabled .rk-mc-ic{background:linear-gradient(135deg,#9aa4b0,#5b6570)}
+.rk-mc-b{flex:1;min-width:0}.rk-mc-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.rk-mc-w{margin:4px 0}.rk-mc-l{margin:4px 0;padding-left:18px;font-size:12.5px}.rk-why{margin:4px 0;color:var(--ink-2)}
+.rk-mc-a{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.rk-pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--green-soft);color:var(--green);white-space:nowrap}
+.rk-pill.syncing{background:#dbeafe;color:#1d4ed8;animation:rkBlink 1.2s ease-in-out infinite}.rk-pill.attention-required,.rk-pill.configuring{background:#fef3c7;color:#92400e}.rk-pill.not-connected{background:var(--red-soft);color:var(--red)}.rk-pill.disabled{background:var(--bg);color:var(--ink-2);border:1px solid var(--line)}
+.rk-ring{position:relative;flex:none;width:52px;height:52px}.rk-ring svg{width:52px;height:52px;transform:rotate(-90deg)}.rk-ring circle{fill:none;stroke-width:5}.rk-ring .bg{stroke:var(--line)}
+.rk-ring .fg{stroke:var(--rk-ok);stroke-linecap:round;transition:stroke-dasharray .8s}.rk-ring.attention-required .fg{stroke:var(--rk-warn)}.rk-ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:11.5px}
+.rk-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}.rk-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.rk-feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}.rk-ai{display:flex;gap:10px;align-items:flex-start;font-size:13.5px}
+.rk-ai-ic{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--bg);color:var(--rasa-blue);border:1px solid var(--line)}.rk-ai-ic svg{width:16px;height:16px}
+.rk-ai.failed .rk-ai-ic,.rk-ai.gap .rk-ai-ic,.rk-ai.feedback .rk-ai-ic{color:var(--rk-bad)}.rk-ai.published .rk-ai-ic,.rk-ai.approved .rk-ai-ic{color:var(--rk-ok)}
+.rk-ai-t{display:flex;flex-direction:column;min-width:0}.rk-ai-t .linkbtn{text-align:start}.rk-gh{margin:8px 0 4px;font-size:12.5px;color:var(--ink-2)}.rk-gl{margin:0;padding-left:16px;font-size:13px}.rk-gl li{margin-bottom:4px;display:flex;flex-direction:column}
+.rk-donut{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.rk-dn{width:130px;height:130px;border-radius:50%;display:grid;place-items:center;flex:none}
+.rk-dn span{width:92px;height:92px;border-radius:50%;background:var(--surface);display:grid;place-content:center;text-align:center}.rk-dn b{font-size:22px}.rk-dn small{font-size:11px;color:var(--ink-2)}
+.rk-donut ul{list-style:none;margin:0;padding:0;flex:1;min-width:150px}.rk-donut li{display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0}.rk-donut li i{width:10px;height:10px;border-radius:50%}.rk-donut li b{margin-left:auto}
+.rk-ans{animation:rkIn .35s both}.rk-ans-q{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:700;font-size:15px;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:8px}
+.rk-facts,.rk-ev{margin:10px 0}.rk-facts h4,.rk-ev h4,.rk-cmp h4{margin:0 0 6px;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2)}
+.rk-ev ol{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px}.rk-cite{border:1px solid var(--line);border-inline-start:3px solid var(--rasa-blue);border-radius:9px;padding:8px 10px;background:var(--bg)}
+.rk-q{margin:6px 0;padding:6px 10px;border-inline-start:2px solid var(--line);font-size:13.5px;color:var(--ink)}.rk-q mark{background:#fde68a;color:#111;border-radius:2px}
+.rk-note{border-radius:9px;padding:9px 12px;font-size:13.5px;margin:8px 0;background:#e0f2fe;border-inline-start:4px solid var(--rasa-blue)}.rk-note.warn{background:var(--red-soft);border-color:var(--red)}.rk-note.ok{background:var(--green-soft);border-color:var(--green)}
+.rk-meta{margin-top:8px}.rk-fb{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.rk-form textarea,.rk-form input,.rk-form select{width:100%}.rk-h3{font-size:14px;margin:14px 0 6px}.rk-gapa{display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.rk-cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;margin:8px 0}.rk-cmp-i{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--bg);margin-bottom:6px}.rk-cmp-i.new{border-color:var(--rasa-blue)}.rk-cmp-i p{margin:4px 0 0;font-size:13.5px}
+.rk-kv th{text-align:start;width:34%;font-weight:600;color:var(--ink-2)}.rk-hist{margin:0;padding-left:18px;font-size:13px}.rk-hist li{margin-bottom:4px}
+.rk-pass{margin:0;padding-left:18px;font-size:12.5px;max-height:320px;overflow:auto}.rk-pass li{margin-bottom:6px}
+.rk-anak{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:8px}.rk-ak{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg);display:flex;flex-direction:column;gap:2px}
+.rk-ak em{font-style:normal;font-size:12.5px;font-weight:600;color:var(--ink-2)}.rk-ak b{font-size:19px}.rk-ak small{font-size:11.5px;color:var(--ink-2)}.rk-chart{position:relative;height:260px}
+.st.Info{background:var(--bg);color:var(--ink-2);border:1px solid var(--line)}
+@keyframes rkSpin{to{transform:rotate(360deg)}}@keyframes rkFloat{50%{transform:translateY(-6px)}}@keyframes rkBlink{50%{opacity:.45}}@keyframes rkSweep{to{left:110%}}
+@keyframes rkIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rk *,.rk *::before,.rk *::after,.rk-hero::after{animation:none!important;transition:none!important}}
+@media (max-width:760px){.rk-hero{grid-template-columns:1fr;padding:20px 16px}.rk-hero-r{order:-1}.rk-orb{width:150px;height:150px}.rk-orb img{width:100px;height:100px}.rk-askbar{flex-wrap:wrap}.rk-askbar select{max-width:none;flex:1}.rk-tabs{position:static}}
+.rk .t2{display:block;font-size:12px;color:var(--ink-2)}.rk-feed .t2{margin-top:1px}
 </style>
 </head>
 <body>
@@ -1462,7 +1539,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadCostPlans();await cloudLoadBrand();await cloudLoadMedia();await cloudLoadCrf();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
+    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadCostPlans();await cloudLoadBrand();await cloudLoadMedia();await cloudLoadCrf();await cloudLoadRasa();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -6926,14 +7003,18 @@ const RIGHTS=[
   ['bcm.sap.import','Budget & Cost Management: import the monthly SAP ECC reports (budget, actual, commitments) and keep their column templates','Budget & Cost',['costing']],
   ['bcm.sap','Budget & Cost Management: SAP authorized user: prepare the SAP loading workbook of an approved budget version and record SAP Loading Confirmed with the SAP reference','Budget & Cost',[]],
   ['wf.initiate','Budget & change requests: prepare and submit budget supplement / returns requests and change requests to Approval Hub','Cost',['plan','costing']],
-  ['wf.record','Budget & change requests: record an Approval Hub decision by hand while the link is not connected','Cost',[]]];
+  ['wf.record','Budget & change requests: record an Approval Hub decision by hand while the link is not connected','Cost',[]],
+  ['rasa.teach','RASA: teach RASA: submit corrections, business rules and knowledge for unanswered questions','RASA',['exec','rm','pf','plan','costing','pm']],
+  ['rasa.sync','RASA: refresh the knowledge RASA reads from the modules (of their projects)','RASA',['plan','costing']],
+  ['rasa.review','RASA: review, approve, publish and roll back knowledge of their projects (knowledge reviewer; never their own)','RASA',[]],
+  ['rasa.company','RASA: approve company-wide knowledge and business rules (designated approver)','RASA',[]]];
 /* what comes with a position, shown beside the right in the tables */
-const RIGHT_POS={'wf.record':'costing coordinator','bcm.review':'Head of Planning and Cost Control','bcm.master':'Head of Planning and Cost Control','bcm.approve':'Head of Planning and Cost Control','bcm.budget.approve':'Head of Planning and Cost Control','boq.review':'Head of Planning and Cost Control','boq.approve':'Head of Planning and Cost Control','cashout.keep':'Head of Planning and Cost Control; costing coordinator','visual.keep':'Head of Planning and Cost Control','delay.keep':'Head of Planning and Cost Control','materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
+const RIGHT_POS={'wf.record':'costing coordinator','rasa.review':'Head of Planning and Cost Control','rasa.company':'Head of Planning and Cost Control','bcm.review':'Head of Planning and Cost Control','bcm.master':'Head of Planning and Cost Control','bcm.approve':'Head of Planning and Cost Control','bcm.budget.approve':'Head of Planning and Cost Control','boq.review':'Head of Planning and Cost Control','boq.approve':'Head of Planning and Cost Control','cashout.keep':'Head of Planning and Cost Control; costing coordinator','visual.keep':'Head of Planning and Cost Control','delay.keep':'Head of Planning and Cost Control','materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
   'report.cost.approve':'Head of Planning and Cost Control','logs.upload':'costing coordinator','issues.keep':'Head of Planning and Cost Control',
   'issues.review':'Head of Planning and Cost Control','docs.contract':'Head of Planning and Cost Control','docs.planning':'Head of Planning and Cost Control',
   'docs.cost':'Head of Planning and Cost Control','tender.register':'Head of Planning and Cost Control; costing coordinator','tender.noa':'costing coordinator'};
 const RIGHT_N=Object.fromEntries(RIGHTS.map(r=>[r[0],r[1]]));
-const SCREENS=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','cplan','mer','boq','rep','deck','perf'];
+const SCREENS=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','cplan','mer','boq','rep','deck','perf','rasa'];
 const RIGHT_ROLES=['exec','rm','pf','plan','costing','pm','sm','eng','foreman','ro'];
 const rightsDB=()=>DB.rights||(DB.rights={roles:[],role:{},user:{},screen:{},audit:[]});
 const appRoles=()=>rightsDB().roles||[];
@@ -8640,7 +8721,7 @@ function setDB(x){DB=x;applyMaster()}
 setDB(DB);
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.master&&s.dprs)setDB(s)}catch(e){console.error('Stored data could not be loaded',e)}
 try{const t=localStorage.getItem(KEY+'-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
-const save=()=>{_lines=null;try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}};
+const save=()=>{_lines=null;try{rkDirty()}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}};
 SCOPE=scopeIds();
 if(!DB.notes.length)seedNotes();
 function seedNotes(){
@@ -8658,8 +8739,8 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{cplan:'Cost plan',mer:'MER – Monthly Executive Report',wfr:'Budget & change requests',bcm:'Budget & Cost Management',boq:'BOQ Engine',rs:'Reporting status',cout:'Cash-out forecast',cfd:'Cashflow Dashboard',dly:'Delay events register',pv:'Project Visual',mmcs:'Master Manpower Costing Sheet',po:'Subcontract purchase orders',inv:'Invoice register',cash:'Cash-inflow forecast',mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'E&P progress',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{cplan:'خطة التكاليف',mer:'التقرير التنفيذي الشهري',wfr:'طلبات الميزانية والتغيير',bcm:'إدارة الميزانية والتكاليف',boq:'محرك جداول الكميات',rs:'حالة إصدار التقارير',cout:'توقعات التدفقات النقدية الصادرة',cfd:'لوحة التدفقات النقدية',dly:'سجل أحداث التأخير',pv:'العرض المرئي للمشروع',mmcs:'ورقة تكلفة القوى العاملة الرئيسية',po:'أوامر شراء المقاولين من الباطن',inv:'سجل الفواتير',cash:'توقعات التدفقات النقدية الواردة',mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'تقدم الهندسة والمشتريات',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{rasa:'RASA Intelligence',cplan:'Cost plan',mer:'MER – Monthly Executive Report',wfr:'Budget & change requests',bcm:'Budget & Cost Management',boq:'BOQ Engine',rs:'Reporting status',cout:'Cash-out forecast',cfd:'Cashflow Dashboard',dly:'Delay events register',pv:'Project Visual',mmcs:'Master Manpower Costing Sheet',po:'Subcontract purchase orders',inv:'Invoice register',cash:'Cash-inflow forecast',mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'E&P progress',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{rasa:'ذكاء راسا',cplan:'خطة التكاليف',mer:'التقرير التنفيذي الشهري',wfr:'طلبات الميزانية والتغيير',bcm:'إدارة الميزانية والتكاليف',boq:'محرك جداول الكميات',rs:'حالة إصدار التقارير',cout:'توقعات التدفقات النقدية الصادرة',cfd:'لوحة التدفقات النقدية',dly:'سجل أحداث التأخير',pv:'العرض المرئي للمشروع',mmcs:'ورقة تكلفة القوى العاملة الرئيسية',po:'أوامر شراء المقاولين من الباطن',inv:'سجل الفواتير',cash:'توقعات التدفقات النقدية الواردة',mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'تقدم الهندسة والمشتريات',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',bcm:'<path d="M4 4h6v5H4zM14 4h6v5h-6zM14 15h6v5h-6z"/><path d="M7 9v8.5h7M17 9v6"/>',
   xr:'<path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 4-5"/>',rel:'<path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/><path d="M9 12l2 2 4-4"/>',logs:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>',
@@ -8696,7 +8777,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.46';
+const APP_VERSION='3.47';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -8729,7 +8810,7 @@ const DOMAINS=[
     ['qty','Quantity Calculation Register'],['boq','Estimated BOQ'],['spec','Specifications & Assumptions'],['rev','Revision Comparison'],['appr','Review & Approval Workflow'],['rep','Reports & Excel Export'],['cfg','Settings & Audit History']].map(([sec,label])=>({v:'boq',sec,label}))},
   {k:'reports',label:'Reports & Dashboards',ic:'rep',items:[
     {v:'dash',label:'Dashboard'},{v:'rep',label:'All reports'},{v:'perf',label:'Performance'},{v:'deck',label:'Presentation'}]},
-  {k:'rasa',label:'RASA AI Assistant',ic:'ai',badge:'NEW',items:[{action:'rasa',label:'RASA AI Assistant'}],single:true},
+  {k:'rasa',label:'RASA Intelligence',ic:'ai',badge:'NEW',items:[{v:'rasa',tab:'ov',label:'RASA Overview'},{v:'rasa',tab:'ask',label:'Ask RASA'},{v:'rasa',tab:'src',label:'Knowledge Sources'},{v:'rasa',tab:'teach',label:'Teach RASA'},{v:'rasa',tab:'act',label:'Learning Activity'},{v:'rasa',tab:'rev',label:'Knowledge Review'},{v:'rasa',tab:'ana',label:'Analytics & Performance'},{v:'rasa',tab:'set',label:'RASA Settings'},{action:'rasa',label:'RASA assistant (chat)'}]},
   {k:'imports',label:'Imports & Integrations',ic:'imp',items:[
     {v:'imp',label:'Import centre'},{v:'base',sec:'p6',label:'Primavera P6 (XER, XML)'},{v:'mmcs',label:'Excel templates'},
     {plan:'SAP ECC Excel exports',note:'Planned: needs a sample export and Finance approval'},{plan:'S/4HANA connector',note:'Disabled until IT, SAP, Cybersecurity and Finance approve'}]},
@@ -8740,6 +8821,7 @@ const NAV_SEC={recon:/Source reconciliation/i,p6:/Baseline management|baseline/i
 function navItemOk(it,views){
   if(it.plan)return PLAN_ROLES.includes(state.role)&&(!it.needs||views.includes(it.needs));   /* v3.24: a planned item of a module shows only with the module */
   if(it.action==='rasa')return true;
+  if(it.v==='rasa'&&it.tab==='set'&&state.role!=='sa')return false;
   if(!views.includes(it.v))return false;
   if(it.v==='pv'&&it.sec==='cfg'&&!canPvKeepAny())return false;
   if(it.rep&&!reportAllowed(it.rep))return false;
@@ -8754,6 +8836,7 @@ function navActiveKey(views){
   if(state.view==='rep'){const r=here.find(x=>x.it.rep&&x.it.rep===state.report)||here.find(x=>!x.it.rep);if(r)return r.key}
   if(state.view==='boq'){const r=here.find(x=>x.it.sec===((state.boqUi||{}).sec||'dash'));if(r)return r.key}
   if(state.view==='bcm'){const r=here.find(x=>x.it.sec===((state.bcmUi||{}).sec||'ov'));if(r)return r.key}
+  if(state.view==='rasa'){const r=here.find(x=>x.it.tab===(state.rkTab||(state.rk||{}).tab||'ov'));if(r)return r.key}
   return (here.find(x=>!x.it.sec&&!x.it.rep&&!x.it.tab)||here[0]).key;
 }
 function navHTML(views){
@@ -8786,7 +8869,7 @@ document.addEventListener('click',e=>{
   if(g){const k=g.dataset.navgrp;state.navOpen=state.navOpen||{};state.navOpen[k]=g.getAttribute('aria-expanded')!=='true';
     g.setAttribute('aria-expanded',state.navOpen[k]);const sub=g.nextElementSibling;if(sub)sub.hidden=!state.navOpen[k];e.stopPropagation();return}
   const t=e.target.closest('#nav [data-navkey]');
-  if(t){state.navKey=t.dataset.navkey;if(t.dataset.navrep)state.report=t.dataset.navrep;if(t.dataset.navtab)state.adminTab=t.dataset.navtab;state.navSec=t.dataset.navsec||null;
+  if(t){state.navKey=t.dataset.navkey;if(t.dataset.navrep)state.report=t.dataset.navrep;if(t.dataset.navtab){if(t.dataset.go==='rasa')state.rkTab=t.dataset.navtab;else state.adminTab=t.dataset.navtab}state.navSec=t.dataset.navsec||null;
     if(t.dataset.go===state.view&&t.dataset.go!=='pv'&&t.dataset.go!=='boq'&&t.dataset.go!=='bcm'&&!t.dataset.navrep&&!t.dataset.navtab&&state.navSec){const s=state.navSec;state.navSec=null;e.stopPropagation();renderNav();navScroll(s)}}
 },true);
 
@@ -8997,16 +9080,16 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- shell ---------- */
-const NAV_ALL=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','cplan','mer','boq','rep','deck','perf','admin'];
+const NAV_ALL=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','cplan','mer','boq','rep','deck','perf','rasa','admin'];
 let NAV_VIEWS=[];
 /* the screens a person sees under today's rules (v3.6), for their role and rights */
-function navDefault(v){if(v==='mat'&&!ROLE_VIEWS[state.role])return canMatView();return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='boq'||PLAN_ROLES.includes(state.role))&&(v!=='bcm'||can('money.view'))&&(v!=='wfr'||can('money.view'))&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='po'||canCost())&&(v!=='mmcs'||canCost()||canBaseline())&&(v!=='pv'||canPvView())&&(v!=='inv'||canCost()||canBaseline())&&(v!=='cash'||canCashView())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())&&(v!=='dly'||canDlyView())&&(v!=='cout'||canCoView())&&(v!=='cfd'||canCfdView())&&(v!=='rs'||canRsView())&&(v!=='cplan'||canCpView())&&(v!=='mer'||canCpView())}
+function navDefault(v){if(v==='rasa')return true;if(v==='mat'&&!ROLE_VIEWS[state.role])return canMatView();return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='boq'||PLAN_ROLES.includes(state.role))&&(v!=='bcm'||can('money.view'))&&(v!=='wfr'||can('money.view'))&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='po'||canCost())&&(v!=='mmcs'||canCost()||canBaseline())&&(v!=='pv'||canPvView())&&(v!=='inv'||canCost()||canBaseline())&&(v!=='cash'||canCashView())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())&&(v!=='dly'||canDlyView())&&(v!=='cout'||canCoView())&&(v!=='cfd'||canCfdView())&&(v!=='rs'||canRsView())&&(v!=='cplan'||canCpView())&&(v!=='mer'||canCpView())}
 /* v3.7: the super admin may show or hide a screen for a role; Administration stays with super admins */
 function navOn(v){if(v==='admin')return state.role==='sa';const o=screenOv(v);return (o!==undefined?o:navDefault(v))&&(v!=='new'||canCreate())}
 function renderNav(){
   const L=T[state.lang];const views=NAV_ALL.filter(navOn);NAV_VIEWS=views;
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=`<button type="button" data-mnav aria-label="Open the full menu">${icon('menu')}<span>Menu</span></button>`+views.filter(v=>!['wfr','bcm','boq','pv','mat','po','inv','mmcs','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','dly','cout','cfd','rs','xr'].includes(v)).map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=`<button type="button" data-mnav aria-label="Open the full menu">${icon('menu')}<span>Menu</span></button>`+views.filter(v=>!['wfr','bcm','boq','pv','mat','po','inv','mmcs','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','dly','cout','cfd','rs','xr','rasa'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=state.view==='logs'&&(state.navSec==='supp'||(!state.navSec&&state.logTab==='supp'))?'Budget supplements':L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -9034,7 +9117,7 @@ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
   if(screenOv(state.view)===false){state.view=NAV_VIEWS.find(v=>v!==state.view)||'dash';renderNav()}   /* v3.7: a hidden screen sends the person to an allowed one */
-  ({wfr:renderWfr,bcm:renderBcm,boq:renderBoq,rs:renderRs,cout:renderCout,cfd:renderCfd,cplan:renderCplan,mer:renderMer,dly:renderDly,pv:renderPv,mmcs:renderMmcs,po:renderPo,inv:renderInv,cash:renderCash,mat:renderMat,xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpdMoved,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({wfr:renderWfr,bcm:renderBcm,boq:renderBoq,rs:renderRs,cout:renderCout,cfd:renderCfd,cplan:renderCplan,mer:renderMer,rasa:renderRasa,dly:renderDly,pv:renderPv,mmcs:renderMmcs,po:renderPo,inv:renderInv,cash:renderCash,mat:renderMat,xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpdMoved,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -10291,7 +10374,7 @@ async function ask(q){
     finally{aiBusy=false;aiCtl=null;$('#aiSend').textContent='Send';renderChat();rasaAfter(q,msg.h,null,tok)}
     return}
   const sample=rasaLLMAllowed()?await samP:null;
-  if(!sample){msg.h=RASA_NOEV_HELP();renderChat();rasaAfter(q,msg.h,{final:'IDLE'},tok);return}
+  if(!sample){msg.h=RASA_NOEV_HELP();try{if(!rkLive()){rkGap(q,SCOPE.size===1?[...SCOPE][0]:null,null,'none',null);save()}}catch(e){}renderChat();rasaAfter(q,msg.h,{final:'IDLE'},tok);return}
   aiBusy=true;aiCtl=new AbortController();$('#aiSend').textContent='Stop';
   const bubble=$('#aiMsgs').lastElementChild;
   const rules=`You are RASA, the Real-time Artificial Smart Assistant inside ProTrackAI, a construction productivity platform used by a Saudi contractor. Speak like a trusted senior project-controls colleague: natural, professional, warm and concise. Say what you checked, give the figure and what it means, and where useful end with one offer of a next step. Never sound robotic. Answer the user's question using ONLY the JSON data below. It holds project KPIs, activities, foremen, subcontractors, early warnings, manpower, milestones, extension of time, contract billing, the rows of the ProTrack reports most relevant to the question, and what the live modules hold under "modules" (delay events, BOQ Engine quantities, document titles, delayed materials, cash-out and cash-inflow); a module under notLiveYet is not live yet: say so and give its stage (scope: ${scopeLabel()}; progress as of ${ASOF}; currency SAR; rates are units per manhour; index 100% = planned productivity). Be concise: under 140 words, plain sentences, "- " bullets only when listing. Quote numbers with units. If the data does not cover the question, say so and suggest which ProTrack report to open. Reply in the language of the question.\n\nDATA:\n${JSON.stringify(aiContextSafe(q))}`;
@@ -10978,6 +11061,634 @@ function rasaModCtx(){
   try{if(glLive('invoices')&&money){const now=ym(ASOF);if(canCoView())o.cashOut=scopeProjects().map(p=>{try{const F=coForecast(p.id);return F&&(F.budget.ok||F.moves.length)?{project:p.short,actualSAR:Math.round(F.actualH/100),remainingSAR:Math.round(F.remainingH/100),headroomSAR:F.headroom==null?null:Math.round(F.headroom/100)}:null}catch(e){return null}}).filter(Boolean);
     if(canCashView())o.cashIn=scopeProjects().map(p=>{const F=cashForecast(p.id);if(!F||F.none)return null;const R=cashRows(F);return {project:p.short,next3MonthsSAR:Math.round(R.filter(r=>r.m>=now&&r.m<rasaMAdd(now,3)).reduce((t,r)=>t+r.fcCol,0)),next12MonthsSAR:Math.round(R.filter(r=>r.m>=now&&r.m<rasaMAdd(now,12)).reduce((t,r)=>t+r.fcCol,0))}}).filter(Boolean)}}catch(e){}
   return o}
+
+/* ---------- v3.47: RASA Intelligence, the central knowledge and learning hub ----------
+   One workspace for what RASA knows: a registry of ProTrackAI's modules (what each holds, how RASA reads it, its connection and its
+   indexing state), a knowledge index built from the records and document text people can already open, the questions RASA could
+   not answer, corrections and business rules taught through a review workflow, and the measures of how well RASA answers.
+   Every source keeps its project, module, record, revision, approval status and access class, and every search checks the
+   reader's rights again (projects in access, cost figures, the document rack's rows, report visibility). Nothing taught is
+   trusted until a reviewer approves and publishes it; every publication can be withdrawn.
+   On hold until alfanar IT and Cybersecurity approve (RASA_ENTERPRISE): the language model on the server, embeddings and vector
+   search (pgvector), malware scanning of uploads. Until then RASA answers from ProTrackAI's own calculations and quotes the
+   indexed passages; search is by words, record numbers, WBS and activity IDs, and filters. */
+const RK_ST=['Not connected','Configuring','Connected','Syncing','Attention required','Disabled'];
+const RK_PST=['Draft','Submitted','Under Review','Approved','Published','Rejected','Needs Revision','Superseded','Withdrawn'];
+const RK_KINDS={correction:'Correction',rule:'Business rule',gap:'Knowledge for a gap',note:'Knowledge note'};
+const RK_POL_DEF={correction:1,rule:1,gap:1,note:1,fin:2};
+const RK_AUTH={Published:6,Released:5,Approved:5,Certified:5,Agreed:4,Issued:4,Paid:4,Recorded:3,Calculated:3,Submitted:2,'Under review':2,'For information':2,Reviewed:2,Draft:1,Rejected:0,Superseded:0};
+const RK={busy:{},dirty:new Set(),ch:{},t:null,inSync:false,first:null};
+function rkDB(){const R=DB.rk||(DB.rk={});if(!R.src||typeof R.src!=='object')R.src={};['runs','props','pub','gaps','fb','qlog','act','evals'].forEach(k=>{if(!Array.isArray(R[k]))R[k]=[]});
+  R.cfg=Object.assign({mods:{},pol:{},keep:180},R.cfg||{});R.cfg.mods=R.cfg.mods||{};R.cfg.pol=Object.assign({},RK_POL_DEF,R.cfg.pol||{});R.pubVer=+R.pubVer||0;R.seq=+R.seq||0;return R}
+const rkNow=()=>new Date().toISOString();
+const rkId=(p)=>{const R=rkDB();R.seq=(+R.seq||0)+1;return p+'-'+String(R.seq).padStart(5,'0')};
+const rkHash=s=>{let h=0x811c9dc5;s=String(s);for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,'0')};
+const rkPj=id=>{const p=projById(id);return p?`${p.short} (${pcode(p)})`:String(id||'')};
+const rkD=v=>v?fmtDY(String(v).slice(0,10)):'—';
+const rkN=v=>v==null||v===''||!isFinite(+v)?'—':fmt(+v);
+const rkClauseIds=t=>[...new Set((String(t).match(/\bclause\s+\d+(\.\d+)*/gi)||[]).map(x=>x.replace(/\s+/,' ').replace(/^c/,'C')))];
+/* rights: teaching and syncing follow the roles that keep records; review and company-wide approval are given by the super admin */
+const rkCanSync=()=>state.role==='sa'||can('rasa.sync');
+const rkCanTeach=()=>state.role==='sa'||can('rasa.teach');
+const rkCanReview=pid=>(state.role==='sa'||can('rasa.review'))&&(!pid||accessIds().includes(pid));
+const rkCanCompany=()=>state.role==='sa'||can('rasa.company');
+const rkLive=()=>CLOUD_ME&&!DB.rkMissing;
+
+/* ----- the module registry: every ProTrackAI feature and how RASA reads it ----- */
+const RK_CRF=[['contract_value','Contract value'],['budget_tender','Tender cost'],['budget_rev0','Approved budget (Rev.00)'],['budget_current','Current budget'],['actual','Actual cost'],['commitment','Commitments'],['etc','Estimate to complete (ETC)'],['eac','Estimate at completion (EAC)'],['inv_submitted','Invoices submitted'],['stock_value','Actual stock value']];
+const RK_WBSL={budget:'current budget',prev:'previous budget',actual:'actual',commitment:'commitment',etc:'ETC',eac:'EAC'};
+function rkcSched(pids){const out=[];pids.forEach(pid=>{const p=projById(pid);if(!p)return;const acts=ACTS.filter(a=>a.p===pid);
+  if(acts.length){const e=evm(acts,TODAY),f=forecast(p);
+    out.push({rec:'sum:'+pid,pid,type:'Schedule status',title:`Schedule status, ${p.short}`,appr:'Calculated',at:TODAY,eff:TODAY,owner:'ProTrackAI calculation',route:{v:'pdash'},
+      parts:[{t:`Schedule status of ${rkPj(pid)}, ${p.name}, at ${rkD(TODAY)}, calculated by ProTrackAI from the baseline and the daily reports: ${acts.length} activities; planned progress ${fmt(e.bac?e.pv/e.bac*100:0,1)}%, earned progress ${fmt(e.bac?e.ev/e.bac*100:0,1)}%, schedule performance index (SPI) ${fmt(e.spi,2)}. Baseline finish ${rkD(f.base)}; forecast finish at the recent rate ${rkD(f.fin)}${f.slip&&Math.abs(f.slip)<9999?` (${f.slip>0?f.slip+' days late':(-f.slip)+' days early'})`:''}. ProTrackAI does not hold total float or the critical path from P6, so it cannot list activities with negative float.`,loc:'Summary'}]})}
+  msOf(p).forEach((m,i)=>{const s=msState(m);out.push({rec:`ms:${pid}:${i}`,pid,type:'Milestone',title:`Milestone ${m.n||i+1}, ${p.short}`,appr:'Recorded',eff:m.plan||null,owner:'',route:{v:'proj'},
+    parts:[{t:`Milestone "${m.n||''}" (${m.t||'Intermediate'}) of ${rkPj(pid)}: planned ${rkD(m.plan)}, forecast ${rkD(m.fc)}, actual ${rkD(m.act)}. ${s.t}. ${m.act?"Achieved.":s.k==="r"?"At risk: overdue.":s.k==="a"?"At risk: due within 30 days or forecast after the plan.":s.k==="g"?"On track.":""}${m.eot?' EOT '+m.eot+'.':''}`,loc:'Milestone',ids:[m.n].filter(Boolean)}]})});
+  acts.forEach(a=>{const s=actStats(a,[]);out.push({rec:'act:'+a.id,pid,type:'Activity',title:`${a.id} ${a.name}`,appr:'Recorded',eff:bsOf(a)||null,owner:'',route:{v:'dash'},
+    parts:[{t:`Activity ${a.id}: ${a.name}. ${rkPj(pid)}. WBS ${a.wbs||'—'}, discipline ${a.disc||'—'}, area ${a.area||'—'}. Baseline ${rkD(bsOf(a))} to ${rkD(bfOf(a))}. Quantity ${rkN(a.qty)} ${a.uom||''}: ${fmt(s.done*100,1)}% done, ${fmt(plannedPct(a,TODAY)*100,1)}% planned by ${rkD(TODAY)}.`,loc:'Activity',ids:[a.id,a.wbs].filter(Boolean)}]})})});
+  return out}
+function rkcCost(pids){const out=[];pids.forEach(pid=>{const p=projById(pid);if(!p)return;
+  relRows().filter(r=>r.project_id===pid&&r.kind==='cost'&&['Released','Superseded'].includes(r.status)).forEach(r=>{const f=r.figures||{},poc=crPoc(f);
+    const head=RK_CRF.filter(([k])=>f[k]!=null&&f[k]!=='').map(([k,l])=>`${l} SAR ${rkN(crN(f[k]))}`).join('; ');
+    const parts=[{t:`Monthly cost report of ${rkPj(pid)} for ${perLabel(r.period_type,r.period)}, revision ${r.rev||0}, ${r.status}. ${head||'No header figures'}. POC ${poc==null?'—':fmt(poc,1)+'%'}. The tender cost, the approved budget, the current budget, actual cost, commitments and EAC are the report's own figures, kept apart.`,loc:'Summary'}];
+    (Array.isArray(f.wbs)?f.wbs:[]).slice(0,150).forEach(l=>parts.push({t:`WBS ${l.code||''} ${l.name||''} (${rkPj(pid)}, ${perLabel(r.period_type,r.period)}): ${Object.keys(RK_WBSL).filter(k=>l[k]!=null&&l[k]!=='').map(k=>`${RK_WBSL[k]} SAR ${rkN(crN(l[k]))}`).join(', ')||'no figures'}`,loc:'WBS '+(l.code||''),ids:[l.code].filter(Boolean)}));
+    out.push({rec:'cr:'+r.id,pid,type:'Monthly cost report',title:`Cost report ${p.short} ${perLabel(r.period_type,r.period)} rev ${r.rev||0}`,rev:'Rev '+(r.rev||0),appr:r.status,eff:r.period,at:r.released_at||r.prepared_at||null,owner:r.prepared_by_name||'',cls:'money',route:{v:'rel',sec:'cost'},parts})});
+  const acts=ACTS.filter(a=>a.p===pid);if(acts.length){const e=evm(acts,TODAY);
+    out.push({rec:'evm:'+pid,pid,type:'Earned value',title:`Earned value, ${p.short}`,appr:'Calculated',eff:TODAY,at:TODAY,owner:'ProTrackAI calculation',cls:'money',route:{v:'eva'},
+      parts:[{t:`Earned value of ${rkPj(pid)} at ${rkD(TODAY)}, calculated by ProTrackAI from the baseline and the daily reports (not from SAP): budget at completion SAR ${rkN(e.bac)}, planned value SAR ${rkN(e.pv)}, earned value SAR ${rkN(e.ev)}, actual cost SAR ${rkN(e.ac)}; SPI ${fmt(e.spi,2)}, CPI ${fmt(e.cpi,2)}, cost variance SAR ${rkN(e.cv)}.`,loc:'Earned value'}]})}
+  const y=+ym(ASOF).slice(0,4),c=typeof cpOf==='function'?cpOf(pid,y):null;
+  if(c)out.push({rec:`cp:${pid}:${y}`,pid,type:'Cost plan',title:`Cost plan ${y}, ${p.short}`,appr:c.int&&c.int.status||'Draft',eff:String(y),cls:'money',route:{v:'cplan'},
+    parts:[{t:`Cost plan ${y} of ${rkPj(pid)}: internal plan ${c.int?c.int.status:'not made'}, budget SAR ${rkN(c.int&&c.int.budget)}; finance plan ${c.fin?c.fin.status:'not made'}, target POC at year end ${c.fin&&c.fin.target!=null?c.fin.target+'%':'—'}.`,loc:'Cost plan'}]})});
+  return out}
+async function rkcDocs(pids){const out=[],P=new Set(pids),all=DB.docs||[];
+  for(const d of all.filter(x=>P.has(x.project_id))){const row=docRowOfKey(d.project_id,d.box_key);if(state.role!=='sa'&&!docCanRead(row))continue;
+    const m=docTextMeta(d.id),u=docUnitOf(d),sup=d.status==='Superseded'||all.some(x=>x.supersedes===d.id);
+    const it={rec:'doc:'+d.id,pid:d.project_id,type:'Document',title:d.title+(d.revision?' '+d.revision:''),rev:d.revision||'',appr:sup?'Superseded':(d.status||'Recorded'),eff:d.doc_date||d.period||null,
+      at:d.uploaded_at||d.created_at||d.doc_date||null,owner:d.uploaded_by_name||d.created_by_name||'',cls:'doc:'+(row||''),row:row||'',box:d.box_key,route:{doc:d.id},
+      parts:[{t:`Document "${d.title}"${d.ref_no?' '+d.ref_no:''}${d.revision?', '+d.revision:''} of ${rkPj(d.project_id)}: box ${d.box_key} ${d.category||''}, status ${sup?'Superseded':d.status}${d.period?', period '+docPer(d.period):''}${d.file_name?', file '+d.file_name:''}.`,loc:'Details',ids:[d.ref_no,d.box_key].filter(Boolean)}]};
+    if(!d.sample&&m&&m.status==='Failed')it.fail=`The text could not be read${m.error?': '+m.error:''}`;
+    else{let pages=null;try{pages=await docTextOf(d)}catch(e){pages=null}
+      if(pages)pages.forEach((t,i)=>rasaPassages(t).forEach(x=>it.parts.push({t:x,loc:`${u} ${i+1}`,ids:rkClauseIds(x)})));
+      else it.note=!m?'Text not read yet: only the details are searchable':m.status==='No text'?'No text layer (a scan or an image): only the details are searchable':''}
+    out.push(it)}
+  return out}
+function rkcContract(pids){const out=[];pids.forEach(pid=>{const p=projById(pid);if(!p)return;let b=null;try{b=billOf(p)}catch(e){b=null}
+  const ph=b&&b.phases?PHASES.map(([k,nm])=>{const x=b.phases[k]||{};return x.cap!=null?`${nm}: billed on progress up to ${x.cap}% of the phase price${x.rel1&&+x.pct1?`, ${x.pct1}% released at ${x.rel1}`:''}${x.rel2&&+x.pct2?`, ${x.pct2}% released at ${x.rel2}`:''}`:''}).filter(Boolean).join('; '):'';
+  out.push({rec:'terms:'+pid,pid,type:'Contract terms',title:`Contract terms, ${p.short}`,appr:'Recorded',eff:p.start||null,owner:'Settings → Projects and terms',cls:'money',route:{v:'admin'},
+    parts:[{t:`Contract terms of ${rkPj(pid)} recorded in ProTrackAI (Settings → Projects and terms), not the contract text: client ${p.client||'—'}; contract value SAR ${fmt(+p.value||0,1)} million; start ${rkD(p.start)}, finish ${rkD(p.finish)}; payment within ${typeof payDaysOf==='function'?payDaysOf(p):'—'} days of the invoice.${b?` Advance ${b.adv&&+b.adv.pct?b.adv.pct+'% recovered at '+b.adv.recover+'% of each interim payment':'none'}; retention ${b.ret&&+b.ret.pct?b.ret.pct+'% up to '+b.ret.cap+'% of the price, '+b.ret.tcc+'% released at TCC and '+b.ret.fac+'% at FAC':'none'}.`:''}${ph?' Billing: '+ph+'.':''}${p.eot&&p.eot.status&&p.eot.status!=='Not applicable'?` Extension of time: ${p.eot.status}${p.eot.days?', '+p.eot.days+' days':''}${p.eot.ref?', '+p.eot.ref:''}.`:''}`,loc:'Terms'}]})});
+  return out}
+function rkcProd(pids){const out=[],P=new Set(pids),L=lines().filter(l=>P.has(l.p)&&VALID.has(l.status)),G={};
+  L.forEach(l=>{const k=l.p+'|'+isoWeekOf(l.date);(G[k]=G[k]||[]).push(l)});
+  Object.entries(G).forEach(([k,rows])=>{const [pid,w]=k.split('|'),ids=[...new Set(rows.map(r=>r.rid))],ap=DB.dprs.filter(d=>ids.includes(d.id)&&d.status==='Approved').length,by={};rows.forEach(r=>(by[r.act]=by[r.act]||[]).push(r));const g=agg(rows);
+    out.push({rec:`dprw:${pid}:${w}`,pid,type:'Daily reports (week)',title:`Daily reports ${projById(pid)?.short||pid} ${w}`,appr:ap===ids.length?'Approved':'Submitted',eff:w,at:rows.map(r=>r.date).sort().pop(),owner:[...new Set(rows.map(r=>r.foreman))].join(', '),route:{v:'dpr'},
+      parts:[{t:`Daily reports of ${rkPj(pid)} for ${perLabel('week',w)}: ${ids.length} reports (${ap} approved), ${rkN(g.mh)} man-hours, productivity index ${fmt(g.pi*100,1)}%.`,loc:'Week',ids}].concat(Object.entries(by).slice(0,60).map(([act,R])=>{const a=ACTS.find(x=>x.id===act)||{},x=agg(R);
+        return {t:`${act} ${a.name||''} (${rkPj(pid)}, ${w}): installed ${rkN(x.qty)} ${a.uom||''}, ${rkN(x.mh)} man-hours, productivity index ${fmt(x.pi*100,1)}%, from reports ${[...new Set(R.map(r=>r.rid))].join(', ')}.`,loc:'Activity '+act,ids:[act,a.wbs].filter(Boolean)}}))})});
+  return out}
+function rkcExec(pids){const out=[],P=new Set(pids);relRows().filter(r=>P.has(r.project_id)&&r.kind!=='cost').forEach(r=>{const p=projById(r.project_id)||{},n=r.narrative||{};
+  const txt=Object.entries(n).filter(([k,v])=>typeof v==='string'&&v.trim()&&!/json$/.test(k)).map(([k,v])=>`${k}: ${v.trim()}`).join('\n\n');
+  const kn=r.kind==='client'?'Client report':'Internal report';
+  out.push({rec:'rel:'+r.id,pid:r.project_id,type:kn,title:`${kn} ${p.short||''} ${perLabel(r.period_type,r.period)} rev ${r.rev||0}`,rev:'Rev '+(r.rev||0),appr:r.status,eff:r.period,at:r.released_at||r.prepared_at||null,owner:r.prepared_by_name||'',cls:'rel',relId:r.id,route:{v:'rel',sec:r.kind==='client'?'client':'planning'},
+    parts:[{t:`${kn} of ${rkPj(r.project_id)} for ${perLabel(r.period_type,r.period)}, revision ${r.rev||0}, status ${r.status}${r.status==='Released'?'':' (not released)'}; data date ${rkD(r.data_date)}.`,loc:'Report'}].concat(txt?rasaPassages(txt).map(x=>({t:x,loc:'Narrative'})):[])})});
+  return out}
+function rkcCash(pids){const out=[];pids.forEach(pid=>{const p=projById(pid);if(!p)return;const I=invOf(pid);
+  if(I.length)out.push({rec:'inv:'+pid,pid,type:'Invoice register',title:`Invoice register, ${p.short}`,appr:'Recorded',eff:I.map(v=>v.date).sort().pop()||null,cls:'money',route:{v:'inv'},
+    parts:[{t:`Invoice register of ${rkPj(pid)}: ${I.length} invoices; amount SAR ${rkN(I.reduce((t,v)=>t+v.amount,0))}, submitted SAR ${rkN(I.reduce((t,v)=>t+v.sub,0))}, approved SAR ${rkN(I.reduce((t,v)=>t+v.appr,0))}, collected SAR ${rkN(I.reduce((t,v)=>t+v.coll,0))}.`,loc:'Totals'}]
+      .concat(I.map(v=>({t:`Invoice ${v.no} (${v.type}) of ${rkPj(pid)} dated ${rkD(v.date)}: amount SAR ${rkN(v.amount)}, submitted SAR ${rkN(v.sub)}${v.sub_date?' on '+rkD(v.sub_date):''}, approved SAR ${rkN(v.appr)}${v.appr_date?' on '+rkD(v.appr_date):''}, collected SAR ${rkN(v.coll)}${v.coll_date?' on '+rkD(v.coll_date):''}.${v.note?' '+v.note:''}`,loc:'Invoice '+v.no,ids:[v.no]})))});
+  try{const F=cashForecast(pid);if(F&&!F.none){const R=cashRows(F),now=ym(ASOF),s=(a,b)=>R.filter(r=>r.m>=a&&r.m<b).reduce((t,r)=>t+(+r.fcCol||0),0);
+    out.push({rec:'cin:'+pid,pid,type:'Cash-inflow forecast',title:`Cash-inflow forecast, ${p.short}`,appr:'Calculated',eff:now,cls:'money',route:{v:'cash'},parts:[{t:`Cash-inflow forecast of ${rkPj(pid)} from ${perLabel('month',now)}: SAR ${rkN(s(now,rasaMAdd(now,3)))} expected in the next 3 months and SAR ${rkN(s(now,rasaMAdd(now,12)))} in the next 12 months (ProTrackAI's forecast from progress, payment terms and the invoice register).`,loc:'Forecast'}]})}}catch(e){}});
+  return out}
+function rkcClaims(pids){const out=[],P=new Set(pids);
+  (typeof dlyRows==='function'?dlyRows():[]).filter(e=>P.has(e.project_id)).forEach(e=>{let c={};try{c=dlyCalc(e)}catch(x){}
+    out.push({rec:'de:'+(e.id||e.event_no),pid:e.project_id,type:'Delay event',title:`${e.event_no} ${e.name}`,appr:e.status||'Recorded',eff:e.start_date||null,cls:'dly',route:{v:'dly'},
+      parts:[{t:`Delay event ${e.event_no} of ${rkPj(e.project_id)}: ${e.name}. Status ${e.status||'—'}; started ${rkD(e.start_date)}; notice ${e.notice_date?'given '+rkD(e.notice_date):'not given yet'}${c.deadline?', notice deadline '+rkD(c.deadline):''}; time bar ${e.time_bar||'—'} days; schedule impact ${e.sched_impact||'—'} days. ${e.description||''}`,loc:'Delay event',ids:[e.event_no].filter(Boolean)}]})});
+  pids.forEach(pid=>{let v=null;try{v=voLatest(pid,curMonth())}catch(x){v=null}if(!v||!v.rows||!v.rows.length)return;
+    out.push({rec:'vo:'+pid,pid,type:'Change order and claim log',title:`Change order and claim log, ${projById(pid)?.short||pid}`,appr:'Recorded',eff:v.period||null,cls:'vo',route:{v:'logs',sec:'vo'},
+      parts:v.rows.map(r=>({t:`${r.kind==='Claim'?'Claim':'Change order'} ${r.ref_no} of ${rkPj(pid)}: ${r.description||''}; client status ${r.client_status||'not given'}.`,loc:r.ref_no,ids:[r.ref_no]}))})});
+  return out}
+function rkcProc(pids){const out=[];pids.forEach(pid=>{const p=projById(pid);if(!p)return;
+  const POs=SUBS.flatMap(sb=>posOf(sb,pid).map(o=>({o,sb})));
+  if(POs.length)out.push({rec:'po:'+pid,pid,type:'Subcontract purchase orders',title:`Subcontract purchase orders, ${p.short}`,appr:'Recorded',cls:'money',route:{v:'po'},
+    parts:POs.map(({o,sb})=>({t:`Purchase order ${o.no} of ${rkPj(pid)}: subcontractor ${sb.name}, ${o.type||''}, value SAR ${rkN(o.value)}.`,loc:'PO '+o.no,ids:[o.no]}))});
+  try{if(mtSetup(pid)){const R=mtActivities(pid).rows.filter(r=>r.material);if(R.length)out.push({rec:'mt:'+pid,pid,type:'Material tracking',title:`Material tracking, ${p.short}`,appr:'Recorded',cls:'mat',route:{v:'mat'},
+    parts:R.slice(0,150).map(r=>({t:`Material "${r.material}" of ${rkPj(pid)} for ${r.uact||r.name||'—'}: baseline finish ${rkD(r.bf)}, forecast finish ${rkD(r.cf)}${r.late?'; late against the baseline':''}${r.supplier?'; supplier '+r.supplier:''}${r.po?'; PO '+r.po:''}.`,loc:r.material,ids:[r.po,r.uact].filter(Boolean)}))})}}catch(e){}});
+  return out}
+function rkcBoq(pids){const out=[],B=boqDB();pids.forEach(pid=>{const p=projById(pid);if(!p)return;
+  const D=(B.dwgs||[]).filter(d=>d.project_id===pid&&!d.discarded&&d.reg),C=(B.calcs||[]).filter(c=>c.project_id===pid&&!c.deleted);
+  if(D.length)out.push({rec:'dwg:'+pid,pid,type:'Drawing register',title:`Drawing register, ${p.short}`,appr:'Recorded',cls:'boq',route:{v:'boq'},
+    parts:D.map(d=>({t:`Drawing ${d.no} revision ${d.rev} of ${rkPj(pid)}: ${d.title||''}, ${d.category||''}, ${d.doc_status||''}${d.superseded?', superseded by a later revision':''}.`,loc:`${d.no} rev ${d.rev}`,ids:[d.no]}))});
+  if(C.length)out.push({rec:'calc:'+pid,pid,type:'Quantity calculations',title:`Quantity calculations, ${p.short}`,appr:'Recorded',cls:'boq',route:{v:'boq'},
+    parts:C.map(c=>({t:`Quantity calculation ${c.code} of ${rkPj(pid)}: ${c.desc||''}, ${c.cat||''}, status ${c.status}${c.status==='Approved'?'':' (not an approved measured quantity)'}.`,loc:c.code,ids:[c.code]}))})});
+  return out}
+function rkcProj(pids){const out=[],P=new Set(pids);pids.forEach(pid=>{const p=projById(pid);if(!p)return;
+  out.push({rec:'p:'+pid,pid,type:'Project',title:`${p.short} ${p.name}`,appr:'Recorded',eff:p.start||null,route:{v:'proj'},
+    parts:[{t:`Project ${p.short} (${pcode(p)}): ${p.name}; client ${p.client||'—'}; ${p.location||''}; status ${p.status||'Active'}; start ${rkD(p.start)}, finish ${rkD(p.finish)}.`,loc:'Project',ids:[p.id,p.pe,p.te].filter(Boolean)}]})});
+  issRows().filter(i=>P.has(i.project_id)).forEach(i=>out.push({rec:'iss:'+(i.id||i.issue_no),pid:i.project_id,type:'Issue',title:`${i.issue_no} ${String(i.description||'').slice(0,60)}`,appr:i.status||'Recorded',eff:i.raised_on||i.date||null,cls:'iss',route:{v:'iss'},
+    parts:[{t:`Issue ${i.issue_no} of ${rkPj(i.project_id)} (${i.issue_type||'issue'}): ${i.description||''}. Status ${i.status||'—'}; owner ${i.owner||'—'}${i.sub_owner?', '+i.sub_owner:''}${i.target_date?'; target '+rkD(i.target_date):''}.${i.action?' Action: '+i.action:''}`,loc:'Issue',ids:[i.issue_no].filter(Boolean)}]}));
+  return out}
+function rkcTaught(pids){const P=new Set(pids);return rkDB().props.filter(p=>p.st==='Published'&&(!p.pid||P.has(p.pid))).map(p=>({rec:'kp:'+p.id,pid:p.pid||null,type:RK_KINDS[p.kind]||'Knowledge',title:p.title,rev:'v'+p.ver,appr:'Published',eff:p.eff||null,at:p.pubAt||null,owner:p.author_name||'',cls:p.scope==='company'?'company':'all',route:{rk:'rev',prop:p.id},prop:p.id,
+  parts:[{t:`${RK_KINDS[p.kind]||'Knowledge'}: ${p.title}. ${p.kind==='correction'&&p.old?`It replaces "${p.old}" with: `:''}${p.text}${p.formula?' Formula or criteria: '+p.formula:''}${p.why?' Reason: '+p.why:''}${p.ref?' Source: '+p.ref:''} (${p.scope==='company'?'company-wide':'project '+rkPj(p.pid)}; approved by ${(p.approvals||[]).map(a=>a.by).join(' and ')||'—'}, published as version ${p.pubVer}.)`,loc:'Published v'+p.pubVer,ids:(p.ids||[]).concat(p.id)}]}))}
+const RK_MODS=[
+  {k:'sched',name:'Scheduling (Primavera P6)',ic:'base',gl:'planning',go:{v:'pdash'},what:'Baselines and P6 updates, activities with their WBS, milestones, planned against earned progress, the forecast finish',types:'Schedule status, milestones, activities',how:'Records and ProTrackAI calculations',sync:'event',conn:rkcSched},
+  {k:'cost',name:'Cost Control',ic:'eva',gl:'cost',go:{v:'cdash'},what:'Released monthly cost reports (budgets, actual, commitments, EAC by WBS) and their revisions, earned value, cost plans',types:'Cost reports, earned value, cost plans',how:'Records and validated calculations',sync:'event',money:1,conn:rkcCost},
+  {k:'docs',name:'Document Rack',ic:'docs',gl:'docs',go:{v:'docs'},what:'Every document in the rack with its box, revision and status, and the text read from it',types:'Documents and their text',how:'Quoted passages and details',sync:'event',conn:rkcDocs},
+  {k:'contract',name:'Contracts',ic:'claims',gl:'docs',go:{v:'docs'},what:'The Contract & Commercial row of the rack (agreements, conditions, amendments) and each project\'s contract terms in Settings',types:'Contract documents and terms',how:'Quoted clauses and recorded terms',sync:'event',money:1,conn:rkcContract},
+  {k:'prod',name:'Productivity & Daily Reports',ic:'dpr',gl:'daily',go:{v:'dpr'},what:'Submitted and approved daily reports: installed quantities, man-hours and productivity by activity and week',types:'Daily reports by week',how:'Records and ProTrackAI calculations',sync:'event',conn:rkcProd},
+  {k:'exec',name:'Executive Reports',ic:'exec',gl:'home',go:{v:'xr'},what:'Internal and client reports with their narrative; draft, submitted and released versions kept apart',types:'Internal and client reports',how:'Records and quoted narrative',sync:'event',conn:rkcExec},
+  {k:'cash',name:'Invoices & Cash Flow',ic:'cash',gl:'invoices',go:{v:'cfd'},what:'The invoice register and the cash-inflow forecast',types:'Invoices, cash-inflow forecast',how:'Records and ProTrackAI calculations',sync:'event',money:1,conn:rkcCash},
+  {k:'claims',name:'Claims & Variations',ic:'claims',gl:'claims',go:{v:'dly'},what:'The delay events register (notices, time bars, impact) and the change order and claim log',types:'Delay events, change orders, claims',how:'Records',sync:'event',conn:rkcClaims},
+  {k:'proc',name:'Materials & Procurement',ic:'mat',gl:'materials',go:{v:'po'},what:'Subcontract purchase orders and material tracking against the schedule',types:'Purchase orders, materials',how:'Records',sync:'event',conn:rkcProc},
+  {k:'boq',name:'Quantity Takeoff (BOQ Engine)',ic:'boq',gl:'boq',go:{v:'boq'},what:'The drawing register with revisions and the quantity calculations with their status',types:'Drawings, quantity calculations',how:'Records',sync:'event',conn:rkcBoq},
+  {k:'proj',name:'Projects & Issues',ic:'proj',gl:'projects',go:{v:'proj'},what:'Projects, their client, dates and status, and the issue register',types:'Projects, issues',how:'Records',sync:'event',conn:rkcProj},
+  {k:'taught',name:'Taught knowledge',ic:'ai',go:{rk:'rev'},what:'Corrections, business rules and notes approved and published through Knowledge Review',types:'Published knowledge',how:'Approved knowledge',sync:'event',conn:rkcTaught},
+  {k:'pv',name:'Project Visual',ic:'pv',go:{v:'pv'},what:'Drawings, zones, routes and visual progress',why:'No connector yet: RASA does not read Project Visual drawings, zones or mappings.'},
+  {k:'bcm',name:'Budget & Cost Management',ic:'bcm',go:{v:'bcm'},what:'Tender costing intake, WBS classification and budget versions',why:'No connector yet: RASA does not read tender intake, WBS classification or budget versions. The approved budget RASA uses comes from the released monthly cost report.'},
+  {k:'sap',name:'SAP ECC / S/4HANA',ic:'imp',go:{v:'imp'},what:'Budgets, actual cost and commitments from SAP',off:'Disabled until IT, SAP, Cybersecurity and Finance approve'}];
+const rkMod=k=>RK_MODS.find(m=>m.k===k)||null;
+const rkModOn=m=>!m.off&&(rkDB().cfg.mods[m.k]||{}).on!==false;
+const rkStrat=m=>((rkDB().cfg.mods[m.k]||{}).sync)||m.sync||'manual';
+/* may this reader see this source? Checked at every search, with today's rights */
+function rkSees(s){if(!s||s.st!=='Indexed')return false;const m=rkMod(s.mod);if(!m||!rkModOn(m))return false;if(m.gl&&!glLive(m.gl)&&state.role!=='sa')return false;
+  if(s.pid&&!accessIds().includes(s.pid))return false;const c=s.cls||'all';
+  if(c==='money')return rasaMoneyOk();if(c.startsWith('doc:'))return state.role==='sa'||(canDocsView()&&docCanRead(c.slice(4)));
+  if(c==='rel'){const r=relRows().find(x=>x.id===s.relId);return !!r&&relVisible(r)}
+  if(c==='dly')return canDlyView();if(c==='vo')return canLogsView();if(c==='iss')return canIssView();if(c==='mat')return canMatView();if(c==='boq')return boqSees(s.pid);
+  return true}
+
+
+/* ----- the knowledge index: sources in the database, their passages in this browser's file store (on the server: rasa_chunks) ----- */
+async function rkChunks(k){if(RK.ch[k])return RK.ch[k];let v=null;try{v=await DOCIDB.get('rk:'+k)}catch(e){v=null}return RK.ch[k]=(v&&typeof v==='object'?v:{})}
+async function rkChunksPut(k,o){RK.ch[k]=o;await DOCIDB.put('rk:'+k,o)}
+function rkLog(k,text,o={}){const R=rkDB();R.act.unshift({id:rkId('EV'),at:rkNow(),k,text:String(text).slice(0,300),by:(me()||{}).name||'',mod:o.mod||null,pid:o.pid||null,link:o.link||null,cls:o.cls||null});if(R.act.length>400)R.act.length=400}
+const rkPids=m=>accessIds().filter(id=>projById(id));
+/* one sync of a module: read its records, compare each with what is indexed (by its content hash), index the new and changed ones,
+   keep the earlier version's history, mark the removed ones deleted. Applied only when the whole read succeeds, so a failed read
+   never publishes half a module. The same records read twice change nothing (idempotent). */
+async function rkSync(k,kind){const m=rkMod(k),R=rkDB();if(!m||!m.conn||!rkModOn(m))return null;if(!rkCanSync()&&kind!=='event')throw new Error('Only those who keep records refresh RASA\'s knowledge');
+  if(RK.busy[k])return null;if(m.money&&!rasaMoneyOk())return null;if(rkLive())return rkSyncLive(m,kind);
+  RK.busy[k]=true;RK.inSync=true;const t0=performance.now(),at=rkNow(),run={id:rkId('RUN'),mod:k,kind:kind||'manual',by:(me()||{}).name||'',at,added:0,changed:0,same:0,removed:0,failed:0,err:null,ms:0};
+  try{const pids=rkPids(m),P=new Set(pids),items=await m.conn(pids),C=Object.assign({},await rkChunks(k)),next={},seen=new Set(),notes=[];
+    for(const it of items){const id=k+':'+it.rec;if(seen.has(id))continue;seen.add(id);const s=R.src[id],parts=(it.parts||[]).filter(x=>x&&x.t);
+      const h=rkHash(JSON.stringify([it.title,it.rev,it.appr,parts.map(x=>[x.t,x.loc])]));
+      const base={id,mod:k,pid:it.pid||null,rec:it.rec,type:it.type,title:String(it.title||'').slice(0,200),rev:it.rev||'',appr:it.appr||'Recorded',eff:it.eff||null,at:it.at||null,owner:it.owner||'',cls:it.cls||'all',route:it.route||m.go,row:it.row||null,relId:it.relId||null,prop:it.prop||null,note:it.note||null};
+      if(it.fail){run.failed++;next[id]=Object.assign({},s||{},base,{st:'Failed',err:it.fail,hash:s?s.hash:null,ver:s?s.ver:0,n:s?s.n:0,synced:at});if(!s||s.st!=='Failed')notes.push(['failed',`Could not index ${it.type.toLowerCase()} "${base.title}": ${it.fail}`,base]);continue}
+      if(s&&s.hash===h&&s.st==='Indexed'){run.same++;next[id]=Object.assign({},s,base,{synced:at});continue}
+      const ver=(s&&s.hash?+s.ver||1:0)+1,hist=(s&&s.hist||[]).concat(s&&s.hash?[{ver:s.ver,hash:s.hash,rev:s.rev,appr:s.appr,at:s.indexed}]:[]).slice(-10);
+      next[id]=Object.assign(base,{st:'Indexed',hash:h,ver,n:parts.length,indexed:at,synced:at,hist,first:s&&s.first||at});
+      C[id]=parts.map((x,i)=>({i,t:String(x.t).slice(0,4000),loc:x.loc||'',ids:(x.ids||[]).filter(Boolean).map(String).slice(0,40)}));
+      if(s&&s.hash){run.changed++;if(s.appr!==base.appr&&base.appr==='Superseded')notes.push(['superseded',`${base.type} superseded: ${base.title}`,base]);else notes.push(['updated',`${base.type} updated (version ${ver}): ${base.title}`,base])}
+      else{run.added++;if(!s)notes.push(['indexed',`${base.type} indexed: ${base.title}`,base])}}
+    Object.values(R.src).filter(s=>s.mod===k&&(!s.pid||P.has(s.pid))&&!seen.has(s.id)&&s.st!=='Deleted').forEach(s=>{next[s.id]=Object.assign({},s,{st:'Deleted',del:at});delete C[s.id];run.removed++});
+    await rkChunksPut(k,C);Object.assign(R.src,next);
+    const first=!R.runs.some(x=>x.mod===k&&!x.err);notes.filter(x=>!first||x[0]==='failed').slice(0,6).forEach(([kk,t,b])=>rkLog(kk,t,{mod:k,pid:b.pid,link:{src:b.id},cls:b.cls}));
+  }catch(e){run.err=String(e&&e.message||e).slice(0,300)}
+  finally{run.ms=Math.round(performance.now()-t0);R.runs.unshift(run);if(R.runs.length>300)R.runs.length=300;delete RK.busy[k];RK.dirty.delete(k);
+    const ch=run.added+run.changed+run.removed;if(run.err)rkLog('failed',`${m.name}: the sync failed: ${run.err}`,{mod:k});else if(ch||run.failed||kind==='first'||kind==='full')rkLog('sync',`${m.name}: ${run.added} added, ${run.changed} updated, ${run.removed} removed${run.failed?`, ${run.failed} could not be read`:''} (${run.same} unchanged)`,{mod:k});
+    save();RK.inSync=false}
+  return run}
+async function rkSyncAll(kind,ks){const out=[];for(const m of RK_MODS.filter(x=>x.conn&&rkModOn(x)&&(!ks||ks.includes(x.k))&&(!x.money||rasaMoneyOk()))){try{const r=await rkSync(m.k,kind);if(r)out.push(r)}catch(e){}}return out}
+/* the app's own save is the change event: modules synced before, set to "on change", are refreshed a few seconds after a record is saved */
+function rkDirty(){if(RK.inSync||!DB.rk||!DB.rk.runs||!DB.rk.runs.length)return;RK_MODS.forEach(m=>{if(m.conn&&rkStrat(m)==='event'&&DB.rk.runs.some(r=>r.mod===m.k))RK.dirty.add(m.k)});
+  clearTimeout(RK.t);RK.t=setTimeout(rkCatchUp,5000)}
+async function rkCatchUp(){if(!RK.dirty.size||!rkCanSync()||RK.inSync)return;const ks=[...RK.dirty];RK.dirty.clear();for(const k of ks){try{await rkSync(k,'event')}catch(e){}}if(state.view==='rasa'&&!document.querySelector('#view :focus'))render()}
+async function rkReindex(){const R=rkDB();if(state.role!=='sa')throw new Error('Only the super admin re-indexes everything');Object.values(R.src).forEach(s=>{s.hash=null});rkLog('sync','Full re-index started: every source is read and indexed again');return rkSyncAll('full')}
+
+/* ----- search: words (stemmed), record numbers, WBS and activity IDs, clause numbers, project and module filters, approval and
+   revision rules. A superseded or deleted source is left out unless the question asks for history; a draft is labelled. ----- */
+const rkHistQ=q=>/\b(previous|history|historic|earlier|older?|superseded|last (month|revision|year)|rev\.?\s?0|revisions?|changed|change between|compare|baseline (vs|against|and))\b/i.test(q);
+const RK_QMOD=[[/schedul|delay|milestone|activit|critical|float|baseline|progress|behind|slip|spi|p6|programme|program|wbs/i,['sched','prod','exec']],[/cost|budget|eac|etc\b|variance|commitment|forecast|cpi|overrun|wbs|actual cost/i,['cost']],
+  [/contract|clause|notice|payment term|retention|advance|variation|amendment|addend|liquidated|damages|extension of time|\beot\b|obligation/i,['contract','docs','claims']],[/document|drawing|letter|minutes|specification|procedure|report says|file/i,['docs','boq']],
+  [/productiv|manpower|man-?hours|crew|foreman|daily report|installed|quantit/i,['prod','boq']],[/report|kpi|summary|narrative|released|client report|internal report/i,['exec']],[/cash|invoice|collect|billing|receiv|payable/i,['cash']],
+  [/claim|change order|delay event|time bar/i,['claims']],[/purchase order|\bpo\b|supplier|material|delivery|procure|subcontract/i,['proc']],[/issue|risk|concern/i,['proj','exec']],[/rule|procedure|policy|standard|how do we|formula/i,['taught']]];
+const rkModsOf=q=>{const s=new Set();RK_QMOD.forEach(([re,ks])=>{if(re.test(q))ks.forEach(k=>s.add(k))});if(s.size)s.add('taught');return s.size?[...s]:null};
+async function rkSearch(q,o={}){const terms=rasaTerms(q);if(!terms.length)return {hits:[],hidden:0,terms,total:0};
+  if(rkLive())return rkSearchLive(q,terms,o);
+  const R=rkDB(),hist=o.hist!=null?o.hist:rkHistQ(q),pids=o.pids?new Set(o.pids):null,mods=o.mods&&o.mods.length?new Set(o.mods):null,need=terms.length<=1?1:Math.max(1,Math.ceil(terms.length*0.5));
+  const by={};Object.values(R.src).forEach(s=>{if(s.st==='Indexed')(by[s.mod]=by[s.mod]||[]).push(s)});
+  const hits=[];let hidden=0;
+  for(const k of Object.keys(by)){const C=await rkChunks(k);
+    for(const s of by[k]){if(mods&&!mods.has(s.mod)&&!(mods.has('contract')&&s.mod==='docs'&&s.row==='contract'))continue;if(pids&&s.pid&&!pids.has(s.pid))continue;
+      let best=null;for(const c of (C[s.id]||[])){const sc=rasaScore(c.t,terms);let bonus=0;
+        (c.ids||[]).forEach(id=>{const l=String(id).toLowerCase();if(terms.includes(l)||terms.some(w=>w.length>=5&&l===w))bonus+=8;else if(l.length>=4&&q.toLowerCase().includes(l))bonus+=6});
+        if(sc.hits<need&&!bonus)continue;const score=sc.score+bonus+(RK_AUTH[s.appr]!=null?RK_AUTH[s.appr]:2)*0.6+(s.mod==='taught'?3:0);if(!best||score>best.score)best={s,c,score,hits:sc.hits}}
+      if(!best)continue;if(!rkSees(s)){hidden++;continue}if(!hist&&s.appr==='Superseded')continue;hits.push(best)}}
+  hits.sort((a,b)=>b.score-a.score);const top=[],per={};hits.forEach(h=>{if(top.length<(o.k||8)&&(per[h.s.id]=(per[h.s.id]||0)+1)<=1)top.push(h)});
+  return {hits:top,hidden,terms,total:hits.length}}
+
+/* ----- asking: ProTrackAI's own rules first (the same answers as the RASA assistant), then the indexed evidence with its
+   citations; the gap is recorded when neither has anything. A question about records the reader cannot open is answered as
+   "nothing you can open", never logged as a gap and never hinting the records exist. ----- */
+function rkCiteHTML(h,i,terms){const s=h.s,m=rkMod(s.mod)||{name:s.mod},warn=s.appr==='Superseded'?'Superseded: shown because the question asks for history':['Draft','Submitted','Under review'].includes(s.appr)?'Not approved: a draft or submitted record':'';
+  return `<li class="rk-cite" data-rksrc="${esc(s.id)}"><div class="rk-cite-h"><b>[${i+1}] ${esc(s.title)}</b> <span class="st ${rkStCls(s.appr)}">${esc(s.appr)}</span></div>
+    <div class="small muted">${esc(m.name)}${s.pid?' · '+esc(rkPj(s.pid)):' · company-wide'} · ${esc(h.c.loc||s.type)}${s.rev?' · '+esc(s.rev):''} · indexed ${esc(tStamp(s.indexed))} · v${s.ver}</div>
+    ${warn?`<div class="small a-c">${esc(warn)}</div>`:''}<blockquote class="rk-q">${rasaSnip(h.c.t,terms)}</blockquote>${rkOpenBtn(s)}</li>`}
+const rkStCls=a=>['Published','Released','Approved','Certified','Agreed','Paid'].includes(a)?'Approved':['Superseded','Rejected','Deleted','Failed','Withdrawn'].includes(a)?'Rejected':['Calculated','Recorded','Issued','For information'].includes(a)?'Info':'Draft';
+function rkOpenBtn(s){const r=s.route||{};if(r.doc&&(DB.docs||[]).some(d=>d.id===r.doc))return `<button class="link" type="button" data-docopen="${esc(r.doc)}">Open the document</button>`;
+  if(r.rk)return `<button class="link" type="button" data-rktab="${esc(r.rk)}"${r.prop?` data-rkprop="${esc(r.prop)}"`:''}>Open in Knowledge Review</button>`;if(r.v&&navOn(r.v))return `<button class="link" type="button" data-rkgo="${esc(r.v)}"${r.sec?` data-rksec="${esc(r.sec)}"`:''}>Open the record</button>`;return ''}
+const rkCiteOk=s=>{if(!rkSees(s))return false;const r=s.route||{};if(r.doc)return (DB.docs||[]).some(d=>d.id===r.doc);if(s.relId)return relRows().some(x=>x.id===s.relId);if(s.prop)return rkDB().props.some(p=>p.id===s.prop&&p.st==='Published');return true};
+async function rkAsk(q,o={}){q=String(q||'').trim().slice(0,500);if(!q)return null;const t0=performance.now(),R=rkDB(),named=rasaProjIn(q.toLowerCase());
+  const pids=(named.length?named.map(p=>p.id):o.pid?[o.pid]:[...SCOPE]).filter(id=>accessIds().includes(id));
+  if(!named.length&&!o.pid&&pids.length>1&&/\b(this|our|the|my) project\b/i.test(q))return {clarify:true,q,pids,html:`<p><b>Which project do you mean?</b> Your scope has ${pids.length} projects.</p><div class="chips">${pids.slice(0,12).map(id=>`<button type="button" class="chip" data-rkclar="${esc(id)}">${esc(rkPj(id))}</button>`).join('')}</div>`};
+  if(RK.dirty.size)await rkCatchUp();
+  const keep=SCOPE;let rule=null;SCOPE=new Set(pids);try{rule=answer(q);if(rule&&typeof rule.then==='function')rule=await rule}catch(e){rule=null}finally{SCOPE=keep}
+  const deny=!!rule&&/Not available for your role/.test(rule),noev=!!rule&&/rasa-noev/.test(rule);
+  const mods=rkModsOf(q),ev=await rkSearch(q,{pids,mods}),hits=ev.hits,valid=hits.filter(h=>rkCiteOk(h.s)).length;
+  const onlyDraft=hits.length&&hits.every(h=>!['Published','Released','Approved','Certified','Agreed','Recorded','Calculated','Issued','Paid'].includes(h.s.appr));
+  const corr=hits.filter(h=>h.s.mod==='taught');
+  const answered=(!!rule&&!noev&&!deny)||hits.length>0,gapWhy=answered?null:deny||ev.hidden?null:noev?'none':'none';
+  const qid=rkId('Q'),ms=Math.round(performance.now()-t0);
+  let html=`<div class="rk-ans-q"><span>${esc(q)}</span><span class="small muted">${pids.length===1?esc(rkPj(pids[0])):pids.length+' projects in scope'}</span></div>`;
+  /* a question about a document or clause shows the quoted passages first; ProTrackAI's own answer follows them */
+  const docFirst=hits.length&&/contract|clause|notice|document|drawing|letter|procedure|policy|specification|minutes/i.test(q)&&['docs','contract','taught'].includes(hits[0].s.mod);
+  const facts=rule&&!noev?`<div class="rk-facts"><h4>${deny?'Your role':docFirst?'Also in ProTrackAI\'s records':'From ProTrackAI\'s records and calculations'}</h4>${rule}</div>`:'';
+  if(!docFirst)html+=facts;
+  if(corr.length)html+=`<div class="rk-note ok"><b>Approved knowledge applies.</b> ${corr.map(h=>esc(h.s.title)).join('; ')}: taught, reviewed and published in Knowledge Review. Where it corrects a record, the correction is the trusted statement.</div>`;
+  if(hits.length)html+=`<div class="rk-ev"><h4>Evidence: ${hits.length} source${hits.length>1?'s':''}</h4><ol>${hits.map((h,i)=>rkCiteHTML(h,i,ev.terms)).join('')}</ol></div>`;
+  if(docFirst)html+=facts;
+  if(onlyDraft)html+=`<div class="rk-note warn"><b>Only draft or submitted records match.</b> They are not approved figures; check the released versions before relying on them.</div>`;
+  if(!answered)html+=`<div class="rk-note warn"><b>No evidence in ProTrackAI for that${pids.length===1?' in '+esc(rkPj(pids[0])):''}.</b> I found nothing you can open that answers it, so I will not guess. ${gapWhy?'The question is recorded as a knowledge gap, so the right document or record can be added.':''}</div>`;
+  if(noev&&rule)html+=`<div class="rk-facts">${rule}</div>`;
+  html+=`<div class="rk-meta small muted">Modules consulted: ${esc((mods||RK_MODS.filter(m=>m.conn).map(m=>m.k)).map(k=>(rkMod(k)||{}).name).filter(Boolean).join(', '))} · ${valid} of ${hits.length} citations checked · ${ms} ms · ${rkLLMLine()}</div>`;
+  const ql={id:qid,q,at:rkNow(),by:(me()||{}).id,by_name:(me()||{}).name,pids,mods:mods||[],ms,cites:hits.length,valid,ans:answered,rule:!!rule&&!noev&&!deny,gap:!!gapWhy,llm:false,src:hits.map(h=>h.s.id)};
+  if(rkLive())rkLiveAct('question',{q:ql,gap:gapWhy?{pid:pids.length===1?pids[0]:null,mod:(mods||[])[0]||null,why:gapWhy,key:rasaTerms(q).sort().join(' ')}:null}).catch(()=>{});
+  else{R.qlog.unshift(ql);rkPrune();if(gapWhy)rkGap(q,pids.length===1?pids[0]:null,(mods||[])[0]||null,gapWhy,qid);save()}
+  return {qid,q,html,answered}}
+const rkLLMLine=()=>RASA.adapters.llm?`Written with the enterprise language model (${esc(RASA.adapters.llm.name||'')}) from the evidence above`:'Answered by ProTrackAI\'s own rules and quoted passages; the language model is on hold until alfanar IT approves';
+function rkPrune(){const R=rkDB(),cut=new Date(Date.now()-(+R.cfg.keep||180)*864e5).toISOString();R.qlog=R.qlog.filter(x=>x.at>=cut).slice(0,600);R.fb=R.fb.filter(x=>x.at>=cut)}
+function rkGap(q,pid,mod,why,qid){const R=rkDB(),key=rasaTerms(q).sort().join(' ')+'|'+(pid||'');let g=R.gaps.find(x=>x.key===key&&x.st==='Open');
+  if(g){g.n++;g.last=rkNow();g.qids=(g.qids||[]).concat(qid).slice(-20);return g}
+  g={id:rkId('GAP'),key,q,pid:pid||null,mod:mod||null,why,st:'Open',n:1,at:rkNow(),last:rkNow(),by:(me()||{}).name,qids:[qid]};R.gaps.unshift(g);if(R.gaps.length>300)R.gaps.length=300;
+  rkLog('gap',`New unanswered question: "${q.slice(0,120)}"`,{mod,pid,link:{gap:g.id}});return g}
+const rkGapsSeen=()=>rkDB().gaps.filter(g=>!g.pid||accessIds().includes(g.pid));
+function rkGapAct(id,a,note){if(rkLive())return rkLiveAct('gap',{id,a,note:note||null});const g=rkDB().gaps.find(x=>x.id===id);if(!g)throw new Error('Unknown gap');if(g.pid&&!accessIds().includes(g.pid))throw new Error('Not your project');
+  if(a==='resolve'){if(!rkCanTeach()&&!rkCanReview(g.pid))throw new Error('Only those who teach or review RASA resolve gaps');g.st='Resolved';g.res=note||'Resolved';g.res_by=me().name;g.res_at=rkNow();rkLog('gap',`Gap resolved: "${g.q.slice(0,100)}"`,{pid:g.pid,link:{gap:id}})}
+  else if(a==='reopen'){g.st='Open';g.res=null}
+  else if(a==='review'){g.review=true;g.review_by=me().name;notify(`RASA: expert review requested for an unanswered question: "${g.q.slice(0,100)}"`);rkLog('gap',`Expert review requested: "${g.q.slice(0,100)}"`,{pid:g.pid,link:{gap:id}})}
+  save();return g}
+function rkFeedback(qid,v,note){if(rkLive())return rkLiveAct('feedback',{qid,v,note:note||null});const R=rkDB(),x=R.qlog.find(z=>z.id===qid);if(!x)throw new Error('That answer is no longer in the log');
+  const f=R.fb.find(z=>z.qid===qid&&z.by===me().id);if(f){f.v=v;f.note=note||f.note;f.at=rkNow()}else R.fb.unshift({id:rkId('FB'),qid,v,note:note||'',by:me().id,by_name:me().name,at:rkNow(),pids:x.pids});
+  if(v<0)rkLog('feedback',`Answer marked not helpful: "${x.q.slice(0,100)}"`,{pid:x.pids.length===1?x.pids[0]:null});save()}
+
+
+/* ----- teaching: proposals and their review. Draft → Submitted → Under Review → Approved → Published; or Rejected, Needs
+   Revision, Superseded (replaced by a later publication), Withdrawn (by its author, or a publication rolled back).
+   A reviewer never approves their own proposal; company-wide knowledge needs the designated approver (rasa.company); a
+   high-impact financial formula needs two approvals and a regression check. Conflicts with published knowledge must be
+   resolved (replace it, or keep both) before approval. ----- */
+const rkPropsSeen=()=>rkDB().props.filter(p=>!p.pid||accessIds().includes(p.pid));
+const rkNeed=p=>p.fin?Math.max(2,+rkDB().cfg.pol.fin||2):Math.max(1,+rkDB().cfg.pol[p.kind]||1);
+function rkPropCheck(p){if(!RK_KINDS[p.kind])return 'Choose what you are teaching';
+  if(String(p.title||'').trim().length<3||String(p.title).length>160)return 'Give it a title of 3 to 160 characters';
+  if(String(p.text||'').trim().length<10||String(p.text).length>4000)return p.kind==='correction'?'Write the corrected information (10 to 4000 characters)':'Write the knowledge (10 to 4000 characters)';
+  if(!['project','company'].includes(p.scope))return 'Choose project or company-wide';
+  if(p.scope==='project'&&(!p.pid||!accessIds().includes(p.pid)))return 'Choose one of your projects';
+  if(p.mod&&!rkMod(p.mod))return 'Unknown module';
+  if(p.kind==='correction'&&String(p.old||'').trim().length<3)return 'Quote the incorrect or incomplete statement';
+  if(p.kind==='correction'&&String(p.why||'').trim().length<3)return 'Say why it is wrong';
+  if(p.kind==='rule'&&(!p.mod||String(p.purpose||'').trim().length<3))return 'A business rule needs its module and business purpose';
+  if(p.fin&&p.kind!=='rule')return 'Only a business rule can be a financial formula';
+  if(p.eff&&!/^\d{4}-\d{2}-\d{2}$/.test(p.eff))return 'The effective date is a date';
+  return null}
+const RK_PFIELDS=['kind','title','text','old','why','scope','pid','mod','ref','ids','purpose','formula','eff','owner','reviewer','fin','gap','qid'];
+async function rkPropSave(o,submit){if(!rkCanTeach())throw new Error('Teaching RASA is for those with the right to teach it');
+  if(rkLive()){const r=await rkLiveAct('prop_save',{p:Object.fromEntries(RK_PFIELDS.concat('id').map(k=>[k,o[k]==null?null:o[k]])),submit:!!submit});return rkDB().props.find(x=>x.id===(r&&r.id))||{id:r&&r.id,st:submit?'Submitted':'Draft'}}const R=rkDB(),u=me(),at=rkNow();
+  const v=Object.fromEntries(RK_PFIELDS.map(k=>[k,o[k]==null?null:typeof o[k]==='string'?o[k].trim():o[k]]));v.fin=!!v.fin;v.ids=Array.isArray(v.ids)?v.ids:String(v.ids||'').split(/[,;]/).map(x=>x.trim()).filter(Boolean).slice(0,20);
+  if(v.scope==='company')v.pid=null;const e=rkPropCheck(v);if(e)throw new Error(e);
+  let p=o.id?R.props.find(x=>x.id===o.id):null;
+  if(p){if(p.author!==u.id)throw new Error('Only its author changes a proposal');if(!['Draft','Needs Revision'].includes(p.st))throw new Error(`A proposal that is ${p.st} cannot be changed`);Object.assign(p,v,{ver:p.ver+1,upd:at});p.hist.push({st:p.st,a:'Changed',by:u.name,at})}
+  else{p=Object.assign({id:rkId('KP'),st:'Draft',ver:1,author:u.id,author_name:u.name,at,hist:[{st:'Draft',a:'Created',by:u.name,at}],approvals:[],conflicts:[],res:null},v);R.props.unshift(p);rkLog('proposal',`${RK_KINDS[p.kind]} drafted: ${p.title}`,{mod:p.mod,pid:p.pid,link:{prop:p.id}})}
+  if(v.gap){const g=R.gaps.find(x=>x.id===v.gap);if(g){g.prop=p.id}}
+  if(submit)return rkPropAct(p.id,'submit');save();return p}
+/* published knowledge that this proposal may contradict: the same title, or the same module and project with most of its words */
+function rkConflicts(p){const T=rasaTerms(p.title+' '+(p.formula||'')),out=[];
+  rkDB().props.filter(x=>x.id!==p.id&&x.st==='Published'&&((x.scope==='company'&&p.scope==='company')||(x.pid&&x.pid===p.pid)||(x.scope==='company'&&p.scope==='project'))).forEach(x=>{
+    const same=x.title.trim().toLowerCase()===p.title.trim().toLowerCase(),sc=T.length?rasaScore(x.title+' '+x.text,T).hits/T.length:0;
+    if(same||(x.mod===p.mod&&sc>=0.6))out.push({id:x.id,title:x.title,scope:x.scope,why:same?'Same title':'Same module, mostly the same words'})});
+  return out}
+function rkPropAct(id,a,note,ex){if(rkLive())return rkLiveAct('prop',{id,a,note:note||null,regress:!!(ex&&ex.regress)}).then(()=>rkDB().props.find(x=>x.id===id));const R=rkDB(),p=R.props.find(x=>x.id===id),u=me(),at=rkNow();if(!p)throw new Error('Unknown proposal');
+  if(p.pid&&!accessIds().includes(p.pid))throw new Error('This proposal is for a project outside your access');
+  const own=p.author===u.id,rev=rkCanReview(p.pid)&&(p.scope!=='company'||rkCanCompany()),to=st=>{p.hist.push({st,a,by:u.name,at,note:note||null});p.st=st};note=String(note||'').trim();
+  if(a==='submit'){if(!own)throw new Error('Only its author submits a proposal');if(!['Draft','Needs Revision'].includes(p.st))throw new Error(`A proposal that is ${p.st} cannot be submitted`);
+    p.conflicts=rkConflicts(p);p.res=null;p.approvals=[];to('Submitted');rkLog('proposal',`${RK_KINDS[p.kind]} submitted for review: ${p.title}`,{mod:p.mod,pid:p.pid,link:{prop:p.id}});
+    if(p.reviewer){const r=userById(p.reviewer);if(r)notify(`RASA: ${u.name} asks ${r.name} to review "${p.title}"`)}}
+  else if(a==='withdraw'){if(!(own||rev))throw new Error('Only its author or a reviewer withdraws a proposal');if(!['Draft','Submitted','Under Review','Needs Revision','Approved'].includes(p.st))throw new Error(`A proposal that is ${p.st} cannot be withdrawn; a published one is rolled back`);to('Withdrawn')}
+  else if(a==='take'){if(!rev)throw new Error(p.scope==='company'?'Company-wide knowledge is reviewed by its designated approvers':'Only a knowledge reviewer of the project reviews proposals');if(own)throw new Error('You cannot review your own proposal');if(p.st!=='Submitted')throw new Error('Only a submitted proposal is taken for review');p.rev_by=u.name;p.rev_id=u.id;to('Under Review')}
+  else if(a==='resolve'){if(!rev||own)throw new Error('Only a reviewer resolves conflicts');if(p.st!=='Under Review')throw new Error('Conflicts are resolved during the review');if(!['replace','keep'].includes(note))throw new Error('Replace the conflicting knowledge or keep both');p.res=note;p.hist.push({st:p.st,a:note==='replace'?'Will replace the conflicting knowledge':'Keeps both: not a conflict',by:u.name,at})}
+  else if(a==='revise'||a==='reject'){if(!rev||own)throw new Error('Only a reviewer other than the author decides');if(!['Submitted','Under Review'].includes(p.st))throw new Error(`A proposal that is ${p.st} cannot be ${a==='reject'?'rejected':'returned'}`);if(note.length<3)throw new Error('Say why');to(a==='reject'?'Rejected':'Needs Revision');p.decision=a==='reject'?'Rejected':'Returned';rkLog('proposal',`${a==='reject'?'Rejected':'Returned for revision'}: ${p.title}`,{mod:p.mod,pid:p.pid,link:{prop:p.id}})}
+  else if(a==='approve'){if(!rev)throw new Error(p.scope==='company'?'Company-wide knowledge needs a designated approver':'Only a knowledge reviewer of the project approves');if(own)throw new Error('You cannot approve your own proposal');
+    if(p.st!=='Under Review')throw new Error('Take the proposal for review first');if(p.conflicts&&p.conflicts.length&&!p.res)throw new Error('Resolve the conflict with the published knowledge first');
+    if((p.approvals||[]).some(x=>x.id===u.id))throw new Error('You have approved it already; it needs another approver');if(p.fin&&!(ex&&ex.regress))throw new Error('A financial formula needs the regression check confirmed');
+    p.approvals=(p.approvals||[]).concat({id:u.id,by:u.name,at,regress:!!(ex&&ex.regress)});
+    if(p.approvals.length>=rkNeed(p)){to('Approved');p.decision='Approved';rkLog('approved',`Approved: ${p.title}`,{mod:p.mod,pid:p.pid,link:{prop:p.id}})}
+    else p.hist.push({st:p.st,a:`Approval ${p.approvals.length} of ${rkNeed(p)}`,by:u.name,at})}
+  else if(a==='publish'){if(!rev)throw new Error('Only a knowledge reviewer publishes');if(p.st!=='Approved')throw new Error('Only approved knowledge is published');
+    R.pubVer=(+R.pubVer||0)+1;p.pubVer=R.pubVer;p.pubAt=at;p.pub_by=u.name;p.replaced=[];
+    if(p.res==='replace')(p.conflicts||[]).forEach(c=>{const x=R.props.find(z=>z.id===c.id&&z.st==='Published');if(x){x.hist.push({st:'Superseded',a:'Replaced by '+p.id,by:u.name,at});x.st='Superseded';x.by_prop=p.id;p.replaced.push(x.id)}});
+    to('Published');R.pub.unshift({ver:R.pubVer,prop:p.id,op:'publish',replaced:p.replaced,by:u.name,at});rkLog('published',`Published as knowledge version ${R.pubVer}: ${p.title}`,{mod:p.mod,pid:p.pid,link:{prop:p.id}});
+    if(p.gap){const g=R.gaps.find(x=>x.id===p.gap);if(g&&g.st==='Open'){g.st='Resolved';g.res='Answered by published knowledge '+p.id;g.res_by=u.name;g.res_at=at}}}
+  else if(a==='unpublish'){if(!rev)throw new Error('Only a knowledge reviewer rolls back a publication');if(p.st!=='Published')throw new Error('Only published knowledge is rolled back');if(note.length<3)throw new Error('Say why it is rolled back');
+    R.pubVer=(+R.pubVer||0)+1;to('Withdrawn');(p.replaced||[]).forEach(xid=>{const x=R.props.find(z=>z.id===xid&&z.st==='Superseded');if(x){x.hist.push({st:'Published',a:'Restored: '+p.id+' rolled back',by:u.name,at});x.st='Published'}});
+    R.pub.unshift({ver:R.pubVer,prop:p.id,op:'rollback',restored:p.replaced||[],by:u.name,at,note});rkLog('withdrawn',`Rolled back (knowledge version ${R.pubVer}): ${p.title}`,{mod:p.mod,pid:p.pid,link:{prop:p.id}})}
+  else throw new Error('Unknown action');
+  save();if(['publish','unpublish'].includes(a)&&rkModOn(rkMod('taught')))return rkSync('taught','event').then(()=>p);return p}
+
+
+/* ----- states and measures, all from the records above (no figure is typed in) ----- */
+function rkModState(m){const R=rkDB(),runs=R.runs.filter(r=>r.mod===m.k),last=runs[0]||null,ok=runs.find(r=>!r.err)||null,A=new Set(accessIds());
+  const S=Object.values(R.src).filter(s=>s.mod===m.k&&s.st!=='Deleted'),idx=S.filter(s=>s.st==='Indexed'&&rkSees(s)),fail=S.filter(s=>s.st==='Failed'&&(!s.pid||A.has(s.pid))&&(s.cls!=='money'||rasaMoneyOk()));
+  let st='Connected',why='';
+  if(m.off){st='Disabled';why=m.off}else if(!rkModOn(m)){st='Disabled';why='Switched off in RASA Settings'}else if(!m.conn){st='Not connected';why=m.why||'No connector yet'}
+  else if(m.gl&&!glLive(m.gl)){st='Configuring';why=`The module goes live at ${glStageTxt(glStage(m.gl))}`}
+  else if(RK.busy[m.k])st='Syncing';
+  else if(!ok){st=last&&last.err?'Attention required':'Configuring';why=last&&last.err?'The last sync failed: '+last.err:'Connected to the module; not indexed yet'}
+  else if((last&&last.err)||fail.length){st='Attention required';why=last&&last.err?'The last sync failed: '+last.err:`${fail.length} source${fail.length>1?'s':''} could not be read`}
+  const cdocs=m.k==='contract'?Object.values(R.src).filter(s=>s.mod==='docs'&&s.row==='contract'&&rkSees(s)).length:0;
+  return {st,why,idx:idx.length+cdocs,own:idx.length,cdocs,fail:fail.length,n:idx.reduce((t,s)=>t+(+s.n||0),0),last,ok,money:!!m.money&&!rasaMoneyOk(),pending:RK.dirty.has(m.k),cov:idx.length+fail.length?Math.round(idx.length/(idx.length+fail.length)*100):0}}
+function rkMetrics(){const R=rkDB(),M=RK_MODS.map(m=>({m,x:rkModState(m)})),src=Object.values(R.src).filter(rkSees),wk=new Date(Date.now()-7*864e5).toISOString(),A=new Set(accessIds());
+  return {M,connected:M.filter(o=>['Connected','Attention required','Syncing'].includes(o.x.st)).length,total:M.length,sources:src.length,
+    docsAppr:src.filter(s=>s.mod==='docs'&&['Approved','Certified','Issued','Paid'].includes(s.appr)).length,docVers:src.filter(s=>s.mod==='docs').reduce((t,s)=>t+(+s.ver||1),0),
+    pending:rkPropsSeen().filter(p=>['Submitted','Under Review','Approved'].includes(p.st)).length,gaps:rkGapsSeen().filter(g=>g.st==='Open').length,
+    updates:R.runs.filter(r=>!r.err&&r.at>=wk&&(r.added+r.changed+r.removed)>0).length+R.pub.filter(x=>x.at>=wk).length,
+    errors:R.runs.filter(r=>r.err&&r.at>=wk).length+Object.values(R.src).filter(s=>s.st==='Failed'&&(!s.pid||A.has(s.pid))).length}}
+const rkActSeen=()=>rkDB().act.filter(a=>(!a.pid||accessIds().includes(a.pid))&&(a.cls!=='money'||rasaMoneyOk())&&(!a.cls||!a.cls.startsWith('doc:')||state.role==='sa'||docCanRead(a.cls.slice(4))));
+const rkSlug=st=>String(st).toLowerCase().replace(/[^a-z]+/g,'-');
+const RK_KIC={sources:'<path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',mods:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  docs:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13l2 2 4-4"/>',vers:'<path d="M12 3l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/>',review:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5M9 11l1.5 1.5L13.5 9"/>',
+  gap:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/>',up:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',err:'<path d="M12 3l9.5 17h-19z"/><path d="M12 10v4M12 17.5v.01"/>'};
+const rkKic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${RK_KIC[k]}</svg>`;
+function rkRing(p,st){const c=2*Math.PI*19,on=['Connected','Syncing','Attention required'].includes(st);
+  return `<div class="rk-ring ${rkSlug(st)}" title="${on?p+'% of its sources indexed without errors':'Not indexed'}"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19" class="bg"/><circle cx="24" cy="24" r="19" class="fg" stroke-dasharray="${on?(c*p/100).toFixed(1):0} ${c.toFixed(1)}"/></svg><b>${on?p+'%':'—'}</b></div>`}
+function rkModCard(m,x){const sync=m.conn&&rkModOn(m)&&(!m.gl||glLive(m.gl))&&!x.money,why=!m.conn?'Nothing to sync: no connector yet':!rkModOn(m)?'Switched off':m.gl&&!glLive(m.gl)?'Not live yet':x.money?'Cost figures are not available for your role':!rkCanSync()?'Only those who keep records refresh RASA\'s knowledge':'';
+  return `<article class="rk-mc ${rkSlug(x.st)}"><div class="rk-mc-ic">${icon(m.ic)}</div><div class="rk-mc-b"><div class="rk-mc-h"><b>${esc(m.name)}</b><span class="rk-pill ${rkSlug(x.st)}">${esc(x.st)}</span></div>
+    <p class="small muted rk-mc-w">${esc(m.what)}</p>
+    ${x.money?'<p class="small">Cost and billing figures: not available for your role.</p>':m.conn?`<ul class="rk-mc-l"><li>${fmt(x.idx)} source${x.idx===1?'':'s'} indexed · ${fmt(x.n)} passages${m.k==='contract'?` · ${x.cdocs} contract document${x.cdocs===1?'':'s'} from the Document Rack`:''}</li><li>${x.ok?'Last successful sync '+esc(tStamp(x.ok.at)):'Not synced yet'} · ${rkStrat(m)==='event'?'on change':'manual refresh'}${x.pending?' · <span class="a-c">changes waiting</span>':''}</li>${x.fail?`<li class="r-c">${x.fail} could not be read</li>`:''}</ul>`:''}
+    ${x.why&&x.st!=='Connected'?`<p class="small rk-why">${esc(x.why)}</p>`:''}
+    <div class="rk-mc-a">${state.role==='sa'?`<button type="button" class="btn sm" data-rktab="set" data-rkmod="${m.k}">Configure</button>`:'<button type="button" class="btn sm" disabled title="Only the super admin configures RASA">Configure</button>'}
+      ${m.conn?`<button type="button" class="btn sm" data-rktab="src" data-rkmod="${m.k}">View knowledge</button>`:'<button type="button" class="btn sm" disabled title="Nothing is indexed from it">View knowledge</button>'}
+      ${sync&&rkCanSync()?`<button type="button" class="btn sm primary" data-rksync="${m.k}" ${RK.busy[m.k]?'disabled':''}>${RK.busy[m.k]?'Syncing…':'Sync'}</button>`:`<button type="button" class="btn sm" disabled title="${esc(why)}">Sync</button>`}</div></div>${m.conn?rkRing(x.cov,x.st):''}</article>`}
+function rkActItem(a){const ic={sync:'up',indexed:'docs',updated:'vers',superseded:'vers',failed:'err',proposal:'review',approved:'review',published:'review',withdrawn:'review',gap:'gap',feedback:'gap',settings:'mods',eval:'up'}[a.k]||'up';
+  const l=a.link||{},go=l.prop?`data-rktab="rev" data-rkprop="${esc(l.prop)}"`:l.gap?`data-rktab="teach" data-rkteach="gaps"`:l.src?`data-rksrcopen="${esc(l.src)}"`:a.mod?`data-rktab="src" data-rkmod="${esc(a.mod)}"`:'';
+  return `<li class="rk-ai ${esc(a.k)}"><span class="rk-ai-ic">${rkKic(ic)}</span><span class="rk-ai-t">${go?`<button type="button" class="linkbtn" ${go}>${esc(a.text)}</button>`:esc(a.text)}<span class="t2">${esc(tStamp(a.at))}${a.by?' · '+esc(a.by):''}</span></span></li>`}
+const RK_SHORT=[['Ask about this project','What is the schedule and cost status of this project?'],['Search project documents','contract documents'],['Explain schedule delays','Why is the project behind schedule and which milestones are at risk?'],
+  ['Analyze cost variances','Which WBS have the largest cost variance against the budget?'],['Review contract obligations','What are the notice, payment and retention obligations in the contract?']];
+function rkOvHTML(s){const X=rkMetrics(),u=me(),nm=esc(String(u.name||'').replace(/^Eng\.\s*/,'').split(' ')[0]),bad=X.M.filter(o=>!['Connected','Syncing'].includes(o.x.st)),good=X.M.filter(o=>['Connected','Syncing'].includes(o.x.st));
+  const one=SCOPE.size===1?projById([...SCOPE][0]):null,G=rkGapsSeen().filter(g=>g.st==='Open'),grp={};G.forEach(g=>{const k=((rkMod(g.mod)||{}).name||'Any module')+' · '+(g.pid?rkPj(g.pid):'All projects');(grp[k]=grp[k]||[]).push(g)});
+  const kp=[['mods','Connected modules',`${X.connected} / ${X.total}`,'registered in RASA'],['sources','Active knowledge sources',fmt(X.sources),'you can open'],['docs','Approved documents',fmt(X.docsAppr),'in the Document Rack index'],['vers','Indexed document versions',fmt(X.docVers),'with their history'],
+    ['review','Pending knowledge reviews',fmt(X.pending),'submitted, in review or to publish'],['gap','Unanswered questions',fmt(X.gaps),'open knowledge gaps'],['up','Successful updates',fmt(X.updates),'in the last 7 days'],['err','Sync errors',fmt(X.errors),'in the last 7 days and unread sources']];
+  const dn=[['Connected',X.M.filter(o=>['Connected','Syncing'].includes(o.x.st)).length,'var(--rk-ok)'],['Needs attention',X.M.filter(o=>['Attention required','Configuring'].includes(o.x.st)).length,'var(--rk-warn)'],['Not connected',X.M.filter(o=>o.x.st==='Not connected').length,'var(--rk-bad)'],['Disabled',X.M.filter(o=>o.x.st==='Disabled').length,'var(--rk-off)']];
+  let acc=0;const cg=dn.map(([,n,c])=>{const a=acc;acc+=n/X.total*360;return `${c} ${a}deg ${acc}deg`}).join(',');
+  return `<section class="rk-hero"><div class="rk-hero-l"><div class="rk-kick">RASA Intelligence${RK.first&&RK.first!==true?' · <span class="rk-live">indexing</span>':''}</div><h1>Welcome to RASA Intelligence</h1>
+      <p class="rk-sub">Your central AI assistant for project scheduling, cost control, contract intelligence, documentation, productivity, and project performance.</p>
+      <form class="rk-askbar" data-rkaskform><input name="q" maxlength="500" autocomplete="off" placeholder="Ask RASA about ${one?esc(one.short):'your projects'}, documents and reports…" aria-label="Ask RASA"><button type="submit" class="btn primary">Ask RASA</button></form>
+      <div class="rk-short">${RK_SHORT.map(([l,q])=>`<button type="button" data-rkq="${esc(q)}">${esc(l)}</button>`).join('')}${rkCanTeach()?'<button type="button" data-rktab="teach">Teach RASA something new</button>':''}</div>
+      <p class="rk-hello">Hi ${nm}. RASA answers only from ProTrackAI records you can open, cites every source, and learns only what a reviewer approves.</p></div>
+    <div class="rk-hero-r" aria-hidden="true"><div class="rk-orb"><i class="rk-r r1"></i><i class="rk-r r2"></i><i class="rk-r r3"></i><span class="rk-dots"></span><img src="${RASA_BADGE}" alt=""></div><div class="rk-tag">REAL-TIME ARTIFICIAL SMART ASSISTANT<small>INSIGHT · PLANS · PROGRESS · TOGETHER</small></div></div></section>
+  <div class="rk-kpis">${kp.map(([ic,l,v,sub],i)=>`<div class="rk-kpi k${i}" style="--d:${i*45}ms"><span class="rk-kpi-ic">${rkKic(ic)}</span><span><b>${v}</b><em>${esc(l)}</em><small>${esc(sub)}</small></span></div>`).join('')}</div>
+  <div class="rk-cols"><section class="rk-col bad"><div class="rk-col-h"><h2>Needs attention or not connected</h2><span class="rk-cnt">${bad.length} modules</span></div><p class="small muted">Modules RASA cannot read yet, or whose last sync needs attention. Every state comes from the module's own connector.</p>${bad.map(o=>rkModCard(o.m,o.x)).join('')||'<p class="muted small">Nothing needs attention.</p>'}</section>
+    <section class="rk-col good"><div class="rk-col-h"><h2>Connected knowledge</h2><span class="rk-cnt">${good.length} modules</span></div><p class="small muted">Modules indexed for RASA, with their sources and when they were last synced.</p>${good.map(o=>rkModCard(o.m,o.x)).join('')||'<p class="muted small">No module is indexed yet.'+(rkCanSync()?' <button class="link" type="button" data-rksyncall>Index everything now</button>':'')+'</p>'}</section></div>
+  <div class="rk-3"><section class="panel"><div class="card-head"><h2>Recent learning activity</h2><button class="link" type="button" data-rktab="act">View all</button></div><ul class="rk-feed">${rkActSeen().slice(0,7).map(rkActItem).join('')||'<li class="muted small">Nothing yet.</li>'}</ul></section>
+    <section class="panel"><div class="card-head"><h2>Knowledge gaps</h2><button class="link" type="button" data-rktab="teach" data-rkteach="gaps">All gaps</button></div>${Object.keys(grp).length?Object.entries(grp).slice(0,4).map(([k,L])=>`<h4 class="rk-gh">${esc(k)}</h4><ul class="rk-gl">${L.slice(0,3).map(g=>`<li><span>"${esc(g.q)}"</span><span class="t2">asked ${g.n} time${g.n>1?'s':''} · ${esc(tStamp(g.last))}</span></li>`).join('')}</ul>`).join(''):'<p class="muted small">No open gaps: every question so far found evidence or was answered by ProTrackAI\'s rules.</p>'}</section>
+    <section class="panel"><div class="card-head"><h2>Knowledge learning progress</h2></div><div class="rk-donut"><div class="rk-dn" style="background:conic-gradient(${cg})"><span><b>${Math.round(X.connected/X.total*100)}%</b><small>modules connected</small></span></div>
+      <ul>${dn.map(([l,n,c])=>`<li><i style="background:${c}"></i>${esc(l)}<b>${n}</b></li>`).join('')}<li><i style="background:transparent"></i>Total modules<b>${X.total}</b></li></ul></div></section></div>`}
+function rkAskHTML(s){const P=scopeProjects();
+  return `<section class="panel rk-askp"><div class="card-head"><h2>Ask RASA</h2><button type="button" class="btn sm" data-rasaopen="1">Open the RASA assistant</button></div>
+    <form class="rk-askbar light" data-rkaskform><input name="q" id="rkQ" maxlength="500" autocomplete="off" value="${esc(s.draft||'')}" placeholder="For example: Which milestones are at risk on ${esc((P[0]||{}).short||'my project')}?" aria-label="Your question">
+      <select name="pid" aria-label="Project"><option value="">${P.length>1?'All projects in scope':'This project'}</option>${P.map(p=>`<option value="${esc(p.id)}" ${s.pid===p.id?'selected':''}>${esc(rkPj(p.id))}</option>`).join('')}</select><button class="btn primary" type="submit" ${s.busy?'disabled':''}>${s.busy?'Thinking…':'Ask'}</button></form>
+    <div class="chips" style="margin-top:8px">${['Which milestones are at risk?','What is the EAC and how does it compare with the budget?','What notice period does the contract give for a claim?','Which delay events are past their notice deadline?','Which drawings were superseded?','What did the last internal report say about issues?'].map(q=>`<button type="button" class="chip" data-rkq="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+    <p class="small muted" style="margin:8px 0 0">RASA first applies ProTrackAI's own rules and calculations, then searches the knowledge index for evidence you are allowed to see, and cites each source with its module, project, revision and approval status. It does not guess: when nothing answers the question, it says so and records the gap. ${esc(rkLLMLine())}.</p></section>
+  ${(s.ans||[]).map(a=>`<section class="panel rk-ans" data-rkqid="${esc(a.qid||'')}">${a.html}${a.clarify?'':`<div class="rk-fb"><span class="small muted">Was this helpful?</span>${a.fb?`<span class="small">${a.fb>0?'Thanks, marked helpful.':'Marked not helpful.'}</span>`:`<button type="button" class="btn sm" data-rkfb="1" data-rkqid="${esc(a.qid)}">Yes</button><button type="button" class="btn sm" data-rkfb="-1" data-rkqid="${esc(a.qid)}">No</button>`}${rkCanTeach()?`<button type="button" class="btn sm" data-rkcorr="${esc(a.qid)}">Teach a correction</button>`:''}</div>`}</section>`).join('')}`}
+function rkSrcHTML(s){const R=rkDB(),X=RK_MODS.map(m=>({m,x:rkModState(m)})),mod=s.srcMod?rkMod(s.srcMod):null,A=new Set(accessIds());
+  const reg=`<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Knowledge sources</h2><div class="actions" style="margin:0">${rkCanSync()?'<button class="btn sm primary" type="button" data-rksyncall>Sync all connected modules</button>':''}</div></div>
+    <p class="small muted" style="margin:0 0 8px">The module registry: every ProTrackAI feature, what RASA reads from it and how. <b>Connection</b> says whether RASA has a working connector; <b>indexing</b> says what it has read. A connected module can still have sources it could not read.</p>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>Module</th><th>Connection</th><th>Reads</th><th>How RASA uses it</th><th>Sync</th><th class="n">Sources</th><th class="n">Passages</th><th class="n">Could not read</th><th>Last successful sync</th><th></th></tr></thead><tbody>
+    ${X.map(({m,x})=>`<tr ${s.srcMod===m.k?'class="sel"':''}><td><b>${esc(m.name)}</b></td><td><span class="rk-pill ${rkSlug(x.st)}">${esc(x.st)}</span>${x.why&&x.st!=='Connected'?`<div class="t2">${esc(x.why)}</div>`:''}</td><td>${esc(m.types||m.what)}</td><td>${esc(m.how||'—')}</td><td>${m.conn?(rkStrat(m)==='event'?'On change':'Manual'):'—'}</td>
+      <td class="n">${x.money?'—':fmt(x.idx)}</td><td class="n">${x.money?'—':fmt(x.n)}</td><td class="n ${x.fail?'r-c':''}">${x.money?'—':fmt(x.fail)}</td><td>${x.ok?esc(tStamp(x.ok.at)):'—'}</td><td>${m.conn&&!x.money?`<button class="linkbtn" type="button" data-rkmod="${m.k}" data-rktab="src">Sources</button>`:''}</td></tr>`).join('')}</tbody></table></div></section>`;
+  if(!mod||!mod.conn)return reg;
+  const all=Object.values(R.src).filter(x=>(x.mod===mod.k||(mod.k==='contract'&&x.mod==='docs'&&x.row==='contract'))&&(!x.pid||A.has(x.pid))&&(x.st==='Indexed'?rkSees(x):x.cls!=='money'||rasaMoneyOk()));
+  const L=all.filter(x=>(!s.srcPid||x.pid===s.srcPid)&&(s.srcSt==='All'||x.st===s.srcSt||(s.srcSt==='Superseded'&&x.appr==='Superseded'))&&(!s.srcQ||(x.title+' '+x.type+' '+x.rec).toLowerCase().includes(String(s.srcQ).toLowerCase()))).sort((a,b)=>String(b.indexed||'').localeCompare(String(a.indexed||''))).slice(0,300);
+  const runs=R.runs.filter(r=>r.mod===mod.k).slice(0,6);
+  return reg+`<section class="panel" id="rkSrcList"><div class="card-head" style="flex-wrap:wrap"><h2>${esc(mod.name)}: sources</h2>${rkCanSync()&&rkModOn(mod)&&!(mod.money&&!rasaMoneyOk())?`<button class="btn sm primary" type="button" data-rksync="${mod.k}" ${RK.busy[mod.k]?'disabled':''}>${RK.busy[mod.k]?'Syncing…':'Sync now'}</button>`:''}</div>
+    <p class="small muted" style="margin:0 0 8px">${esc(mod.what)}. Each source keeps its project, record, revision, approval status, version, content hash and access class. ${mod.k==='docs'||mod.k==='contract'?'The Document Rack stays the authoritative place of the original files; RASA keeps only the passages and a link.':''}</p>
+    <div class="fields"><label class="field">Project<select data-rksf="srcPid"><option value="">All</option>${scopeProjects().map(p=>`<option value="${esc(p.id)}" ${s.srcPid===p.id?'selected':''}>${esc(rkPj(p.id))}</option>`).join('')}</select></label>
+      <label class="field">Status<select data-rksf="srcSt">${['Indexed','Failed','Superseded','Deleted','All'].map(x=>`<option ${s.srcSt===x?'selected':''}>${x}</option>`).join('')}</select></label>
+      <label class="field">Find<input data-rksf="srcQ" value="${esc(s.srcQ||'')}" placeholder="Title, record or type"></label></div>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>Source</th><th>Project</th><th>Type</th><th>Revision</th><th>Approval</th><th class="n">Version</th><th class="n">Passages</th><th>Indexed</th><th>Access</th><th></th></tr></thead><tbody>
+    ${L.map(x=>`<tr id="rks-${esc(x.id.replace(/[^a-zA-Z0-9_-]/g,'_'))}"><td>${esc(x.title)}${x.note?`<div class="t2">${esc(x.note)}</div>`:''}${x.err?`<div class="t2 r-c">${esc(x.err)}</div>`:''}</td><td>${x.pid?esc(rkPj(x.pid)):'Company'}</td><td>${esc(x.type)}</td><td>${esc(x.rev||'—')}</td><td><span class="st ${rkStCls(x.st==='Indexed'?x.appr:x.st)}">${esc(x.st==='Indexed'?x.appr:x.st)}</span></td><td class="n">${x.ver||0}</td><td class="n">${x.n||0}</td><td>${esc(tStamp(x.indexed||x.synced))}</td><td>${esc(rkClsName(x.cls))}</td>
+      <td>${x.st==='Indexed'?`<button class="linkbtn" type="button" data-rkpass="${esc(x.id)}">Passages</button> `:''}${rkOpenBtn(x)}</td></tr><tr class="rk-passrow" data-rkpassrow="${esc(x.id)}" hidden><td colspan="10"></td></tr>`).join('')||'<tr><td colspan="10" class="muted">No sources match.</td></tr>'}</tbody></table></div>
+    ${runs.length?`<h3 class="rk-h3">Recent syncs</h3><table class="tbl small"><thead><tr><th>When</th><th>By</th><th>Kind</th><th class="n">Added</th><th class="n">Updated</th><th class="n">Removed</th><th class="n">Unchanged</th><th class="n">Could not read</th><th class="n">Time</th><th>Result</th></tr></thead><tbody>${runs.map(r=>`<tr><td>${esc(tStamp(r.at))}</td><td>${esc(r.by)}</td><td>${esc(r.kind)}</td><td class="n">${r.added}</td><td class="n">${r.changed}</td><td class="n">${r.removed}</td><td class="n">${r.same}</td><td class="n">${r.failed}</td><td class="n">${r.ms} ms</td><td>${r.err?`<span class="r-c">${esc(r.err)}</span>${rkCanSync()?` <button class="linkbtn" type="button" data-rksync="${esc(r.mod)}">Retry</button>`:''}`:'Done'}</td></tr>`).join('')}</tbody></table>`:''}</section>`}
+const rkClsName=c=>!c||c==='all'?'Everyone with the project':c==='money'?'Cost figures':c==='company'?'Everyone':c.startsWith('doc:')?`Document rack row: ${c.slice(4)}`:c==='rel'?'Report readers':c==='dly'||c==='vo'?'Claims readers':c==='iss'?'Issue register readers':c==='mat'?'Materials readers':c==='boq'?'BOQ Engine users':c;
+
+
+const RK_TEACH=[['doc','Upload documents'],['corr','Teach a correction'],['rule','Add a business rule'],['gaps','Knowledge gaps'],['import','Import module knowledge']];
+const rkReviewers=()=>DB.master.users.filter(u=>u.active!==false&&(u.role==='sa'||rightOf('rasa.review',u)));
+function rkPropForm(kind,s){const e=s.edit||{},P=scopeProjects(),v=k=>esc(e[k]==null?'':e[k]),qs=rkDB().qlog.filter(x=>x.by===me().id).slice(0,20);
+  const modSel=`<select name="mod"><option value="">${kind==='rule'?'Choose the module':'Any module'}</option>${RK_MODS.filter(m=>m.conn||m.k==='taught').map(m=>`<option value="${m.k}" ${e.mod===m.k?'selected':''}>${esc(m.name)}</option>`).join('')}</select>`;
+  const scope=`<label class="field">Applies to<select name="scope"><option value="project" ${e.scope!=='company'?'selected':''}>One project</option><option value="company" ${e.scope==='company'?'selected':''}>Company-wide (needs a designated approver)</option></select></label>
+    ${F('Project',`<select name="pid"><option value="">Choose…</option>${P.map(p=>`<option value="${esc(p.id)}" ${e.pid===p.id||(!e.pid&&P.length===1)?'selected':''}>${esc(rkPj(p.id))}</option>`).join('')}</select>`)}`;
+  const tail=`${F('Activity, WBS, cost code or clause (comma separated)',`<input name="ids" value="${esc(Array.isArray(e.ids)?e.ids.join(', '):e.ids||'')}" maxlength="300">`)}
+    ${F('Reviewer (optional)',`<select name="reviewer"><option value="">Any knowledge reviewer</option>${rkReviewers().filter(u=>u.id!==me().id).map(u=>`<option value="${esc(u.id)}" ${e.reviewer===u.id?'selected':''}>${esc(u.name)}</option>`).join('')}</select>`)}`;
+  const btns=`<div class="actions"><button type="button" class="btn" data-rkpsave="draft">Save as draft</button><button type="button" class="btn primary" data-rkpsave="submit">Submit for review</button>${e.id?`<span class="small muted">Editing ${esc(e.id)}, version ${e.ver||1}</span>`:''}</div><p class="small r-c" id="rkPErr" role="alert"></p>`;
+  if(kind==='corr')return `<form class="panel rk-form" id="rkPForm" data-kind="correction"><h2>Teach a correction</h2><p class="small muted">Point out what RASA said that is wrong or incomplete and give the right information with its source. It becomes trusted only after a reviewer approves and publishes it; a correction of company-wide knowledge needs a designated approver.</p>
+    <input type="hidden" name="id" value="${v('id')}"><div class="fields">${F('From a previous answer (optional)',`<select name="qid"><option value="">None</option>${qs.map(x=>`<option value="${esc(x.id)}" ${e.qid===x.id?'selected':''}>${esc(x.q.slice(0,90))} · ${esc(tStamp(x.at))}</option>`).join('')}</select>`,1)}
+    ${F('Title',`<input name="title" value="${v('title')}" maxlength="160" required>`,1)}${F('The incorrect or incomplete statement',`<textarea name="old" rows="2" maxlength="1000">${v('old')}</textarea>`,1)}
+    ${F('The corrected information',`<textarea name="text" rows="3" maxlength="4000">${v('text')}</textarea>`,1)}${F('Why it is wrong',`<textarea name="why" rows="2" maxlength="1000">${v('why')}</textarea>`,1)}
+    ${F('Supporting document or record (title, number, clause, page)',`<input name="ref" value="${v('ref')}" maxlength="300">`,1)}${F('Module',modSel)}${scope}${tail}</div>${btns}</form>`;
+  if(kind==='rule')return `<form class="panel rk-form" id="rkPForm" data-kind="rule"><h2>Add an approved business rule</h2><p class="small muted">A rule RASA should apply when it explains records: a procedure, a threshold, a decision criterion. ProTrackAI's calculations are not changed by a rule: a financial formula is kept as knowledge, and changes to a calculation come only with a tested release.</p>
+    <input type="hidden" name="id" value="${v('id')}"><div class="fields">${F('Rule name',`<input name="title" value="${v('title')}" maxlength="160">`,1)}${F('Rule description',`<textarea name="text" rows="3" maxlength="4000">${v('text')}</textarea>`,1)}
+    ${F('Business purpose',`<input name="purpose" value="${v('purpose')}" maxlength="300">`,1)}${F('Module',modSel)}${F('Formula or decision criteria',`<input name="formula" value="${v('formula')}" maxlength="500">`)}
+    ${F('Source or policy reference',`<input name="ref" value="${v('ref')}" maxlength="300">`)}${F('Effective date',`<input name="eff" type="date" value="${v('eff')}">`)}${F('Owner',`<input name="owner" value="${esc(e.owner||me().name)}" maxlength="120">`)}
+    ${scope}${tail}<label class="field" style="grid-column:1/-1"><span><input type="checkbox" name="fin" ${e.fin?'checked':''}> High-impact financial formula: needs ${Math.max(2,+rkDB().cfg.pol.fin||2)} approvals and a regression check</span></label></div>${btns}</form>`;
+  return `<form class="panel rk-form" id="rkPForm" data-kind="gap"><h2>Answer a knowledge gap</h2><p class="small muted">Write what RASA should know to answer the question, with its source. The question itself is never trusted knowledge; this answer is, once it is approved and published.</p>
+    <input type="hidden" name="id" value="${v('id')}"><input type="hidden" name="gap" value="${v('gap')}"><div class="fields">${F('Title',`<input name="title" value="${v('title')}" maxlength="160">`,1)}${F('The knowledge',`<textarea name="text" rows="4" maxlength="4000">${v('text')}</textarea>`,1)}
+    ${F('Source (document, record, clause)',`<input name="ref" value="${v('ref')}" maxlength="300">`,1)}${F('Module',modSel)}${scope}${tail}</div>${btns}</form>`}
+function rkTeachHTML(s){const t=s.teach||'corr',P=scopeProjects();
+  const tabs=`<div class="chips" role="tablist" style="margin-bottom:10px">${RK_TEACH.map(([k,l])=>`<button type="button" class="chip" role="tab" aria-pressed="${t===k}" data-rkteach="${k}">${esc(l)}</button>`).join('')}</div>`;
+  if(!rkCanTeach()&&t!=='gaps')return `<section class="panel">${tabs}<p>Teaching RASA is for those with the right to teach it (Settings → Roles and rights, "RASA: teach").</p></section>`;
+  if(t==='corr'||t==='rule'||(t==='gaps'&&s.gapForm))return `<section class="panel">${tabs}</section>${rkPropForm(t==='gaps'?'gap':t,s)}`;
+  if(t==='doc'){const pid=s.docPid&&P.some(p=>p.id===s.docPid)?s.docPid:(P[0]||{}).id,D=(DB.docs||[]).filter(d=>d.project_id===pid&&d.status!=='Superseded'&&(state.role==='sa'||docCanRead(docRowOfKey(d.project_id,d.box_key))));
+    return `<section class="panel">${tabs}<h2>Upload documents</h2><p class="small muted">Documents are uploaded once, to the project's Document Rack, which keeps the original file, its revision, owner, status and access rights. RASA reads the text of a rack document and indexes its passages; nothing is copied twice. Scans without a text layer can only be found by their details. Uploads are checked for type and size by the rack; malware scanning is on hold until alfanar IT approves the scanning service.</p>
+      <div class="fields">${F('Project',`<select data-rksf="docPid">${P.map(p=>`<option value="${esc(p.id)}" ${p.id===pid?'selected':''}>${esc(rkPj(p.id))}</option>`).join('')}</select>`)}</div>
+      <div class="actions"><button type="button" class="btn primary" data-rkgo="docs">Upload to the Document Rack</button>${rkCanSync()?'<button type="button" class="btn" data-rksync="docs">Index the rack into RASA now</button>':''}</div>
+      <div class="scroll"><table class="tbl small"><thead><tr><th>Document</th><th>Box</th><th>Revision</th><th>Status</th><th>RASA</th></tr></thead><tbody>${D.map(d=>{const s2=rkDB().src['docs:doc:'+d.id];return `<tr><td>${esc(d.title)}</td><td>${esc(d.box_key)}</td><td>${esc(d.revision||'—')}</td><td>${esc(d.status)}</td><td>${s2&&s2.st==='Indexed'?`Indexed v${s2.ver}, ${s2.n} passages`:s2&&s2.st==='Failed'?'<span class="r-c">Could not be read</span>':'Not indexed yet'}${docRasaLine(d,docCanKeep(docRowOfKey(d.project_id,d.box_key)))}</td></tr>`}).join('')||'<tr><td colspan="5" class="muted">No documents in this project\'s rack yet.</td></tr>'}</tbody></table></div></section>`}
+  if(t==='import'){const X=RK_MODS.filter(m=>m.conn).map(m=>({m,x:rkModState(m)}));
+    return `<section class="panel">${tabs}<h2>Import module knowledge</h2><p class="small muted">Choose the modules RASA should read now. Each reads only the records of your projects that you may open; cost figures need the cost right. Modules set to "on change" also refresh by themselves a few seconds after a record is saved.</p>
+      <div class="scroll"><table class="tbl small"><thead><tr><th></th><th>Module</th><th>State</th><th class="n">Sources</th><th>Last successful sync</th></tr></thead><tbody>${X.map(({m,x})=>{const ok=rkCanSync()&&rkModOn(m)&&(!m.gl||glLive(m.gl))&&!x.money;return `<tr><td><input type="checkbox" data-rkimp="${m.k}" ${ok?'checked':'disabled'} aria-label="${esc(m.name)}"></td><td>${esc(m.name)}</td><td><span class="rk-pill ${rkSlug(x.st)}">${esc(x.st)}</span>${!ok?`<div class="t2">${esc(x.money?'Cost figures: not for your role':!rkCanSync()?'Needs the right to refresh RASA':x.why||'')}</div>`:''}</td><td class="n">${x.money?'—':fmt(x.idx)}</td><td>${x.ok?esc(tStamp(x.ok.at)):'—'}</td></tr>`}).join('')}</tbody></table></div>
+      <div class="actions">${rkCanSync()?'<button type="button" class="btn primary" data-rkimpgo>Import the chosen modules</button>':'<span class="small muted">Only those who keep records refresh RASA\'s knowledge.</span>'}</div></section>`}
+  const G=rkGapsSeen().filter(g=>s.gapAll?true:g.st==='Open');
+  return `<section class="panel">${tabs}<div class="card-head"><h2>Knowledge gaps</h2><label class="small"><input type="checkbox" data-rkgapall ${s.gapAll?'checked':''}> Show resolved</label></div>
+    <p class="small muted">Questions RASA could not answer because no record or document you can open had the information. Questions about records someone may not open are never recorded as gaps.</p>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>Question</th><th>Module</th><th>Project</th><th class="n">Asked</th><th>Last asked</th><th>State</th><th>Actions</th></tr></thead><tbody>
+    ${G.map(g=>`<tr><td>"${esc(g.q)}"${g.review?'<div class="t2">Expert review requested</div>':''}${g.prop?`<div class="t2">Proposal ${esc(g.prop)}</div>`:''}</td><td>${esc((rkMod(g.mod)||{}).name||'Any')}</td><td>${g.pid?esc(rkPj(g.pid)):'All'}</td><td class="n">${g.n}</td><td>${esc(tStamp(g.last))}</td><td>${esc(g.st)}${g.res?`<div class="t2">${esc(g.res)}</div>`:''}</td>
+      <td class="rk-gapa">${g.st==='Open'?`${rkCanTeach()?`<button class="linkbtn" type="button" data-rkgap="propose" data-id="${esc(g.id)}">Submit knowledge</button>`:''}<button class="linkbtn" type="button" data-rkgo="docs">Upload a missing document</button><button class="linkbtn" type="button" data-rktab="src">Connect a source</button>${g.review?'':`<button class="linkbtn" type="button" data-rkgap="review" data-id="${esc(g.id)}">Request expert review</button>`}${rkCanTeach()||rkCanReview(g.pid)?`<button class="linkbtn" type="button" data-rkgap="resolve" data-id="${esc(g.id)}">Mark resolved</button>`:''}`:`<button class="linkbtn" type="button" data-rkgap="reopen" data-id="${esc(g.id)}">Reopen</button>`}</td></tr>`).join('')||'<tr><td colspan="7" class="muted">No gaps.</td></tr>'}</tbody></table></div></section>`}
+function rkActHTML(s){const L=rkActSeen().filter(a=>(!s.actK||a.k===s.actK)&&(!s.actM||a.mod===s.actM)),ks=[...new Set(rkDB().act.map(a=>a.k))];
+  return `<section class="panel"><div class="card-head"><h2>Learning activity</h2></div><div class="fields"><label class="field">Kind<select data-rksf="actK"><option value="">All</option>${ks.map(k=>`<option ${s.actK===k?'selected':''}>${esc(k)}</option>`).join('')}</select></label>
+    <label class="field">Module<select data-rksf="actM"><option value="">All</option>${RK_MODS.map(m=>`<option value="${m.k}" ${s.actM===m.k?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label></div>
+    <ul class="rk-feed big">${L.slice(0,150).map(rkActItem).join('')||'<li class="muted">Nothing yet.</li>'}</ul></section>`}
+const RK_RQ=[['todo','To review',p=>['Submitted','Under Review'].includes(p.st)],['pub','To publish',p=>p.st==='Approved'],['live','Published',p=>p.st==='Published'],['back','Needs revision',p=>p.st==='Needs Revision'],['mine','Mine',p=>p.author===me().id],['closed','Closed',p=>['Rejected','Withdrawn','Superseded'].includes(p.st)],['all','All',()=>true]];
+function rkRevHTML(s){const L=rkPropsSeen(),q=s.revQ||'todo',f=(RK_RQ.find(x=>x[0]===q)||RK_RQ[0])[2],rows=L.filter(f),p=s.prop?L.find(x=>x.id===s.prop):null,R=rkDB();
+  const list=`<section class="panel"><div class="card-head"><h2>Knowledge review</h2><span class="small muted">Knowledge version ${R.pubVer}</span></div>
+    <div class="chips" role="tablist">${RK_RQ.map(([k,l,fn])=>`<button type="button" class="chip" role="tab" aria-pressed="${q===k}" data-rkrq="${k}">${esc(l)} <b>${L.filter(fn).length}</b></button>`).join('')}</div>
+    <div class="scroll" style="margin-top:8px"><table class="tbl small"><thead><tr><th>ID</th><th>Kind</th><th>Title</th><th>Applies to</th><th>Author</th><th>Submitted</th><th>State</th></tr></thead><tbody>
+    ${rows.map(x=>`<tr ${p&&p.id===x.id?'class="sel"':''}><td><button class="linkbtn" type="button" data-rkprop="${esc(x.id)}">${esc(x.id)}</button></td><td>${esc(RK_KINDS[x.kind])}${x.fin?' · financial formula':''}</td><td>${esc(x.title)}</td><td>${x.scope==='company'?'Company-wide':esc(rkPj(x.pid))}</td><td>${esc(x.author_name)}</td><td>${esc(tStamp((x.hist.find(h=>h.st==='Submitted')||{}).at||''))}</td><td><span class="st ${rkStCls(x.st)}">${esc(x.st)}</span></td></tr>`).join('')||'<tr><td colspan="7" class="muted">Nothing here.</td></tr>'}</tbody></table></div></section>`;
+  if(!p)return list+rkPubHTML();
+  const own=p.author===me().id,rev=rkCanReview(p.pid)&&(p.scope!=='company'||rkCanCompany())&&!own,need=rkNeed(p),B=(a,l,cls)=>`<button type="button" class="btn sm ${cls||''}" data-rkpa="${a}" data-id="${esc(p.id)}">${l}</button>`;
+  const cur=(p.conflicts||[]).map(c=>{const x=R.props.find(z=>z.id===c.id);return x?`<div class="rk-cmp-i"><b>${esc(x.id)} · ${esc(x.title)}</b> <span class="t2">${esc(c.why)} · v${x.pubVer}</span><p>${esc(x.text)}</p></div>`:''}).join('');
+  const acts=[];if(own&&['Draft','Needs Revision'].includes(p.st))acts.push(B('edit','Edit'),B('submit','Submit for review','primary'));
+  if(rev&&p.st==='Submitted')acts.push(B('take','Take for review','primary'));
+  if(rev&&p.st==='Under Review'){if(p.conflicts&&p.conflicts.length&&!p.res)acts.push(B('res-replace','Replace the conflicting knowledge'),B('res-keep','Keep both: not a conflict'));
+    else acts.push(B('approve',p.fin?`Approve (${(p.approvals||[]).length+1} of ${need})`:'Approve','primary'));acts.push(B('revise','Return for revision'),B('reject','Reject'))}
+  if(rev&&p.st==='Approved')acts.push(B('publish','Publish','primary'));if(rev&&p.st==='Published')acts.push(B('unpublish','Roll back'));
+  if((own||rev)&&['Draft','Submitted','Under Review','Needs Revision','Approved'].includes(p.st))acts.push(B('withdraw','Withdraw'));
+  const rows2=[['Kind',RK_KINDS[p.kind]+(p.fin?' (high-impact financial formula)':'')],['Applies to',p.scope==='company'?'Company-wide':rkPj(p.pid)],['Module',(rkMod(p.mod)||{}).name||'Any'],['Author',`${p.author_name}, ${tStamp(p.at)}`],['Version',p.ver],
+    ['Supporting source',p.ref||'—'],['Activity, WBS, cost code, clause',(p.ids||[]).join(', ')||'—'],p.kind==='rule'?['Business purpose',p.purpose||'—']:null,p.kind==='rule'?['Formula or criteria',p.formula||'—']:null,p.kind==='rule'?['Effective date',p.eff?rkD(p.eff):'—']:null,p.kind==='rule'?['Owner',p.owner||'—']:null,
+    ['Reviewer',p.rev_by||(p.reviewer?(userById(p.reviewer)||{}).name:'')||'Any knowledge reviewer'],['Approvals',`${(p.approvals||[]).map(a=>a.by+(a.regress?' (regression check confirmed)':'')).join(', ')||'none'} · ${need} needed`],p.pubVer?['Published',`version ${p.pubVer}, ${tStamp(p.pubAt)}, by ${p.pub_by}`]:null].filter(Boolean);
+  return list+`<section class="panel rk-prop" id="rkProp"><div class="card-head" style="flex-wrap:wrap"><h2>${esc(p.id)} · ${esc(p.title)}</h2><span class="st ${rkStCls(p.st)}">${esc(p.st)}</span></div>
+    <div class="rk-cmp"><div><h4>Existing knowledge</h4>${cur||(p.kind==='correction'&&p.old?`<div class="rk-cmp-i"><b>What RASA said</b><p>${esc(p.old)}</p></div>`:'<p class="small muted">No published knowledge conflicts with it.</p>')}</div>
+      <div><h4>Proposed change</h4><div class="rk-cmp-i new"><p>${esc(p.text)}</p>${p.why?`<p class="small"><b>Why:</b> ${esc(p.why)}</p>`:''}</div></div></div>
+    ${p.conflicts&&p.conflicts.length?`<div class="rk-note warn"><b>Conflict with published knowledge.</b> ${p.res?(p.res==='replace'?'Resolved: it replaces the conflicting knowledge when published.':'Resolved: both are kept.'):'The reviewer resolves it before approving.'}</div>`:''}
+    <table class="tbl small rk-kv"><tbody>${rows2.map(([k,v])=>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
+    ${acts.length?`<div class="fields" style="margin-top:8px">${F('Comment (needed to return, reject or roll back)','<textarea id="rkNote" rows="2" maxlength="1000"></textarea>',1)}${p.fin&&rev&&p.st==='Under Review'?'<label class="field" style="grid-column:1/-1"><span><input type="checkbox" id="rkRegress"> I ran the regression check: the formula gives the expected results on the test cases</span></label>':''}</div><div class="actions">${acts.join('')}</div><p class="small r-c" id="rkPaErr" role="alert"></p>`:own?'':`<p class="small muted">${p.scope==='company'&&!rkCanCompany()?'Company-wide knowledge is reviewed by its designated approvers.':'You can read this proposal; reviewing it needs the knowledge reviewer right for the project.'}</p>`}
+    <h3 class="rk-h3">Audit history</h3><ol class="rk-hist">${p.hist.slice().reverse().map(h=>`<li><b>${esc(h.a||h.st)}</b> → ${esc(h.st)} <span class="t2">${esc(h.by)} · ${esc(tStamp(h.at))}</span>${h.note?`<div class="small">${esc(h.note)}</div>`:''}</li>`).join('')}</ol></section>`+rkPubHTML()}
+function rkPubHTML(){const R=rkDB(),L=R.pub.filter(x=>{const p=R.props.find(z=>z.id===x.prop);return p&&(!p.pid||accessIds().includes(p.pid))}).slice(0,20);
+  return L.length?`<section class="panel"><div class="card-head"><h2>Published knowledge versions</h2></div><table class="tbl small"><thead><tr><th class="n">Version</th><th>Change</th><th>Proposal</th><th>By</th><th>When</th></tr></thead><tbody>${L.map(x=>{const p=R.props.find(z=>z.id===x.prop);return `<tr><td class="n">${x.ver}</td><td>${x.op==='publish'?'Published'+(x.replaced&&x.replaced.length?', replacing '+x.replaced.join(', '):''):'Rolled back'+(x.restored&&x.restored.length?', restoring '+x.restored.join(', '):'')}${x.note?`<div class="t2">${esc(x.note)}</div>`:''}</td><td><button class="linkbtn" type="button" data-rkprop="${esc(x.prop)}">${esc(x.prop)}</button> ${esc(p.title)}</td><td>${esc(x.by)}</td><td>${esc(tStamp(x.at))}</td></tr>`}).join('')}</tbody></table></section>`:''}
+
+
+/* ----- analytics: operational measures from the logs, the automated evaluation set, and answers people reviewed ----- */
+const RK_EVAL=[['Which milestones are at risk?',['sched']],['What is the EAC and the current budget in the cost report?',['cost']],['notice of claim within 28 days',['docs','contract']],['retention money released at the taking-over certificate',['docs','contract']],
+  ['delay event notice deadline',['claims']],['invoice collected amount',['cash']],['subcontract purchase order value',['proc']],['drawing revision superseded',['boq']],['daily reports man-hours productivity',['prod']],['internal report issues and next steps',['exec']]];
+async function rkEvalRun(){if(state.role!=='sa'&&!rkCanReview())throw new Error('The evaluation is run by a super admin or a knowledge reviewer');const R=rkDB(),rows=[];let hit=0,valid=0,cites=0,ms=0;
+  for(const [q,want] of RK_EVAL){const t0=performance.now(),r=await rkSearch(q,{k:3}),t=Math.round(performance.now()-t0),ok=r.hits.some(h=>want.includes(h.s.mod)||(want.includes('contract')&&h.s.row==='contract')),v=r.hits.filter(h=>rkCiteOk(h.s)).length,iso=r.hits.every(h=>rkSees(h.s));
+    rows.push({q,want:want.join(', '),got:r.hits.map(h=>h.s.mod).join(', ')||'—',ok,valid:v,n:r.hits.length,iso,ms:t});if(ok)hit++;valid+=v;cites+=r.hits.length;ms+=t}
+  const run={id:rkId('EVAL'),at:rkNow(),by:me().name,n:RK_EVAL.length,hit,valid,cites,ms:Math.round(ms/RK_EVAL.length),iso:rows.every(x=>x.iso),rows};R.evals.unshift(run);if(R.evals.length>20)R.evals.length=20;
+  rkLog('eval',`Evaluation: the expected module was in the top 3 for ${hit} of ${RK_EVAL.length} questions; ${valid} of ${cites} citations valid`);save();return run}
+function rkAnaData(s){const R=rkDB(),cut=new Date(Date.now()-(+s.days||30)*864e5).toISOString(),pid=s.anaPid||'',mod=s.anaMod||'',A=new Set(accessIds());
+  const inP=x=>!pid||(x.pids?x.pids.includes(pid):x.pid===pid),Q=R.qlog.filter(x=>x.at>=cut&&inP(x)&&(!mod||(x.mods||[]).includes(mod))&&(state.role==='sa'||rkCanReview()||x.by===me().id)&&(x.pids||[]).every(id=>A.has(id)));
+  const S=Object.values(R.src).filter(x=>rkSees(x)&&(!pid||x.pid===pid)&&(!mod||x.mod===mod)),runs=R.runs.filter(r=>r.at>=cut&&(!mod||r.mod===mod)),P=rkPropsSeen().filter(p=>(!pid||p.pid===pid)&&(!mod||p.mod===mod));
+  const fb=R.fb.filter(f=>f.at>=cut&&Q.some(q=>q.id===f.qid)),rv=fb.filter(f=>{const u=userById(f.by);return u&&(u.role==='sa'||rightOf('rasa.review',u))});
+  const dec=P.map(p=>{const a=(p.hist.find(h=>h.st==='Submitted')||{}).at,b=(p.hist.find(h=>['Approved','Rejected'].includes(h.st))||{}).at;return a&&b?(new Date(b)-new Date(a))/36e5:null}).filter(x=>x!=null);
+  const fresh=RK_MODS.filter(m=>m.conn&&rkModOn(m)).map(m=>{const r=R.runs.find(x=>x.mod===m.k&&!x.err);return r?(Date.now()-new Date(r.at))/36e5:null}).filter(x=>x!=null);
+  const gapsRep=rkGapsSeen().filter(g=>g.n>1&&(!pid||g.pid===pid)&&(!mod||g.mod===mod));
+  return {Q,S,runs,P,fb,rv,dec,fresh,gapsRep,R,cut}}
+function rkAnaHTML(s){const D=rkAnaData(s),Q=D.Q,pc=(a,b)=>b?Math.round(a/b*100)+'%':'—',ans=Q.filter(x=>x.ans).length,cit=Q.reduce((t,x)=>t+x.cites,0),val=Q.reduce((t,x)=>t+x.valid,0),neg=D.fb.filter(f=>f.v<0).length,ev=D.R.evals[0];
+  const C=[['Total knowledge sources',fmt(D.S.length),'Indexed sources you can open'],['Approved and pending knowledge',`${D.P.filter(p=>p.st==='Published').length} / ${D.P.filter(p=>['Submitted','Under Review','Approved'].includes(p.st)).length}`,'Published / waiting for review or publication'],
+    ['Indexing jobs',`${D.runs.filter(r=>!r.err).length} ok · ${D.runs.filter(r=>r.err).length} failed`,'Module syncs in the period'],['Unanswered questions',fmt(Q.filter(x=>x.gap).length),'Recorded as knowledge gaps'],['Negative feedback',fmt(neg),'Answers marked not helpful'],['Repeated knowledge gaps',fmt(D.gapsRep.length),'Asked more than once'],
+    ['Retrieval success rate',pc(ans,Q.length),`${ans} of ${Q.length} questions answered with evidence or a ProTrackAI rule`],['Citation validity',pc(val,cit),`${val} of ${cit} citations pointed to a current source the asker may open`],['Expert-reviewed answer quality',D.rv.length?pc(D.rv.filter(f=>f.v>0).length,D.rv.length):'—',`${D.rv.length} answers rated by knowledge reviewers`],
+    ['Average response time',Q.length?fmt(Q.reduce((t,x)=>t+x.ms,0)/Q.length)+' ms':'—','Question to answer, in this browser'],['Language model usage and cost',RASA.adapters.llm?fmt(Q.filter(x=>x.llm).length)+' answers':'On hold','Awaiting alfanar IT approval; no tokens used, no cost'],
+    ['Knowledge freshness',D.fresh.length?`${fmt(Math.max(...D.fresh),1)} h`:'—','Oldest last successful sync of a connected module'],['Approval turnaround',D.dec.length?fmt(D.dec.reduce((a,b)=>a+b,0)/D.dec.length,1)+' h':'—','Submitted to approved or rejected, on average']];
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Analytics and performance</h2></div>
+    <div class="fields"><label class="field">Project<select data-rksf="anaPid"><option value="">All in access</option>${scopeProjects().map(p=>`<option value="${esc(p.id)}" ${s.anaPid===p.id?'selected':''}>${esc(rkPj(p.id))}</option>`).join('')}</select></label>
+      <label class="field">Module<select data-rksf="anaMod"><option value="">All</option>${RK_MODS.filter(m=>m.conn).map(m=>`<option value="${m.k}" ${s.anaMod===m.k?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>
+      <label class="field">Period<select data-rksf="days">${[7,30,90,365].map(d=>`<option value="${d}" ${+s.days===d?'selected':''}>Last ${d} days</option>`).join('')}</select></label></div>
+    <div class="rk-anak">${C.map(([l,v,sub])=>`<div class="rk-ak"><em>${esc(l)}</em><b>${esc(v)}</b><small>${esc(sub)}</small></div>`).join('')}</div></section>
+  <div class="rk-2"><section class="panel"><div class="card-head"><h2>Sources by module</h2></div><div class="rk-chart"><canvas id="rkC1" aria-label="Sources by module"></canvas></div></section>
+    <section class="panel"><div class="card-head"><h2>Questions and knowledge changes</h2></div><div class="rk-chart"><canvas id="rkC2" aria-label="Questions and knowledge changes by day"></canvas></div></section></div>
+  <section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Evaluation</h2>${state.role==='sa'||rkCanReview()?'<button class="btn sm primary" type="button" data-rkeval>Run the evaluation set</button>':''}</div>
+    <p class="small muted">${RK_EVAL.length} test questions with the module that should answer each. The run checks that the expected module is among the first three sources (retrieval relevance), that every citation points to a current source the reader may open (citation validity), that no source outside the reader's rights is returned (permission isolation), and the time taken. It measures retrieval, not the correctness of a written answer: that is the expert-reviewed quality above.</p>
+    ${ev?`<p><b>Last run ${esc(tStamp(ev.at))}</b> by ${esc(ev.by)}: expected module in the top 3 for ${ev.hit} of ${ev.n} questions; ${ev.valid} of ${ev.cites} citations valid; permission isolation ${ev.iso?'held':'<span class="r-c">failed</span>'}; ${ev.ms} ms on average.</p>
+      <div class="scroll"><table class="tbl small"><thead><tr><th>Question</th><th>Expected</th><th>Found (top 3)</th><th>Result</th><th class="n">Valid citations</th><th class="n">Time</th></tr></thead><tbody>${ev.rows.map(r=>`<tr><td>${esc(r.q)}</td><td>${esc(r.want)}</td><td>${esc(r.got)}</td><td>${r.ok?'<span class="st Approved">Found</span>':'<span class="st Rejected">Missed</span>'}</td><td class="n">${r.valid} / ${r.n}</td><td class="n">${r.ms} ms</td></tr>`).join('')}</tbody></table></div>`:'<p class="small muted">Not run yet.</p>'}
+    <h3 class="rk-h3">How each measure is made</h3><ul class="small"><li><b>Operational</b> (from the logs): sources, indexing jobs, response time, freshness, approval turnaround, unanswered questions, feedback.</li><li><b>Automated evaluation</b>: retrieval success, citation validity and the evaluation set; no single accuracy score is claimed.</li><li><b>Human-reviewed</b>: answer quality rated by knowledge reviewers with the helpful / not helpful buttons.</li><li>Questions are kept ${rkDB().cfg.keep} days (RASA Settings); a person sees the measures of their own questions unless they review knowledge.</li></ul></section>`}
+function rkAnaCharts(s){if(!window.Chart||!$('#rkC1'))return;const D=rkAnaData(s),by={};D.S.forEach(x=>{by[x.mod]=(by[x.mod]||0)+1});const ks=Object.keys(by).sort((a,b)=>by[b]-by[a]);
+  const days=[],n=Math.min(+s.days||30,60);for(let i=n-1;i>=0;i--)days.push(new Date(Date.now()-i*864e5).toISOString().slice(0,10));
+  const cnt=(L,f)=>days.map(d=>L.filter(x=>String(x.at).slice(0,10)===d&&f(x)).length),ink=css('--ink-2')||'#666';
+  charts.push(new Chart($('#rkC1'),{type:'bar',data:{labels:ks.map(k=>(rkMod(k)||{}).name||k),datasets:[{label:'Sources',data:ks.map(k=>by[k]),backgroundColor:'#1d63d8'}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{color:ink}},y:{ticks:{color:ink}}}}}));
+  charts.push(new Chart($('#rkC2'),{type:'line',data:{labels:days.map(d=>d.slice(5)),datasets:[{label:'Answered',data:cnt(D.Q,x=>x.ans),borderColor:'#1f9d55',backgroundColor:'#1f9d55',tension:.3},{label:'Unanswered',data:cnt(D.Q,x=>!x.ans),borderColor:'#c0392b',backgroundColor:'#c0392b',tension:.3},
+    {label:'Knowledge changes',data:days.map(d=>D.R.runs.filter(r=>String(r.at).slice(0,10)===d&&!r.err).reduce((t,r)=>t+r.added+r.changed+r.removed,0)+D.R.pub.filter(x=>String(x.at).slice(0,10)===d).length),borderColor:'#46bdf5',backgroundColor:'#46bdf5',tension:.3,yAxisID:'y1'}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{color:ink,precision:0},title:{display:true,text:'Questions'}},y1:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},ticks:{color:ink,precision:0},title:{display:true,text:'Changes'}}},plugins:{legend:{labels:{color:ink}}}}}))}
+function rkSetHTML(s){const R=rkDB(),E=RASA_ENTERPRISE||{},on=x=>x&&x.enabled&&x.approved;
+  return `<form class="panel" id="rkSet"><div class="card-head"><h2>RASA Settings</h2></div>
+    <h3 class="rk-h3">Modules</h3><p class="small muted">Switch a module off to take its knowledge out of every answer at once (its index is kept). "On change" refreshes a module a few seconds after a record is saved while ProTrackAI is open; "Manual" waits for a sync. Nothing is real-time beyond that.</p>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>Module</th><th>Used by RASA</th><th>Sync</th><th>Reads</th></tr></thead><tbody>${RK_MODS.map(m=>`<tr ${s.srcMod===m.k?'class="sel"':''}><td><b>${esc(m.name)}</b>${m.off?`<div class="t2">${esc(m.off)}</div>`:!m.conn?`<div class="t2">${esc(m.why)}</div>`:''}</td>
+      <td>${m.off||!m.conn?'—':`<input type="checkbox" name="on_${m.k}" ${rkModOn(m)?'checked':''} aria-label="${esc(m.name)} used by RASA">`}</td><td>${m.conn?`<select name="sync_${m.k}"><option value="event" ${rkStrat(m)==='event'?'selected':''}>On change</option><option value="manual" ${rkStrat(m)==='manual'?'selected':''}>Manual</option></select>`:'—'}</td><td class="small">${esc(m.what)}</td></tr>`).join('')}</tbody></table></div>
+    <h3 class="rk-h3">Approval policies</h3><div class="fields">${[['correction','Approvals for a correction'],['rule','Approvals for a business rule'],['gap','Approvals for knowledge answering a gap'],['note','Approvals for a knowledge note'],['fin','Approvals for a high-impact financial formula (at least 2, with a regression check)']].map(([k,l])=>F(l,`<input type="number" name="pol_${k}" min="${k==='fin'?2:1}" max="3" value="${+R.cfg.pol[k]||1}">`)).join('')}
+      ${F('Keep questions and feedback (days)',`<input type="number" name="keep" min="30" max="730" value="${+R.cfg.keep||180}">`)}</div>
+    <p class="small muted">Company-wide knowledge is always approved by a holder of "RASA: approve company-wide knowledge"; nobody approves their own proposal. Rights are set in Settings → Roles and rights.</p>
+    <div class="actions"><button type="button" class="btn primary" data-rksetsave>Save the settings</button><button type="button" class="btn" data-rkreindex>Re-index everything</button></div><p class="small r-c" id="rkSetErr" role="alert"></p>
+    <h3 class="rk-h3">On hold until alfanar IT and Cybersecurity approve</h3>
+    <table class="tbl small rk-kv"><tbody>
+      <tr><th>Language model on ProTrack's server (Claude or Azure OpenAI)</th><td>${on(E.llm)?'<span class="st Approved">Approved and on</span>':'<span class="st Draft">On hold</span> RASA answers with ProTrackAI\'s rules and quoted passages. The server endpoint receives only the evidence the asker may open; no key reaches the browser (config.js → RASA_ENTERPRISE.llm, enabled and approved).'}</td></tr>
+      <tr><th>Embeddings and vector search (pgvector)</th><td><span class="st Draft">On hold</span> Search is by words, stems, record numbers, WBS, activity and clause IDs, with project, module, approval and revision filters. schema-update-v50.sql leaves the embedding column out until approved.</td></tr>
+      <tr><th>Malware scanning of uploaded files</th><td><span class="st Draft">On hold</span> The Document Rack checks file types and sizes; a scanning service needs IT approval.</td></tr>
+      <tr><th>Background workers for extraction and indexing</th><td><span class="st Draft">On hold</span> Indexing runs in the signed-in person's browser with their rights; a server worker (Supabase Edge Function) is described in STAGE-44-SETUP for when it is approved.</td></tr>
+      <tr><th>Enterprise speech (Azure)</th><td>${on(E.speech)?'<span class="st Approved">Approved and on</span>':'<span class="st Draft">On hold</span> The browser\'s own voice is used.'}</td></tr></tbody></table></form>`}
+
+/* ----- the screen ----- */
+const RK_TABS=[['ov','RASA Overview'],['ask','Ask RASA'],['src','Knowledge Sources'],['teach','Teach RASA'],['act','Learning Activity'],['rev','Knowledge Review'],['ana','Analytics & Performance'],['set','RASA Settings']];
+function rkState(){const s=state.rk||(state.rk={ans:[],teach:'corr',revQ:'todo',srcSt:'Indexed',days:30});if(state.rkTab){s.tab=state.rkTab;state.rkTab=null}s.tab=s.tab||'ov';if(s.tab==='set'&&state.role!=='sa')s.tab='ov';return s}
+function renderRasa(){const s=rkState(),R=rkDB();
+  if(!RK.first&&rkCanSync()&&!R.runs.length&&!(CLOUD_ME&&DB.rkMissing)){RK.first=rkSyncAll('first').then(()=>{RK.first=true;if(state.view==='rasa')render()},()=>{RK.first=true})}
+  const todo=rkPropsSeen().filter(p=>['Submitted','Under Review','Approved'].includes(p.st)&&rkCanReview(p.pid)&&p.author!==me().id).length;
+  $('#view').innerHTML=`<div class="rk">${CLOUD_ME&&DB.rkMissing?'<div class="warn-box"><b>RASA Intelligence needs the v50 database update.</b> Run schema-update-v50.sql (STAGE-44-SETUP). Until then nothing is indexed or kept on the server.</div>':''}
+    <nav class="rk-tabs" role="tablist" aria-label="RASA Intelligence">${RK_TABS.filter(([k])=>k!=='set'||state.role==='sa').map(([k,l])=>`<button type="button" role="tab" aria-selected="${s.tab===k}" data-rktab="${k}">${esc(l)}${k==='rev'&&todo?` <span class="rk-badge">${todo}</span>`:''}</button>`).join('')}</nav>
+    ${({ov:rkOvHTML,ask:rkAskHTML,src:rkSrcHTML,teach:rkTeachHTML,act:rkActHTML,rev:rkRevHTML,ana:rkAnaHTML,set:rkSetHTML})[s.tab](s)}</div>`;
+  if(s.tab==='ana')rkAnaCharts(s);
+  if(s.focus){const el=document.getElementById(s.focus);s.focus=null;if(el)setTimeout(()=>el.scrollIntoView({block:'start',behavior:'smooth'}),40)}}
+async function rkAskUI(q,pid){const s=rkState();s.tab='ask';s.busy=true;s.draft='';if(state.view!=='rasa')state.view='rasa';render();
+  try{const r=await rkAsk(q,{pid:pid||s.pid||''});if(r)s.ans.unshift(r)}catch(e){s.ans.unshift({q,html:`<p class="r-c">${esc(e.message||String(e))}</p>`,clarify:true})}
+  finally{s.busy=false;s.ans=s.ans.slice(0,12);if(state.view==='rasa')render()}}
+const rkErr=(id,e)=>{const el=$('#'+id);if(el)el.textContent=e&&e.message||String(e);else toast(e&&e.message||String(e))};
+function rkFormRead(f){const o={};new FormData(f).forEach((v,k)=>{o[k]=v});o.kind=f.dataset.kind;o.fin=!!f.querySelector('[name=fin]:checked');return o}
+document.addEventListener('submit',e=>{const f=e.target.closest('[data-rkaskform]');if(!f)return;e.preventDefault();const q=(f.q&&f.q.value||'').trim();if(q)rkAskUI(q,f.pid?f.pid.value:'')});
+document.addEventListener('change',e=>{const t=e.target;if(!t.closest||!t.closest('.rk'))return;const s=rkState();
+  if(t.dataset.rksf){s[t.dataset.rksf]=t.value;render();return}if(t.matches('[data-rkgapall]')){s.gapAll=t.checked;render()}});
+document.addEventListener('click',async e=>{const t=e.target.closest&&e.target.closest('[data-rktab],[data-rkq],[data-rksync],[data-rksyncall],[data-rkfb],[data-rkcorr],[data-rkclar],[data-rkteach],[data-rkpsave],[data-rkprop],[data-rkrq],[data-rkpa],[data-rkgap],[data-rkgo],[data-rksrcopen],[data-rkpass],[data-rkimpgo],[data-rkeval],[data-rksetsave],[data-rkreindex]');
+  if(!t)return;const s=rkState(),d=t.dataset;
+  try{
+  if(d.rkq!=null){rkAskUI(d.rkq);return}
+  if(d.rkclar){const last=s.ans.find(a=>a.clarify&&a.q);if(last){s.ans=s.ans.filter(a=>a!==last);rkAskUI(last.q,d.rkclar)}return}
+  if(d.rkgo){if(navOn(d.rkgo)){state.navSec=d.rksec||null;go(d.rkgo)}else toast('That screen is not open to your role');return}
+  if(d.rkpass){const row=document.querySelector(`[data-rkpassrow="${CSS.escape(d.rkpass)}"]`);if(!row)return;if(!row.hidden){row.hidden=true;return}const src=rkDB().src[d.rkpass];if(!src||!rkSees(src))return;
+    const C=rkLive()?{[src.id]:await rkPassLive(src.id)}:await rkChunks(src.mod);row.firstElementChild.innerHTML=`<ol class="rk-pass">${(C[src.id]||[]).slice(0,60).map(c=>`<li><span class="t2">${esc(c.loc)}${c.ids&&c.ids.length?' · '+esc(c.ids.join(', ')):''}</span><div>${esc(c.t)}</div></li>`).join('')||'<li class="muted">No passages.</li>'}</ol>`;row.hidden=false;return}
+  if(d.rksrcopen){const src=rkDB().src[d.rksrcopen];if(src){s.tab='src';s.srcMod=src.mod;s.srcSt='All';s.srcQ=src.title.slice(0,40);s.focus='rkSrcList';if(state.view!=='rasa')state.view='rasa';render()}return}
+  if(d.rksync){t.disabled=true;t.textContent='Syncing…';const r=await rkSync(d.rksync,'manual');if(r)toast(r.err?`Sync failed: ${r.err}`:`${(rkMod(d.rksync)||{}).name}: ${r.added} added, ${r.changed} updated, ${r.removed} removed${r.failed?`, ${r.failed} could not be read`:''}`);render();return}
+  if(d.rksyncall!=null){t.disabled=true;t.textContent='Syncing…';const L=await rkSyncAll('manual');toast(`${L.length} modules synced${L.some(r=>r.err)?', some failed: see Knowledge Sources':''}`);render();return}
+  if(d.rkimpgo!=null){const ks=[...document.querySelectorAll('[data-rkimp]:checked')].map(x=>x.dataset.rkimp);if(!ks.length){toast('Choose at least one module');return}t.disabled=true;t.textContent='Importing…';const L=await rkSyncAll('manual',ks);toast(`${L.length} module${L.length===1?'':'s'} imported`);render();return}
+  if(d.rkfb){await rkFeedback(d.rkqid,+d.rkfb);const a=s.ans.find(x=>x.qid===d.rkqid);if(a)a.fb=+d.rkfb;if(+d.rkfb<0&&rkCanTeach()){const x=rkDB().qlog.find(z=>z.id===d.rkqid);s.tab='teach';s.teach='corr';s.edit={qid:d.rkqid,title:'Correction: '+(x?x.q:'').slice(0,140),scope:'project',pid:x&&x.pids.length===1?x.pids[0]:''}}render();return}
+  if(d.rkcorr){const x=rkDB().qlog.find(z=>z.id===d.rkcorr);s.tab='teach';s.teach='corr';s.edit={qid:d.rkcorr,title:'Correction: '+(x?x.q:'').slice(0,140),scope:'project',pid:x&&x.pids.length===1?x.pids[0]:''};render();return}
+  if(d.rkteach){s.tab='teach';s.teach=d.rkteach;s.gapForm=false;if(d.rkteach!=='corr'&&d.rkteach!=='rule')s.edit=null;else if(s.edit&&s.edit.kind&&s.edit.kind!==(d.rkteach==='corr'?'correction':'rule'))s.edit=null;if(state.view!=='rasa')state.view='rasa';render();return}
+  if(d.rkpsave){const f=$('#rkPForm');if(!f)return;const o=rkFormRead(f);try{const p=await rkPropSave(o,d.rkpsave==='submit');s.edit=null;s.gapForm=false;s.tab='rev';s.prop=p.id;s.revQ=p.st==='Draft'?'mine':'all';toast(`${p.id} ${p.st==='Draft'?'saved as a draft':'submitted for review'}`);render()}catch(x){rkErr('rkPErr',x)}return}
+  if(d.rkgap){const g=rkDB().gaps.find(x=>x.id===d.id);if(d.rkgap==='propose'){s.gapForm=true;s.teach='gaps';s.edit={kind:'gap',gap:g.id,title:g.q.slice(0,160),scope:g.pid?'project':'company',pid:g.pid||'',mod:g.mod||''};render();return}
+    await rkGapAct(d.id,d.rkgap);render();return}
+  if(d.rkrq){s.revQ=d.rkrq;s.prop=null;render();return}
+  if(d.rkpa){const note=($('#rkNote')||{}).value||'',a=d.rkpa;try{
+      if(a==='edit'){const p=rkDB().props.find(x=>x.id===d.id);s.tab='teach';s.teach=p.kind==='rule'?'rule':p.kind==='correction'?'corr':'gaps';s.gapForm=p.kind==='gap'||p.kind==='note';s.edit=Object.assign({},p);render();return}
+      if(a.startsWith('res-'))await rkPropAct(d.id,'resolve',a.slice(4));else await rkPropAct(d.id,a,note,{regress:!!($('#rkRegress')||{}).checked});toast(`${d.id}: ${a==='take'?'taken for review':a==='res-replace'||a==='res-keep'?'conflict resolved':a==='approve'?'approval recorded':a==='publish'?'published':a==='unpublish'?'rolled back':a==='revise'?'returned for revision':a==='reject'?'rejected':a==='withdraw'?'withdrawn':'submitted'}`);render()}catch(x){rkErr('rkPaErr',x)}return}
+  if(d.rkprop){s.tab='rev';s.prop=d.rkprop;if(!rkPropsSeen().some(p=>p.id===d.rkprop&&(RK_RQ.find(q=>q[0]===s.revQ)||RK_RQ[0])[2](p)))s.revQ='all';s.focus='rkProp';if(state.view!=='rasa')state.view='rasa';render();return}
+  if(d.rkeval!=null){t.disabled=true;t.textContent='Running…';const r=await rkEvalRun();toast(`Evaluation: ${r.hit} of ${r.n} found`);render();return}
+  if(d.rksetsave!=null){if(state.role!=='sa')throw new Error('Only the super admin changes RASA settings');const f=$('#rkSet'),R=rkDB(),num=(n,lo,hi)=>{const v=Math.round(+((f.querySelector(`[name="${n}"]`)||{}).value));if(!(v>=lo&&v<=hi))throw new Error(`Enter ${lo} to ${hi}`);return v};
+    const pol={correction:num('pol_correction',1,3),rule:num('pol_rule',1,3),gap:num('pol_gap',1,3),note:num('pol_note',1,3),fin:num('pol_fin',2,3)},keep=num('keep',30,730),mods={};
+    RK_MODS.filter(m=>m.conn).forEach(m=>{const on=f.querySelector(`[name="on_${m.k}"]`),sy=f.querySelector(`[name="sync_${m.k}"]`);mods[m.k]={on:on?on.checked:true,sync:sy?sy.value:'event'}});
+    if(rkLive()){await rkLiveAct('settings',{cfg:{pol,keep,mods}})}else{R.cfg.pol=pol;R.cfg.keep=keep;R.cfg.mods=mods;rkPrune();rkLog('settings','RASA settings changed');save()}toast('RASA settings saved');render();return}
+  if(d.rkreindex!=null){t.disabled=true;t.textContent='Re-indexing…';await rkReindex();toast('Everything re-indexed');render();return}
+  if(d.rktab){s.tab=d.rktab;if(d.rkmod){s.srcMod=d.rkmod;s.focus=d.rktab==='src'?'rkSrcList':null}if(d.rkprop)s.prop=d.rkprop;if(d.rkteach)s.teach=d.rkteach;if(state.view!=='rasa'){state.view='rasa'}render();window.scrollTo(0,0);return}
+  }catch(x){toast(x.message||String(x))}});
+
+
+/* ----- live mode (schema-update-v50.sql): the server keeps the sources, passages, proposals, gaps, feedback, questions and
+   activity, and checks every right, project and state change again; the browser never decides what a person may read. ----- */
+async function rkLiveAct(op,p){const r=await rpc('rasa_act',{p:Object.assign({op},p||{})});await cloudLoadRasa();return r}
+async function rkSyncLive(m,kind){const R=rkDB(),k=m.k,t0=performance.now();RK.busy[k]=true;RK.inSync=true;let res=null;
+  try{const pids=rkPids(m),P=new Set(pids),items=await m.conn(pids),send=[],seen=new Set();
+    for(const it of items){const id=k+':'+it.rec;if(seen.has(id))continue;seen.add(id);const parts=(it.parts||[]).filter(x=>x&&x.t),h=rkHash(JSON.stringify([it.title,it.rev,it.appr,parts.map(x=>[x.t,x.loc])])),s=R.src[id];
+      if(!it.fail&&s&&s.hash===h&&s.st==='Indexed')continue;
+      send.push({id,rec:it.rec,pid:it.pid||null,type:it.type,title:String(it.title||'').slice(0,200),rev:it.rev||'',appr:it.appr||'Recorded',eff:it.eff||null,at:it.at||null,owner:it.owner||'',cls:it.cls||'all',box:it.box||null,row:it.row||null,relId:it.relId||null,prop:it.prop||null,route:it.route||m.go,note:it.note||null,fail:it.fail||null,hash:h,
+        chunks:it.fail?[]:parts.map((x,i)=>({i,t:String(x.t).slice(0,4000),loc:x.loc||'',ids:(x.ids||[]).filter(Boolean).map(String).slice(0,40)}))})}
+    const gone=Object.values(R.src).filter(s=>s.mod===k&&(!s.pid||P.has(s.pid))&&!seen.has(s.id)&&s.st!=='Deleted').map(s=>s.id);
+    for(let i=0;i<send.length||i===0;i+=40)res=await rpc('rasa_sync',{p:{mod:k,kind:kind||'manual',sources:send.slice(i,i+40),removed:i===0?gone:[],seen:i+40>=send.length?seen.size:null,ms:Math.round(performance.now()-t0),last:i+40>=send.length}});
+  }catch(e){try{await rpc('rasa_sync',{p:{mod:k,kind:kind||'manual',sources:[],removed:[],error:String(e&&e.message||e).slice(0,300),last:true}})}catch(x){}res={err:String(e&&e.message||e)}}
+  finally{delete RK.busy[k];RK.dirty.delete(k);RK.inSync=false;try{await cloudLoadRasa()}catch(e){}}
+  return res&&res.run?res.run:res}
+async function rkSearchLive(q,terms,o){const r=await rpc('rasa_search',{p:{q:terms.join(' '),mods:o.mods||null,pids:o.pids||null,hist:o.hist!=null?o.hist:rkHistQ(q)}}),R=rkDB(),hits=[],per={};
+  ((r&&r.rows)||[]).forEach(x=>{const s=R.src[x.source_id];if(!s||!rkSees(s))return;const c={t:x.t,loc:x.loc,ids:x.ids||[]},sc=rasaScore(c.t,terms);let bonus=0;(c.ids||[]).forEach(id=>{if(terms.includes(String(id).toLowerCase()))bonus+=8});
+    const score=sc.score+bonus+(RK_AUTH[s.appr]!=null?RK_AUTH[s.appr]:2)*0.6+(s.mod==='taught'?3:0);if((per[s.id]=(per[s.id]||0)+1)===1)hits.push({s,c,score,hits:sc.hits})});
+  hits.sort((a,b)=>b.score-a.score);return {hits:hits.slice(0,o.k||8),hidden:+(r&&r.hidden)||0,terms,total:hits.length}}
+async function rkPassLive(sid){const r=await rpc('rasa_passages',{p:{source_id:sid}});return (r||[]).map(x=>({i:x.i,t:x.t,loc:x.loc,ids:x.ids||[]}))}
+async function cloudLoadRasa(){if(!CLOUD_ME)return;try{await rpc('rasa_features');const [S,U,P,B,G,F,Q,A,C]=await Promise.all([selAll('rasa_sources','*',null,['id']),selAll('rasa_runs','*',null,['at_time']),selAll('rasa_proposals','*',null,['at_time']),selAll('rasa_publications','*',null,['ver']),
+      selAll('rasa_gaps','*',null,['id']),selAll('rasa_feedback','*',null,['at_time']),selAll('rasa_questions','*',null,['at_time']),selAll('rasa_activity','*',null,['at_time']),selAll('rasa_config','*',null,['id'])]);
+    const d=x=>Object.assign({},x.data||{}),R={cfg:Object.assign({mods:{},pol:{},keep:180},(C[0]||{}).data||{}),pubVer:Math.max(0,...B.map(x=>+x.ver||0)),seq:0,evals:(DB.rk&&DB.rk.evals)||[]};
+    R.src=Object.fromEntries(S.map(x=>[x.id,Object.assign(d(x),{id:x.id,mod:x.mod,pid:x.project_id,cls:x.cls,st:x.st,appr:x.appr,hash:x.hash,ver:+x.ver||1})]));
+    R.runs=U.slice().reverse().slice(0,300).map(x=>Object.assign(d(x),{id:x.id,mod:x.mod,at:x.at_time}));R.props=P.map(x=>Object.assign(d(x),{id:x.id,st:x.st,pid:x.project_id,scope:x.scope,kind:x.kind,author:x.author})).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+    R.pub=B.map(x=>Object.assign(d(x),{ver:+x.ver,prop:x.prop_id,at:x.at_time})).reverse();R.gaps=G.map(x=>Object.assign(d(x),{id:x.id,pid:x.project_id,st:x.st,n:+x.n||1})).sort((a,b)=>String(b.last).localeCompare(String(a.last)));
+    R.fb=F.map(x=>Object.assign(d(x),{id:x.id,qid:x.question_id,v:+x.v,by:x.by_user,at:x.at_time}));R.qlog=Q.slice().reverse().slice(0,600).map(x=>Object.assign(d(x),{id:x.id,at:x.at_time,by:x.by_user}));R.act=A.slice().reverse().slice(0,400).map(x=>Object.assign(d(x),{id:x.id,at:x.at_time,pid:x.project_id}));
+    DB.rk=R;DB.rkMissing=false}catch(e){DB.rkMissing=srvMsg(e);DB.rk=DB.rk&&!CLOUD_ME?DB.rk:{}}}
+ICONS.rasa=ICONS.rasa||ICONS.ai;
 
 /* ---------- milestones, EOT and OHTL key activities ---------- */
 const MTYPES=['Start','Intermediate','TCC','PAC','FAC'];
