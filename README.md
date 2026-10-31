@@ -168,6 +168,13 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.44
+
+- **The MER's Project wise in the company format, with Excel and PDF.** Project wise follows the PE sheet (PLAN-006-FORM-01): numbered sections on the left, the company and client logos and the four charts on the right, areas of concern and the footer below. **Export to Excel** (styled, a PE-layout sheet per project with the logos and charts, print area A1:P103) and **Export to PDF** (Cost and Dashboard on A3, one A4 page per project), for all or one project. The Excel styling uses ExcelJS 4.4.0 from cdnjs.
+- **Logos.** Settings → **Logos and customers** (super admin): the official company logo, and customers with their logos; the tender's Client field suggests the customers.
+- **Progress photos and videos** in the internal (monthly and weekly) and client reports: a Photos & videos tab, editable until the report is approved; the client report can copy them from the internal report and prints them.
+- Server: `schema-update-v47.sql` (STAGE-41-SETUP). `tests/logos_media_demo.js` (18 checks). See RELEASE-NOTES-v3.44.md.
+
 ## Version 3.43
 
 - **Two uploads in Cost Control → Cost plan.** The **cost plan upload** (once or twice a year): COST PLAN (I), COST PLAN (F) and a new sheet **ACTUAL TO LAST YEAR** (actual POC, budget and contract value at December of last year). The **actual POC upload** (every month): its own file, one month each, with the POC in the month or the cumulative POC from start (ProTrack takes the month's POC as cumulative − last month's); saving adds the month and leaves the cost plans untouched. No server change (v46). `tests/cost_plan_import_demo.js` (21 checks). See RELEASE-NOTES-v3.43.md.

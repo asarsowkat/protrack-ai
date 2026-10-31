@@ -748,6 +748,19 @@ body.pvnoscroll{overflow:hidden}
 .boqasset{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0}.boqasset-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
 .suppgrid td{padding:3px 4px;vertical-align:middle}.suppgrid input,.suppgrid select{width:100%;min-width:90px;padding:4px 6px;font:inherit;font-size:13px}.suppgrid input.n{text-align:right}.suppgrid select{min-width:150px}.suppgrid input[type="date"]{min-width:135px}.suppgrid tr.gdel td{opacity:.5;text-decoration:line-through}.suppgrid tr.gdel td:last-child{opacity:1;text-decoration:none}.suppgrid td[data-gc="chk"]{min-width:140px}
 tr.boqsub td{background:rgba(127,127,127,.06)}
+/* v3.44: PLAN-006-FORM-01 and the logos */
+.pf{background:#fff;color:#1B252E;border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-width:1180px}.pfgrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:start}
+.pftbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.pftbl td{border:1px solid #CBD2D9;padding:3px 6px;vertical-align:middle;overflow-wrap:anywhere}.pftbl td.n{text-align:end;font-variant-numeric:tabular-nums}.pftbl .sn{color:#6B7680;font-size:11px;text-align:center}
+.pftbl tr.pfsec td{background:#1F3A5F;color:#fff;font-weight:700;letter-spacing:.03em;font-size:12px}.pftbl tr.pfh td{background:#DCE5F1;font-weight:600;font-size:11.5px}.pftbl tr.pfb td{font-weight:700}.pftbl .pfv{font-weight:600}.pfaoc{margin-top:12px}.pfaoc td{vertical-align:top}
+.pfr{display:flex;flex-direction:column;gap:10px}.pflogos{display:flex;justify-content:flex-end;align-items:center;gap:14px;min-height:56px}.pfch{position:relative;height:250px;border:1px solid #E1E5E9;border-radius:6px;padding:4px}.pfch.tall{height:300px}
+.pffoot{display:flex;gap:24px;flex-wrap:wrap;margin-top:10px;font-size:12.5px}.pfcode{margin-inline-start:auto;color:#6B7680;font-weight:600}.pfdata{margin-top:10px}.pfdata summary{cursor:pointer;font-size:13px;color:var(--accent)}.pf .r-c{color:#B03A2B}.pf .g-c{color:#2E7A4C}
+.brlogo{display:inline-block;max-width:220px;object-fit:contain;vertical-align:middle}.brname{font-weight:700;font-size:15px;letter-spacing:.02em;vertical-align:middle}.brprev{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;display:inline-flex;min-height:76px;min-width:220px;align-items:center;justify-content:center;margin:0 8px 8px 0}.brprev.dark{background:#1B252E}.brprev.dark .brname{color:#fff}.brprev.sm{min-height:56px;min-width:140px;padding:6px;margin:0}
+@media (max-width:1000px){.pfgrid{grid-template-columns:minmax(0,1fr)}}
+/* v3.44: report photos and videos */
+.rmgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}.rmcard{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+.rmthumb{all:unset;cursor:pointer;position:relative;display:block;aspect-ratio:4/3;background:var(--surface-2)}.rmthumb img{width:100%;height:100%;object-fit:cover;display:block}.rmthumb:focus-visible{outline:2px solid var(--accent)}.rmph{display:grid;place-items:center;height:100%;color:var(--ink-2);font-weight:600}
+.rmplay{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600}.rmcard figcaption{padding:8px;display:flex;flex-direction:column;gap:5px;font-size:13px}.rmcard input{width:100%;font-size:13px;padding:5px 7px}.rmrow{display:flex;gap:6px;align-items:center}.rmrow input{flex:1}
+.rmview{position:fixed;inset:0;z-index:60;background:rgba(8,12,16,.86);display:grid;place-items:center;padding:16px}.rmbox{position:relative;max-width:min(1200px,96vw);max-height:92vh;display:flex;flex-direction:column;align-items:center;gap:8px}.rmbox img,.rmbox video{max-width:100%;max-height:82vh;border-radius:6px;background:#000}.rmbox p{color:#fff;margin:0;font-size:14px}.rmbox .iconbtn{position:absolute;top:-6px;right:-6px}
 /* v3.41: the MER and the cost plan */
 .mertbl th,.mertbl td{padding:4px 6px;white-space:nowrap}.mertbl th{white-space:normal;min-width:84px;vertical-align:bottom}.mertbl th.merg{text-align:center;background:var(--accent-soft);border-bottom:1px solid var(--line)}.mertbl tr.mertot td,tr.mertot td{background:var(--surface-2);font-weight:600}.mertbl .t2{display:block;font-weight:400}.mertbl td.merconcern{white-space:normal;min-width:320px;max-width:520px}.cptbl input{width:96px;padding:4px 6px;font-size:12.5px;text-align:end}.cptbl td,.cptbl th{white-space:nowrap}table.aoc input{width:100%;min-width:90px;padding:4px 6px;font-size:12.5px}table.aoc td{vertical-align:top}tr.sel td{background:rgba(36,80,138,.12)}
 .boqbar{height:6px;border-radius:3px;background:var(--line);min-width:80px;overflow:hidden}.boqbar i{display:block;height:100%;background:var(--brand,#24508a)}
@@ -1443,7 +1456,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadCostPlans();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
+    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadCostPlans();await cloudLoadBrand();await cloudLoadMedia();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -2353,7 +2366,7 @@ async function openTenderForm(){
       ${F('Project name',inp('name','','maxlength="200" placeholder="As on the Tender list"'),true)}
       ${F('Short name',inp('short','','maxlength="22" placeholder="Shown on dashboards (optional)"'))}
       ${F('Region',sel('region',m.regions.map(r=>[r.id,r.name]),(m.regions[0]||{}).id))}
-      ${F('Client',inp('client','','maxlength="200"'))}
+      ${F('Client',inp('client','','maxlength="200" list="custList"')+custDatalist())}
       ${F('Location',inp('location','','maxlength="200" placeholder="Site or city"'))}
     </div><div id="tenRel"></div><p class="err" id="tenErr"></p>
     <div class="actions dpract"><button class="btn primary" type="submit">Register</button><button class="btn" type="button" data-close>Cancel</button></div></form>`;
@@ -2392,7 +2405,7 @@ function openTender(pid){
       ${F('Bid position',sel('bid_rank',[['L1','L1, lowest bidder'],['L2','L2, second lowest']],rankOf(p),edit&&!p.award?'':'disabled'))}
       ${rankOf(p)==='L2'?F('Why the client may award L2',inp('rank_note',p.rankNote||'',`maxlength="300" ${edit?'':'disabled'}`)):''}
       ${F('Project name',inp('name',p.name,edit?'maxlength="200"':'disabled'),true)}
-      ${F('Client',inp('client',p.client||'',edit?'maxlength="200"':'disabled'))}
+      ${F('Client',inp('client',p.client||'',edit?'maxlength="200" list="custList"':'disabled')+custDatalist())}
       ${F('Location',inp('location',p.location||'',edit?'maxlength="200"':'disabled'))}
       ${F('Region',sel('region',DB.master.regions.map(r=>[r.id,r.name]),p.region,edit?'':'disabled'))}
       ${F('Expected value (SAR M)',inp('expected_value_m',p.expected==null?'':p.expected,`type="number" min="0" step="0.1" ${edit?'':'disabled'}`))}
@@ -5476,7 +5489,7 @@ function openPlanRelease(pid,t,per){
   const di=(k,l,type,extra)=>F(l,`<input name="d_${k}" ${type==='date'?'type="date"':type==='num'?'type="number" min="0" step="any" inputmode="decimal"':''} value="${esc(f[k]??'')}" ${dis} ${extra||''} data-rdin>`);
   const calc=(l,v,s,cls)=>`<div class="rcalc ${cls||''}"><span class="l">${l}</span><b data-rdc>${v}</b>${s?`<span class="t2">${s}</span>`:''}</div>`;
   const dl=(k)=>{const v=f[k];return v==null?'—':`${v>0?'+':''}${v} days`},lt=(k,rk)=>msLight(f[k],rk&&f[rk]);
-  const TABS=[['overview','Overview'],['ms','Milestones'],['prog','Progress'],['ep','E&P progress'],['mp','Manpower'],['en','Energization'],...(t==='month'?[['aoc','Areas of concern']]:[]),['notes','Release notes'],['appr','Approval']];
+  const TABS=[['overview','Overview'],['ms','Milestones'],['prog','Progress'],['ep','E&P progress'],['mp','Manpower'],['en','Energization'],...(t==='month'?[['aoc','Areas of concern']]:[]),['media','Photos & videos'],['notes','Release notes'],['appr','Approval']];
   if(!TABS.some(x=>x[0]===tab))tab='overview';
   /* v3.41: the areas of concern of a new monthly report are carried from last month's released report */
   const aocNar=nar.concerns?nar:(editable&&prev&&prev.narrative&&prev.narrative.concerns?prev.narrative:nar);
@@ -5547,6 +5560,7 @@ function openPlanRelease(pid,t,per){
         ${F('Remarks for energization',`<input name="d_energ_remarks_text" maxlength="300" value="${esc(f.energ_remarks_text||'')}" ${dis} data-rdin>`)}</div></div></div>
     </section>
     ${t==='month'?`<section class="rdpanel" data-rdp="aoc" ${show('aoc')}>${aocTabHTML(aocNar,editable)}</section>`:''}
+    <section class="rdpanel" data-rdp="media" ${show('media')}>${rmTabHTML(pid,'planning',t,per)}</section>
     <section class="rdpanel" data-rdp="notes" ${show('notes')}><div class="rdgrid">
       ${[['summary','Progress summary'],['issues','Key issues / risks'],['recovery','Recovery actions'],['next',t==='week'?'Next week target':'Next month target']].map(([k,l])=>`<div class="rdcard"><h3>${l}</h3><textarea name="n_${k}" rows="4" ${dis}>${esc(nar[k]||'')}</textarea></div>`).join('')}
       <div class="rdcard"><h3>Management remarks</h3>${canDecide||relCanReview(open)?`<textarea id="relMgmt" rows="3" placeholder="Added by the approver with the approval">${esc(nar.mgmt||'')}</textarea>`:`<p class="small">${esc(nar.mgmt||'Added by the approver when the release is approved.')}</p>`}</div></div>
@@ -6185,12 +6199,101 @@ document.addEventListener('change',e=>{if(!e.target.matches||!e.target.matches('
   const r=relOpen(f.dataset.pid,f.dataset.k,f.dataset.t,f.dataset.per),base=(r&&r.figures)||{};
   $('#blTable').innerHTML=blTableHTML(blCompare(f.dataset.pid,f.dataset.t,f.dataset.per,blSelOf(),wt,act!=null?act:(wt==='client'?base.act_pct:base.actual_pct),fc!=null?fc:(wt==='client'?base.tcc_fc_date:base.forecast_finish)))});
 const CL_NOTES=[['summary','Progress summary'],['achieved','Achievements this period'],['next','Planned for the next period'],['issues','Issues and support required from the client'],['remarks','Remarks']];
+/* ---------- v3.44: progress photos and videos in the internal and client reports ----------
+   Each internal report and client report period has its own photos and videos, added by those who prepare the report
+   (report.internal.prepare, with access to the project) while the period is not approved: before the first release, or
+   while a revision is a draft. Once the report is approved they are locked; a new revision can change them again.
+   Photos (JPG, PNG, WEBP) are resized to 1920 pixels on the longer side; videos (MP4, WEBM, MOV) up to 100 MB are kept as
+   they are. Each item has a caption, the date taken and a small preview. The client report can copy the internal report's
+   photos and videos of the same period, and prints its photos (and lists its videos) in Print or save as PDF.
+   On the server: schema-update-v47.sql (report_media, report_media_act, the private bucket report-media). */
+const RM_MAX_N=40,RM_VID_MAX=100*1024*1024,RM_SIDE=1920,RM_IMG=/^image\/(jpeg|png|webp)$/,RM_VID=/^video\/(mp4|webm|quicktime)$/;
+const rmRows=()=>CLOUD_ME?(DB.rmSrv||[]):(DB.relMedia||(DB.relMedia=[]));
+const rmOf=(pid,kind,t,per)=>rmRows().filter(m=>m.project_id===pid&&m.kind===kind&&m.period_type===t&&m.period===per).sort((a,b)=>(a.sort||0)-(b.sort||0)||String(a.at).localeCompare(String(b.at)));
+/* added and changed only while the period's report is not approved */
+function rmCanEdit(pid,kind,t,per){if(!accessIds().includes(pid)||!canPrepRel(kind))return false;const open=relOpen(pid,kind,t,per);if(open)return open.status==='Draft';return !relReleased(pid,kind,t,per)}
+const rmUuid=()=>(crypto.randomUUID?crypto.randomUUID():'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
+const rmIsVid=m=>RM_VID.test(m.mime||'');
+const RM_URL={};
+async function rmBlob(m){if(CLOUD_ME){const {data,error}=await SB.storage.from('report-media').createSignedUrl(m.path,600);if(error||!data)throw new Error('The file could not be opened: '+srvMsg(error));const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('The file could not be read');return r.blob()}
+  const b=await DOCIDB.get('rm:'+m.id);if(!b)throw new Error('The file is not in this browser');return b}
+async function rmUrl(m){if(RM_URL[m.id])return RM_URL[m.id];const u=URL.createObjectURL(await rmBlob(m));RM_URL[m.id]=u;return u}
+/* a photo resized, and a small preview (a photo, or a video's first frame) */
+const rmLoadImg=url=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('The photo could not be read'));i.src=url});
+function rmDraw(src,w,h,max,q){const k=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(src,0,0,c.width,c.height);return c}
+async function rmPrepare(file){
+  if(RM_IMG.test(file.type||'')){if(file.size>40*1024*1024)throw new Error(`${file.name}: a photo is 40 MB at most`);const u=URL.createObjectURL(file);try{const i=await rmLoadImg(u),c=rmDraw(i,i.naturalWidth,i.naturalHeight,RM_SIDE);
+      const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.85));return {blob,mime:'image/jpeg',name:file.name.replace(/\.[^.]+$/,'')+'.jpg',thumb:rmDraw(i,i.naturalWidth,i.naturalHeight,320).toDataURL('image/jpeg',0.72),w:c.width,h:c.height}}finally{URL.revokeObjectURL(u)}}
+  if(RM_VID.test(file.type||'')){if(file.size>RM_VID_MAX)throw new Error(`${file.name}: a video is 100 MB at most`);let thumb=null,dur=null;const u=URL.createObjectURL(file);
+    try{const v=document.createElement('video');v.muted=true;v.preload='metadata';v.src=u;await new Promise((res,rej)=>{v.onloadeddata=res;v.onerror=()=>rej();setTimeout(res,4000)});dur=isFinite(v.duration)?Math.round(v.duration):null;
+      if(v.videoWidth){try{v.currentTime=Math.min(1,(v.duration||2)/4);await new Promise(r=>{v.onseeked=r;setTimeout(r,2000)});thumb=rmDraw(v,v.videoWidth,v.videoHeight,320).toDataURL('image/jpeg',0.72)}catch(e){}}}catch(e){}finally{URL.revokeObjectURL(u)}
+    return {blob:file,mime:file.type,name:file.name,thumb,duration:dur}}
+  throw new Error(`${file.name}: use JPG, PNG or WEBP photos, or MP4, WEBM or MOV videos`)}
+/* the server's checks (report_media_act), the same here */
+function rmCheck(a,d,ctx){if(a==='add'){if(!['planning','client'].includes(ctx.kind))return 'Unknown report';if(rmOf(ctx.pid,ctx.kind,ctx.t,ctx.per).length>=RM_MAX_N)return `At most ${RM_MAX_N} photos and videos in a report`;if(!(RM_IMG.test(d.mime)||RM_VID.test(d.mime)))return 'Use photos or videos';if(d.size>RM_VID_MAX)return 'A file is 100 MB at most';if(d.thumb&&d.thumb.length>90000)return 'The preview is too large'}
+  if(d.caption!=null&&String(d.caption).length>300)return 'A caption is 300 characters at most';if(d.taken_on&&!/^\d{4}-\d{2}-\d{2}$/.test(d.taken_on))return 'The date taken is not a date';return null}
+async function rmAdd(files,ctx){
+  if(!rmCanEdit(ctx.pid,ctx.kind,ctx.t,ctx.per)){toast(relReleased(ctx.pid,ctx.kind,ctx.t,ctx.per)?'The report is approved: its photos and videos are locked (a new revision can change them)':'Only those who prepare the report add its photos and videos');return 0}
+  let n=0;for(const file of files){try{const x=await rmPrepare(file),id=rmUuid(),ext=x.mime==='image/jpeg'?'jpg':x.mime==='video/quicktime'?'mov':x.mime.split('/')[1];
+      const d={id,project_id:ctx.pid,kind:ctx.kind,period_type:ctx.t,period:ctx.per,path:`${ctx.pid}/${ctx.kind}/${ctx.t}-${ctx.per}/${id}.${ext}`,name:String(x.name).slice(0,200),mime:x.mime,size:x.blob.size,thumb:x.thumb||null,duration:x.duration??null,
+        taken_on:file.lastModified?new Date(file.lastModified).toISOString().slice(0,10):TODAY,caption:'',sort:rmOf(ctx.pid,ctx.kind,ctx.t,ctx.per).length+1};
+      const e=rmCheck('add',d,ctx);if(e){toast(e);break}
+      if(CLOUD_ME){const {error}=await SB.storage.from('report-media').upload(d.path,x.blob,{contentType:d.mime,upsert:false});if(error)throw new Error('The file was not stored: '+srvMsg(error));
+        try{await rpc('report_media_act',{p:Object.assign({action:'add'},d)})}catch(err){await SB.storage.from('report-media').remove([d.path]);throw err}}
+      else{await DOCIDB.put('rm:'+id,x.blob);rmRows().push(Object.assign(d,{by:me().id,by_name:me().name,at:new Date().toISOString()}))}
+      n++}catch(err){toast(err.message||srvMsg(err))}}
+  if(CLOUD_ME)await cloudLoadMedia();else if(n)save();return n}
+async function rmAct(a,id,d){const m=rmRows().find(x=>x.id===id);if(!m){toast('Unknown photo or video');return false}
+  if(!rmCanEdit(m.project_id,m.kind,m.period_type,m.period)){toast('The report is approved: its photos and videos are locked');return false}
+  const e=rmCheck(a,d||{},{});if(e){toast(e);return false}
+  if(CLOUD_ME){try{await rpc('report_media_act',{p:Object.assign({action:a,id},d||{})});if(a==='delete')await SB.storage.from('report-media').remove([m.path]);await cloudLoadMedia();return true}catch(x){toast(srvMsg(x));return false}}
+  if(a==='delete'){rmRows().splice(rmRows().indexOf(m),1);try{await DOCIDB.del('rm:'+id)}catch(x){}}else Object.assign(m,{caption:d.caption!=null?String(d.caption).trim():m.caption,taken_on:d.taken_on!==undefined?d.taken_on||null:m.taken_on});
+  save();return true}
+/* the client report takes the internal report's photos and videos of the same period (copies, so each report keeps its own) */
+async function rmCopyInternal(pid,t,per){const ctx={pid,kind:'client',t,per},src=rmOf(pid,'planning',t,per),have=new Set(rmOf(pid,'client',t,per).map(m=>m.from).filter(Boolean));let n=0;
+  if(!rmCanEdit(pid,'client',t,per)){toast('The client report is approved: its photos and videos are locked');return 0}
+  for(const m of src){if(have.has(m.id))continue;if(rmOf(pid,'client',t,per).length>=RM_MAX_N){toast(`At most ${RM_MAX_N} photos and videos in a report`);break}
+    try{const id=rmUuid(),path=m.path.replace(/\/planning\//,'/client/').replace(/[^/]+$/,id+'.'+m.path.split('.').pop()),d={id,project_id:pid,kind:'client',period_type:t,period:per,path,name:m.name,mime:m.mime,size:m.size,thumb:m.thumb,duration:m.duration??null,taken_on:m.taken_on,caption:m.caption,sort:rmOf(pid,'client',t,per).length+1,from:m.id};
+      if(CLOUD_ME){const {error}=await SB.storage.from('report-media').copy(m.path,path);if(error)throw new Error(srvMsg(error));try{await rpc('report_media_act',{p:Object.assign({action:'add'},d)})}catch(err){await SB.storage.from('report-media').remove([path]);throw err}}
+      else{await DOCIDB.put('rm:'+id,await rmBlob(m));rmRows().push(Object.assign(d,{by:me().id,by_name:me().name,at:new Date().toISOString()}))}n++}catch(err){toast(err.message||srvMsg(err))}}
+  if(CLOUD_ME)await cloudLoadMedia();else if(n)save();return n}
+async function cloudLoadMedia(){if(!CLOUD_ME)return;try{DB.rmSrv=(await selAll('report_media','*',null,['project_id','period'])).map(x=>({id:x.id,project_id:x.project_id,kind:x.kind,period_type:x.period_type,period:x.period,path:x.path,name:x.name,mime:x.mime,size:+x.size_bytes,thumb:x.thumb,duration:x.duration_s,taken_on:x.taken_on,caption:x.caption||'',sort:x.sort,from:x.copied_from,by_name:x.uploaded_name,at:x.uploaded_at}));DB.rmMissing=false}
+  catch(e){DB.rmSrv=[];DB.rmMissing=srvMsg(e)}}
+const rmSize=b=>b>=1048576?fmt(b/1048576,1)+' MB':fmt(Math.max(1,Math.round(b/1024)))+' KB';
+function rmTabHTML(pid,kind,t,per){const L=rmOf(pid,kind,t,per),ed=rmCanEdit(pid,kind,t,per),ctx=`${pid}|${kind}|${t}|${per}`,inn=kind==='client'?rmOf(pid,'planning',t,per):[];
+  return `<div class="rdcard" id="rmPanel" data-rmctx="${esc(ctx)}"><div class="card-head" style="flex-wrap:wrap"><h3 style="margin:0">Progress photos and videos <span class="muted small">${L.length} of ${RM_MAX_N}</span></h3>
+      ${ed?`<div class="actions" style="margin:0"><label class="btn sm" for="rmFile">Add photos or videos</label><input id="rmFile" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" data-rmctx="${esc(ctx)}" hidden>
+        ${kind==='client'&&inn.length?`<button class="btn sm" type="button" data-rmcopy="${esc(ctx)}">Copy from the internal report (${inn.length})</button>`:''}</div>`:''}</div>
+    ${CLOUD_ME&&DB.rmMissing?'<div class="warn-box" style="margin:6px 0"><b>Photos and videos need the v47 database update.</b> Run schema-update-v47.sql (STAGE-41-SETUP).</div>':''}
+    <p class="small muted" style="margin:4px 0 8px">${ed?'Photos are resized to 1920 pixels; videos up to 100 MB. Give each a caption: it is printed with the photo. ':'Locked: the report is approved (a new revision can change them). '}${kind==='client'?'They go to the client with the report; Print or save as PDF prints the photos and lists the videos.':'They stay with the internal report; the client report can copy them.'}</p>
+    ${L.length?`<div class="rmgrid">${L.map(m=>`<figure class="rmcard"><button class="rmthumb" type="button" data-rmopen="${esc(m.id)}" aria-label="Open ${esc(m.name)}">${m.thumb?`<img src="${esc(m.thumb)}" alt="">`:`<span class="rmph">${rmIsVid(m)?'Video':'Photo'}</span>`}${rmIsVid(m)?`<span class="rmplay">▶${m.duration?' '+Math.floor(m.duration/60)+':'+String(m.duration%60).padStart(2,'0'):''}</span>`:''}</button>
+        <figcaption>${ed?`<input data-rmcap="${esc(m.id)}" maxlength="300" placeholder="Caption, for example: Cable pulling, Zone A" value="${esc(m.caption||'')}"><span class="rmrow"><input type="date" data-rmdate="${esc(m.id)}" value="${esc(m.taken_on||'')}" aria-label="Date taken"><button class="btn sm danger" type="button" data-rmdel="${esc(m.id)}">Delete</button></span>`
+          :`<b>${esc(m.caption||m.name)}</b>`}<span class="t2">${esc(m.taken_on?fmtDY(m.taken_on):'')} · ${esc(rmSize(m.size||0))}${m.by_name?' · '+esc(m.by_name):''}</span></figcaption></figure>`).join('')}</div>`:`<p class="muted small">No photo or video yet.</p>`}</div>`}
+async function rmOpen(id){const m=rmRows().find(x=>x.id===id);if(!m)return;let u;try{u=await rmUrl(m)}catch(e){toast(e.message);return}
+  const o=document.createElement('div');o.className='rmview';o.innerHTML=`<div class="rmbox">${rmIsVid(m)?`<video src="${u}" controls autoplay></video>`:`<img src="${u}" alt="${esc(m.caption||m.name)}">`}<p>${esc(m.caption||m.name)}${m.taken_on?' · '+esc(fmtDY(m.taken_on)):''}</p><button class="iconbtn" type="button" aria-label="Close">✕</button></div>`;
+  const close=()=>{o.remove();document.removeEventListener('keydown',k)},k=e=>{if(e.key==='Escape')close()};o.addEventListener('click',e=>{if(e.target===o||e.target.closest('.iconbtn'))close()});document.addEventListener('keydown',k);document.body.appendChild(o)}
+/* the photos for a printed report: full photos (object URLs), the videos listed with their preview */
+async function rmPrintHTML(pid,kind,t,per){const L=rmOf(pid,kind,t,per);if(!L.length)return '';const out=[];for(const m of L){let u=null;if(!rmIsVid(m)){try{u=await rmUrl(m)}catch(e){u=m.thumb}}out.push({m,u})}
+  const ph=out.filter(x=>!rmIsVid(x.m)),vd=out.filter(x=>rmIsVid(x.m));
+  return `<h2>Progress photos</h2>${ph.length?`<div class="ph">${ph.map(({m,u})=>`<figure><img src="${u}" alt=""><figcaption>${esc(m.caption||'')}${m.taken_on?` <span>(${esc(fmtDY(m.taken_on))})</span>`:''}</figcaption></figure>`).join('')}</div>`:'<p>No photos.</p>'}
+    ${vd.length?`<h2>Progress videos</h2><table><tr><th>Preview</th><th>Video</th><th>Date</th></tr>${vd.map(({m})=>`<tr><td>${m.thumb?`<img src="${m.thumb}" alt="" style="width:120px">`:''}</td><td>${esc(m.caption||m.name)}<br><small>${esc(m.name)} · ${esc(rmSize(m.size||0))}${m.duration?` · ${Math.floor(m.duration/60)}:${String(m.duration%60).padStart(2,'0')}`:''}; shared with the report in ProTrack</small></td><td>${m.taken_on?esc(fmtDY(m.taken_on)):''}</td></tr>`).join('')}</table>`:''}`}
+/* only the panel is drawn again, so what is typed in the report is kept */
+const rmRedraw=()=>{const el=$('#rmPanel');if(!el)return;const [pid,kind,t,per]=el.dataset.rmctx.split('|'),w=document.createElement('div');w.innerHTML=rmTabHTML(pid,kind,t,per);el.replaceWith(w.firstElementChild)};
+document.addEventListener('change',async e=>{const t=e.target;if(!t)return;
+  if(t.id==='rmFile'&&t.files&&t.files.length){const [pid,kind,tp,per]=t.dataset.rmctx.split('|'),files=[...t.files];t.value='';toast(`Adding ${files.length} file${files.length===1?'':'s'}…`);const n=await rmAdd(files,{pid,kind,t:tp,per});if(n)toast(`${n} photo${n===1?'':'s'} or video${n===1?'':'s'} added`);rmRedraw();return}
+  if(t.dataset&&t.dataset.rmcap){await rmAct('update',t.dataset.rmcap,{caption:t.value});return}
+  if(t.dataset&&t.dataset.rmdate){await rmAct('update',t.dataset.rmdate,{taken_on:t.value||null});return}});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-rmopen],[data-rmdel],[data-rmcopy]');if(!t)return;const d=t.dataset;
+  if(d.rmopen){rmOpen(d.rmopen);return}
+  if(d.rmdel){const m=rmRows().find(x=>x.id===d.rmdel);if(!m||!await confirmBox(`Delete ${rmIsVid(m)?'the video':'the photo'} "${m.caption||m.name}"?`,'Delete'))return;if(await rmAct('delete',d.rmdel)){toast('Deleted');rmRedraw()}return}
+  if(d.rmcopy){const [pid,,tp,per]=d.rmcopy.split('|');t.disabled=true;const n=await rmCopyInternal(pid,tp,per);toast(n?`${n} copied from the internal report`:'Nothing new to copy');rmRedraw()}});
+
 function openClientRelease(pid,t,per){
   const p=projById(pid),open=relOpen(pid,'client',t,per),released=relReleased(pid,'client',t,per),r=open||released,editable=(!r||r.status==='Draft')&&canPrepRel('client')&&!(!open&&released);
   const u=id=>{const x=id&&userById(id);return x?x.name:'—'},H=r?relRows().filter(x=>x.project_id===pid&&x.kind==='client'&&x.period_type===t&&x.period===per).flatMap(x=>relAuditOf(x.id).map(a=>({...a,rev:x.rev}))).sort((a,b)=>String(b.at_time).localeCompare(String(a.at_time))):[];
   const comp=relClientDefaults(pid,t,per),f=r?r.figures:comp,nar=(r&&r.narrative)||{},ov=(r&&r.overrides)||[],tab=state.clTab||'overview',dis=editable?'':'disabled';
   const canDecide=open&&open.status==='Submitted'&&relCanApprove(pid,'client')&&open.submitted_by!==me().id,pc=v=>v==null||v===''?'—':fmt(+v,1)+'%';
-  const TABS=[['overview','Overview'],['phases','Progress by phase'],['ep','E&P progress'],['ms','Milestones'],['look','Look-ahead'],['notes','Report notes'],['appr','Approval']],show=k=>tab===k?'':'hidden';
+  const TABS=[['overview','Overview'],['phases','Progress by phase'],['ep','E&P progress'],['ms','Milestones'],['look','Look-ahead'],['media','Photos & videos'],['notes','Report notes'],['appr','Approval']],show=k=>tab===k?'':'hidden';
   const ph=(r?f.phases:comp.phases)||[],ms=(r?f.milestones:comp.milestones)||[],la=(r?f.lookahead:comp.lookahead)||[];
   const k=(l,v,s,cls)=>`<div class="rkpi ${cls||''}"><span class="l">${l}</span><b>${v}</b><span class="t2">${s||''}</span></div>`;
   $('#sheet').innerHTML=`<div class="rdhead"><div><h2 style="margin:0">Client report · ${esc(perLabel(t,per))}</h2><span class="small muted">${esc(pcode(p))} · ${esc(p.name)} · client weightage</span></div>
@@ -6222,6 +6325,7 @@ function openClientRelease(pid,t,per){
         ${ms.map(m=>`<tr><td class="small">${esc(m.name)}</td><td class="small">${m.plan_date?fmtDY(m.plan_date):'—'}</td><td class="small">${m.date?fmtDY(m.date):'—'}${m.actual?' <span class="st Approved">Achieved</span>':''}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">No milestones.</td></tr>'}</tbody></table></div></div>${kmsCardHTML(pid,'client',t,per,f,r)}</section>
     <section class="rdpanel" data-clp="look" ${show('look')}><div class="rdcard"><h3>Look-ahead: open activities, next 30 days</h3><table class="tbl"><thead><tr><th>Activity</th><th>Phase</th><th>Planned start</th><th>Forecast finish</th><th class="n">% complete</th></tr></thead><tbody>
       ${la.map(a=>`<tr><td class="small">${esc(a.id)}<span class="t2">${esc(a.name||'')}</span></td><td class="small">${esc(RPH_N[a.phase]||'—')}</td><td class="small">${a.bs?fmtDY(a.bs):'—'}</td><td class="small">${a.ef||a.bf?fmtDY(a.ef||a.bf):'—'}</td><td class="n">${fmt(+a.pct||0,0)}%</td></tr>`).join('')||'<tr><td colspan="5" class="muted">Nothing in the next 30 days.</td></tr>'}</tbody></table></div></section>
+    <section class="rdpanel" data-clp="media" ${show('media')}>${rmTabHTML(pid,'client',t,per)}</section>
     <section class="rdpanel" data-clp="notes" ${show('notes')}><div class="rdgrid">${CL_NOTES.map(([x,l])=>`<div class="rdcard"><h3>${l}</h3><textarea name="n_${x}" rows="4" ${dis}>${esc(nar[x]||'')}</textarea></div>`).join('')}</div>
       <p class="small muted">The client report shows client-weighted figures only. Internal weightage, management remarks and cost are never in it.</p></section>
     <section class="rdpanel" data-clp="appr" ${show('appr')}><div class="rdgrid">
@@ -6279,8 +6383,10 @@ async function clientExport(kind,pid,t,per){
     await saveFile(`Client_report_${pcode(p)}_${per}${draft?'_DRAFT':''}.xlsx`,new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
   }catch(e){toast('The Excel file could not be built: '+(e.message||''))}return}
   const w=window.open('','_blank');if(!w)return toast('Allow pop-ups to print the report.');
+  const rmHTML=await rmPrintHTML(pid,'client',t,per),B=brandOf(),cl=custLogo(p.client);
   const pcs=v=>v==null||v===''?'—':fmt(+v,1)+'%',row=(a,b)=>`<tr><td>${esc(a)}</td><td>${b}</td></tr>`;
   w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Client report ${esc(pcode(p))} ${esc(per)}</title><style>body{font:13px Arial,sans-serif;color:#111;margin:28px}h1{font-size:20px;margin:0}h2{font-size:15px;margin:18px 0 6px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:5px 7px;text-align:left;vertical-align:top}th{background:#f2f4f7}.draft{color:#b03a2b;font-weight:bold}</style></head><body>
+    ${B.logo||cl?`<div class="logos">${cl?`<img src="${esc(cl)}" alt="${esc(p.client||'')}">`:'<span></span>'}${B.logo?`<img src="${esc(B.logo)}" alt="${esc(B.name||'')}">`:''}</div>`:''}
     <h1>${esc(p.name)} (${esc(pcode(p))})</h1><p>Client progress report · ${esc(perLabel(t,per))} · rev ${r.rev}${draft?` <span class="draft">${esc(draft)}</span>`:''}</p>
     <table>${row('Planned progress',pcs(f.plan_pct))}${row('Actual progress',pcs(f.act_pct))}${row('Variance',f.var_pct==null?'—':fmt(+f.var_pct,1)+'%')}${row('SPI',f.spi!=null?fmt(+f.spi,2):'—')}
       ${row('TCC forecast',f.tcc_fc_date?fmtDY(f.tcc_fc_date):'—')}${row('PAC forecast',f.pac_fc_date?fmtDY(f.pac_fc_date):'—')}${row('FAC forecast',f.fac_fc_date?fmtDY(f.fac_fc_date):'—')}${row('Schedule data date',f.sched_data_date?fmtDY(f.sched_data_date):'—')}</table>
@@ -6292,6 +6398,7 @@ async function clientExport(kind,pid,t,per){
     ${f.ep&&f.ep.rows?`<h2>Engineering and procurement progress</h2><table><tr><th></th><th>Plan</th><th>Actual</th><th>Forecast late</th></tr>${[['Engineering',f.ep.ENG],['Procurement',f.ep.PRC],['Engineering and procurement',f.ep.all]].map(([l,x])=>`<tr><td>${l}</td><td>${pcs(x.plan)}</td><td>${pcs(x.pct)}</td><td>${x.late}</td></tr>`).join('')}</table>`:''}
     <h2>Look-ahead, next 30 days</h2><table><tr><th>Activity</th><th>Planned start</th><th>Forecast finish</th><th>%</th></tr>${(f.lookahead||[]).map(a=>`<tr><td>${esc(a.id)} ${esc(a.name||'')}</td><td>${a.bs?fmtDY(a.bs):'—'}</td><td>${a.ef||a.bf?fmtDY(a.ef||a.bf):'—'}</td><td>${fmt(+a.pct||0,0)}%</td></tr>`).join('')}</table>
     ${CL_NOTES.filter(([x])=>nar[x]).map(([x,l])=>`<h2>${esc(l)}</h2><p>${esc(nar[x])}</p>`).join('')}
+    ${rmHTML}<style>.logos{display:flex;justify-content:space-between;align-items:center;margin:0 0 12px}.logos img{max-height:54px;max-width:220px}.ph{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.ph figure{margin:0;break-inside:avoid}.ph img{width:100%;max-height:300px;object-fit:cover;border:1px solid #ccc}.ph figcaption{font-size:12px;margin-top:3px}.ph figcaption span{color:#666}</style>
     <script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();
 }
 /* fill a draft from the latest updated schedule */
@@ -8118,7 +8225,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.43';
+const APP_VERSION='3.44';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -16817,51 +16924,195 @@ function merDashHTML(D){let sn=0;
   const row=r=>`<tr><td class="n">${++sn}</td><td><button class="linkbtn" type="button" data-merpid="${esc(r.p.id)}">${esc(pcode(r.p))}</button></td><td>${esc(r.p.short||r.p.name)}</td>${merDashVals(r).map(v=>`<td class="n small">${typeof v==='string'&&v.startsWith('<')?v:esc(v)}</td>`).join('')}<td class="small merconcern">${r.pl?merAocCell(r.nar):'<span class="muted">No released internal report</span>'}</td></tr>`;
   return `<div class="scroll"><table class="tbl small mertbl"><thead><tr><th class="n">S.N.</th><th>Project code</th><th>Project name</th>${MER_DASH_COLS.map(c=>`<th class="n">${esc(c)}</th>`).join('')}<th>Areas of concern</th></tr></thead>
     <tbody>${tot(D.all)}${D.regs.map(g=>tot(g.tot)+g.rows.map(row).join('')).join('')}</tbody></table></div>`}
-/* the progress by phase of the released report (its phase table; an older report: engineering and procurement) */
+/* ---------- v3.44: Project wise in the company's PLAN-006-FORM-01 layout, and the MER exported to Excel and PDF ----------
+   merForm(r) gives the form's sections, rows and chart data once; the screen, the PDF and the Excel workbook draw the same
+   rows in the same order as the company's PE sheet: project information, progress percentage, schedule status, claim status,
+   commercial status, budget status, manpower, then the four charts (cost plan, POC, cash status, site management earned value),
+   areas of concern and the footer. Schedule Var. = revised (else contract) finish − forecast finish, in days: negative is late,
+   as the sheet. Budget Var. % = (Rev.00 − current) ÷ Rev.00; manpower Var. = (actual − planned) ÷ planned. */
 const merPhases=f=>f.phase_tbl&&Array.isArray(f.phase_tbl.phases)?f.phase_tbl.phases.filter(x=>x.present!==false):[['Engineering','eng'],['Procurement','prc']].filter(([,k])=>f[k+'_pct']!=null).map(([phase,k])=>({phase,wt:null,plan_pct:f[k+'_plan_pct']??null,act_pct:f[k+'_pct']}));
-/* PLAN-006-FORM-01, one project */
-function merProjHTML(r){if(!r)return '<p class="muted">Choose a project.</p>';const p=r.p,f=r.pf,d=k=>f[k]?fmtDY(f[k]):'—',kv=L=>`<table class="tbl kv small"><tbody>${L.map(([a,b])=>`<tr><td>${esc(a)}</td><td class="n">${b}</td></tr>`).join('')}</tbody></table>`,cr=r.f,e=p.eot||{};
-  const ph=merPhases(f);
-  const heads=cr&&isWbs(cr)?cr.wbs:[];const var0=(a,b)=>a?((a-b)/a*100):null;
-  const months=Array.from({length:12},(_,i)=>i),cut=+r.per.slice(5,7),pl=r.plan||Array(12).fill(null);let cP=0,cA=0,cF=0;
-  const prow=(lab,arr,cls)=>`<tr><td>${lab}</td>${months.map(i=>`<td class="n ${cls||''}">${arr[i]==null?'':mp(arr[i])}</td>`).join('')}</tr>`;
-  const cumP=pl.map(v=>(cP+=+v||0,cP)),cumA=r.act.inc.map((v,i)=>i<cut?(cA+=+v||0,cA):null),fcArr=r.fc.map((v,i)=>i>=cut?v:null),cumF=fcArr.map((v,i)=>i<cut?null:(cF=(i===cut?(cumA[cut-1]||0):cF)+(+v||0),cF));
-  return `<div class="rdgrid">
-    <div class="rdcard"><h3>Project information</h3>${kv([['Project name',esc(p.name||p.short)],['Project location',esc(merCity(p))],['Project client',esc(p.client||'—')],['Project consultant',esc(p.consultant||'—')],['Project start date',f.commence_date?fmtDY(f.commence_date):(p.start?fmtDY(p.start):'—')],['Site handover date',d('site_handover_date')],['Project code',esc(pcode(p))],['Report cut-off date',fmtDY(periodEnd(r.per,'month'))]])}</div>
-    <div class="rdcard"><h3>Progress percentage</h3>${ph.length?`<table class="tbl small"><thead><tr><th></th><th class="n">Weight</th><th class="n">Planned %</th><th class="n">Actual %</th><th class="n">Var.</th></tr></thead><tbody>
-      <tr><td><b>Overall progress</b></td><td class="n">100%</td><td class="n">${mp(f.planned_pct,1)}</td><td class="n">${mp(f.actual_pct,1)}</td><td class="n">${f.planned_pct!=null&&f.actual_pct!=null?mvp(f.actual_pct-f.planned_pct):'—'}</td></tr>
-      ${ph.map(x=>`<tr><td>${esc(x.phase||x.name||'')}</td><td class="n">${x.wt!=null?mp(+x.wt,0):'—'}</td><td class="n">${mp(x.plan_pct,1)}</td><td class="n">${mp(x.act_pct,1)}</td><td class="n">${x.plan_pct!=null&&x.act_pct!=null?mvp(x.act_pct-x.plan_pct):'—'}</td></tr>`).join('')}</tbody></table>`
-      :kv([['Overall progress, planned',mp(f.planned_pct,1)],['Overall progress, actual',mp(f.actual_pct,1)]])}</div>
-    <div class="rdcard"><h3>Schedule status</h3><table class="tbl small"><thead><tr><th>Milestone</th><th>Contract finish</th><th>Revised finish</th><th>Forecast finish</th><th class="n">Delay (days)</th></tr></thead><tbody>
-      ${['tcc','pac','fac'].map(k=>{const a=f[k+'_rev_date']||f[k+'_orig_date'],b=f[k+'_ext_fc_date'];return `<tr><td><b>${k.toUpperCase()}</b></td><td>${d(k+'_orig_date')}</td><td>${d(k+'_rev_date')}</td><td>${d(k+'_ext_fc_date')}</td><td class="n">${a&&b?fmt(diffDays(a,b)):'—'}</td></tr>`}).join('')}</tbody></table></div>
-    <div class="rdcard"><h3>Claim status</h3>${kv([['EOT status',esc(e.status||'Not applicable')],['Submitted date',e.sub?fmtDY(e.sub):'—'],['Extension of time (EOT) submitted duration',e.days?`${fmt(+e.days)} days`:'—'],['EOT reference',esc(e.ref||'—')]])}</div>
-    <div class="rdcard"><h3>Commercial status <span class="muted small">SAR</span></h3>${kv([['Original contract value',mf(r.cc.orig)],['Variation orders (VO) approved',mf(r.cc.appr)],['Variation orders (VO) under negotiation',mf(Math.max(0,r.cc.sub-r.cc.appr))],['Revised contract value (original + VO approved)',mf(r.cv)],
-      ['Contract value at December of last year',mf(r.base.cv)],['Actual cost including stock value (from start)',mf(r.actual)],['Actual stock value',mf(r.stock)],['Commitment cost',mf(r.commitment)],['Cumulative actual POC (without stock value)',mp(r.poc)],['Actual revenue (based on POC)',mf(r.revenue)],
-      ['Invoiceable value as per contract payment terms',mf(r.inv_able)],['Gross billing submitted',mf(r.inv_sub)],['Gross billing approved',mf(r.inv_appr)],['Advance payment',mf(r.inv_adv)],['Cash received including advance payment',mf(r.inv_coll)],['Budget best estimate at December of last year',mf(r.base.budget)]])}</div>
-    <div class="rdcard rdwide"><h3>Budget status <span class="muted small">SAR · ${r.cr?`cost report ${esc(perLabel('month',r.cr.period))}`:'no released cost report'}</span></h3>${heads.length?`<div class="scroll"><table class="tbl small"><thead><tr><th></th><th class="n">Actual cost</th><th class="n">Budget Rev.00</th><th class="n">Current budget</th><th class="n">Var. %</th></tr></thead><tbody>
-      <tr><td><b>Gross profit %</b></td><td></td><td class="n">${mp(r.gp_r0)}</td><td class="n">${mp(r.gp_cur)}</td><td class="n">${r.gp_r0!=null&&r.gp_cur!=null?mvp(r.gp_cur-r.gp_r0):'—'}</td></tr>
-      <tr class="mertot"><td><b>Overall project</b></td><td class="n">${mf(r.actual)}</td><td class="n">${mf(r.rev0)}</td><td class="n">${mf(r.budget)}</td><td class="n">${mvp(var0(r.rev0,r.budget))}</td></tr>
-      ${heads.map(l=>`<tr><td>${esc(l.name||l.code)}</td><td class="n">${mf(crN(l.actual))}</td><td class="n">${mf(crN(l.rev0))}</td><td class="n">${mf(crN(l.budget))}</td><td class="n">${mvp(var0(crN(l.rev0),crN(l.budget)))}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted small">The cost report has no WBS heads.</p>'}</div>
-    <div class="rdcard"><h3>Manpower</h3><table class="tbl small"><thead><tr><th></th><th class="n">Planned</th><th class="n">Actual</th><th class="n">Var.</th></tr></thead><tbody>
-      ${[['dir','Total direct manpower'],['ind','Total indirect manpower'],['sub','Total subcontractor manpower']].map(([k,l])=>{const a=f['mp_'+k+'_plan'],b=f['mp_'+k+'_act'];return `<tr><td>${l}</td><td class="n">${a??'—'}</td><td class="n">${b??'—'}</td><td class="n">${a!=null&&b!=null?(b-a>0?'+':'')+fmt(b-a):'—'}</td></tr>`}).join('')}
-      <tr class="mertot"><td><b>Total manpower</b></td><td class="n">${f.mp_tot_plan??'—'}</td><td class="n">${f.mp_tot_act??'—'}</td><td class="n">${f.mp_var!=null?(f.mp_var>0?'+':'')+fmt(+f.mp_var):'—'}</td></tr>
-      <tr><td>Indirect to direct (supervision ratio)</td><td class="n">${(()=>{const a=+f.mp_dir_plan+(+f.mp_sub_plan||0);return a?mp(f.mp_ind_plan/a*100,0):'—'})()}</td><td class="n">${(()=>{const a=+f.mp_dir_act+(+f.mp_sub_act||0);return a?mp(f.mp_ind_act/a*100,0):'—'})()}</td><td></td></tr></tbody></table></div>
-    <div class="rdcard rdwide"><h3>Areas of concern <span class="muted small">${r.pl?`internal report ${esc(perLabel('month',r.pl.period))}`:'no released internal report'}</span></h3>
-      ${(()=>{const C=aocOf(r.nar);let n=0;return `<table class="tbl small"><thead><tr><th></th><th>Concern</th><th>Action by</th><th>Action needed</th></tr></thead><tbody>${AOC.map(([k,l])=>`<tr class="mertot"><td colspan="4"><b>${esc(l)}</b></td></tr>${(C[k].length?C[k]:[{}]).map(x=>`<tr><td class="n">${x.c?++n:''}</td><td>${esc(x.c||'—')}</td><td>${esc(x.by||'')}</td><td>${esc(x.act||'')}</td></tr>`).join('')}`).join('')}</tbody></table>`})()}
-      <p class="small muted" style="margin:4px 0 0">Project manager: ${esc(merPm(p))} · Planning engineer: ${esc((teamOf(p.id,'plan')[0]||{}).name||'—')}</p></div>
-    <div class="rdcard rdwide"><h3>Cost plan for the current year <span class="muted small">POC % · ${r.basis==='fin'?'finance':'internal'} plan${r.cp&&r.cp[r.basis]?` · ${esc(r.cp[r.basis].status||'Draft')}`:''}</span></h3><div class="scroll"><table class="tbl small"><thead><tr><th>Item / month</th>${months.map(i=>`<th class="n">${MON[i]}</th>`).join('')}</tr></thead><tbody>
-      ${prow('Planned',pl)}${prow('Actual',r.act.inc.map((v,i)=>i<cut?v:null))}${prow('Forecast',fcArr)}${prow('Cum. plan this year',cumP,'muted')}${prow('Cum. actual this year',cumA,'muted')}${prow('Cum. forecast this year',cumF,'muted')}</tbody></table></div>
-      <p class="small muted" style="margin:4px 0 0">Cumulative actual to the end of last year: ${mp(r.base.poc)}${r.base.src?` (${esc(r.base.src)})`:''}. Actual months: each month's released cost report, (actual − stock) ÷ current budget, against the month before; a month without one, the actual POC uploaded with the cost plans.</p></div>
-    <div class="rdcard"><h3>POC for the current year</h3>${kv([['Target',mp(r.x_plan)],['Actual (till '+MON[cut-1]+')',mp(r.t_act)],['Forecast',mp(r.y_fc)]])}</div>
-    <div class="rdcard"><h3>Cash status <span class="muted small">SAR</span></h3>${kv([['Cash in',mf(r.cash_in)],['Cash out',mf(r.cash_out)],['Net cash',mv(r.cash_var)]])}</div>
-    <div class="rdcard"><h3>Site management analysis <span class="muted small">SAR</span></h3>${kv([['Tender budget site management costs',mf(cr?crN((crHead(cr,'SM')||{}).tender):null)],['Actual site management costs',mf(r.sm_act)],['Submitted invoices',mf(r.inv_sub)],['Total contract value',mf(r.cv)],['Earned value based on current budget',mf(r.sm_ev)]])}</div>
-  </div>`}
+const MER_HEADS=[...CR_HEADS,['RISK','Potential Risks']];
+const MER_COL={plan:'#24508A',act:'#2E7A4C',fc:'#C98A12',net:'#5B6770',red:'#B03A2B'};
+function merForm(r){const p=r.p,f=r.pf,cr=r.f,e=p.eot||{},cut=+r.per.slice(5,7),pl=r.plan||Array(12).fill(null);
+  const ph=merPhases(f).map(x=>[RPH_N[x.phase]||x.phase||x.name||'',x.wt!=null?+x.wt:null,x.plan_pct??null,x.act_pct??null,x.plan_pct!=null&&x.act_pct!=null?x.act_pct-x.plan_pct:null]);
+  const ms=['tcc','pac','fac'].map(k=>{const c=f[k+'_orig_date']||null,v=f[k+'_rev_date']||null,fc=f[k+'_ext_fc_date']||null,b=v||c;return [k.toUpperCase(),c,v,fc,b&&fc?diffDays(fc,b):null]});
+  const mx=i=>ms.map(x=>x[i]).filter(Boolean).sort().pop()||null,ov=[mx(1),mx(2),mx(3)],ovb=ov[1]||ov[0];
+  const heads=cr&&isWbs(cr)?cr.wbs:[],hd=c=>heads.find(l=>String(l.code).toUpperCase()===c),extra=heads.filter(l=>!MER_HEADS.some(([c])=>c===String(l.code).toUpperCase()));
+  const vp=(a,b)=>a?(a-b)/a*100:null,mpv=(a,b)=>a!=null&&b!=null&&+a?(b-a)/a*100:null,ratio=(d,i,s)=>{const a=(+d||0)+(+s||0);return a?(+i||0)/a*100:null};
+  const actInc=r.act.inc.map((v,i)=>i<cut?v:null),fcArr=r.fc.map((v,i)=>i>=cut?v:null);let cP=0,cA=0,cF=0;
+  const cumP=pl.map(v=>(cP+=+v||0,cP)),cumA=actInc.map((v,i)=>i<cut?(cA+=+v||0,cA):null),cumF=fcArr.map((v,i)=>i<cut?null:(cF=(i===cut?(cumA[cut-1]||0):cF)+(+v||0),cF));
+  const C=aocOf(r.nar),sm=cr?crHead(cr,'SM'):null;
+  return {p,per:r.per,basis:r.basis,
+    info:[['Project Name',p.name||p.short||''],['Project Location',merCity(p)],['Project Client',p.client||'—'],['Project Consultant',p.consultant||'—'],['Project Start Date',f.commence_date||p.start||null,'date'],['Site Handover Date',f.site_handover_date||null,'date'],['Project Code',pcode(p)],['Report Cut-off Date',periodEnd(r.per,'month'),'date']],
+    prog:[['Overall Progress',100,f.planned_pct??null,f.actual_pct??null,f.planned_pct!=null&&f.actual_pct!=null?f.actual_pct-f.planned_pct:null],...ph],
+    sched:[['Overall Project',ov[0],ov[1],ov[2],ovb&&ov[2]?diffDays(ov[2],ovb):null],['Civil Works',null,null,null,null],...ms],
+    claim:[['Submitted Date',e.sub||null,'date'],['Extension of Time [EOT] Submitted Duration in Days',e.days?+e.days:null,'num']],
+    comm:[['Original Contract Value',r.cc.orig,'sar'],['Variation Orders [VO] Approved',r.cc.appr,'sar'],['Variation Orders [VO] Under Negotiation',Math.max(0,(r.cc.sub||0)-(r.cc.appr||0)),'sar'],['Revised Contract Value [Original Contract + VO approved]',r.cv,'sar'],
+      ['Contract Value at December of Last Year',r.base.cv,'sar'],['Actual Cost including Stock Value [From Start]',r.actual,'sar'],['Actual Stock Value',r.stock,'sar'],['Commitment Cost',r.commitment,'sar'],['Cumulative Actual POC [Without Stock Value]',r.poc,'pct'],
+      ['Actual Revenue [Based on POC]',r.revenue,'sar'],['Invoiceable Value as per Contract Payment Terms',r.inv_able,'sar'],['Gross Billing Submitted',r.inv_sub,'sar'],['Gross Billing Approved',r.inv_appr,'sar'],['Advance Payment',r.inv_adv,'sar'],
+      ['Cash Received including Advance Payment',r.inv_coll,'sar'],['Budget Best Estimate at December of Last Year',r.base.budget,'sar']],
+    budget:[['Gross Profit %',null,r.gp_r0,r.gp_cur,r.gp_r0!=null&&r.gp_cur!=null?r.gp_cur-r.gp_r0:null,'pct'],['Overall Project',r.actual,r.rev0,r.budget,vp(r.rev0,r.budget),'tot'],
+      ...MER_HEADS.map(([c,n])=>{const l=hd(c);return [n,l?crN(l.actual):null,l?crN(l.rev0):null,l?crN(l.budget):null,l?vp(crN(l.rev0),crN(l.budget)):null]}),...extra.map(l=>[l.name||l.code,crN(l.actual),crN(l.rev0),crN(l.budget),vp(crN(l.rev0),crN(l.budget))])],
+    mp:[['Total Direct Manpower',f.mp_dir_plan,f.mp_dir_act],['Total Indirect Manpower',f.mp_ind_plan,f.mp_ind_act],['Total Subcontractor Manpower',f.mp_sub_plan,f.mp_sub_act],['Total Manpower [Direct+Indirect+Sub]',f.mp_tot_plan,f.mp_tot_act]].map(x=>[x[0],x[1]??null,x[2]??null,mpv(x[1],x[2])])
+      .concat([['Indirect to Direct [Supervision Ratio]',ratio(f.mp_dir_plan,f.mp_ind_plan,f.mp_sub_plan),ratio(f.mp_dir_act,f.mp_ind_act,f.mp_sub_act),null,'pct']]),
+    concerns:AOC.map(([k,l])=>({label:l,items:Array.from({length:AOC_N},(_,i)=>C[k][i]||null)})),hasPl:!!r.pl,plPer:r.pl?r.pl.period:null,crPer:r.cr?r.cr.period:null,
+    pm:merPm(p),pe:(teamOf(p.id,'plan')[0]||{}).name||'—',
+    chart:{plan:pl,act:actInc,fc:fcArr,cumP,cumA,cumF,lastYr:r.base.poc,poc:[r.x_plan,r.t_act,r.y_fc],cash:[r.cash_in,r.cash_out,r.cash_var],sm:[r.sm_act,r.sm_ev],smTender:cr?crN((sm||{}).tender):null}}}
+/* the four charts, as Chart.js configurations (the same on the screen and in the exports) */
+function merChartCfgs(F,print){const c=F.chart,font={size:print?13:11},pct=v=>v==null?null:+(+v).toFixed(2),sar=v=>v==null?null:Math.round(v),base={animation:false,responsive:!print,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font,boxWidth:12}},title:{display:true,font:{size:print?16:12,weight:'bold'}}},scales:{x:{ticks:{font}},y:{ticks:{font},beginAtZero:true}}};
+  const T=(t,o)=>{const x=JSON.parse(JSON.stringify(base));x.plugins.title.text=t;return Object.assign(x,o||{})};
+  return [{type:'bar',data:{labels:MON.map(m=>m.toUpperCase()),datasets:[{label:'Planned',data:c.plan.map(pct),backgroundColor:MER_COL.plan},{label:'Actual',data:c.act.map(pct),backgroundColor:MER_COL.act},{label:'Forecast',data:c.fc.map(pct),backgroundColor:MER_COL.fc},
+      {type:'line',label:'Cum. plan',data:c.cumP.map(pct),borderColor:MER_COL.plan,backgroundColor:MER_COL.plan,pointRadius:2,borderWidth:2},{type:'line',label:'Cum. actual',data:c.cumA.map(pct),borderColor:MER_COL.act,backgroundColor:MER_COL.act,pointRadius:2,borderWidth:2},{type:'line',label:'Cum. forecast',data:c.cumF.map(pct),borderColor:MER_COL.fc,backgroundColor:MER_COL.fc,borderDash:[5,4],pointRadius:2,borderWidth:2}]},options:T('COST PLAN FOR CURRENT YEAR (POC %)')},
+    {type:'bar',data:{labels:['Target','Actual','Forecast'],datasets:[{label:'Progress %',data:c.poc.map(pct),backgroundColor:[MER_COL.plan,MER_COL.act,MER_COL.fc]}]},options:T('POC FOR CURRENT YEAR (%)',{plugins:{legend:{display:false},title:{display:true,text:'POC FOR CURRENT YEAR (%)',font:{size:print?16:12,weight:'bold'}}}})},
+    {type:'bar',data:{labels:['Cash In','Cash Out','Net Cash'],datasets:[{label:'SAR',data:c.cash.map(sar),backgroundColor:[MER_COL.act,MER_COL.red,MER_COL.net]}]},options:T('CASH STATUS (SAR)',{plugins:{legend:{display:false},title:{display:true,text:'CASH STATUS (SAR)',font:{size:print?16:12,weight:'bold'}}}})},
+    {type:'bar',data:{labels:['Cumulative Actual SM Costs Up to Date','Earned Value Based on Current Budget'],datasets:[{label:'SAR',data:c.sm.map(sar),backgroundColor:[MER_COL.red,MER_COL.plan]}]},options:T('SITE MANAGEMENT EARNED VALUE (SAR)',{plugins:{legend:{display:false},title:{display:true,text:'SITE MANAGEMENT EARNED VALUE (SAR)',font:{size:print?16:12,weight:'bold'}}}})}]}
+/* the charts as PNG images, drawn off the screen (for the PDF and the Excel workbook) */
+function merChartPngs(F,jpg){return merChartCfgs(F,true).map(cfg=>{cfg.options.devicePixelRatio=1;const cv=document.createElement('canvas');cv.width=1000;cv.height=520;const ch=new Chart(cv.getContext('2d'),Object.assign(cfg,{plugins:[{id:'bg',beforeDraw:c=>{const g=c.ctx;g.save();g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.restore()}}]}));
+  const url=jpg?cv.toDataURL('image/jpeg',0.82):cv.toDataURL('image/png');ch.destroy();return url})}
+let MER_CH=[];
+function merDrawCharts(F){MER_CH.forEach(c=>{try{c.destroy()}catch(e){}});MER_CH=[];if(!F||typeof Chart==='undefined')return;merChartCfgs(F,false).forEach((cfg,i)=>{const el=$('#merch'+i);if(el)MER_CH.push(new Chart(el.getContext('2d'),cfg))})}
+const mfd=(v,k)=>k==='date'?(v?fmtDY(v):'—'):k==='num'?(v==null?'—':fmt(v)):k==='pct'?mp(v):k==='sar'?mf(v):(v==null||v===''?'—':esc(String(v)));
+/* PLAN-006-FORM-01 on the screen */
+function merProjHTML(r){if(!r)return '<p class="muted">Choose a project.</p>';const F=merForm(r),B=brandOf(),cl=custLogo(F.p.client);let sn=0;const n=()=>++sn;
+  const sec=t=>`<tr class="pfsec"><td colspan="6">${t}</td></tr>`;
+  const left=`<table class="pftbl"><colgroup><col style="width:5%"><col style="width:41%"><col><col><col><col></colgroup><tbody>
+    ${sec('PROJECT INFORMATION')}${F.info.map(([l,v,k])=>`<tr><td class="n sn">${n()}</td><td>${esc(l)}</td><td colspan="4" class="pfv">${mfd(v,k)}</td></tr>`).join('')}
+    ${sec('PROGRESS PERCENTAGE')}<tr class="pfh"><td></td><td></td><td class="n">Weight</td><td class="n">Planned %</td><td class="n">Actual %</td><td class="n">Var.</td></tr>
+    ${F.prog.map(x=>`<tr${x[0]==='Overall Progress'?' class="pfb"':''}><td class="n sn">${n()}</td><td>${esc(x[0])}</td><td class="n">${x[1]==null?'—':mp(x[1],0)}</td><td class="n">${mp(x[2])}</td><td class="n">${mp(x[3])}</td><td class="n">${mvp(x[4])}</td></tr>`).join('')}
+    ${sec('SCHEDULE STATUS')}<tr class="pfh"><td></td><td>Milestone Name</td><td>Contract Finish</td><td>Revised Finish</td><td>Forecast Finish</td><td class="n">Var.</td></tr>
+    ${F.sched.map(x=>`<tr${x[0]==='Overall Project'?' class="pfb"':''}><td class="n sn">${n()}</td><td>${esc(x[0])}</td><td>${mfd(x[1],'date')}</td><td>${mfd(x[2],'date')}</td><td>${mfd(x[3],'date')}</td><td class="n ${x[4]!=null&&x[4]<0?'r-c':''}">${x[4]==null?'—':fmt(x[4])}</td></tr>`).join('')}
+    ${sec('CLAIM STATUS')}${F.claim.map(([l,v,k])=>`<tr><td class="n sn">${n()}</td><td colspan="3">${esc(l)}</td><td colspan="2" class="n">${mfd(v,k)}</td></tr>`).join('')}
+    ${sec('COMMERCIAL STATUS')}${F.comm.map(([l,v,k])=>`<tr${/^Revised|^Cumulative/.test(l)?' class="pfb"':''}><td class="n sn">${n()}</td><td colspan="3">${esc(l)}</td><td class="muted small">${k==='sar'?'SAR':''}</td><td class="n">${mfd(v,k)}</td></tr>`).join('')}
+    ${sec('BUDGET STATUS')}<tr class="pfh"><td></td><td></td><td class="n">Actual Cost</td><td class="n">Budget Rev.00</td><td class="n">Current Budget</td><td class="n">Var. %</td></tr>
+    ${F.budget.map(x=>x[5]==='pct'?`<tr class="pfb"><td class="n sn">${n()}</td><td>${esc(x[0])}</td><td></td><td class="n">${mp(x[2])}</td><td class="n">${mp(x[3])}</td><td class="n">${mvp(x[4])}</td></tr>`
+      :`<tr${x[5]==='tot'?' class="pfb"':''}><td class="n sn">${n()}</td><td>${esc(x[0])}</td><td class="n">${mf(x[1])}</td><td class="n">${mf(x[2])}</td><td class="n">${mf(x[3])}</td><td class="n">${mvp(x[4])}</td></tr>`).join('')}
+    ${sec('MANPOWER')}<tr class="pfh"><td></td><td></td><td></td><td class="n">Planned</td><td class="n">Actual</td><td class="n">Var.</td></tr>
+    ${F.mp.map(x=>`<tr${/^Total Manpower/.test(x[0])?' class="pfb"':''}><td class="n sn">${n()}</td><td colspan="2">${esc(x[0])}</td><td class="n">${x[4]==='pct'?mp(x[1],0):x[1]??'—'}</td><td class="n">${x[4]==='pct'?mp(x[2],0):x[2]??'—'}</td><td class="n">${x[4]==='pct'?'':mvp(x[3])}</td></tr>`).join('')}</tbody></table>`;
+  let cn=sn;
+  const aoc=`<table class="pftbl pfaoc"><colgroup><col style="width:3%"><col style="width:44%"><col style="width:14%"><col></colgroup><tbody>${sec('AREAS OF CONCERN')}
+    ${F.concerns.map(g=>`<tr class="pfh"><td></td><td>${esc(g.label.toUpperCase())}</td><td>ACTION BY</td><td>ACTION NEEDED</td></tr>${g.items.map(x=>`<tr><td class="n sn">${++cn}</td><td>${x?esc(x.c):''}</td><td>${x?esc(x.by||''):''}</td><td>${x?esc(x.act||''):''}</td></tr>`).join('')}`).join('')}</tbody></table>`;
+  return `<div class="pf"><div class="pfgrid"><div class="pfl">${left}</div>
+      <div class="pfr"><div class="pflogos">${logoImg(B.logo,B.name||'',52)}${cl?logoImg(cl,F.p.client,46):''}</div>
+        ${[0,1,2,3].map(i=>`<div class="pfch ${i===0||i===3?'tall':''}"><canvas id="merch${i}"></canvas></div>`).join('')}</div></div>
+    ${aoc}<div class="pffoot"><span><b>Project Manager:</b> ${esc(F.pm)}</span><span><b>Planning Engineer:</b> ${esc(F.pe)}</span><span class="pfcode">PLAN-006-FORM-01</span></div>
+    <p class="small muted" style="margin:6px 0 0">Sources: ${F.crPer?`cost report ${esc(perLabel('month',F.crPer))}`:'no released cost report'} · ${F.plPer?`internal report ${esc(perLabel('month',F.plPer))}`:'no released internal report'} · ${F.basis==='fin'?'finance':'internal'} cost plan. Schedule Var. = revised (else contract) − forecast finish in days; negative is late.</p>
+    <details class="pfdata"><summary>Chart data (cost plan for the current year)</summary><div class="scroll"><table class="tbl small"><thead><tr><th>Item / month</th><th class="n">Cum. act. to end of last year</th>${MON.map(m=>`<th class="n">${m.toUpperCase()}</th>`).join('')}</tr></thead><tbody>
+      ${[['Planned',F.chart.plan,F.chart.lastYr],['Actual',F.chart.act],['Forecast',F.chart.fc],['Cum Plan This Year',F.chart.cumP],['Cum Actual This Year',F.chart.cumA],['Cum Forecast This Year',F.chart.cumF]].map(([l,a,c0])=>`<tr><td>${l}</td><td class="n">${c0!=null?mp(c0):''}</td>${a.map(v=>`<td class="n">${v==null?'':mp(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details></div>`}
+
+/* ----- the exports ----- */
+const MER_XL_PCT=['poc','gp_r0','gp_cur','t_plan','t_act','x_plan','y_fc','ly_poc','fin_target','year_target','fin_check'];
+/* a logo as PNG or JPEG (SVG drawn to a canvas first), for Excel and PDF; null when there is none */
+async function merImg(src){if(!src)return null;if(/^data:image\/(png|jpeg)/.test(src)){const i=await new Promise((res,rej)=>{const x=new Image();x.onload=()=>res(x);x.onerror=()=>rej();x.src=src});return {url:src,ext:/jpeg/.test(src.slice(0,20))?'jpeg':'png',w:i.naturalWidth,h:i.naturalHeight}}
+  try{const i=await new Promise((res,rej)=>{const x=new Image();x.onload=()=>res(x);x.onerror=()=>rej();x.src=src});const w=i.naturalWidth||600,h=i.naturalHeight||200,k=Math.min(1,800/w),c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);c.getContext('2d').drawImage(i,0,0,c.width,c.height);return {url:c.toDataURL('image/png'),ext:'png',w:c.width,h:c.height}}catch(e){return null}}
+const merFile=(st,ext)=>`MER ${st.per} ${st.basis==='fin'?'F':'I'}.${ext}`;
+/* the Excel workbook (styled, with the logos and the charts): COST(I)/(F), DASHBOARD, one PLAN-006 sheet per project, About */
+async function merExport(only){await loadLib(LIBS.exceljs);const st=merState(),D=merData(st),R=only?D.rows.filter(r=>r.p.id===only):D.rows,wb=new ExcelJS.Workbook(),cut=periodEnd(st.per,'month'),B=brandOf(),blogo=await merImg(B.logo);
+  wb.creator='ProTrack';wb.created=new Date();const BLUE='FF1F3A5F',LBLUE='FFDCE5F1',GREY='FFF1F2EE',thin={style:'thin',color:{argb:'FFBFC5CC'}},box={top:thin,left:thin,bottom:thin,right:thin};
+  const hdr=(c,fill)=>{c.font={bold:true,color:{argb:fill?'FFFFFFFF':'FF1B252E'},size:9};if(fill)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:fill}};c.alignment={vertical:'middle',horizontal:'center',wrapText:true};c.border=box};
+  const addLogo=(ws,img,tl,w,h)=>{if(!img)return;const id=wb.addImage({base64:img.url,extension:img.ext});const k=Math.min(w/img.w,h/img.h);ws.addImage(id,{tl,ext:{width:Math.round(img.w*k),height:Math.round(img.h*k)}})};
+  if(!only){
+    /* COST */
+    const G=MER_COST_COLS(st),C=G.flatMap(g=>g[1]),ws=wb.addWorksheet(st.basis==='fin'?'COST(F)':'COST(I)',{views:[{state:'frozen',xSplit:4,ySplit:6}],pageSetup:{orientation:'landscape',paperSize:8,fitToPage:true,fitToWidth:1,fitToHeight:0}});
+    ws.getCell('B1').value='PORTFOLIO COST STATUS REPORT';ws.getCell('B1').font={bold:true,size:14,color:{argb:BLUE}};ws.getCell('B2').value=`CUT-OFF: ${fmtDY(cut)} · Cost plan: ${st.basis==='fin'?'Finance (F)':'Internal (I)'} · SAR`;ws.getCell('B2').font={size:10};
+    addLogo(ws,blogo,{col:C.length+1,row:0},180,48);
+    let c0=5;G.forEach(([g,cols])=>{const a=ws.getCell(5,c0);a.value=g||'';if(cols.length>1)ws.mergeCells(5,c0,5,c0+cols.length-1);hdr(a,g?BLUE:null);c0+=cols.length});
+    ['S.N.','Project Code','Project Name','Responsible Manager',...C.map(x=>x[1])].forEach((h,i)=>{const c=ws.getCell(6,i+1);c.value=h;hdr(c,'FF24508A')});ws.getRow(6).height=54;
+    let sn=0,rn=7;const put=(r,tot)=>{const row=ws.getRow(rn++);row.values=[++sn,r.total?'':pcode(r.p),r.total?r.label:(r.p.short||r.p.name),r.total?'':merPm(r.p),...C.map(([k])=>r[k]==null||!isFinite(r[k])?null:MER_XL_PCT.includes(k)?r[k]/100:Math.round(r[k]))];
+      row.eachCell({includeEmpty:true},(c,i)=>{c.border=box;c.font={size:9,bold:!!tot};if(tot)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:tot===2?LBLUE:GREY}};if(i>4)c.numFmt=MER_XL_PCT.includes(C[i-5][0])?'0.00%':'#,##0;(#,##0);"-"'})};
+    put(D.all,2);D.regs.forEach(g=>{put(g.tot,1);g.rows.forEach(r=>put(r))});
+    ws.columns.forEach((c,i)=>{c.width=i===0?5:i===1?11:i===2?30:i===3?20:14});
+    /* DASHBOARD */
+    const wd=wb.addWorksheet('DASHBOARD',{views:[{state:'frozen',xSplit:3,ySplit:4}],pageSetup:{orientation:'landscape',paperSize:8,fitToPage:true,fitToWidth:1,fitToHeight:0}});
+    wd.getCell('B1').value='PORTFOLIO REPORT · DASHBOARD STATUS';wd.getCell('B1').font={bold:true,size:14,color:{argb:BLUE}};wd.getCell('B2').value=`CUT-OFF: ${fmtDY(cut)}`;addLogo(wd,blogo,{col:MER_DASH_COLS.length+2,row:0},180,48);
+    ['S.N.','Project Code','Project Name',...MER_DASH_COLS,'Areas of Concern',...AOC.map(([,l])=>l)].forEach((h,i)=>{const c=wd.getCell(4,i+1);c.value=h;hdr(c,'FF24508A')});wd.getRow(4).height=48;
+    sn=0;rn=5;const strip=v=>String(v).replace(/<[^>]+>/g,'');const dput=(vals,tot)=>{const row=wd.getRow(rn++);row.values=vals;row.eachCell({includeEmpty:true},c=>{c.border=box;c.font={size:9,bold:!!tot};c.alignment={vertical:'top',wrapText:true};if(tot)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:tot===2?LBLUE:GREY}}})};
+    dput([++sn,'','OVERALL PORTFOLIO'],2);D.regs.forEach(g=>{dput([++sn,'',g.tot.label],1);g.rows.forEach(r=>{const Cc=aocOf(r.nar);let k=0;dput([++sn,pcode(r.p),r.p.short||r.p.name,...merDashVals(r).map(strip),AOC.map(([a,l])=>Cc[a].length?`${l}: ${Cc[a].map(x=>`${++k}. ${x.c}${x.by?` (${x.by})`:''}`).join(' ')}`:'').filter(Boolean).join('\n'),...AOC.map(([a])=>Cc[a].map((x,i)=>`${i+1}. ${x.c}`).join('\n'))])})});
+    wd.columns.forEach((c,i)=>{c.width=i===0?5:i===1?11:i===2?28:i>=3+MER_DASH_COLS.length?40:13});
+  }
+  /* PLAN-006-FORM-01, as the PE sheet: columns A–P, the charts on the right, the data section below the print area */
+  for(const r of R){const F=merForm(r),name=String(pcode(r.p)).replace(/[\\/?*[\]:]/g,'-').slice(0,31),ws=wb.addWorksheet(name,{pageSetup:{paperSize:9,orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:1,printArea:'A1:P103',margins:{left:0.3,right:0.3,top:0.4,bottom:0.4,header:0.2,footer:0.2}}});
+    [4,21,9,9,9,9,9,9,11,11,11,11,11,11,11,22].forEach((w,i)=>ws.getColumn(i+1).width=w);
+    const S=(a,v,o)=>{const c=ws.getCell(a);c.value=v;c.font=Object.assign({size:9},o&&o.font);if(o&&o.fmt)c.numFmt=o.fmt;c.alignment=Object.assign({vertical:'middle'},o&&o.al);if(!(o&&o.nob))c.border=box;if(o&&o.fill)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:o.fill}};return c};
+    const M=(rg,v,o)=>{ws.mergeCells(rg);const c=S(rg.split(':')[0],v,o);if(!(o&&o.nob)){const [a,z]=rg.split(':').map(x=>ws.getCell(x));for(let rr=a.row;rr<=z.row;rr++)for(let cc=a.col;cc<=z.col;cc++)ws.getCell(rr,cc).border=box}return c},secH=(row,t)=>{M(`B${row}:I${row}`,t,{font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:BLUE})};
+    const d=v=>v?new Date(v+'T00:00:00Z'):null,P=v=>v==null?null:v/100,num=v=>v==null||!isFinite(v)?null:Math.round(v);let sn=0;const N=row=>S(`A${row}`,++sn,{font:{size:8,color:{argb:'FF6B7680'}},al:{horizontal:'center'}});
+    secH(1,'PROJECT INFORMATION');F.info.forEach(([l,v,k],i)=>{const row=2+i;N(row);M(`B${row}:D${row}`,l);M(`E${row}:I${row}`,k==='date'?d(v):v,{fmt:k==='date'?'dd-mmm-yyyy':undefined,font:{bold:true}})});
+    secH(11,'PROGRESS PERCENTAGE');S('D12','Weight',{font:{bold:true}});M('E12:F12','Planned %',{font:{bold:true}});M('G12:H12','Actual %',{font:{bold:true}});S('I12','Var.',{font:{bold:true}});
+    const prog=[F.prog[0],...['Engineering','Procurement','Construction - Civil/Arch','Installations - MEP','Testing & Commissioning'].map((l,i)=>F.prog[i+1]||[l,null,null,null,null])];
+    prog.slice(0,6).forEach((x,i)=>{const row=13+i;N(row);M(`B${row}:C${row}`,x[0],{font:{bold:i===0}});S(`D${row}`,P(x[1]),{fmt:'0%'});M(`E${row}:F${row}`,P(x[2]),{fmt:'0.00%'});M(`G${row}:H${row}`,P(x[3]),{fmt:'0.00%'});S(`I${row}`,P(x[4]),{fmt:'0.00%;[Red]-0.00%'})});
+    secH(20,'SCHEDULE STATUS');S('B21','Milestone Name',{font:{bold:true}});M('C21:D21','Contract Finish',{font:{bold:true}});M('E21:F21','Revised Finish',{font:{bold:true}});M('G21:H21','Forecast Finish',{font:{bold:true}});S('I21','Var.',{font:{bold:true}});
+    F.sched.forEach((x,i)=>{const row=22+i;N(row);S(`B${row}`,x[0],{font:{bold:i===0}});M(`C${row}:D${row}`,d(x[1]),{fmt:'dd-mmm-yy'});M(`E${row}:F${row}`,d(x[2]),{fmt:'dd-mmm-yy'});M(`G${row}:H${row}`,d(x[3]),{fmt:'dd-mmm-yy'});S(`I${row}`,x[4],{fmt:'0;[Red]-0'})});
+    secH(28,'CLAIM STATUS');F.claim.forEach(([l,v,k],i)=>{const row=29+i;N(row);M(`B${row}:F${row}`,l);M(`G${row}:I${row}`,k==='date'?d(v):v??'-',{fmt:k==='date'?'dd-mmm-yy':undefined,al:{horizontal:'right'}})});
+    secH(32,'COMMERCIAL STATUS');F.comm.forEach(([l,v,k],i)=>{const row=33+i;N(row);M(`B${row}:F${row}`,l,{font:{bold:/^Revised|^Cumulative/.test(l)}});M(`G${row}:I${row}`,k==='pct'?P(v):num(v),{fmt:k==='pct'?'0.00%':'"SAR "#,##0;[Red]("SAR "#,##0);"-"'})});
+    secH(50,'BUDGET STATUS');M('C51:D51','Actual Cost',{font:{bold:true}});M('E51:F51','Budget Rev.00',{font:{bold:true}});M('G51:H51','Current Budget',{font:{bold:true}});S('I51','Var. %',{font:{bold:true}});
+    F.budget.slice(0,21).forEach((x,i)=>{const row=52+i,pc=x[5]==='pct';N(row);S(`B${row}`,x[0],{font:{bold:pc||x[5]==='tot'}});M(`C${row}:D${row}`,pc?null:num(x[1]),{fmt:'#,##0;(#,##0);"-"'});M(`E${row}:F${row}`,pc?P(x[2]):num(x[2]),{fmt:pc?'0.00%':'#,##0;(#,##0);"-"'});M(`G${row}:H${row}`,pc?P(x[3]):num(x[3]),{fmt:pc?'0.00%':'#,##0;(#,##0);"-"'});S(`I${row}`,P(x[4]),{fmt:'0.00%;[Red]-0.00%'})});
+    M('B74:D74','MANPOWER',{font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:BLUE});M('E74:F74','Planned',{font:{bold:true}});M('G74:H74','Actual',{font:{bold:true}});S('I74','Var.',{font:{bold:true}});
+    F.mp.forEach((x,i)=>{const row=75+i,pc=x[4]==='pct';N(row);M(`B${row}:D${row}`,x[0],{font:{bold:/^Total Manpower/.test(x[0])}});M(`E${row}:F${row}`,pc?P(x[1]):x[1],{fmt:pc?'0%':'#,##0'});M(`G${row}:H${row}`,pc?P(x[2]):x[2],{fmt:pc?'0%':'#,##0'});S(`I${row}`,pc?null:P(x[3]),{fmt:'0%;[Red]-0%'})});
+    M('B81:P81','AREAS OF CONCERN',{font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:BLUE});
+    F.concerns.forEach((g,gi)=>{const h=82+gi*4;M(`B${h}:H${h}`,g.label.toUpperCase(),{font:{bold:true},fill:LBLUE});M(`I${h}:J${h}`,'ACTION BY',{font:{bold:true},fill:LBLUE});M(`K${h}:P${h}`,'ACTION NEEDED',{font:{bold:true},fill:LBLUE});
+      g.items.forEach((x,i)=>{const row=h+1+i;N(row);M(`B${row}:H${row}`,x?x.c:'',{al:{wrapText:true,vertical:'top'}});M(`I${row}:J${row}`,x?x.by||'':'',{al:{wrapText:true,vertical:'top'}});M(`K${row}:P${row}`,x?x.act||'':'',{al:{wrapText:true,vertical:'top'}})})});
+    S('B102','Project Manager:',{font:{bold:true},nob:true});M('C102:H102',F.pm,{nob:true});S('B103','Planning Engineer:',{font:{bold:true},nob:true});M('C103:H103',F.pe,{nob:true});M('N102:P102','PLAN-006-FORM-01',{font:{bold:true,color:{argb:'FF6B7680'}},al:{horizontal:'right'},nob:true});
+    /* the logos and the charts, where the PE sheet has them */
+    addLogo(ws,blogo,{col:10,row:0.2},200,62);const cl=await merImg(custLogo(r.p.client));addLogo(ws,cl,{col:13.6,row:0.2},150,62);
+    const imgs=merChartPngs(F),at=[['J9','P26'],['J27','P41'],['J43','P55'],['J56','P79']];
+    imgs.forEach((u,i)=>{const id=wb.addImage({base64:u,extension:'png'});ws.addImage(id,`${at[i][0]}:${at[i][1]}`)});
+    /* the data section (below the print area, as the PE sheet) */
+    M('A104:P104','<<<<< NEXT SECTION IS THE CHART DATA, NOT PRINTED >>>>>',{font:{italic:true,color:{argb:'FF6B7680'}},al:{horizontal:'center'},nob:true});
+    S('B106','COST PLAN FOR CURRENT YEAR CHART',{font:{bold:true},nob:true});S('B107','ITEM / MONTH',{font:{bold:true}});S('C107','Cum. Act to End of Last Yr',{font:{bold:true},al:{wrapText:true}});MON.forEach((m,i)=>S(ws.getCell(108,4+i).address,m.toUpperCase(),{font:{bold:true},al:{horizontal:'center'}}));
+    [['Planned',F.chart.plan,F.chart.lastYr],['Actual',F.chart.act],['Forecast',F.chart.fc],['Cum Plan This Year',F.chart.cumP],['Cum Actual This Year',F.chart.cumA],['Cum Forc This Year',F.chart.cumF]].forEach(([l,a,c0],i)=>{const row=111+i;S(`B${row}`,l);S(`C${row}`,P(c0),{fmt:'0.00%'});a.forEach((v,j)=>S(ws.getCell(row,4+j).address,P(v),{fmt:'0.00%'}))});
+    S('B118','POC FOR CURRENT YEAR CHART',{font:{bold:true},nob:true});S('N120','Progress %',{font:{bold:true}});['Target','Actual','Forecast'].forEach((l,i)=>{S(`B${121+i}`,l);S(`N${121+i}`,P(F.chart.poc[i]),{fmt:'0.00%'})});
+    S('B125','CASH STATUS CHART',{font:{bold:true},nob:true});['Cash In','Cash Out','Net Cash'].forEach((l,i)=>{S(`B${127+i}`,l);S(`N${127+i}`,num(F.chart.cash[i]),{fmt:'#,##0;(#,##0)'})});
+    S('B131','SITE MANAGEMENT ANALYSIS',{font:{bold:true},nob:true});[['Tender Budget Site Management Costs',F.chart.smTender],['Actual Site Management Costs',F.chart.sm[0]],['Submitted Invoices',r.inv_sub],['Total Contract Value',r.cv],['Cumulative Actual SM Costs Up to Date',F.chart.sm[0]],['Earned Value Based on Current Budget',F.chart.sm[1]]].forEach(([l,v],i)=>{S(`B${133+i}`,l);S(`N${133+i}`,num(v),{fmt:'#,##0'})});
+  }
+  const wa=wb.addWorksheet('About');[['ProTrack, Monthly Executive Report'],['Cut-off',fmtDY(cut)],['Cost plan',st.basis==='fin'?'Finance (F)':'Internal (I)'],['Exported',stamp()+' by '+((me()||{}).name||'')],
+    ['Sources: released monthly cost reports and internal reports, change order and claim log, invoice register, Cashflow Dashboard, cost plans. Figures are as recorded in ProTrack at export.'],
+    ['Project sheets follow PLAN-006-FORM-01: the print area is A1:P103 (one A4 page); the chart data is below it.']].forEach(x=>wa.addRow(x));wa.getColumn(1).width=24;wa.getColumn(2).width=40;
+  const buf=await wb.xlsx.writeBuffer();await saveFile(only?`MER ${st.per} ${pcode(projById(only))}.xlsx`:merFile(st,'xlsx'),new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}))}
+/* the PDF: Cost and Dashboard on A3 landscape pages, then one A4 portrait PLAN-006-FORM-01 page per project */
+async function merPdf(only){await loadLib(LIBS.jspdf);await loadLib(LIBS.auto);const {jsPDF}=window.jspdf,st=merState(),D=merData(st),R=only?D.rows.filter(r=>r.p.id===only):D.rows,cut=fmtDY(periodEnd(st.per,'month')),B=brandOf(),blogo=await merImg(B.logo);
+  const doc=new jsPDF({orientation:only?'portrait':'landscape',unit:'mm',format:only?'a4':'a3'}),txt=s=>String(s??'').replace(/[–—]/g,'-').replace(/[^\x20-\x7E -ɏ]/g,' ');let fmtNow=only?['a4','portrait']:['a3','landscape'];
+  const orig=doc.addPage.bind(doc);doc.addPage=(...a)=>a.length?orig(...a):orig(fmtNow[0],fmtNow[1]);const page=(f,o)=>{fmtNow=[f,o];orig(f,o)};
+  const W=()=>doc.internal.pageSize.getWidth(),H=()=>doc.internal.pageSize.getHeight(),logoAt=(img,x,y,w,h)=>{if(!img)return;const k=Math.min(w/img.w,h/img.h);doc.addImage(img.url,img.ext.toUpperCase(),x+w-img.w*k,y,img.w*k,img.h*k,'lg'+img.url.length+img.url.slice(-24),'FAST')};
+  const pnum=v=>v==null||!isFinite(v)?'-':fmt(Math.round(v)),ppct=v=>v==null||!isFinite(v)?'-':fmt(v,2)+'%',neg=v=>v==null||!isFinite(v)?'-':v<-0.5?`(${fmt(Math.round(-v))})`:pnum(v);
+  const BL=[31,58,95],head={fillColor:[36,80,138],textColor:255,fontStyle:'bold',halign:'center',valign:'middle'};
+  const top=(title,sub)=>{doc.setFontSize(15);doc.setTextColor(...BL);doc.text(txt(title),12,14);doc.setFontSize(9);doc.setTextColor(60);doc.text(txt(sub),12,20);doc.setTextColor(0);logoAt(blogo,W()-62,6,50,16)};
+  if(!only){
+    top('PORTFOLIO COST STATUS REPORT',`Cut-off ${cut} · Cost plan ${st.basis==='fin'?'Finance (F)':'Internal (I)'} · SAR`);
+    const G=MER_COST_COLS(st),C=G.flatMap(g=>g[1]),rowOf=(r,sn)=>[sn,r.total?'':pcode(r.p),r.total?`${r.label} (${r.n})`:(r.p.short||r.p.name),r.total?'':merPm(r.p),...C.map(([k])=>MER_XL_PCT.includes(k)?ppct(r[k]):neg(r[k]))];
+    let sn=0;const body=[],tot=[];const add=(r)=>{body.push(rowOf(r,++sn));if(r.total)tot.push(body.length-1)};add(D.all);D.regs.forEach(g=>{add(g.tot);g.rows.forEach(add)});
+    doc.autoTable({startY:24,head:[[{content:'',colSpan:4},...G.map(([g,c])=>({content:txt(g||''),colSpan:c.length}))],['S.N.','Code','Project','Manager',...C.map(x=>txt(x[1]))]],body,theme:'grid',
+      styles:{fontSize:5.6,cellPadding:0.7,overflow:'linebreak',valign:'middle'},headStyles:head,columnStyles:Object.fromEntries(C.map((x,i)=>[i+4,{halign:'right'}]).concat([[0,{halign:'center',cellWidth:7}],[2,{cellWidth:34}],[3,{cellWidth:22}]])),
+      margin:{left:8,right:8},didParseCell:h=>{if(h.section==='body'&&tot.includes(h.row.index)){h.cell.styles.fontStyle='bold';h.cell.styles.fillColor=h.row.index===0?[220,229,241]:[241,242,238]}}});
+    page('a3','landscape');top('PORTFOLIO REPORT · DASHBOARD STATUS',`Cut-off ${cut}`);
+    sn=0;const db=[],dt=[];const strip=v=>txt(String(v).replace(/<[^>]+>/g,''));const conc=nar=>{const Cc=aocOf(nar);let k=0;return AOC.map(([a,l])=>Cc[a].length?`${l}: ${Cc[a].map(x=>`${++k}. ${x.c}${x.by?` (${x.by})`:''}`).join(' ')}`:'').filter(Boolean).join('\n')};
+    db.push([++sn,'','OVERALL PORTFOLIO',...MER_DASH_COLS.map(c=>c==='Revised contract value'?pnum(D.all.cv):c==='Invoiceable amount'?pnum(D.all.inv_able):''),'']);dt.push(0);
+    D.regs.forEach(g=>{db.push([++sn,'',g.tot.label,...MER_DASH_COLS.map(c=>c==='Revised contract value'?pnum(g.tot.cv):c==='Invoiceable amount'?pnum(g.tot.inv_able):''),'']);dt.push(db.length-1);g.rows.forEach(r=>db.push([++sn,pcode(r.p),txt(r.p.short||r.p.name),...merDashVals(r).map(strip),r.pl?txt(conc(r.nar)):'']))});
+    doc.autoTable({startY:24,head:[['S.N.','Code','Project',...MER_DASH_COLS.map(txt),'Areas of concern']],body:db,theme:'grid',styles:{fontSize:5.4,cellPadding:0.7,overflow:'linebreak',valign:'top'},headStyles:head,
+      columnStyles:{0:{cellWidth:7,halign:'center'},2:{cellWidth:28},[3+MER_DASH_COLS.length]:{cellWidth:70}},margin:{left:8,right:8},didParseCell:h=>{if(h.section==='body'&&dt.includes(h.row.index)){h.cell.styles.fontStyle='bold';h.cell.styles.fillColor=h.row.index===0?[220,229,241]:[241,242,238]}}});
+  }
+  for(const [ix,r] of R.entries()){if(!only||ix)page('a4','portrait');const F=merForm(r),cl=await merImg(custLogo(r.p.client)),imgs=merChartPngs(F,true);
+    doc.setFontSize(12);doc.setTextColor(...BL);doc.text(txt(`${pcode(r.p)} · ${r.p.short||r.p.name}`),10,11);doc.setFontSize(7.5);doc.setTextColor(90);doc.text(txt(`Monthly Executive Report · cut-off ${cut} · ${st.basis==='fin'?'finance':'internal'} cost plan`),10,15);doc.setTextColor(0);
+    logoAt(blogo,150,4,50,14);if(cl)logoAt(cl,96,4,50,14);
+    let sn=0;const N=()=>++sn,L=110,secRow=t=>[{content:t,colSpan:6,styles:{fillColor:BL,textColor:255,fontStyle:'bold',fontSize:6}}],hrow=a=>a.map(x=>({content:x,styles:{fontStyle:'bold',fillColor:[220,229,241],halign:x&&x!=='Milestone Name'?'right':'left'}}));
+    const d=v=>v?fmtDY(v):'-',body=[secRow('PROJECT INFORMATION'),...F.info.map(([l,v,k])=>[N(),txt(l),{content:txt(k==='date'?d(v):v??'-'),colSpan:4,styles:{fontStyle:'bold'}}]),
+      secRow('PROGRESS PERCENTAGE'),hrow(['','','Weight','Planned %','Actual %','Var.']),...F.prog.map(x=>[N(),txt(x[0]),x[1]==null?'-':fmt(x[1],0)+'%',ppct(x[2]),ppct(x[3]),ppct(x[4])]),
+      secRow('SCHEDULE STATUS'),hrow(['','Milestone Name','Contract Finish','Revised Finish','Forecast Finish','Var.']),...F.sched.map(x=>[N(),x[0],d(x[1]),d(x[2]),d(x[3]),x[4]==null?'-':fmt(x[4])]),
+      secRow('CLAIM STATUS'),...F.claim.map(([l,v,k])=>[N(),{content:txt(l),colSpan:3},{content:k==='date'?d(v):v==null?'-':fmt(v),colSpan:2}]),
+      secRow('COMMERCIAL STATUS'),...F.comm.map(([l,v,k])=>[N(),{content:txt(l),colSpan:3},k==='sar'?'SAR':'',k==='pct'?ppct(v):neg(v)]),
+      secRow('BUDGET STATUS'),hrow(['','','Actual Cost','Budget Rev.00','Current Budget','Var. %']),...F.budget.map(x=>x[5]==='pct'?[N(),txt(x[0]),'',ppct(x[2]),ppct(x[3]),ppct(x[4])]:[N(),txt(x[0]),neg(x[1]),neg(x[2]),neg(x[3]),ppct(x[4])]),
+      secRow('MANPOWER'),hrow(['','','','Planned','Actual','Var.']),...F.mp.map(x=>[N(),{content:txt(x[0]),colSpan:2},x[4]==='pct'?ppct(x[1]):x[1]??'-',x[4]==='pct'?ppct(x[2]):x[2]??'-',x[4]==='pct'?'':ppct(x[3])])];
+    doc.autoTable({startY:19,body,theme:'grid',tableWidth:L,margin:{left:8},styles:{fontSize:5,cellPadding:0.32,overflow:'linebreak',valign:'middle',minCellHeight:2.6},columnStyles:{0:{cellWidth:5,halign:'center',textColor:110},1:{cellWidth:40},2:{halign:'right'},3:{halign:'right'},4:{halign:'right'},5:{halign:'right'}}});
+    const yL=doc.lastAutoTable.finalY,xr=8+L+4,wr=W()-xr-8,hc=[58,42,40,46];let yr=21;imgs.forEach((u,i)=>{doc.addImage(u,'JPEG',xr,yr,wr,Math.min(hc[i],wr*0.52),undefined,'FAST');yr+=Math.min(hc[i],wr*0.52)+3});
+    let cn=sn;const cb=[];F.concerns.forEach(g=>{cb.push(hrow(['',g.label.toUpperCase(),'ACTION BY','ACTION NEEDED']).map(c=>(c.styles.halign='left',c)));g.items.forEach(x=>cb.push([++cn,txt(x?x.c:''),txt(x?x.by||'':''),txt(x?x.act||'':'')]))});
+    doc.autoTable({startY:Math.max(yL,yr)+3,head:[[{content:'AREAS OF CONCERN',colSpan:4,styles:{fillColor:BL,textColor:255,fontStyle:'bold',fontSize:6.6}}]],body:cb,theme:'grid',margin:{left:8,right:8},styles:{fontSize:5,cellPadding:0.32,overflow:'linebreak',minCellHeight:2.6},columnStyles:{0:{cellWidth:5,halign:'center',textColor:110},1:{cellWidth:88},2:{cellWidth:26}}});
+    let yf=doc.lastAutoTable.finalY+5;if(yf>H()-8){page('a4','portrait');yf=14}doc.setFontSize(7);doc.text(txt(`Project Manager: ${F.pm}`),8,yf);doc.text(txt(`Planning Engineer: ${F.pe}`),80,yf);doc.setTextColor(110);doc.text('PLAN-006-FORM-01',W()-8,yf,{align:'right'});doc.setTextColor(0)}
+  await saveFile(only?`MER ${st.per} ${pcode(projById(only))}.pdf`:merFile(st,'pdf'),doc.output('blob'))}
+
 function renderMer(){
   if(!canCpView()){$('#view').innerHTML='<section class="panel"><p>The MER is for those who see cost and billing figures.</p></section>';return}
   const st=merState(),D=merData(st),secs=[...new Set(scopeProjects().map(p=>p.sector).filter(Boolean))],pers=recentMonths(13);if(!pers.includes(st.per))pers.push(st.per);
   const sel=st.pid&&D.rows.find(r=>r.p.id===st.pid)||D.rows[0];
   const miss=D.rows.filter(r=>!r.cp||!r.cp[st.basis]).length;
-  $('#view').innerHTML=`${crumb()}<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>MER – Monthly Executive Report</h2><button class="btn" type="button" data-merx>Export to Excel</button></div>
+  $('#view').innerHTML=`${crumb()}<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>MER – Monthly Executive Report</h2><div class="actions" style="margin:0"><button class="btn" type="button" data-merx>Export to Excel</button><button class="btn" type="button" data-merpdf>Export to PDF</button></div></div>
     <p class="small muted" style="margin:0 0 8px">The company's Monthly Executive Report from ProTrack records at the cut-off month: the released monthly cost report, the released monthly internal report (progress, key dates, manpower, areas of concern), the change order and claim log, the invoice register, the Cashflow Dashboard and the cost plan.</p>
     <div class="fields"><label class="field">Cut-off month<select data-merf="per">${pers.sort().reverse().map(m=>`<option value="${m}" ${m===st.per?'selected':''}>${esc(perLabel('month',m))}</option>`).join('')}</select></label>
       <label class="field">Cost plan<select data-merf="basis"><option value="int" ${st.basis==='int'?'selected':''}>Internal (I), agreed with the project manager</option><option value="fin" ${st.basis==='fin'?'selected':''}>Finance (F), conservative target</option></select></label>
@@ -16873,45 +17124,10 @@ function renderMer(){
   <section class="panel">${!D.rows.length?'<p class="muted">No active project in this scope.</p>':st.tab==='cost'?`<div class="card-head"><h2>Portfolio cost status report</h2><span class="small muted">Cut-off ${esc(fmtDY(periodEnd(st.per,'month')))} · SAR</span></div>${merCostHTML(D,st)}
       <p class="small muted">P&L from the beginning of the year = (contract value − contract value at December of last year) − (current budget − budget at December of last year). Utilized contingency = available − Rev.00. POC variances are amounts on the current budget. Site management earned value = actual overall progress × site management current budget. Regions and the portfolio: sums; POC weighted by budget, gross profit by contract value.</p>`
     :st.tab==='dash'?`<div class="card-head"><h2>Dashboard status</h2><span class="small muted">Cut-off ${esc(fmtDY(periodEnd(st.per,'month')))}</span></div>${merDashHTML(D)}`
-    :`<div class="card-head" style="flex-wrap:wrap"><h2>Project wise</h2><label class="field" style="margin:0">Project<select data-merf="pid">${D.rows.map(r=>`<option value="${esc(r.p.id)}" ${sel&&sel.p.id===r.p.id?'selected':''}>${esc(pcode(r.p)+' · '+(r.p.short||r.p.name))}</option>`).join('')}</select></label></div>
+    :`<div class="card-head" style="flex-wrap:wrap"><h2>Project wise</h2>${sel?`<div class="actions" style="margin:0"><button class="btn sm" type="button" data-merx1="${esc(sel.p.id)}">This project to Excel</button><button class="btn sm" type="button" data-merpdf1="${esc(sel.p.id)}">This project to PDF</button></div>`:''}<label class="field" style="margin:0">Project<select data-merf="pid">${D.rows.map(r=>`<option value="${esc(r.p.id)}" ${sel&&sel.p.id===r.p.id?'selected':''}>${esc(pcode(r.p)+' · '+(r.p.short||r.p.name))}</option>`).join('')}</select></label></div>
       ${sel&&sel.notes.length?`<p class="small a-c">${esc(sel.notes.join('; '))}</p>`:''}${merProjHTML(sel)}`}</section>`;
+  merDrawCharts(st.tab==='proj'&&sel?merForm(sel):null);
 }
-/* the workbook: Cost (I or F), Dashboard and one sheet per project */
-async function merExport(){await loadLib(LIBS.xlsx);const st=merState(),D=merData(st),wb=XLSX.utils.book_new(),cut=fmtDY(periodEnd(st.per,'month'));
-  const G=MER_COST_COLS(st),C=G.flatMap(g=>g[1]),num=v=>v==null||!isFinite(v)?'':Math.round(v),pc=v=>v==null||!isFinite(v)?'':+(v/100).toFixed(6);
-  const isPct=k=>['poc','gp_r0','gp_cur','t_plan','t_act','x_plan','y_fc','ly_poc','fin_target','year_target','fin_check'].includes(k);
-  const cRow=(r,sn)=>[sn,r.total?'':pcode(r.p),r.total?r.label:(r.p.short||r.p.name),r.total?'':merPm(r.p),...C.map(([k])=>isPct(k)?pc(r[k]):num(r[k]))];
-  let sn=0;const ca=[['PORTFOLIO COST STATUS REPORT'],['CUT-OFF:',cut,'Cost plan:',st.basis==='fin'?'Finance (F)':'Internal (I)'],[],['','','','',...G.flatMap(([g,c])=>c.map((x,i)=>i?'':(g||'')))],['S.N.','Project Code','Project Name','Responsible Manager',...C.map(([,l])=>l)],
-    cRow(D.all,++sn),...D.regs.flatMap(g=>[cRow(g.tot,++sn),...g.rows.map(r=>cRow(r,++sn))])];
-  const ws1=XLSX.utils.aoa_to_sheet(ca);C.forEach(([k],i)=>{if(!isPct(k))return;for(let r=5;r<ca.length;r++){const a=XLSX.utils.encode_cell({r,c:4+i});if(ws1[a]&&ws1[a].t==='n')ws1[a].z='0.00%'}});ws1['!cols']=[{wch:5},{wch:11},{wch:30},{wch:20},...C.map(()=>({wch:15}))];
-  XLSX.utils.book_append_sheet(wb,ws1,st.basis==='fin'?'COST(F)':'COST(I)');
-  sn=0;const aocTxt=nar=>{const Cc=aocOf(nar);let n=0;return AOC.map(([k,l])=>Cc[k].length?`${l}: ${Cc[k].map(x=>`${++n}. ${x.c}${x.by?` (${x.by})`:''}`).join(' ')}`:'').filter(Boolean).join(' | ')};
-  const da=[['PORTFOLIO REPORT'],['DASHBOARD STATUS','','Cut-off',cut],[],['S.N.','Project Code','Project Name',...MER_DASH_COLS,'Areas of Concern',...AOC.map(([,l])=>l)]];
-  const strip=v=>String(v).replace(/<[^>]+>/g,'');
-  da.push([++sn,'','OVERALL PORTFOLIO']);D.regs.forEach(g=>{da.push([++sn,'',g.tot.label]);g.rows.forEach(r=>{const Cc=aocOf(r.nar);da.push([++sn,pcode(r.p),r.p.short||r.p.name,...merDashVals(r).map(strip),aocTxt(r.nar),...AOC.map(([k])=>Cc[k].map((x,i)=>`${i+1}. ${x.c}`).join(' '))])})});
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(da),'DASHBOARD');
-  D.rows.forEach(r=>{const p=r.p,f=r.pf,e=p.eot||{},dd=k=>f[k]||'',Cc=aocOf(r.nar),cr=r.f,heads=cr&&isWbs(cr)?cr.wbs:[];
-    const a=[['PROJECT INFORMATION','','','PLAN-006-FORM-01'],['Project Name',p.name||p.short],['Project Location',merCity(p)],['Project Client',p.client||''],['Project Consultant',p.consultant||''],['Project Start Date',f.commence_date||p.start||''],['Site Handover Date',dd('site_handover_date')],['Project Code',pcode(p)],['Report Cut-off Date',periodEnd(st.per,'month')],[],
-      ['PROGRESS PERCENTAGE','Weight','Planned %','Actual %','Var.'],['Overall Progress',1,pc(f.planned_pct),pc(f.actual_pct),f.planned_pct!=null&&f.actual_pct!=null?pc(f.actual_pct-f.planned_pct):''],
-      ...(merPhases(f).map(x=>[x.phase||x.name||'',x.wt!=null?+x.wt/100:'',pc(x.plan_pct),pc(x.act_pct),x.plan_pct!=null&&x.act_pct!=null?pc(x.act_pct-x.plan_pct):''])),[],
-      ['SCHEDULE STATUS','Contract Finish','Revised Finish','Forecast Finish'],...['tcc','pac','fac'].map(k=>[k.toUpperCase(),dd(k+'_orig_date'),dd(k+'_rev_date'),dd(k+'_ext_fc_date')]),[],
-      ['CLAIM STATUS'],['Submitted Date',e.sub||''],['Extension of Time [EOT] Submitted Duration',e.days||''],[],
-      ['COMMERCIAL STATUS','SAR'],['Original Contract Value',num(r.cc.orig)],['Variation Orders [VO] Approved',num(r.cc.appr)],['Variation Orders [VO] Under Negotiation',num(Math.max(0,r.cc.sub-r.cc.appr))],['Revised Contract Value [Original Contract + VO approved]',num(r.cv)],
-      ['Contract Value at December of Last Year',num(r.base.cv)],['Actual Cost including Stock Value [From Start]',num(r.actual)],['Actual Stock Value',num(r.stock)],['Commitment Cost',num(r.commitment)],['Cumulative Actual POC [Without Stock Value]',pc(r.poc)],['Actual Revenue [Based on POC]',num(r.revenue)],
-      ['Invoiceable Value as per Contract Payment Terms',num(r.inv_able)],['Gross Billing Submitted',num(r.inv_sub)],['Gross Billing Approved',num(r.inv_appr)],['Advance Payment',num(r.inv_adv)],['Cash Received including Advance Payment',num(r.inv_coll)],['Budget Best Estimate at December of Last Year',num(r.base.budget)],[],
-      ['BUDGET STATUS','Actual Cost','Budget Rev.00','Current Budget','Var. %'],['Gross Profit %','',pc(r.gp_r0),pc(r.gp_cur),r.gp_r0!=null&&r.gp_cur!=null?pc(r.gp_cur-r.gp_r0):''],['Overall Project',num(r.actual),num(r.rev0),num(r.budget),r.rev0?pc((r.rev0-r.budget)/r.rev0*100):''],
-      ...heads.map(l=>[l.name||l.code,num(crN(l.actual)),num(crN(l.rev0)),num(crN(l.budget)),crN(l.rev0)?pc((crN(l.rev0)-crN(l.budget))/crN(l.rev0)*100):'']),[],
-      ['MANPOWER','Planned','Actual'],['Total Direct Manpower',f.mp_dir_plan??'',f.mp_dir_act??''],['Total Indirect Manpower',f.mp_ind_plan??'',f.mp_ind_act??''],['Total Subcontractor Manpower',f.mp_sub_plan??'',f.mp_sub_act??''],['Total Manpower',f.mp_tot_plan??'',f.mp_tot_act??''],[],
-      ['AREAS OF CONCERN','Action by','Action needed'],...AOC.flatMap(([k,l])=>[[l.toUpperCase()],...Cc[k].map(x=>[x.c,x.by||'',x.act||''])]),[],
-      ['COST PLAN FOR CURRENT YEAR (POC)',...MON],['Planned',...(r.plan||[]).map(pc)],['Actual',...r.act.inc.map((v,i)=>i<+st.per.slice(5,7)?pc(v):'')],['Forecast',...r.fc.map((v,i)=>i>=+st.per.slice(5,7)?pc(v):'')],[],
-      ['POC FOR CURRENT YEAR'],['Target',pc(r.x_plan)],['Actual',pc(r.t_act)],['Forecast',pc(r.y_fc)],[],['CASH STATUS'],['Cash In',num(r.cash_in)],['Cash Out',num(r.cash_out)],['Net Cash',num(r.cash_var)],[],
-      ['SITE MANAGEMENT ANALYSIS'],['Actual Site Management Costs',num(r.sm_act)],['Submitted Invoices',num(r.inv_sub)],['Total Contract Value',num(r.cv)],['Earned Value Based on Current Budget',num(r.sm_ev)]];
-    const ws=XLSX.utils.aoa_to_sheet(a);Object.keys(ws).forEach(k=>{if(k[0]!=='!'&&ws[k].t==='n'&&Math.abs(ws[k].v)<=1.5&&ws[k].v!==Math.round(ws[k].v))ws[k].z='0.00%'});ws['!cols']=[{wch:46},...Array(12).fill({wch:13})];
-    XLSX.utils.book_append_sheet(wb,ws,String(pcode(p)).replace(/[\\/?*[\]:]/g,'-').slice(0,31))});
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ProTrack, Monthly Executive Report'],['Cut-off',cut],['Cost plan',st.basis==='fin'?'Finance (F)':'Internal (I)'],['Exported',stamp()+' by '+(me()||{}).name],
-    ['Sources: released monthly cost reports and internal reports, change order and claim log, invoice register, Cashflow Dashboard, cost plans. Figures are as recorded in ProTrack at export.']]),'About');
-  await saveBook(wb,`MER ${st.per} ${st.basis==='fin'?'F':'I'}.xlsx`)}
-
 /* ----- the cost plan screen ----- */
 const cpState=()=>{const s=state.cp||(state.cp={});const P=scopeProjects().filter(p=>['Active','On hold'].includes(p.status||'Active'));if(!s.pid||!P.some(p=>p.id===s.pid))s.pid=(P[0]||{}).id||null;s.y=s.y||+ym(ASOF).slice(0,4);return s};
 function renderCplan(){
@@ -17152,10 +17368,11 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-cpbu
 document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
   if(t.matches('[data-merf]')){const s=merState();s[t.dataset.merf]=t.value;if(t.dataset.merf!=='pid')s.pid=s.pid;render();return}
   if(t.matches('[data-cpf]')){const s=cpState();s.y=+t.value;render();return}});
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-mertab],[data-merpid],[data-merx],[data-cppid],[data-cpsave],[data-cpact],[data-cpx],[data-aocfill]');if(!t)return;const d=t.dataset;
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-mertab],[data-merpid],[data-merx],[data-merpdf],[data-merx1],[data-merpdf1],[data-cppid],[data-cpsave],[data-cpact],[data-cpx],[data-aocfill]');if(!t)return;const d=t.dataset;
   if(d.mertab){merState().tab=d.mertab;render();return}
   if(d.merpid){const s=merState();s.pid=d.merpid;s.tab='proj';render();return}
-  if(d.merx!==undefined){try{await merExport()}catch(err){toast('The export failed: '+srvMsg(err))}return}
+  if(d.merx!==undefined||d.merx1){t.disabled=true;try{await merExport(d.merx1||null)}catch(err){toast('The export failed: '+srvMsg(err))}t.disabled=false;return}
+  if(d.merpdf!==undefined||d.merpdf1){t.disabled=true;try{await merPdf(d.merpdf1||null)}catch(err){toast('The PDF failed: '+srvMsg(err))}t.disabled=false;return}
   if(d.cppid){cpState().pid=d.cppid;render();setTimeout(()=>{const el=$('#cpForm');if(el)el.scrollIntoView({block:'start'})},40);return}
   if(d.cpx!==undefined){try{await cpExport()}catch(err){toast('The export failed: '+srvMsg(err))}return}
   if(d.aocfill!==undefined){const f=$('#relForm');if(!f)return;const n=aocFill(f,f.dataset.pid);toast(n?`${n} concern${n===1?'':'s'} filled from the issue register; check and save`:'No open issue of this project for the empty rows');return}
@@ -18647,7 +18864,7 @@ function renderReports(){
 }
 function scopeLabel(){const ids=[...SCOPE];const sc=state.sector!=='ALL'?secById(state.sector)?.name+' sector, ':'';if(ids.length===1)return sc+projById(ids[0]).name;if(state.scope.startsWith('R:'))return sc+regById(state.scope.slice(2))?.name+' Region';return sc+(accessIds().length===PROJECTS.length?'whole portfolio':'all assigned projects')+` (${ids.length} projects)`}
 
-const LIBS={pptx:'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',xlsx:'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',jspdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',auto:'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',zip:'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'};
+const LIBS={pptx:'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',xlsx:'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',jspdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',exceljs:'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',auto:'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',zip:'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'};
 const libP={};
 const loadLib=u=>libP[u]||(libP[u]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=u;s.onload=res;s.onerror=()=>{delete libP[u];rej(new Error('Could not load '+u))};document.head.appendChild(s)}));
 const dlP=window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null);
@@ -18716,7 +18933,7 @@ function portfolioHTML(){
 }
 
 /* ---------- settings (super admin) ---------- */
-const ATABS={projects:'Projects',users:'Users and access',rights:'Roles and rights',roles:'Role access',matrix:'Approval matrix',mail:'Email',system:'System',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',dlylists:'Delay register lists',supplists:'Supplement lists',golive:'Release strategy',log:'Change log'};
+const ATABS={projects:'Projects',users:'Users and access',rights:'Roles and rights',roles:'Role access',matrix:'Approval matrix',mail:'Email',system:'System',brand:'Logos and customers',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',dlylists:'Delay register lists',supplists:'Supplement lists',golive:'Release strategy',log:'Change log'};
 const NOUN={projects:'project',users:'user',trades:'trade',subs:'subcontractor',regions:'region',cities:'city',sectors:'sector'};
 function usedBy(type,id){if(type==='regions')return PROJECTS.filter(p=>p.region===id).length+DB.master.cities.filter(c=>c.region===id).length;if(type==='cities')return PROJECTS.filter(p=>p.city===id).length;if(type==='sectors')return PROJECTS.filter(p=>p.sector===id).length;return 0}
 function accessText(u){if(u.role==='sa')return 'Everything, including settings';if(u.allProjects&&u.role!=='exec')return 'All projects';const r=u.regions.map(id=>regById(id)?.name).filter(Boolean),ps=u.projects.map(id=>projById(id)?.short).filter(Boolean);return [r.length?r.join(', ')+(r.length>1?' regions':' region'):'',ps.join(', ')].filter(Boolean).join('; ')||'No access yet'}
@@ -18859,9 +19076,91 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-pjimp],[da
   if('pjcancel' in d){state.pjUp=null;pjPaint()}});
 document.addEventListener('change',e=>{if(e.target.id==='pjfile'&&e.target.files[0]){pjFile(e.target.files[0]);e.target.value=''}});
 
+/* ---------- v3.44: the company logo and the customers with their logos (Settings → Logos and customers, super admin) ----------
+   The official company logo and each customer's logo are shown on the MER's Project wise page and in the exports of the MER
+   and of the internal and client reports. A customer is created once with its name and logo; a tender's or project's client is
+   matched to it by name (the client field suggests the customers). Images are made web-sized in the browser (at most 800 × 400
+   pixels, PNG keeps transparency, SVG kept as it is) and kept with the record. Nothing is invented: without an uploaded logo
+   the name is written instead. On the server: schema-update-v47.sql (pt_branding, customers, branding_set, customer_act). */
+const BR_MAX=400*1024;
+const brandOf=()=>CLOUD_ME?(DB.brandSrv||{}):(DB.branding||{});
+const custRows=()=>(CLOUD_ME?(DB.custSrv||[]):(DB.customers||(DB.customers=[])));
+const custKey=s=>String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+const custOf=name=>{const k=custKey(name);return k?custRows().find(c=>custKey(c.name)===k)||null:null};
+const custLogo=name=>{const c=custOf(name);return c&&c.active!==false?c.logo||null:null};
+const custUsedBy=c=>PROJECTS.filter(p=>custKey(p.client)===custKey(c.name)).length;
+const custDatalist=()=>`<datalist id="custList">${custRows().filter(c=>c.active!==false).map(c=>`<option value="${esc(c.name)}">`).join('')}</datalist>`;
+/* a logo, or the name when there is none */
+const logoImg=(src,alt,h,cls)=>src?`<img class="brlogo ${cls||''}" src="${esc(src)}" alt="${esc(alt||'')}" style="max-height:${h||40}px">`:`<span class="brname ${cls||''}">${esc(alt||'')}</span>`;
+/* an uploaded image made web-sized: a data URL */
+async function logoFromFile(file){
+  if(!file)throw new Error('Choose an image');if(!/^image\/(png|jpe?g|webp|svg\+xml|gif)$/.test(file.type||''))throw new Error('Use a PNG, JPG, WEBP or SVG image');
+  const asUrl=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(b)});
+  if(file.type==='image/svg+xml'){if(file.size>BR_MAX)throw new Error('The SVG is larger than 400 KB');const t=await file.text();if(/<script|on\w+=|javascript:/i.test(t))throw new Error('This SVG contains scripts; export it again without them');return asUrl(file)}
+  if(file.size>15*1024*1024)throw new Error('The image is larger than 15 MB');
+  const url=await asUrl(file),img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('The image could not be read'));i.src=url});
+  const k=Math.min(1,800/img.naturalWidth,400/img.naturalHeight),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*k));c.height=Math.max(1,Math.round(img.naturalHeight*k));
+  const g=c.getContext('2d');g.drawImage(img,0,0,c.width,c.height);let out=c.toDataURL('image/png');
+  if(out.length*0.75>BR_MAX){const c2=document.createElement('canvas');c2.width=c.width;c2.height=c.height;const g2=c2.getContext('2d');g2.fillStyle='#fff';g2.fillRect(0,0,c2.width,c2.height);g2.drawImage(c,0,0);out=c2.toDataURL('image/jpeg',0.88)}
+  if(out.length*0.75>BR_MAX)throw new Error('The logo is still larger than 400 KB once resized');return out}
+/* the server's checks, the same here */
+function brCheckLogo(v){if(v==null||v==='')return null;if(!/^data:image\/(png|jpeg|webp|gif|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(v))return 'The logo must be a PNG, JPG, WEBP, GIF or SVG image';if(v.length*0.75>BR_MAX+2048)return 'The logo is larger than 400 KB';return null}
+async function brandSet(d){if(state.role!=='sa'){toast('Only the super admin sets the company logo');return false}
+  const name=String(d.name??brandOf().name??'').trim();if(name.length>80){toast('The company name is 80 characters at most');return false}const e=brCheckLogo(d.logo);if(e){toast(e);return false}
+  if(CLOUD_ME){try{await rpc('branding_set',{p:{company_name:name||null,logo:d.logo||null}});await cloudLoadBrand();return true}catch(x){toast(srvMsg(x));return false}}
+  DB.branding={name,logo:d.logo||null,by:me().name,at:new Date().toISOString()};(DB.brandLog=DB.brandLog||[]).push({at:DB.branding.at,by:me().name,action:d.logo?'Company logo set':'Company logo removed'});save();return true}
+async function custAct(a,d){if(state.role!=='sa'){toast('Only the super admin keeps the customers');return false}
+  const L=custRows(),name=String(d.name||'').trim().replace(/\s+/g,' '),cur=d.id!=null?L.find(c=>String(c.id)===String(d.id)):null;
+  if(a!=='delete'){if(name.length<2||name.length>200){toast('The customer name is 2 to 200 characters');return false}
+    if(L.some(c=>custKey(c.name)===custKey(name)&&(!cur||c.id!==cur.id))){toast('A customer with this name already exists');return false}const e=brCheckLogo(d.logo);if(e){toast(e);return false}}
+  if(a!=='create'&&!cur){toast('Unknown customer');return false}
+  if(a==='delete'&&custUsedBy(cur)){toast('This customer is the client of a tender or project: make it inactive instead');return false}
+  if(CLOUD_ME){try{await rpc('customer_act',{p:{action:a,id:cur?cur.id:null,name,logo:d.logo||null,active:d.active!==false}});await cloudLoadBrand();return true}catch(x){toast(srvMsg(x));return false}}
+  const now=new Date().toISOString(),by=me().name;
+  if(a==='create')L.push({id:'C'+(L.reduce((m,c)=>Math.max(m,+String(c.id).replace(/\D/g,'')||0),0)+1),name,logo:d.logo||null,active:d.active!==false,by,at:now});
+  else if(a==='update'){if(custKey(cur.name)!==custKey(name))PROJECTS.forEach(p=>{if(custKey(p.client)===custKey(cur.name))p.client=name});Object.assign(cur,{name,logo:d.logo||null,active:d.active!==false,by,at:now})}
+  else L.splice(L.indexOf(cur),1);
+  (DB.brandLog=DB.brandLog||[]).push({at:now,by,action:`Customer ${a==='create'?'created':a==='update'?'changed':'deleted'}: ${name||cur.name}`});save();return true}
+async function cloudLoadBrand(){if(!CLOUD_ME)return;try{const [b,c]=await Promise.all([selAll('pt_branding','*',null,['id']),selAll('customers','*',null,['name'])]);const x=b[0]||{};
+  DB.brandSrv={name:x.company_name||'',logo:x.logo||null,by:x.updated_name||null,at:x.updated_at||null};DB.custSrv=c.map(r=>({id:r.id,name:r.name,logo:r.logo||null,active:r.active!==false,by:r.updated_name||null,at:r.updated_at||null}));DB.brandMissing=false}
+  catch(e){DB.brandSrv={};DB.custSrv=[];DB.brandMissing=srvMsg(e)}}
+function brandAdminHTML(){const B=brandOf(),ce=state.custEdit,L=custRows().slice().sort((a,b)=>a.name.localeCompare(b.name));
+  return `${CLOUD_ME&&DB.brandMissing?'<div class="warn-box" style="margin:0 0 12px"><b>The logos need the v47 database update.</b> Run schema-update-v47.sql (STAGE-41-SETUP).</div>':''}
+  <div class="rdgrid"><div class="rdcard"><h3>Company logo</h3>
+    <div class="brprev">${logoImg(B.logo,B.name||'No logo yet',56)}</div><div class="brprev dark">${logoImg(B.logo,B.name||'No logo yet',56)}</div>
+    <div class="fields fields1" style="margin-top:8px">${F('Company name (written when there is no logo)',`<input id="brName" maxlength="80" value="${esc(B.name||'')}" placeholder="alfanar">`)}</div>
+    <div class="actions"><label class="btn" for="brLogoFile">${B.logo?'Replace the logo':'Upload the official logo'}</label><input id="brLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+      <button class="btn" type="button" data-brsave>Save the name</button>${B.logo?'<button class="btn danger" type="button" data-brdel>Remove the logo</button>':''}</div>
+    <p class="small muted">PNG with a transparent background or SVG works best. Shown on the MER's Project wise page and in the MER, internal report and client report exports.${B.at?` Last changed by ${esc(B.by||'')} ${esc(tStamp(B.at))}.`:''}</p></div>
+  <div class="rdcard rdwide"><div class="card-head"><h3 style="margin:0">Customers <span class="muted small">${L.length}</span></h3><button class="btn primary sm" type="button" data-custnew>Create customer</button></div>
+    ${ce?`<div class="impbox" id="custForm"><div class="fields">${F('Customer name',`<input id="custName" maxlength="200" value="${esc(ce.name||'')}" placeholder="As written in the contract">`)}
+        <label class="chk" style="align-self:end"><input type="checkbox" id="custActive" ${ce.active!==false?'checked':''}><span>Active (suggested for new tenders)</span></label></div>
+      <div class="actions" style="align-items:center"><span class="brprev sm">${logoImg(ce.logo,'No logo',40)}</span><label class="btn sm" for="custLogoFile">${ce.logo?'Replace the logo':'Upload the logo'}</label><input id="custLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>${ce.logo?'<button class="btn sm" type="button" data-custlogodel>Remove the logo</button>':''}</div>
+      <div class="actions"><button class="btn primary" type="button" data-custsave>${ce.id!=null?'Save the customer':'Create the customer'}</button><button class="btn" type="button" data-custx>Cancel</button></div>
+      ${ce.id!=null?'<p class="small muted" style="margin:6px 0 0">Renaming changes the client name of its tenders and projects too.</p>':''}</div>`:''}
+    <table class="tbl"><thead><tr><th>Logo</th><th>Customer</th><th class="n">Tenders and projects</th><th>Status</th><th></th></tr></thead><tbody>
+    ${L.map(c=>{const n=custUsedBy(c);return `<tr><td>${logoImg(c.logo,'—',32)}</td><td><b>${esc(c.name)}</b>${c.at?`<span class="t2">${esc(c.by||'')} ${esc(tStamp(c.at))}</span>`:''}</td><td class="n">${n}</td><td><span class="st ${c.active!==false?'Approved':'Draft'}">${c.active!==false?'Active':'Inactive'}</span></td>
+      <td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-custedit="${esc(c.id)}">Edit</button>${n?'':` <button class="btn sm danger" type="button" data-custdel="${esc(c.id)}">Delete</button>`}</td></tr>`}).join('')||'<tr><td colspan="5" class="muted">No customer yet. Create one with its logo; the client field of a tender then suggests it.</td></tr>'}</tbody></table>
+    ${(()=>{const miss=[...new Set(PROJECTS.map(p=>String(p.client||'').trim()).filter(Boolean))].filter(n=>!custOf(n));return miss.length?`<p class="small muted">Clients of projects with no customer yet: ${miss.map(n=>`<button class="link small" type="button" data-custfrom="${esc(n)}">${esc(n)}</button>`).join(', ')}. Choose one to create it.</p>`:''})()}</div></div>`}
+document.addEventListener('change',async e=>{const t=e.target;if(!t||!['brLogoFile','custLogoFile'].includes(t.id)||!t.files||!t.files[0])return;const f=t.files[0];t.value='';
+  try{const url=await logoFromFile(f);if(t.id==='brLogoFile'){if(await brandSet({name:($('#brName')||{}).value,logo:url})){toast('Company logo saved');render()}}
+    else{const ce=state.custEdit;if(!ce)return;ce.name=($('#custName')||{}).value??ce.name;ce.active=($('#custActive')||{}).checked!==false;ce.logo=url;render()}}
+  catch(err){toast(err.message||String(err))}});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-brsave],[data-brdel],[data-custnew],[data-custedit],[data-custdel],[data-custsave],[data-custx],[data-custlogodel],[data-custfrom]');if(!t)return;const d=t.dataset;
+  const keep=()=>{const ce=state.custEdit;if(ce){ce.name=($('#custName')||{}).value??ce.name;ce.active=($('#custActive')||{}).checked!==false}};
+  if(d.brsave!==undefined){if(await brandSet({name:$('#brName').value,logo:brandOf().logo})){toast('Company name saved');render()}return}
+  if(d.brdel!==undefined){if(!await confirmBox('Remove the company logo? The exports then show the company name instead.','Remove'))return;if(await brandSet({name:brandOf().name,logo:null})){toast('Company logo removed');render()}return}
+  if(d.custnew!==undefined){state.custEdit={id:null,name:'',logo:null,active:true};render();return}
+  if(d.custfrom){state.custEdit={id:null,name:d.custfrom,logo:null,active:true};render();return}
+  if(d.custedit){const c=custRows().find(x=>String(x.id)===d.custedit);if(c){state.custEdit={id:c.id,name:c.name,logo:c.logo,active:c.active!==false};render()}return}
+  if(d.custx!==undefined){state.custEdit=null;render();return}
+  if(d.custlogodel!==undefined){keep();state.custEdit.logo=null;render();return}
+  if(d.custsave!==undefined){keep();const ce=state.custEdit;if(await custAct(ce.id!=null?'update':'create',ce)){state.custEdit=null;toast(ce.id!=null?'Customer saved':'Customer created');render()}return}
+  if(d.custdel){const c=custRows().find(x=>String(x.id)===d.custdel);if(!c)return;if(!await confirmBox(`Delete the customer ${c.name}?`,'Delete'))return;if(await custAct('delete',{id:c.id})){toast('Customer deleted');render()}return}});
+
 function renderAdmin(){
   if(state.role!=='sa'){go('dash');return}
-  const m=DB.master,t=state.adminTab,add=['log','roles','rights','matrix','mail','system','dlylists','supplists','golive'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>${t==='projects'&&state.role==='sa'?'<button class="btn" type="button" data-pjimp>Import projects from Excel</button>':''}`;
+  const m=DB.master,t=state.adminTab,add=['log','roles','rights','matrix','mail','system','brand','dlylists','supplists','golive'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>${t==='projects'&&state.role==='sa'?'<button class="btn" type="button" data-pjimp>Import projects from Excel</button>':''}`;
   const edit=(k,id,del)=>`<td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-aedit="${k}:${id}">Edit</button>${del===undefined?'':del?` <button class="btn sm" type="button" disabled title="In use, cannot delete">In use</button>`:` <button class="btn sm danger" type="button" data-adel="${k}:${id}">Delete</button>`}</td>`;
   let body='',count=0;
   if(t==='projects'){count=PROJECTS.length;body=`<table class="tbl"><thead><tr><th>Project</th><th>Sector</th><th>Region and city</th><th>Team</th><th class="n">Activities</th><th class="n">Value</th><th>Status</th><th></th></tr></thead><tbody>${PROJECTS.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}${p.te?' · '+esc(p.te):''}, ${esc(p.name)}</span></td><td>${esc(secById(p.sector)?.name||'—')}</td><td>${esc(regName(p))}<span class="t2">${esc(cityName(p))}</span></td><td>${esc(p.pm)}<span class="t2">${esc(p.eng)}, ${p.foremen.length} foreman${p.foremen.length===1?'':'en'}</span></td><td class="n">${ACTS.filter(a=>a.p===p.id).length}</td><td class="n">SAR ${fmt(p.value)}M</td><td><span class="st ${stCls(p.status)}">${p.status}</span></td>${edit('projects',p.id,false)}</tr>`).join('')}</tbody></table>`}
@@ -18878,6 +19177,7 @@ function renderAdmin(){
   if(t==='matrix'){count=scopeProjects().length;body=matrixHTML()+relSetupHTML()}
   if(t==='mail'){count=(DB.outbox||[]).length;body=mailAdminHTML()}
   if(t==='system'){count='';body=systemHTML()}
+  if(t==='brand'){count=custRows().length+' customers';body=brandAdminHTML()}
   if(t==='dlylists'){count=DLY_LISTS.length+' lists';body=dlyListsAdminHTML()}
   if(t==='supplists'){count='2 lists';body=suppListsAdminHTML()}
   if(t==='golive'){const c=glCfg();count=c.current?`live up to ${c.stages[c.current-1].name}`:'nothing live yet';body=glAdminHTML()}
