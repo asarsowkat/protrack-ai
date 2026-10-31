@@ -103,6 +103,12 @@ python3 tests/e2e_server.py index.html /path/to/sql > results_server_mode.json
 
 `fixtures/bcm/make_fixtures.py` makes the test workbooks (openpyxl, then LibreOffice to store calculated values; file 13 keeps formulas without values on purpose). SheetJS 0.18.5 is the version the app loads: `git clone --depth 1 --branch v0.18.5 https://github.com/SheetJS/sheetjs` gives `xlsx.js` and `dist/xlsx.full.min.js`.
 
+## v3.47: RASA Intelligence (server)
+
+| Test | Checks | What it proves |
+|---|---|---|
+| `../supabase/tests/test_v50.cjs` (`NODE_PATH=<folder>/node_modules node test_v50.cjs`, after `npm install @electric-sql/pglite@0.2.17` in that folder) | 93 | schema.sql and v2 to v50 on PGlite (PostgreSQL in WebAssembly, no local server needed), v50 run twice: rights, screen and defaults; syncs (idempotent, versions, history, failed sources, removals, run log) and their refusals (role, project, access class, source id); search and passages limited to what each person may open, with hidden matches counted; no direct reads of the passages; questions, gaps and feedback; teaching, review, self-review refused, conflicts, publishing, superseding and rollback; the two-approver financial formula; company-wide approvers; settings; append-only logs; every table the app loads readable by signed-in people; the four read policies of v45 to v48 fixed; rollback and reinstall |
+
 ## v3.39: budget supplement and change request forms, Approval Hub
 
 | Test | Checks | What it proves |

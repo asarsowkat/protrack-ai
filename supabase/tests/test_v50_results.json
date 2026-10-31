@@ -1,0 +1,467 @@
+[
+ {
+  "check": "Install: v50 runs a second time without errors",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Install: rasa_features reports version 50, vector search off",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Install: the four rights and the screen are listed",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Install: rasa.teach for planning, not foremen; rasa.sync for planning and costing; rasa.review given only",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Sync: a planning engineer indexes two schedule sources",
+  "pass": true,
+  "detail": "{\"run\":{\"by\":\"Pia Planner\",\"ms\":0,\"err\":null,\"mod\":\"sched\",\"kind\":\"manual\",\"same\":0,\"added\":2,\"failed\":0,\"changed\":0,\"removed\":0},\"added\":2,\"failed\":0,\"changed\":0,\"removed\":0}"
+ },
+ {
+  "check": "Sync: the same hashes again change nothing",
+  "pass": true,
+  "detail": "{\"run\":{\"by\":\"Pia Planner\",\"ms\":0,\"err\":null,\"mod\":\"sched\",\"kind\":\"manual\",\"same\":0,\"added\":0,\"failed\":0,\"changed\":0,\"removed\":0},\"added\":0,\"failed\":0,\"changed\":0,\"removed\":0}"
+ },
+ {
+  "check": "Sync: a changed source gets version 2 and its history",
+  "pass": true,
+  "detail": "{\"run\":{\"by\":\"Pia Planner\",\"ms\":0,\"err\":null,\"mod\":\"sched\",\"kind\":\"manual\",\"same\":0,\"added\":0,\"failed\":0,\"changed\":1,\"removed\":0},\"added\":0,\"failed\":0,\"changed\":1,\"removed\":0}"
+ },
+ {
+  "check": "Sync: version and history kept",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Sync: a foreman does not refresh RASA",
+  "pass": true,
+  "detail": "Only those who keep records refresh RASA's knowledge"
+ },
+ {
+  "check": "Sync: a source outside the person's projects is refused",
+  "pass": true,
+  "detail": "Not your project: P1"
+ },
+ {
+  "check": "Sync: a source cannot be less protected than its module",
+  "pass": true,
+  "detail": "The access class of cost:B1 is not the module's"
+ },
+ {
+  "check": "Sync: a source id must be its module and record",
+  "pass": true,
+  "detail": "A source id is its module and record"
+ },
+ {
+  "check": "Sync: a costing engineer indexes cost figures",
+  "pass": true,
+  "detail": "{\"run\":{\"by\":\"Cody Costing\",\"ms\":0,\"err\":null,\"mod\":\"cost\",\"kind\":\"manual\",\"same\":0,\"added\":1,\"failed\":0,\"changed\":0,\"removed\":0},\"added\":1,\"failed\":0,\"changed\":0,\"removed\":0}"
+ },
+ {
+  "check": "Sync: a contract document of box C01 (contract row)",
+  "pass": true,
+  "detail": "{\"run\":{\"by\":\"Cody Costing\",\"ms\":0,\"err\":null,\"mod\":\"docs\",\"kind\":\"manual\",\"same\":0,\"added\":1,\"failed\":0,\"changed\":0,\"removed\":0},\"added\":1,\"failed\":0,\"changed\":0,\"removed\":0}"
+ },
+ {
+  "check": "Sync: a failed source is recorded as Failed",
+  "pass": true,
+  "detail": "{\"run\":{\"by\":\"Pia Planner\",\"ms\":0,\"err\":null,\"mod\":\"sched\",\"kind\":\"manual\",\"same\":0,\"added\":0,\"failed\":1,\"changed\":0,\"removed\":0},\"added\":0,\"failed\":1,\"changed\":0,\"removed\":0}"
+ },
+ {
+  "check": "Sync: a removed record is marked Deleted",
+  "pass": true,
+  "detail": "{\"run\":{\"by\":\"Pia Planner\",\"ms\":0,\"err\":null,\"mod\":\"sched\",\"kind\":\"manual\",\"same\":0,\"added\":0,\"failed\":0,\"changed\":0,\"removed\":1},\"added\":0,\"failed\":0,\"changed\":0,\"removed\":1}"
+ },
+ {
+  "check": "Sync: Deleted source has no passages left",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Sync: every run is logged",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Sync: a failed run is logged with its error",
+  "pass": true,
+  "detail": "{\"run\":{\"by\":\"Pia Planner\",\"ms\":0,\"err\":\"network\",\"mod\":\"sched\",\"kind\":\"manual\",\"same\":0,\"added\":0,\"failed\":0,\"changed\":0,\"removed\":0},\"added\":0,\"failed\":0,\"changed\":0,\"removed\":0}"
+ },
+ {
+  "check": "Search: the costing engineer finds schedule, cost and contract passages",
+  "pass": true,
+  "detail": "{\"rows\":[{\"i\":0,\"t\":\"The 132kV transformer delivery for A100\",\"ids\":[\"A100\"],\"loc\":\"Activity\",\"source_id\":\"sched:A100\"},{\"i\":0,\"t\":\"Budget overrun on the transformer package SAR 1.2 million\",\"ids\":[\"B1\"],\"loc\":\"Budget\",\"source_id\":\"cost:B1\"},{\"i\":0,\"t\":\"Clause 20.1 notice of claim within 28 days for"
+ },
+ {
+  "check": "Search: a foreman finds the schedule only; the cost and contract passages are counted as hidden",
+  "pass": true,
+  "detail": "{\"rows\":[{\"i\":0,\"t\":\"The 132kV transformer delivery for A100\",\"ids\":[\"A100\"],\"loc\":\"Activity\",\"source_id\":\"sched:A100\"}],\"hidden\":2}"
+ },
+ {
+  "check": "Search: someone outside the project sees nothing",
+  "pass": true,
+  "detail": "{\"rows\":[],\"hidden\":3}"
+ },
+ {
+  "check": "Search: module filter (contract finds the contract document)",
+  "pass": true,
+  "detail": "{\"rows\":[{\"i\":0,\"t\":\"Clause 20.1 notice of claim within 28 days for the transformer\",\"ids\":[\"20.1\"],\"loc\":\"Page 1\",\"source_id\":\"docs:doc:D1\"}],\"hidden\":0}"
+ },
+ {
+  "check": "Search: a record number is searchable",
+  "pass": true,
+  "detail": "{\"rows\":[{\"i\":0,\"t\":\"The 132kV transformer delivery for A100\",\"ids\":[\"A100\"],\"loc\":\"Activity\",\"source_id\":\"sched:A100\"}],\"hidden\":0}"
+ },
+ {
+  "check": "Search: an empty question returns nothing",
+  "pass": true,
+  "detail": "{\"rows\":[],\"hidden\":0}"
+ },
+ {
+  "check": "Read: nobody reads the passages table directly",
+  "pass": true,
+  "detail": "permission denied for table rasa_chunks"
+ },
+ {
+  "check": "Read: a foreman lists only the sources he may open",
+  "pass": true,
+  "detail": "[{\"id\":\"sched:A100\"},{\"id\":\"sched:A200\"},{\"id\":\"sched:A300\"}]"
+ },
+ {
+  "check": "Read: rasa_passages gives a costing engineer the cost passage",
+  "pass": true,
+  "detail": "[{\"source_id\":\"cost:B1\",\"i\":0,\"t\":\"Budget overrun on the transformer package SAR 1.2 million\",\"loc\":\"Budget\",\"ids\":[\"B1\"],\"tsv\":\"'1.2':8 'b1':10 'budget':1 'million':9 'overrun':2 'packag':6 'sar':7 'transform':5\"}]"
+ },
+ {
+  "check": "Read: rasa_passages gives a foreman nothing for it",
+  "pass": true,
+  "detail": "[]"
+ },
+ {
+  "check": "Read: anonymous callers cannot search",
+  "pass": true,
+  "detail": "permission denied for function rasa_search"
+ },
+ {
+  "check": "Questions: a question is logged with a gap",
+  "pass": true,
+  "detail": "{\"ok\":true}"
+ },
+ {
+  "check": "Questions: the same unanswered question counts on the gap",
+  "pass": true,
+  "detail": "{\"ok\":true}"
+ },
+ {
+  "check": "Gaps: one open gap GAP-00001 asked twice",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Questions: not for another project",
+  "pass": true,
+  "detail": "Not your project"
+ },
+ {
+  "check": "Feedback: the asker marks an answer not helpful",
+  "pass": true,
+  "detail": "{\"ok\":true}"
+ },
+ {
+  "check": "Feedback: another person cannot rate someone else's answer",
+  "pass": true,
+  "detail": "That answer is no longer in the log"
+ },
+ {
+  "check": "Questions: the asker sees their question; a reviewer sees it too",
+  "pass": true,
+  "detail": "[{\"n\":2}]"
+ },
+ {
+  "check": "Questions: a foreman does not see others' questions",
+  "pass": true,
+  "detail": "[{\"n\":0}]"
+ },
+ {
+  "check": "Gaps: a foreman cannot resolve a gap",
+  "pass": true,
+  "detail": "Only those who teach or review RASA resolve gaps"
+ },
+ {
+  "check": "Teach: a foreman cannot teach RASA",
+  "pass": true,
+  "detail": "Teaching RASA is for those with the right to teach it"
+ },
+ {
+  "check": "Teach: a correction needs the incorrect statement and why",
+  "pass": true,
+  "detail": "Quote the incorrect statement and say why it is wrong"
+ },
+ {
+  "check": "Teach: a planning engineer drafts and submits a project rule",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00001\",\"st\":\"Submitted\"}"
+ },
+ {
+  "check": "Review: the author cannot review their own proposal",
+  "pass": true,
+  "detail": "Only a knowledge reviewer of the project reviews proposals (company-wide knowledge: its designated approvers)"
+ },
+ {
+  "check": "Review: a project manager without rasa.review cannot",
+  "pass": true,
+  "detail": "Only a knowledge reviewer of the project reviews proposals (company-wide knowledge: its designated approvers)"
+ },
+ {
+  "check": "Review: approval needs the review first",
+  "pass": true,
+  "detail": "Take the proposal for review first"
+ },
+ {
+  "check": "Review: a reviewer takes it",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00001\",\"st\":\"Under Review\"}"
+ },
+ {
+  "check": "Review: and approves it",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00001\",\"st\":\"Approved\"}"
+ },
+ {
+  "check": "Review: and publishes it",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00001\",\"st\":\"Published\"}"
+ },
+ {
+  "check": "Publish: version 1 recorded, the gap resolved, the taught source indexed",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Publish: the taught knowledge is found by search",
+  "pass": true,
+  "detail": "{\"rows\":[{\"i\":0,\"t\":\"LD cap. The LD cap is 10 percent of the contract value\",\"ids\":[\"KP-00001\"],\"loc\":\"Published v1\",\"source_id\":\"taught:kp:KP-00001\"}],\"hidden\":0}"
+ },
+ {
+  "check": "Publish: the published record cannot be edited by its author",
+  "pass": true,
+  "detail": "A proposal that is Published cannot be changed"
+ },
+ {
+  "check": "Conflict: a second rule with the same title is flagged on submit",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00002\",\"st\":\"Submitted\"}"
+ },
+ {
+  "check": "Conflict: the conflict names the published rule",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Conflict: approval waits for the conflict to be resolved",
+  "pass": true,
+  "detail": "Resolve the conflict with the published knowledge first"
+ },
+ {
+  "check": "Conflict: the reviewer chooses to replace",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00002\",\"st\":\"Under Review\"}"
+ },
+ {
+  "check": "Conflict: publishing supersedes the older rule",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00002\",\"st\":\"Published\"}"
+ },
+ {
+  "check": "Conflict: the older rule is Superseded and leaves the index",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Rollback: needs a reason",
+  "pass": true,
+  "detail": "Say why it is rolled back"
+ },
+ {
+  "check": "Rollback: rolling back the new rule restores the older one",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00002\",\"st\":\"Withdrawn\"}"
+ },
+ {
+  "check": "Rollback: the older rule is Published and indexed again; three publication versions",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Finance: a financial formula is drafted and submitted",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00003\",\"st\":\"Submitted\"}"
+ },
+ {
+  "check": "Finance: approval needs the regression check confirmed",
+  "pass": true,
+  "detail": "A financial formula needs the regression check confirmed"
+ },
+ {
+  "check": "Finance: one approval is not enough",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00003\",\"st\":\"Under Review\"}"
+ },
+ {
+  "check": "Finance: the same reviewer cannot approve twice",
+  "pass": true,
+  "detail": "You have approved it already; it needs another approver"
+ },
+ {
+  "check": "Finance: a second approver approves it",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00003\",\"st\":\"Approved\"}"
+ },
+ {
+  "check": "Company: a company-wide note is submitted",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00004\",\"st\":\"Submitted\"}"
+ },
+ {
+  "check": "Company: a project reviewer cannot review company-wide knowledge",
+  "pass": true,
+  "detail": "Only a knowledge reviewer of the project reviews proposals (company-wide knowledge: its designated approvers)"
+ },
+ {
+  "check": "Company: the designated approver can",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00004\",\"st\":\"Under Review\"}"
+ },
+ {
+  "check": "Withdraw: the author withdraws a proposal under review",
+  "pass": true,
+  "detail": "{\"id\":\"KP-00004\",\"st\":\"Withdrawn\"}"
+ },
+ {
+  "check": "Settings: only the super admin changes them",
+  "pass": true,
+  "detail": "Only the super admin changes RASA settings"
+ },
+ {
+  "check": "Settings: retention is 30 to 730 days",
+  "pass": true,
+  "detail": "Keep questions 30 to 730 days"
+ },
+ {
+  "check": "Settings: the super admin saves them",
+  "pass": true,
+  "detail": "{\"ok\":true}"
+ },
+ {
+  "check": "Settings: a module switched off is not searched",
+  "pass": true,
+  "detail": "{\"rows\":[{\"i\":0,\"t\":\"Budget overrun on the transformer package SAR 1.2 million\",\"ids\":[\"B1\"],\"loc\":\"Budget\",\"source_id\":\"cost:B1\"},{\"i\":0,\"t\":\"Clause 20.1 notice of claim within 28 days for the transformer\",\"ids\":[\"20.1\"],\"loc\":\"Page 1\",\"source_id\":\"docs:doc:D1\"}],\"hidden\":0}"
+ },
+ {
+  "check": "Activity: entries were written",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Activity and publications are append-only (update, delete and truncate refused)",
+  "pass": true,
+  "detail": "3"
+ },
+ {
+  "check": "Writes: nobody writes the tables directly",
+  "pass": true,
+  "detail": "permission denied for table rasa_gaps"
+ },
+ {
+  "check": "Load: a planning engineer reads rasa_config",
+  "pass": true,
+  "detail": "[{\"n\":1}]"
+ },
+ {
+  "check": "Load: a planning engineer reads rasa_sources",
+  "pass": true,
+  "detail": "[{\"n\":7}]"
+ },
+ {
+  "check": "Load: a planning engineer reads rasa_runs",
+  "pass": true,
+  "detail": "[{\"n\":8}]"
+ },
+ {
+  "check": "Load: a planning engineer reads rasa_proposals",
+  "pass": true,
+  "detail": "[{\"n\":4}]"
+ },
+ {
+  "check": "Load: a planning engineer reads rasa_publications",
+  "pass": true,
+  "detail": "[{\"n\":3}]"
+ },
+ {
+  "check": "Load: a planning engineer reads rasa_gaps",
+  "pass": true,
+  "detail": "[{\"n\":1}]"
+ },
+ {
+  "check": "Load: a planning engineer reads rasa_feedback",
+  "pass": true,
+  "detail": "[{\"n\":1}]"
+ },
+ {
+  "check": "Load: a planning engineer reads rasa_questions",
+  "pass": true,
+  "detail": "[{\"n\":1}]"
+ },
+ {
+  "check": "Load: a planning engineer reads rasa_activity",
+  "pass": true,
+  "detail": "[{\"n\":26}]"
+ },
+ {
+  "check": "Load: a foreman does not see the cost source in the activity of the proposals of P1",
+  "pass": true,
+  "detail": "[{\"n\":3}]"
+ },
+ {
+  "check": "Load: someone outside P1 sees none of its proposals",
+  "pass": true,
+  "detail": "[{\"n\":0}]"
+ },
+ {
+  "check": "Fix: cost_plans (v45 to v48) is readable by signed-in people again",
+  "pass": true,
+  "detail": "[{\"n\":0}]"
+ },
+ {
+  "check": "Fix: report_media (v45 to v48) is readable by signed-in people again",
+  "pass": true,
+  "detail": "[{\"n\":0}]"
+ },
+ {
+  "check": "Fix: client_report_format_picks (v45 to v48) is readable by signed-in people again",
+  "pass": true,
+  "detail": "[{\"n\":0}]"
+ },
+ {
+  "check": "Fix: client_report_exports (v45 to v48) is readable by signed-in people again",
+  "pass": true,
+  "detail": "[{\"n\":0}]"
+ },
+ {
+  "check": "Rollback: tables, screen and rights removed",
+  "pass": true,
+  "detail": "{\"t\":null,\"s\":false,\"k\":false}"
+ },
+ {
+  "check": "Rollback: v50 installs again afterwards",
+  "pass": true,
+  "detail": ""
+ }
+]
