@@ -26,9 +26,10 @@ This takes about 3 minutes. **Do not** upload a new `config.js`. It needs v45 (t
 ## Step 2: Check it (1 minute)
 
 1. Sign in as the costing coordinator (or a super admin) and reload the page.
-2. **Cost Control → Cost plan → Download the template.** Change one project's planned cost for a month, and enter its actual POC for an earlier month on the ACTUAL POC sheet.
-3. **Upload the cost plans (Excel).** The preview shows two **Change** rows and **No change** for the rest. Press **Save the 2 new or changed plans**.
-4. Open that project's plan: it shows **Draft**, the new figures, the uploaded actual marked **u**, and "Bulk upload: …" in its history.
+2. **Cost Control → Cost plan → Download the template.** Change one project's planned cost for a month.
+3. **Upload the cost plans (Excel).** The preview shows one **Change** row and **No change** for the rest. Press **Save the 1 new or changed plan**.
+4. From v3.43 the actual POC has its own monthly file: under **Actual POC upload**, choose last month, **Download the month's template**, enter one project's POC in the month and upload it. Press **Save the actual POC of … for 1 project**.
+5. Open that project's plan: the internal plan shows **Draft** with the new figures, the uploaded actual is marked **u**, and the history has both uploads.
 
 ## To undo
 

@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.43
+
+- **Two uploads in Cost Control → Cost plan.** The **cost plan upload** (once or twice a year): COST PLAN (I), COST PLAN (F) and a new sheet **ACTUAL TO LAST YEAR** (actual POC, budget and contract value at December of last year). The **actual POC upload** (every month): its own file, one month each, with the POC in the month or the cumulative POC from start (ProTrack takes the month's POC as cumulative − last month's); saving adds the month and leaves the cost plans untouched. No server change (v46). `tests/cost_plan_import_demo.js` (21 checks). See RELEASE-NOTES-v3.43.md.
+
 ## Version 3.42
 
 - **The cost plans in bulk from Excel.** Cost Control → Cost plan → **Bulk upload (Excel)**: a super admin or the costing coordinator downloads the template (the export: COST PLAN (I), COST PLAN (F) and ACTUAL POC, one row per project), changes it and uploads it. The preview says New, Change, No change or why a row is refused; the new and changed rows are saved together and return to Draft. The uploaded actual POC is used for a month without a released cost report, in the cost plan and the MER. Server: `schema-update-v46.sql` (STAGE-40-SETUP). `tests/cost_plan_import_demo.js` (15 checks). See RELEASE-NOTES-v3.42.md.

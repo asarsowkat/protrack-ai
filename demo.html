@@ -8118,7 +8118,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.42';
+const APP_VERSION='3.43';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -16926,7 +16926,7 @@ function renderCplan(){
     ${CLOUD_ME&&DB.cpMissing?'<div class="warn-box" style="margin:0 0 8px"><b>The cost plan needs the v45 database update.</b> Run schema-update-v45.sql (STAGE-39-SETUP). Until then cost plans cannot be saved.</div>':''}
     <div class="fields"><label class="field">Year<select data-cpf="y">${[y-1,y,y+1].map(v=>`<option ${v===y?'selected':''}>${v}</option>`).join('')}</select></label></div>
     <div class="scroll"><table class="tbl small"><thead><tr><th>Project</th><th></th><th>Internal plan</th><th class="n">Planned POC this year</th><th>Finance plan</th><th class="n">Target POC at year end</th><th class="n">Planned POC this year</th><th>Last change</th></tr></thead><tbody>${ov||'<tr><td colspan="8" class="muted">No active project in your scope.</td></tr>'}</tbody></table></div></section>
-  ${canCpBulk()?cpBulkHTML():''}
+  ${canCpBulk()?cpBulkHTML()+cpActHTML():''}
   ${p?cpProjectHTML(p,y):''}`;
 }
 function cpProjectHTML(p,y){const c=cpOf(p.id,y)||{},ed=canCpEdit(p.id),dis=ed?'':'disabled',base=merBase(p.id,y),lcr=merRel(p.id,'cost',`${y}-12`),lf=lcr?lcr.figures:null;
@@ -16963,7 +16963,7 @@ function cpProjectHTML(p,y){const c=cpOf(p.id,y)||{},ed=canCpEdit(p.id),dis=ed?'
       <div class="scroll"><table class="tbl small cptbl"><thead><tr><th></th>${MON.map(m=>`<th class="n">${m}</th>`).join('')}<th class="n">Year</th></tr></thead><tbody>
         <tr><td>Actual<span class="t2">cost reports; <sup>u</sup> uploaded</span></td>${A.inc.map((v,i)=>`<td class="n">${mp(v)}${A.src[i]==='up'?'<sup title="Uploaded with the cost plans">u</sup>':''}</td>`).join('')}<td class="n"><b>${mp(cpSum(A.inc.filter(v=>v!=null)))}</b></td></tr>
         <tr><td>Forecast</td>${cm.map((v,i)=>`<td>${i<lastAct?'<span class="muted small">actual</span>':inp('c_m'+i,v,'min="-100" max="100"')}</td>`).join('')}<td class="n"><b>${mp(cpSum(A.inc.filter(v=>v!=null))+cpSum(cm.slice(lastAct)))}</b></td></tr></tbody></table></div>
-      <p class="small muted">Actual months: each month's released cost report, (actual − stock) ÷ current budget, against the month before; a month without one takes the actual POC uploaded in bulk (marked u). Forecast the months after the last actual month; the MER adds them to the actual for the year-end forecast.</p>
+      <p class="small muted">Actual months: each month's released cost report, (actual − stock) ÷ current budget, against the month before; a month without one takes the actual POC uploaded for that month (marked u). Forecast the months after the last actual month; the MER adds them to the actual for the year-end forecast.</p>
       ${ed?'<div class="actions"><button class="btn sm" type="button" data-cpsave="fc">Save the forecast</button></div>':''}</div>
     <div class="rdcard"><h3>History</h3><ul class="audit">${H.map(h=>`<li><b>${esc(h.action)}</b> · ${esc(CP_PARTS[h.part]||'')} by ${esc(h.by||'')} <span class="muted small">${esc(tStamp(h.at))}</span>${h.note?`<span class="note">${esc(h.note)}</span>`:''}</li>`).join('')||'<li class="muted">Not saved yet.</li>'}</ul></div>
     </div></section>`}
@@ -16972,32 +16972,39 @@ function cpRead(part){const f=$('#cpForm');const v=n=>{const el=f.querySelector(
   if(part==='fin')return {target:v('f_target'),ref:(f.querySelector('[name="f_ref"]')||{}).value||'',months:Array.from({length:12},(_,i)=>v('f_m'+i))};
   if(part==='fc')return {months:Array.from({length:12},(_,i)=>v('c_m'+i))};
   return {poc:v('b_poc'),budget:v('b_budget'),cv:v('b_cv')}}
+/* the cost plan workbook: the export, and the template of the cost plan upload (v3.43: COST PLAN (I), COST PLAN (F) and
+   ACTUAL TO LAST YEAR; the actual POC of the year has its own monthly file) */
 async function cpExport(){await loadLib(LIBS.xlsx);const s=cpState(),y=s.y,P=scopeProjects().filter(p=>['Active','On hold'].includes(p.status||'Active')),wb=XLSX.utils.book_new(),M=MON.map(m=>`${m}-${String(y).slice(2)}`);
   const ai=[['Proj. ID','Project Name','Region','Project Type','Contract value','Budget',...M,'Total Cost','Q1','Q2','Q3','Q4',...M.map(m=>m+' %'),'Status','Agreed by']];
   const af=[['Proj. ID','Project Name','Region','Actual POC end of last year','Target POC at year end','This year\'s target',...M.map(m=>m+' %'),'Check','Status','Approved by','Approval reference']];
+  const ab=[['Proj. ID','Project Name','Region','Actual POC end of last year','Budget at December of last year','Contract value at December of last year','Taken from']];
   P.forEach(p=>{const c=cpOf(p.id,y)||{},I=c.int||{},Fp=c.fin||{},im=cp12(I.months),bud=+I.budget||0,cv=+I.cv||0,b=merBase(p.id,y),fm=cp12(Fp.months),yt=cpNum(Fp.target)!=null&&b.poc!=null?cpNum(Fp.target)-b.poc:null;
     ai.push([pcode(p),p.short||p.name,regName(p),p.ptype||'',cv||'',bud||'',...im.map(v=>v??''),cpSum(im),...[0,1,2,3].map(q=>bud&&cv?Math.round(cpSum(im.slice(q*3,q*3+3))/bud*cv):''),...im.map(v=>bud&&v!=null?+(v/bud).toFixed(6):''),I.status||'Not made',I.agreed_by_name||'']);
-    af.push([pcode(p),p.short||p.name,regName(p),b.poc!=null?+(b.poc/100).toFixed(6):'',cpNum(Fp.target)!=null?+(Fp.target/100).toFixed(6):'',yt!=null?+(yt/100).toFixed(6):'',...fm.map(v=>v!=null?+(v/100).toFixed(6):''),yt!=null?+((yt-cpSum(fm))/100).toFixed(6):'',Fp.status||'Not made',Fp.approved_by_name||'',Fp.ref||''])});
-  const aa=[['Proj. ID','Project Name','Region',...M.map(m=>m+' %'),'Year']];
-  P.forEach(p=>{const c=cpOf(p.id,y)||{},am=cp12((c.act||{}).months);aa.push([pcode(p),p.short||p.name,regName(p),...am.map(v=>v!=null?+(v/100).toFixed(6):''),am.some(v=>v!=null)?+(cpSum(am)/100).toFixed(6):''])});
-  /* v3.42: the percent columns show as percent, so the workbook reads back the same (it is the bulk upload template) */
-  const sheet=(aoa,name)=>{const ws=XLSX.utils.aoa_to_sheet(aoa),H=aoa[0];H.forEach((h,c)=>{if(!/%|POC|target|Check|^Year$/i.test(h))return;for(let r=1;r<aoa.length;r++){const a=XLSX.utils.encode_cell({r,c});if(ws[a]&&ws[a].t==='n')ws[a].z='0.00%'}});
-    ws['!cols']=H.map((h,i)=>({wch:i===1?28:Math.max(10,Math.min(26,String(h).length+2))}));XLSX.utils.book_append_sheet(wb,ws,name)};
-  sheet(ai,'COST PLAN (I)');sheet(af,'COST PLAN (F)');sheet(aa,'ACTUAL POC');
+    af.push([pcode(p),p.short||p.name,regName(p),b.poc!=null?+(b.poc/100).toFixed(6):'',cpNum(Fp.target)!=null?+(Fp.target/100).toFixed(6):'',yt!=null?+(yt/100).toFixed(6):'',...fm.map(v=>v!=null?+(v/100).toFixed(6):''),yt!=null?+((yt-cpSum(fm))/100).toFixed(6):'',Fp.status||'Not made',Fp.approved_by_name||'',Fp.ref||'']);
+    ab.push([pcode(p),p.short||p.name,regName(p),b.poc!=null?+(b.poc/100).toFixed(6):'',b.budget!=null?b.budget:'',b.cv!=null?b.cv:'',b.src||''])});
+  cpSheet(wb,ai,'COST PLAN (I)');cpSheet(wb,af,'COST PLAN (F)');cpSheet(wb,ab,'ACTUAL TO LAST YEAR');
   await saveBook(wb,`Cost plan ${y}.xlsx`)}
-/* ----- v3.42: the cost plans in bulk, from Excel (super admin or the costing coordinator) -----
-   One workbook, the same as "Export / bulk template": COST PLAN (I) (budget, contract value and the planned cost of each month),
-   COST PLAN (F) (actual POC at the end of last year, target POC at year end, approval reference and the POC % of each month) and
-   ACTUAL POC (the POC % reached in each month). A row per project, by its project code; a sheet may be left out, and so may a
-   project. Percent cells are read as Excel shows them (12.50 %); a plain number is read as percent points (12.5 = 12.5 %).
-   Each row is checked as a single save (cpCheck); the preview says New, Change, No change or why it is refused, and only the
-   new and changed rows are saved, all together, each returning its plan to Draft. On the server: cost_plan_import (v46). */
+/* the percent columns show as percent, so a workbook reads back the same */
+function cpSheet(wb,aoa,name,hr){hr=hr||0;const ws=XLSX.utils.aoa_to_sheet(aoa),H=aoa[hr];
+  H.forEach((h,c)=>{if(!/%|POC|target|Check/i.test(h))return;for(let r=hr+1;r<aoa.length;r++){const a=XLSX.utils.encode_cell({r,c});if(ws[a]&&ws[a].t==='n')ws[a].z='0.00%'}});
+  ws['!cols']=H.map((h,i)=>({wch:i===1?28:Math.max(10,Math.min(30,String(h).length+2))}));XLSX.utils.book_append_sheet(wb,ws,name)}
+/* ----- v3.42 / v3.43: the cost plans and the actual POC in bulk, from Excel (super admin or the costing coordinator) -----
+   Two files, as they change at different times:
+   - The cost plan (revised once or twice a year): COST PLAN (I) (budget, contract value and the planned cost of each month),
+     COST PLAN (F) (target POC at year end, approval reference and the POC % of each month) and ACTUAL TO LAST YEAR (actual POC,
+     budget and contract value at December of last year: the year start). The template is the export.
+   - The actual POC (every month): one month per file, the POC reached in that month or the cumulative POC from the project's
+     start at its end (then the month's POC = cumulative − the cumulative at the end of the month before).
+   A row per project, by its project code; a sheet may be left out, and so may a project. Percent cells are read as Excel shows
+   them (12.50 %); a plain number is read as percent points (12.5 = 12.5 %). Each row is checked as a single save (cpCheck); the
+   preview says New, Change, No change or why it is refused, and only the new and changed rows are saved, all together; a saved
+   internal or finance plan returns to Draft. On the server: cost_plan_import (v46). */
 const canCpBulk=()=>state.role==='sa'||isCoord();
 const CP_MON_RE=/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?[\s\-'’/]*(\d{2}|\d{4})?\s*(%)?\s*$/i;
 function cpCellOf(ws,r,c){const x=ws[XLSX.utils.encode_cell({r,c})];if(!x||x.v==null||String(x.v).trim()==='')return null;
-  if(x.t==='n'){const pc=/%/.test(String(x.w||''))||/%/.test(String(x.z||''));return {num:x.v,pct:pc?x.v*100:x.v,text:String(x.w!=null?x.w:x.v)}}
+  if(x.t==='n'){const pc=/%/.test(String(x.w||''))||/%/.test(String(x.z||''));return {num:x.v,pct:pc?x.v*100:x.v,text:String(x.w!=null?x.w:x.v),isPct:pc}}
   if(x.t==='d'||x.v instanceof Date)return {text:String(x.w||'')};
-  const s=String(x.v).trim(),m=s.replace(/[,\s]/g,'').match(/^(-?\d+(?:\.\d+)?)(%)?$/);return m?{num:+m[1],pct:+m[1],text:s}:{text:s,bad:true}}
+  const s=String(x.v).trim(),m=s.replace(/[,\s]/g,'').match(/^(-?\d+(?:\.\d+)?)(%)?$/);return m?{num:+m[1],pct:+m[1],text:s,isPct:!!m[2]}:{text:s,bad:true}}
 /* the header row and its columns: the project code column, the months (with the year when given) and the named columns */
 function cpSheetCols(ws,y,want){const R=XLSX.utils.decode_range(ws['!ref']||'A1:A1');
   for(let r=R.s.r;r<=Math.min(R.e.r,R.s.r+12);r++){const H=[];for(let c=R.s.c;c<=R.e.c;c++){const x=cpCellOf(ws,r,c);H.push({c,h:x?String(x.text).trim():''})}
@@ -17009,56 +17016,73 @@ function cpSheetCols(ws,y,want){const R=XLSX.utils.decode_range(ws['!ref']||'A1:
   return null}
 const cpSameNum=(a,b)=>(a==null&&b==null)||(a!=null&&b!=null&&Math.abs(+a-+b)<1e-6);
 const cpSame12=(a,b)=>{const A=cp12(a),B=cp12(b);return A.every((v,i)=>cpSameNum(v,B[i]))};
-/* read the workbook into rows {sheet,row,pid,code,part,data,err,same,info} */
-function cpParseBook(wb,y){const out=[],acc=accessIds(),find=code=>{const k=String(code).trim().toUpperCase();return PROJECTS.find(p=>String(pcode(p)).toUpperCase()===k||String(p.id).toUpperCase()===k)};
-  const SH=[['int',/\(I\)|internal/i,{budget:/^budget\b(?!.*%)/i,cv:/contract value|current price|^cv\b/i}],['fin',/\(F\)|finance/i,{base:/end of last year|^actual poc\s*(20)?\d{2}$/i,target:/^target poc|target.*year.?end/i,ref:/reference/i}],['act',/actual/i,{}]];
-  SH.forEach(([part,sre,want])=>{const name=wb.SheetNames.find(n=>sre.test(n));if(!name)return;const ws=wb.Sheets[name],C=cpSheetCols(ws,y,want);
+const cpFind=code=>{const k=String(code).trim().toUpperCase();return PROJECTS.find(p=>String(pcode(p)).toUpperCase()===k||String(p.id).toUpperCase()===k)};
+/* the rows of a sheet, each with its project checked: {sheet,row,code,pid,p} or with err */
+function cpSheetRows(ws,name,C,part,out){const acc=accessIds(),seen=new Set(),L=[];
+  for(let r=C.hr+1;r<=C.last;r++){const pc=cpCellOf(ws,r,C.pc);if(!pc)continue;const code=String(pc.text).trim(),o={sheet:name,row:r+1,code,part};
+    const p=cpFind(code);if(!p)o.err=`Unknown project ${code}`;else{o.pid=p.id;if(!acc.includes(p.id))o.err='Not one of your projects';else if(seen.has(p.id))o.err=`${code} appears twice in this sheet`;else seen.add(p.id)}
+    L.push({o,r,p})}
+  return L}
+/* the cost plan workbook into rows {sheet,row,pid,code,part,data,err,same,info} */
+function cpParseBook(wb,y){const out=[];
+  const baseSheet=wb.SheetNames.find(n=>/last year|year start|dec(ember)?\b/i.test(n));
+  const SH=[['int',/\(I\)|internal/i,{budget:/^budget\b(?!.*%)/i,cv:/contract value|current price|^cv\b/i}],['fin',/\(F\)|finance/i,{base:/end of last year|^actual poc\s*(20)?\d{2}$/i,target:/^target poc|target.*year.?end/i,ref:/reference/i}]];
+  SH.forEach(([part,sre,want])=>{const name=wb.SheetNames.find(n=>sre.test(n)&&n!==baseSheet);if(!name)return;const ws=wb.Sheets[name],C=cpSheetCols(ws,y,want);
     if(!C){out.push({sheet:name,row:'',part,err:'No header row with the project code (Proj. ID) found'});return}
     if(C.yrs.some(v=>v!==y)){out.push({sheet:name,row:C.hr+1,part,err:`The months are for ${C.yrs.filter(v=>v!==y).join(', ')}, not ${y}: choose the year first`});return}
     const months=part==='int'?C.mon:Object.assign({},C.mon,C.monPct);
     if(Object.keys(months).length<12){out.push({sheet:name,row:C.hr+1,part,err:`The twelve months are not all there (${Object.keys(months).length} found)`});return}
-    const seen=new Set();
-    for(let r=C.hr+1;r<=C.last;r++){const pc=cpCellOf(ws,r,C.pc);if(!pc)continue;const code=String(pc.text).trim(),o={sheet:name,row:r+1,code,part};out.push(o);
-      const p=find(code);if(!p){o.err=`Unknown project ${code}`;continue}o.pid=p.id;
-      if(!acc.includes(p.id)){o.err='Not one of your projects';continue}if(seen.has(p.id)){o.err=`${code} appears twice in this sheet`;continue}seen.add(p.id);
-      const cur=cpOf(p.id,y)||{},bad=[],val=(c,k)=>{if(c==null)return null;const x=cpCellOf(ws,r,c);if(!x)return null;if(x.bad){bad.push(`${k}: "${x.text}" is not a number`);return null}return part==='int'&&k!=='pct'?x.num:x.pct};
+    cpSheetRows(ws,name,C,part).forEach(({o,r,p})=>{out.push(o);if(o.err)return;
+      const cur=cpOf(p.id,y)||{},bad=[],val=(c,k)=>{if(c==null)return null;const x=cpCellOf(ws,r,c);if(!x)return null;if(x.bad){bad.push(`${k}: "${x.text}" is not a number`);return null}return part==='int'?x.num:x.pct};
       const M=Array.from({length:12},(_,i)=>val(months[i],MON[i]));
       if(part==='int'){const I=cur.int||{},lcr=merRel(p.id,'cost',`${y}-12`);
         const b=C.named.budget!=null?val(C.named.budget,'Budget'):null,cv=C.named.cv!=null?val(C.named.cv,'Contract value'):null;
-        if(M.every(v=>v==null)&&b==null){out.pop();continue}
+        if(M.every(v=>v==null)&&b==null){out.pop();return}
         o.data={budget:b??cpNum(I.budget)??(lcr?crBud(lcr.figures):null),cv:cv??cpNum(I.cv)??contractOf(p.id,`${y}-12`).rev_client,months:M.map(v=>v==null?null:Math.round(v*100)/100)};
         o.same=!!cur.int&&cpSameNum(o.data.budget,I.budget)&&cpSameNum(o.data.cv,I.cv)&&cpSame12(o.data.months,I.months)}
-      else if(part==='fin'){const Fp=cur.fin||{},t=C.named.target!=null?val(C.named.target,'Target POC'):null,ref=C.named.ref!=null?cpCellOf(ws,r,C.named.ref):null,b=C.named.base!=null?val(C.named.base,'POC end of last year'):null;
-        if(M.every(v=>v==null)&&t==null&&b==null){out.pop();continue}
+      else{const Fp=cur.fin||{},t=C.named.target!=null?val(C.named.target,'Target POC'):null,ref=C.named.ref!=null?cpCellOf(ws,r,C.named.ref):null,b=!baseSheet&&C.named.base!=null?val(C.named.base,'POC end of last year'):null;
+        if(M.every(v=>v==null)&&t==null&&b==null){out.pop();return}
         if(M.some(v=>v!=null)||t!=null){o.data={target:t??cpNum(Fp.target),ref:ref?String(ref.text).slice(0,200):(Fp.ref||''),months:M.map(v=>v==null?null:+v.toFixed(4))};
           o.same=!!cur.fin&&cpSameNum(o.data.target,Fp.target)&&String(o.data.ref||'')===String(Fp.ref||'')&&cpSame12(o.data.months,Fp.months)}
-        else{out.pop()}
-        if(b!=null){const B=cur.base||{},ob={sheet:name,row:r+1,code,pid:p.id,part:'base'};out.push(ob);
-          if(merRelAt(p.id,'cost',`${y-1}-12`)){ob.info='The year start comes from the December cost report';ob.same=true;ob.data={poc:+b.toFixed(4)}}
-          else{ob.data={poc:+b.toFixed(4),budget:cpNum(B.budget),cv:cpNum(B.cv)};ob.same=cpSameNum(ob.data.poc,B.poc);const e=cpCheck('base',ob.data);if(e)ob.err=e}}
-        if(!o.data)continue}
-      else{const Ac=cur.act||{};if(M.every(v=>v==null)){out.pop();continue}o.data={months:M.map(v=>v==null?null:+v.toFixed(4))};o.same=!!cur.act&&cpSame12(o.data.months,Ac.months)}
-      if(bad.length){o.err=bad.join('; ');continue}
-      /* percentages that lost their percent format read as fractions (0.25 for 25 %) */
+        else out.pop();
+        /* an older template (v3.42) without ACTUAL TO LAST YEAR: the year start from this sheet */
+        if(b!=null)cpBaseRow(out,{sheet:name,row:r+1,code:o.code,pid:p.id,part:'base'},y,{poc:b},cur);
+        if(!o.data)return}
+      if(bad.length){o.err=bad.join('; ');return}
       const small=a=>a.filter(v=>v!=null).length>0&&a.filter(v=>v!=null).every(v=>Math.abs(v)<1);
-      if(part==='fin'&&o.data.target!=null&&o.data.target<1&&small(o.data.months)){o.err='The percentages look like fractions (0.25 for 25 %): format the cells as percent, or write 25';continue}
-      if(part==='act'&&small(o.data.months))o.warn='Every month is under 1 %: if these are fractions (0.02 for 2 %), format the cells as percent';
-      const e=cpCheck(part,o.data);if(e)o.err=e}});
-  if(!out.length)out.push({sheet:'',row:'',err:'No sheet named COST PLAN (I), COST PLAN (F) or ACTUAL POC'});
+      if(part==='fin'&&o.data.target!=null&&o.data.target<1&&small(o.data.months)){o.err='The percentages look like fractions (0.25 for 25 %): format the cells as percent, or write 25';return}
+      const e=cpCheck(part,o.data);if(e)o.err=e})});
+  /* ACTUAL TO LAST YEAR: the actual POC, budget and contract value at December of last year */
+  if(baseSheet){const ws=wb.Sheets[baseSheet],C=cpSheetCols(ws,y,{poc:/poc/i,budget:/budget/i,cv:/contract value|^cv\b/i});
+    if(!C)out.push({sheet:baseSheet,row:'',part:'base',err:'No header row with the project code (Proj. ID) found'});
+    else if(C.named.poc==null)out.push({sheet:baseSheet,row:C.hr+1,part:'base',err:'No column "Actual POC end of last year"'});
+    else cpSheetRows(ws,baseSheet,C,'base').forEach(({o,r,p})=>{if(o.err){out.push(o);return}const bad=[],g=(k,pct)=>{if(C.named[k]==null)return null;const x=cpCellOf(ws,r,C.named[k]);if(!x)return null;if(x.bad){bad.push(`"${x.text}" is not a number`);return null}return pct?x.pct:x.num};
+      const v={poc:g('poc',true),budget:g('budget'),cv:g('cv')};if(v.poc==null&&v.budget==null&&v.cv==null)return;if(bad.length){o.err=bad.join('; ');out.push(o);return}
+      if(v.poc!=null&&Math.abs(v.poc)<1&&v.poc!==0&&!(cpCellOf(ws,r,C.named.poc)||{}).isPct&&(v.budget||0)>0)o.warn='Under 1 %: if this is a fraction (0.45 for 45 %), format the cell as percent';
+      cpBaseRow(out,o,y,v,cpOf(p.id,y)||{})})}
+  if(wb.SheetNames.some(n=>/^actual poc/i.test(n)))out.push({sheet:wb.SheetNames.find(n=>/^actual poc/i.test(n)),row:'',info:'The actual POC of the year is uploaded each month in its own file (Actual POC, monthly): this sheet is not read',same:true});
+  if(!out.length)out.push({sheet:'',row:'',err:'No sheet named COST PLAN (I), COST PLAN (F) or ACTUAL TO LAST YEAR'});
   return out}
+/* a year-start row: blank cells keep what is saved; December's released cost report comes first */
+function cpBaseRow(out,o,y,v,cur){const B=cur.base||{};out.push(o);
+  if(merRelAt(o.pid,'cost',`${y-1}-12`)){o.info='The year start comes from the December cost report';o.same=true;o.data={poc:v.poc};return}
+  o.data={poc:v.poc!=null?+v.poc.toFixed(4):cpNum(B.poc),budget:v.budget!=null?v.budget:cpNum(B.budget),cv:v.cv!=null?v.cv:cpNum(B.cv)};
+  o.same=!!cur.base&&cpSameNum(o.data.poc,B.poc)&&cpSameNum(o.data.budget,B.budget)&&cpSameNum(o.data.cv,B.cv);const e=cpCheck('base',o.data);if(e)o.err=e}
 const cpBulkSummary=r=>{const d=r.data||{};if(r.part==='int'){const s=cpSum(d.months);return `Budget ${mf(d.budget)} · planned cost ${mf(s)}${d.budget?' · POC '+mp(s/d.budget*100):''}`}
   if(r.part==='fin'){const b=merBase(r.pid,cpState().y).poc,yt=d.target!=null&&b!=null?d.target-b:null;return `Target ${mp(d.target)} · months ${mp(cpSum(d.months))}${yt!=null?' · check '+mp(yt-cpSum(d.months)):''}`}
-  if(r.part==='act')return `${(d.months||[]).filter(v=>v!=null).length} months · ${mp(cpSum(d.months))}`;if(r.part==='base')return `POC end of last year ${mp(d.poc)}`;return ''};
+  if(r.part==='base')return `POC ${mp(d.poc)}${d.budget!=null?' · budget '+mf(d.budget):''}${d.cv!=null?' · contract value '+mf(d.cv):''}`;return ''};
+const cpResultCell=(r,y)=>`${r.err?`<span class="r-c">${esc(r.err)}</span>`:r.info&&r.same?`<span class="muted">${esc(r.info)}</span>`:r.same?'<span class="muted">No change</span>':cpOf(r.pid,y)&&cpOf(r.pid,y)[r.part]?'<span class="st Draft">Change</span>':'<span class="st Approved">New</span>'}${r.info&&!r.same&&!r.err?`<span class="t2 muted">${esc(r.info)}</span>`:''}${r.warn&&!r.err?`<span class="t2 a-c">${esc(r.warn)}</span>`:''}`;
 function cpBulkHTML(){const I=state.cpImp;
-  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Bulk upload (Excel)</h2><span class="small muted">Super admin and the costing coordinator, for every project they keep</span></div>
-    <p class="small muted" style="margin:0 0 8px">Download the template (it is the export: your projects with their current plans), change it in Excel and upload it. Sheets: <b>COST PLAN (I)</b> budget, contract value and planned cost of each month (SAR); <b>COST PLAN (F)</b> actual POC at the end of last year, target POC at year end, approval reference and the POC % of each month; <b>ACTUAL POC</b> the POC % reached in each month. The months are of the year chosen above. Percent cells are read as Excel shows them; a plain number is percent points (12.5 = 12.5 %). The released cost report of a month comes before an uploaded actual. Every saved plan returns to Draft for agreement and approval.</p>
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Cost plan upload (Excel)</h2><span class="small muted">Once or twice a year · super admin and the costing coordinator</span></div>
+    <p class="small muted" style="margin:0 0 8px">Download the template (it is the export: your projects with their current plans for the year chosen above), change it in Excel and upload it. Sheets: <b>COST PLAN (I)</b> budget, contract value and planned cost of each month (SAR); <b>COST PLAN (F)</b> target POC at year end, approval reference and the POC % of each month; <b>ACTUAL TO LAST YEAR</b> actual POC, budget and contract value at December of last year (taken from December's released cost report when there is one). Percent cells are read as Excel shows them; a plain number is percent points (12.5 = 12.5 %). Every saved internal or finance plan returns to Draft for agreement and approval.</p>
     <div class="actions"><button class="btn" type="button" data-cpx>Download the template</button><label class="btn" for="cpBulkFile">Upload the cost plans (Excel)</label><input id="cpBulkFile" type="file" accept=".xlsx,.xls" hidden></div>
-    ${I?(()=>{const ok=I.rows.filter(r=>!r.err&&!r.same&&r.data),er=I.rows.filter(r=>r.err);return `<h3 style="margin:12px 0 6px">${esc(I.file)} <span class="muted small">${I.y}</span></h3>
-      <div class="scroll"><table class="tbl small"><thead><tr><th>Sheet</th><th class="n">Row</th><th>Project</th><th>Part</th><th>Figures</th><th>Result</th></tr></thead><tbody>
-      ${I.rows.map(r=>`<tr><td>${esc(r.sheet||'')}</td><td class="n">${esc(String(r.row??''))}</td><td>${esc(r.code||'')}</td><td>${esc(CP_PARTS[r.part]||'')}</td><td class="small">${r.data&&!r.err?esc(cpBulkSummary(r)):''}</td>
-        <td>${r.err?`<span class="r-c">${esc(r.err)}</span>`:r.info?`<span class="muted">${esc(r.info)}</span>`:r.same?'<span class="muted">No change</span>':cpOf(r.pid,I.y)&&cpOf(r.pid,I.y)[r.part]?'<span class="st Draft">Change</span>':'<span class="st Approved">New</span>'}${r.warn&&!r.err?`<span class="t2 a-c">${esc(r.warn)}</span>`:''}</td></tr>`).join('')}</tbody></table></div>
-      ${er.length?`<p class="small r-c">${er.length} row${er.length===1?' is':'s are'} refused and will not be saved.</p>`:''}
-      <div class="actions">${ok.length?`<label class="field" style="flex:1;min-width:220px;margin:0">Comment (optional)<input id="cpBulkNote" maxlength="200"></label><button class="btn primary" type="button" data-cpbulksave>Save the ${ok.length} new or changed plan${ok.length===1?'':'s'}</button>`:'<span class="small muted">Nothing to save: every valid row matches the saved plans.</span>'}<button class="btn" type="button" data-cpbulkx>Discard</button></div>`})():''}</section>`}
+    ${I?cpPreviewHTML(I,'cpbulk',n=>`Save the ${n} new or changed plan${n===1?'':'s'}`,['Sheet','Row','Project','Part','Figures'],r=>[esc(r.sheet||''),esc(String(r.row??'')),esc(r.code||''),esc(CP_PARTS[r.part]||''),r.data&&!r.err?esc(cpBulkSummary(r)):'']):''}</section>`}
+function cpPreviewHTML(I,k,label,head,cells){const ok=I.rows.filter(r=>!r.err&&!r.same&&r.data),er=I.rows.filter(r=>r.err);
+  return `<h3 style="margin:12px 0 6px">${esc(I.file)} <span class="muted small">${esc(I.per?perLabel('month',I.per):String(I.y))}</span></h3>
+    <div class="scroll"><table class="tbl small"><thead><tr>${head.map(h=>`<th${/Row|month|Cumulative/.test(h)?' class="n"':''}>${esc(h)}</th>`).join('')}<th>Result</th></tr></thead><tbody>
+    ${I.rows.map(r=>`<tr>${cells(r).map((c,i)=>`<td${/Row|month|Cumulative/.test(head[i])?' class="n"':''}>${c}</td>`).join('')}<td>${cpResultCell(r,I.y)}</td></tr>`).join('')}</tbody></table></div>
+    ${er.length?`<p class="small r-c">${er.length} row${er.length===1?' is':'s are'} refused and will not be saved.</p>`:''}
+    <div class="actions">${ok.length?`<label class="field" style="flex:1;min-width:220px;margin:0">Comment (optional)<input id="${k}Note" maxlength="200"></label><button class="btn primary" type="button" data-${k}save>${esc(label(ok.length))}</button>`:'<span class="small muted">Nothing to save: every valid row matches what is saved.</span>'}<button class="btn" type="button" data-${k}x>Discard</button></div>`}
 async function cpBulkSave(rows,y,file,note){
   if(!canCpBulk()){toast('Only a super admin or the costing coordinator uploads cost plans in bulk');return false}
   const L=rows.filter(r=>!r.err&&!r.same&&r.data);if(!L.length)return false;
@@ -17066,14 +17090,65 @@ async function cpBulkSave(rows,y,file,note){
   const nt=`Bulk upload: ${file}${note?' · '+note:''}`.slice(0,300);
   if(CLOUD_ME){try{await rpc('cost_plan_import',{p:{year:+y,file_name:file,note:note||null,rows:L.map(r=>({project_id:r.pid,part:r.part,data:r.data}))}});await cloudLoadCostPlans();return L.length}catch(e){const m=srvMsg(e);toast(/cost_plan_import|plan_act|Unknown part/.test(m)&&!/^Row [0-9]/.test(m)?'The bulk upload needs the v46 database update (schema-update-v46.sql, STAGE-40-SETUP)':m);return false}}
   for(const r of L){const ok=await cpSave(r.pid,y,r.part,r.data,nt);if(!ok)return false}return L.length}
-document.addEventListener('change',async e=>{const t=e.target;if(!t||t.id!=='cpBulkFile'||!t.files||!t.files[0])return;const file=t.files[0];t.value='';
+
+/* ----- v3.43: the actual POC, every month, in its own file ----- */
+const cpActState=()=>{const s=state.cpAct||(state.cpAct={});if(!s.per)s.per=recentMonths(2)[1];return s};
+const cpPrevPer=per=>{const [y,m]=per.split('-').map(Number);return m===1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,'0')}`};
+/* the cumulative POC from the project's start at the end of the month before (null when ProTrack does not know it) */
+function cpCumBefore(pid,per){const y=+per.slice(0,4),m=+per.slice(5,7),b=merBase(pid,y).poc;if(m===1)return b;const A=merActual(pid,y,cpPrevPer(per),b);return A.cum[m-2]}
+async function cpActExport(per){await loadLib(LIBS.xlsx);const P=scopeProjects().filter(p=>['Active','On hold'].includes(p.status||'Active')),y=+per.slice(0,4),m=+per.slice(5,7),wb=XLSX.utils.book_new();
+  const head=['Proj. ID','Project Name','Region','Actual POC in the month (%)','Cumulative actual POC from start (%)','Cumulative POC at the end of last month (ProTrack)','Released cost report this month'];
+  const a=[[`ACTUAL POC, ${perLabel('month',per)}`],['Month',per],['Give the POC reached in the month, or the cumulative POC from the project\'s start at the end of the month (ProTrack then takes the month\'s POC as cumulative − last month\'s). A released cost report of the month comes first.'],head];
+  P.forEach(p=>{const c=cpOf(p.id,y)||{},v=cp12((c.act||{}).months)[m-1],pc=cpCumBefore(p.id,per),cr=merRelAt(p.id,'cost',per);
+    a.push([pcode(p),p.short||p.name,regName(p),v!=null?+(v/100).toFixed(6):'','',pc!=null?+(pc/100).toFixed(6):'',cr?`Yes, POC ${fmt(crPoc(cr.figures),2)}%`:''])});
+  cpSheet(wb,a,'ACTUAL POC',3);await saveBook(wb,`Actual POC ${per}.xlsx`)}
+/* the month of the file: the "Month" cell near the top (2026-09, Sep 2026, Sep-26 or a date), else the month chosen on the page */
+function cpActMonthOf(ws){for(let r=0;r<6;r++)for(let c=0;c<4;c++){const x=cpCellOf(ws,r,c);if(!x||!/^month$/i.test(String(x.text).trim()))continue;const raw=ws[XLSX.utils.encode_cell({r,c:c+1})];if(!raw)return null;
+  if(raw.t==='n'&&/[a-z]/i.test(String(raw.w||''))&&!/^\d{4}-\d{2}$/.test(String(raw.w))){const d=XLSX.SSF.parse_date_code(raw.v);if(d)return `${d.y}-${String(d.m).padStart(2,'0')}`}
+  const t=String(raw.w!=null&&raw.t!=='s'?raw.w:raw.v).trim();let m=t.match(/^(\d{4})-(\d{1,2})$/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}`;
+  m=t.match(CP_MON_RE);if(m&&m[2]){const i=MON.findIndex(x=>x.toLowerCase()===m[1].slice(0,3).toLowerCase());return `${m[2].length===2?2000+ +m[2]:m[2]}-${String(i+1).padStart(2,'0')}`}
+  m=t.match(/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{4})$/i);if(m){const i=MON.findIndex(x=>x.toLowerCase()===m[1].slice(0,3).toLowerCase());return `${m[2]}-${String(i+1).padStart(2,'0')}`}
+  return 'bad:'+t}return null}
+function cpParseAct(wb,perSel){const out=[],name=wb.SheetNames.find(n=>/actual/i.test(n))||wb.SheetNames[0],ws=wb.Sheets[name],fm=cpActMonthOf(ws);
+  if(fm&&fm.startsWith('bad:'))return {per:perSel,rows:[{sheet:name,row:'',err:`The month "${fm.slice(4)}" is not a month: write it as ${perSel}`}]};
+  const per=fm||perSel,y=+per.slice(0,4),m=+per.slice(5,7);
+  const C=cpSheetCols(ws,y,{inm:/in the month|this month|^actual poc\s*(%|\(%\))?$/i,cum:/cumulative(?!.*(last|previous) month).*(start|from)|^cumulative( actual)? poc\s*(%|\(%\))?$/i});
+  if(!C)return {per,rows:[{sheet:name,row:'',err:'No header row with the project code (Proj. ID) found'}]};
+  if(C.named.inm==null&&C.named.cum==null)return {per,rows:[{sheet:name,row:C.hr+1,err:'No column "Actual POC in the month (%)" or "Cumulative actual POC from start (%)"'}]};
+  cpSheetRows(ws,name,C,'act').forEach(({o,r,p})=>{if(o.err){out.push(o);return}const bad=[],g=k=>{if(C.named[k]==null)return null;const x=cpCellOf(ws,r,C.named[k]);if(!x)return null;if(x.bad){bad.push(`"${x.text}" is not a number`);return null}return x.pct};
+    let v=g('inm');const c=g('cum');if(v==null&&c==null&&!bad.length)return;out.push(o);if(bad.length){o.err=bad.join('; ');return}
+    const prev=cpCumBefore(p.id,per);o.prev=prev;
+    if(c!=null){if(prev==null&&v==null){o.err=`Give the POC in the month: ProTrack does not know the cumulative POC at the end of ${perLabel('month',cpPrevPer(per))}`;return}
+      if(prev!=null){const d=+(c-prev).toFixed(4);if(v!=null&&Math.abs(v-d)>0.01){o.err=`In the month ${fmt(v,2)}% and cumulative ${fmt(c,2)}% do not agree (end of last month ${fmt(prev,2)}%)`;return}if(v==null)v=d}
+      if(c<1&&prev!=null&&prev>=1){o.err='The cumulative POC looks like a fraction (0.45 for 45 %): format the cell as percent, or write 45';return}}
+    o.val=+v.toFixed(4);o.cum=prev!=null?prev+o.val:c;
+    const cur=cp12(((cpOf(p.id,y)||{}).act||{}).months),months=cur.slice();months[m-1]=o.val;o.data={months};o.same=cpSameNum(cur[m-1],o.val);
+    if(Math.abs(o.val)<1&&o.val!==0&&c==null)o.warn='Under 1 %: if this is a fraction (0.02 for 2 %), format the cell as percent';
+    const cr=merRelAt(p.id,'cost',per);if(cr)o.info=`A released cost report of this month comes first (its POC ${fmt(crPoc(cr.figures),2)}%)`;
+    const e=cpCheck('act',o.data);if(e)o.err=e});
+  if(!out.length)out.push({sheet:name,row:'',err:'No project row with a figure'});
+  return {per,rows:out}}
+function cpActHTML(){const s=cpActState(),I=state.cpActImp,pers=recentMonths(13);if(!pers.includes(s.per))pers.push(s.per);
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Actual POC upload (Excel)</h2><span class="small muted">Every month · super admin and the costing coordinator</span></div>
+    <p class="small muted" style="margin:0 0 8px">One month per file. For each project give the POC reached in the month, or the cumulative POC from the project's start at the end of the month: ProTrack then takes the month's POC as cumulative − the cumulative at the end of the month before. The month written in the file (cell "Month") is the one saved. A released cost report of the month comes before an uploaded actual. The cost plans are not touched.</p>
+    <div class="actions" style="align-items:flex-end"><label class="field" style="margin:0">Month<select data-cpactper>${pers.sort().reverse().map(m=>`<option value="${m}" ${m===s.per?'selected':''}>${esc(perLabel('month',m))}</option>`).join('')}</select></label>
+      <button class="btn" type="button" data-cpacttpl>Download the month's template</button><label class="btn" for="cpActFile">Upload the actual POC (Excel)</label><input id="cpActFile" type="file" accept=".xlsx,.xls" hidden></div>
+    ${I?cpPreviewHTML(I,'cpact',n=>`Save the actual POC of ${perLabel('month',I.per)} for ${n} project${n===1?'':'s'}`,['Row','Project','POC in the month','Cumulative from start'],r=>[esc(String(r.row??'')),esc(r.code||''),r.val!=null?mp(r.val):'',r.cum!=null?mp(r.cum):'']):''}</section>`}
+document.addEventListener('change',async e=>{const t=e.target;if(!t)return;
+  if(t.matches&&t.matches('[data-cpactper]')){cpActState().per=t.value;render();return}
+  if((t.id!=='cpBulkFile'&&t.id!=='cpActFile')||!t.files||!t.files[0])return;const file=t.files[0],act=t.id==='cpActFile';t.value='';
   if(!canCpBulk()){toast('Only a super admin or the costing coordinator uploads cost plans in bulk');return}
-  try{await loadLib(LIBS.xlsx);const wb=XLSX.read(new Uint8Array(await file.arrayBuffer()),{type:'array'}),y=cpState().y;state.cpImp={file:file.name,y,rows:cpParseBook(wb,y)};render()}
+  try{await loadLib(LIBS.xlsx);const wb=XLSX.read(new Uint8Array(await file.arrayBuffer()),{type:'array'});
+    if(act){const R=cpParseAct(wb,cpActState().per);state.cpActImp={file:file.name,per:R.per,y:+R.per.slice(0,4),rows:R.rows}}
+    else{const y=cpState().y;state.cpImp={file:file.name,y,rows:cpParseBook(wb,y)}}render()}
   catch(err){toast('The workbook could not be read: '+srvMsg(err))}});
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-cpbulksave],[data-cpbulkx]');if(!t)return;
-  if(t.dataset.cpbulkx!==undefined){state.cpImp=null;render();return}
-  const I=state.cpImp;if(!I)return;t.disabled=true;const n=await cpBulkSave(I.rows,I.y,I.file,($('#cpBulkNote')||{}).value||'');t.disabled=false;
-  if(n){state.cpImp=null;toast(`${n} plan${n===1?'':'s'} saved from ${I.file}`);render()}});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-cpbulksave],[data-cpbulkx],[data-cpactsave],[data-cpactx],[data-cpacttpl]');if(!t)return;const d=t.dataset;
+  if(d.cpbulkx!==undefined){state.cpImp=null;render();return}
+  if(d.cpactx!==undefined){state.cpActImp=null;render();return}
+  if(d.cpacttpl!==undefined){try{await cpActExport(cpActState().per)}catch(err){toast('The export failed: '+srvMsg(err))}return}
+  const act=d.cpactsave!==undefined,I=act?state.cpActImp:state.cpImp;if(!I)return;t.disabled=true;
+  const n=await cpBulkSave(I.rows,I.y,I.file,[act?`Actual POC ${perLabel('month',I.per)}`:'',(($(act?'#cpactNote':'#cpbulkNote')||{}).value||'').trim()].filter(Boolean).join(' · '));t.disabled=false;
+  if(n){if(act)state.cpActImp=null;else state.cpImp=null;toast(act?`Actual POC of ${perLabel('month',I.per)} saved for ${n} project${n===1?'':'s'}`:`${n} plan${n===1?'':'s'} saved from ${I.file}`);render()}});
 document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
   if(t.matches('[data-merf]')){const s=merState();s[t.dataset.merf]=t.value;if(t.dataset.merf!=='pid')s.pid=s.pid;render();return}
   if(t.matches('[data-cpf]')){const s=cpState();s.y=+t.value;render();return}});
