@@ -761,6 +761,12 @@ tr.boqsub td{background:rgba(127,127,127,.06)}
 .rmthumb{all:unset;cursor:pointer;position:relative;display:block;aspect-ratio:4/3;background:var(--surface-2)}.rmthumb img{width:100%;height:100%;object-fit:cover;display:block}.rmthumb:focus-visible{outline:2px solid var(--accent)}.rmph{display:grid;place-items:center;height:100%;color:var(--ink-2);font-weight:600}
 .rmplay{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600}.rmcard figcaption{padding:8px;display:flex;flex-direction:column;gap:5px;font-size:13px}.rmcard input{width:100%;font-size:13px;padding:5px 7px}.rmrow{display:flex;gap:6px;align-items:center}.rmrow input{flex:1}
 .rmview{position:fixed;inset:0;z-index:60;background:rgba(8,12,16,.86);display:grid;place-items:center;padding:16px}.rmbox{position:relative;max-width:min(1200px,96vw);max-height:92vh;display:flex;flex-direction:column;align-items:center;gap:8px}.rmbox img,.rmbox video{max-width:100%;max-height:82vh;border-radius:6px;background:#000}.rmbox p{color:#fff;margin:0;font-size:14px}.rmbox .iconbtn{position:absolute;top:-6px;right:-6px}
+/* v3.45: client report formats */
+.crpgs{display:flex;flex-direction:column;gap:8px}.crpg{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface)}.crpg.bad{border-color:var(--amber)}.crpg summary{cursor:pointer;display:flex;gap:10px;align-items:center;flex-wrap:wrap;list-style:none}.crpg summary::-webkit-details-marker{display:none}
+.crpg summary .t2{flex:1;min-width:160px}.crn{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:6px;background:var(--surface-2);font-weight:600;font-size:12px}.crpg textarea{width:100%;margin-top:6px}.crpgf{display:flex;gap:18px;flex-wrap:wrap;margin-top:6px}
+.crst{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}.crst.auto,.crst.manual{background:var(--green-soft);color:var(--green)}.crst.na{background:var(--surface-2);color:var(--ink-2)}.crst.nodata,.crst.empty,.crst.carried{background:var(--amber-soft);color:var(--amber)}
+.crtb input{width:100%;min-width:90px;padding:4px 6px;font-size:12.5px}.crpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:6px}.crpk{display:flex;flex-direction:column;gap:3px;font-size:12px;border:1px solid var(--line);border-radius:8px;padding:5px;cursor:pointer}.crpk img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:5px}
+.crxbox{background:var(--surface);color:var(--ink);border-radius:12px;padding:16px 18px;width:min(820px,96vw);max-height:92vh;overflow:auto}.crxwarn{background:var(--amber-soft);color:var(--ink);border-left:4px solid var(--amber);border-radius:6px;padding:10px 12px;font-size:13.5px}.crfsec input,.crfsec select,.crfsec textarea{width:100%;font-size:12.5px;padding:4px 6px}.crfsec td{vertical-align:top}
 /* v3.41: the MER and the cost plan */
 .mertbl th,.mertbl td{padding:4px 6px;white-space:nowrap}.mertbl th{white-space:normal;min-width:84px;vertical-align:bottom}.mertbl th.merg{text-align:center;background:var(--accent-soft);border-bottom:1px solid var(--line)}.mertbl tr.mertot td,tr.mertot td{background:var(--surface-2);font-weight:600}.mertbl .t2{display:block;font-weight:400}.mertbl td.merconcern{white-space:normal;min-width:320px;max-width:520px}.cptbl input{width:96px;padding:4px 6px;font-size:12.5px;text-align:end}.cptbl td,.cptbl th{white-space:nowrap}table.aoc input{width:100%;min-width:90px;padding:4px 6px;font-size:12.5px}table.aoc td{vertical-align:top}tr.sel td{background:rgba(36,80,138,.12)}
 .boqbar{height:6px;border-radius:3px;background:var(--line);min-width:80px;overflow:hidden}.boqbar i{display:block;height:100%;background:var(--brand,#24508a)}
@@ -1456,7 +1462,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadCostPlans();await cloudLoadBrand();await cloudLoadMedia();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
+    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadCostPlans();await cloudLoadBrand();await cloudLoadMedia();await cloudLoadCrf();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -6288,12 +6294,395 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-rmop
   if(d.rmdel){const m=rmRows().find(x=>x.id===d.rmdel);if(!m||!await confirmBox(`Delete ${rmIsVid(m)?'the video':'the photo'} "${m.caption||m.name}"?`,'Delete'))return;if(await rmAct('delete',d.rmdel)){toast('Deleted');rmRedraw()}return}
   if(d.rmcopy){const [pid,,tp,per]=d.rmcopy.split('|');t.disabled=true;const n=await rmCopyInternal(pid,tp,per);toast(n?`${n} copied from the internal report`:'Nothing new to copy');rmRedraw()}});
 
+/* ---------- v3.45: client report formats, and the client report exported to PowerPoint, Word and PDF ----------
+   Each customer can have its own client report format (Settings → Client report formats): the pages in their order, the
+   colours, font, cover lines and the classification footer. A page is either filled from ProTrack (project information,
+   progress summary, S-curve, milestones, look-ahead, issues, site pictures …) or entered by the planning engineer in the
+   client report (text, a table with the format's columns, or pictures from the report's Photos & videos), for what ProTrack
+   does not hold: safety statistics, quality, correspondence, outage plans and the like. A format can be drafted from the
+   client's own PowerPoint: its slide titles and table headings become the pages.
+   The format of a report: the project's own choice, else its customer's format, else the ProTrack standard format.
+   Entered pages are kept with the report (narrative.pages); a new period starts from the last released report's pages,
+   marked "carried from last period" until changed. Before an export ProTrack lists every page with its state (from ProTrack,
+   entered, not applicable, no data, empty, carried) and asks the planning engineer to review and validate the complete
+   report; a review copy marks the pages not updated, a client copy needs the confirmation. Every export is logged.
+   On the server: schema-update-v48.sql (client_report_formats, crf_save, crf_pick, client_report_exports, crx_log). */
+const CRF_SRC=[['cover','Cover page'],['contents','Contents'],['info','Project information and milestone dates'],['summary','Progress summary by phase'],['scurve','S-curve (planned, actual, forecast)'],
+  ['phases','Progress by phase (chart)'],['baselines','Actual against baselines'],['milestones','Milestones'],['keyms','Intermediate milestones'],['ep','Engineering and procurement progress'],
+  ['look','Planned activities for the next period (look-ahead)'],['manpower','Manpower'],['issues','Issues and concerns (issue register)'],['contract','Contract value and change orders'],
+  ['photos','Site pictures (Photos & videos)'],['note:summary','Report notes: progress summary'],['note:achieved','Report notes: achievements this period'],['note:next','Report notes: planned for the next period'],
+  ['note:issues','Report notes: issues and support required'],['note:remarks','Report notes: remarks'],['thanks','Closing page'],
+  ['revisions','Document revision record (the report\'s revisions)'],['invoices','Invoices (invoice register)']];
+/* v3.46: pages with no number (the cover, contents, revision record and closing page) and a page's number: 1, 2, 2.1 … by its level */
+const CRF_UNNUM=['auto:cover','auto:contents','auto:revisions','auto:thanks'];
+const CRF_MAN=[['text','Entered: text (one line a point; # for a sub-heading)'],['table','Entered: table with the format\'s columns'],['images','Entered: pictures chosen from Photos & videos']];
+const crfSrcName=s=>{const [k,v]=String(s||'').split(/:(.+)/);return k==='manual'?(CRF_MAN.find(x=>x[0]===v)||[,v])[1]:(CRF_SRC.find(x=>x[0]===v)||[,v])[1]};
+const crfIsMan=s=>String(s.src||'').startsWith('manual:');
+const CRF_STYLE0={c1:'24508A',c2:'1F3A5F',font:'Arial',footer:'',report:'Progress Report',title:'{project}',sub:'{contract_no}',line3:'{report} – {period} – {date}',ratio:'16:9',th:'',tht:'',header:'',orient:'landscape'};
+const crfRows=()=>CLOUD_ME?(DB.crfSrv||[]):(DB.crFormats||(DB.crFormats=[]));
+const crfById=id=>crfRows().find(x=>String(x.id)===String(id))||null;
+const crfPicks=()=>CLOUD_ME?(DB.crfPickSrv||{}):(DB.crfPick||(DB.crfPick={}));
+/* the built-in ProTrack standard format, used when nothing else applies */
+const CRF_STD={id:'STD',name:'ProTrack standard client report',customer:null,periods:['week','month'],builtin:true,style:Object.assign({},CRF_STYLE0),
+  sections:[['cover'],['contents'],['info'],['summary'],['scurve'],['milestones'],['keyms'],['ep'],['look'],['manpower'],['note:achieved'],['note:next'],['issues'],['photos'],['note:issues'],['thanks']].map(([v],i)=>({key:'s'+(i+1),title:crfSrcName('auto:'+v),src:'auto:'+v}))};
+const canCrfAdmin=()=>state.role==='sa';
+function crfFor(pid,t){const p=projById(pid)||{},pk=crfPicks()[pid],ok=x=>x&&x.active!==false&&(x.periods||['week','month']).includes(t);
+  if(pk&&ok(crfById(pk)))return crfById(pk);const c=crfRows().find(x=>ok(x)&&x.customer&&custKey(x.customer)===custKey(p.client));if(c)return c;
+  return crfRows().find(x=>ok(x)&&!x.customer)||CRF_STD}
+/* the server's checks (crf_save), the same here */
+function crfCheck(F){if(!F||String(F.name||'').trim().length<3||String(F.name).length>120)return 'Give the format a name (3 to 120 characters)';
+  if(!Array.isArray(F.sections)||!F.sections.length)return 'Add at least one page';if(F.sections.length>80)return 'At most 80 pages in a format';
+  if(!(F.periods||[]).length)return 'Choose weekly, monthly or both';const st=F.style||{};
+  if(!/^[0-9A-Fa-f]{6}$/.test(st.c1||'')||!/^[0-9A-Fa-f]{6}$/.test(st.c2||'')||[st.th,st.tht].some(x=>x&&!/^[0-9A-Fa-f]{6}$/.test(x)))return 'The colours are 6-digit hex codes, for example 40916C';if(String(st.footer||'').length>200||String(st.header||'').length>200)return 'The header and footer are 200 characters at most';
+  if(st.orient&&!['portrait','landscape'].includes(st.orient))return 'The page orientation is portrait or landscape';
+  const keys=new Set();for(const s of F.sections){if(!s.key||keys.has(s.key))return 'Each page needs its own key';keys.add(s.key);if(!String(s.title||'').trim()||String(s.title).length>120)return 'Each page needs a title of up to 120 characters';
+    if(!/^(auto:(cover|contents|info|summary|scurve|phases|baselines|milestones|keyms|ep|look|manpower|issues|contract|photos|thanks|revisions|invoices|note:(summary|achieved|next|issues|remarks))|manual:(text|table|images))$/.test(s.src||''))return `Page "${s.title}": unknown source`;
+    if(s.lvl!=null&&![1,2].includes(+s.lvl))return `Page "${s.title}": the level is 1 (heading) or 2 (sub-heading)`;if(s.orient&&!['portrait','landscape'].includes(s.orient))return `Page "${s.title}": portrait or landscape`;
+    if(s.src==='manual:table'&&(!Array.isArray(s.cols)||!s.cols.length||s.cols.length>12||s.cols.some(c=>!String(c).trim()||String(c).length>60)))return `Page "${s.title}": give 1 to 12 column headings`;
+    if(String(s.hint||'').length>300)return `Page "${s.title}": the guidance is 300 characters at most`}
+  return null}
+async function crfSave(F){if(!canCrfAdmin()){toast('Only the super admin keeps the client report formats');return false}const e=crfCheck(F);if(e){toast(e);return false}
+  const d={id:F.id||null,name:String(F.name).trim(),customer:F.customer||null,periods:F.periods,style:F.style,sections:F.sections.map(s=>({key:s.key,title:String(s.title).trim(),src:s.src,cols:s.src==='manual:table'?s.cols.map(c=>String(c).trim()):undefined,rows0:s.src==='manual:table'&&s.rows0&&s.rows0.length?s.rows0:undefined,req:!!s.req,hint:s.hint||undefined,lvl:+s.lvl===2?2:undefined,orient:s.orient||undefined})),active:F.active!==false};
+  if(CLOUD_ME){try{await rpc('crf_save',{p:d});await cloudLoadCrf();return true}catch(x){toast(srvMsg(x));return false}}
+  const L=crfRows(),cur=d.id&&crfById(d.id),now=new Date().toISOString();if(cur)Object.assign(cur,d,{rev:(cur.rev||0)+1,by:me().name,at:now});else L.push(Object.assign(d,{id:'F'+(L.reduce((m,x)=>Math.max(m,+String(x.id).replace(/\D/g,'')||0),0)+1),rev:1,by:me().name,at:now}));save();return true}
+async function crfDelete(id){if(!canCrfAdmin())return false;const L=crfRows(),x=crfById(id);if(!x)return false;
+  if(CLOUD_ME){try{await rpc('crf_save',{p:{id,delete:true}});await cloudLoadCrf();return true}catch(e){toast(srvMsg(e));return false}}L.splice(L.indexOf(x),1);Object.keys(crfPicks()).forEach(k=>{if(String(crfPicks()[k])===String(id))delete crfPicks()[k]});save();return true}
+async function crfPick(pid,fid){if(!accessIds().includes(pid)||!(state.role==='sa'||canPrepRel('client'))){toast('Only those who prepare the client report choose its format');return false}
+  if(CLOUD_ME){try{await rpc('crf_pick',{p:{project_id:pid,format_id:fid||null}});await cloudLoadCrf();return true}catch(e){toast(srvMsg(e));return false}}if(fid)crfPicks()[pid]=fid;else delete crfPicks()[pid];save();return true}
+async function cloudLoadCrf(){if(!CLOUD_ME)return;try{const [a,b,c]=await Promise.all([selAll('client_report_formats','*',null,['name']),selAll('client_report_format_picks','*',null,['project_id']),selAll('client_report_exports','*',null,['at_time'])]);
+  DB.crfSrv=a.map(x=>({id:x.id,name:x.name,customer:x.customer,periods:x.periods,style:x.style,sections:x.sections,active:x.active,rev:x.rev,by:x.updated_name,at:x.updated_at}));DB.crfPickSrv=Object.fromEntries(b.map(x=>[x.project_id,x.format_id]));
+  DB.crxSrv=c.map(x=>({release_id:x.release_id,project_id:x.project_id,period_type:x.period_type,period:x.period,format_id:x.format_id,format_name:x.format_name,file:x.file_kind,copy:x.copy_kind,pages_not_updated:x.pages_not_updated||[],by:x.by_name,at:x.at_time}));DB.crfMissing=false}
+  catch(e){DB.crfSrv=[];DB.crfPickSrv={};DB.crxSrv=[];DB.crfMissing=srvMsg(e)}}
+
+/* ----- the report's pages: what ProTrack fills, what the planning engineer enters ----- */
+const crPrevClient=(pid,t,per)=>relRows().filter(r=>r.project_id===pid&&r.kind==='client'&&r.period_type===t&&r.status==='Released'&&String(r.period)<per).sort((a,b)=>String(b.period).localeCompare(String(a.period))||(+b.rev||0)-(+a.rev||0))[0]||null;
+/* the entered pages of a report: its own, else last released report's (carried) */
+function crPagesOf(pid,t,per,r){const nar=(r&&r.narrative)||{};if(nar.pages)return {pages:nar.pages,review:nar.review||{}};
+  const pr=crPrevClient(pid,t,per),pg={};if(pr&&pr.narrative&&pr.narrative.pages)Object.entries(pr.narrative.pages).forEach(([k,v])=>{pg[k]=Object.assign(JSON.parse(JSON.stringify(v)),{carried:true,from:perLabel(pr.period_type,pr.period)})});return {pages:pg,review:{}}}
+const crEmpty=(s,pg)=>!pg||(s.src==='manual:text'?!String(pg.text||'').trim():s.src==='manual:table'?!(pg.rows||[]).some(r=>r.some(c=>String(c||'').trim())):!(pg.media||[]).length);
+/* the state of a page: from ProTrack, entered, not applicable, or not updated (no data, empty, carried) */
+function crState(s,pg,has){if(pg&&pg.st==='na')return {s:'na',l:'Not applicable'};
+  if(!crfIsMan(s))return has?{s:'auto',l:'From ProTrack'}:{s:'nodata',l:'No data in ProTrack for this period',bad:true};
+  if(crEmpty(s,pg))return {s:'empty',l:'Not updated: nothing entered',bad:true};if(pg.carried)return {s:'carried',l:`Not updated: carried from ${pg.from||'last period'}`,bad:true};return {s:'manual',l:'Entered'}}
+/* the report's number: the periods since the project start (Monthly Progress Report No. 28) */
+const crReportNo=(p,per,t)=>{const s=p.start;if(!s)return '';if(t==='week')return String(crWeekNo(p,per,t)||'');const a=+s.slice(0,4)*12+(+s.slice(5,7)),b=+per.slice(0,4)*12+(+per.slice(5,7));return String(Math.max(1,b-a+1))};
+const crWeekNo=(p,per,t)=>{const s=p.start;if(!s)return null;return Math.max(1,Math.floor(diffDays(s,periodEnd(per,t))/7)+1)};
+const crFill=(tpl,M)=>String(tpl||'').replace(/\{(\w+)\}/g,(m,k)=>M[k]!=null&&M[k]!==''?M[k]:'').replace(/\s+–\s+–\s+/g,' – ').replace(/^\s*–\s*|\s*–\s*$/g,'').trim();
+/* the content of one page as blocks (kv, table, text, kpis, chart, photos, list, note) */
+function crBlocks(s,ctx){const {p,f,nar,t,per,cc}=ctx,v=String(s.src).split(/:(.+)/)[1],pc=x=>x==null||x===''?'—':fmt(+x,1)+'%',d=x=>x?fmtDY(x):'—',sarv=x=>x==null?'—':'SAR '+fmt(Math.round(x));
+  if(crfIsMan(s)){const pg=ctx.pages[s.key]||{};if(s.src==='manual:text')return {has:!!String(pg.text||'').trim(),blocks:[{t:'text',lines:String(pg.text||'').split('\n')}]};
+    if(s.src==='manual:table')return {has:(pg.rows||[]).some(r=>r.some(c=>String(c||'').trim())),blocks:[{t:'table',cols:s.cols,rows:(pg.rows||[]).filter(r=>r.some(c=>String(c||'').trim()))}]};
+    const M=(pg.media||[]).map(id=>ctx.media.find(m=>m.id===id)).filter(Boolean);return {has:M.length>0,blocks:[{t:'photos',items:M}]}}
+  const pl=ctx.pl||{};
+  switch(v){
+    case 'info':{const sd=pl.commence_date||p.start,tcc=pl.tcc_orig_date;return {has:true,blocks:[{t:'kv',rows:[['Project Name',p.name||p.short],['Project Location',merCity(p)],['Client',p.client||'—'],['Contract Number',p.contract_no||'—'],['Contractor',brandOf().name||'—'],
+        ['Project Value',sarv(cc.orig)],['Change Order Value (approved by the client)',cc.orig!=null?sarv(cc.appr):'—'],['Revised Contract Value',sarv(cc.rev_client)],['Project Duration',sd&&tcc?`${fmt(diffDays(sd,tcc))} days (to TCC)`:'—']]},
+        {t:'table',title:'Milestone dates',cols:['Description','Contractual','Revised','Forecast / actual'],rows:[['Contract start',d(sd),'',''],['Site handing over',d(pl.site_handover_date),'',''],['TCC',d(pl.tcc_orig_date),d(pl.tcc_rev_date),d(f.tcc_fc_date||pl.tcc_ext_fc_date)],['PAC',d(pl.pac_orig_date),d(pl.pac_rev_date),d(f.pac_fc_date||pl.pac_ext_fc_date)],['FAC',d(pl.fac_orig_date),d(pl.fac_rev_date),d(f.fac_fc_date||pl.fac_ext_fc_date)]]}]}}
+    case 'summary':{const PT=f.phase_tbl&&Array.isArray(f.phase_tbl.phases)?f.phase_tbl:null,prev=ctx.prev&&ctx.prev.figures&&ctx.prev.figures.phase_tbl&&ctx.prev.figures.phase_tbl.phases||[];
+      const k={t:'kpis',items:[['Planned progress',pc(f.plan_pct)],['Actual progress',pc(f.act_pct)],['Variance',f.var_pct==null?'—':(f.var_pct>0?'+':'')+fmt(+f.var_pct,2)+'%'],['SPI',f.spi!=null?fmt(+f.spi,2):'—'],['Schedule data date',d(f.sched_data_date)]]};
+      if(!PT)return {has:f.act_pct!=null,blocks:[k]};
+      return {has:true,blocks:[k,{t:'table',cols:['Phase','Weight %','Previous period cumulative %','Current period %','Cumulative %','Cumulative weighted %','Cumulative planned %'],rows:PT.phases.filter(x=>x.present).map(x=>{const pv=prev.find(y=>y.phase===x.phase),pa=pv&&pv.act_pct!=null?+pv.act_pct:null;
+          return [RPH_N[x.phase]||x.phase,fmt(+x.wt||0,2),pa==null?'—':fmt(pa,2),pa==null||x.act_pct==null?'—':fmt(x.act_pct-pa,2),x.act_pct==null?'—':fmt(+x.act_pct,2),x.c_act==null?'—':fmt(+x.c_act,2),x.plan_pct==null?'—':fmt(+x.plan_pct,2)]})
+        .concat([['Overall','100',ctx.prev&&ctx.prev.figures.act_pct!=null?fmt(+ctx.prev.figures.act_pct,2):'—',ctx.prev&&ctx.prev.figures.act_pct!=null&&f.act_pct!=null?fmt(f.act_pct-ctx.prev.figures.act_pct,2):'—',pc(f.act_pct).replace('%',''),pc(f.act_pct).replace('%',''),pc(f.plan_pct).replace('%','')]]),total:true}]}}
+    case 'scurve':{const acts=withScope(p.id,()=>scopeActs());if(!acts.length)return {has:false,blocks:[]};return {has:true,blocks:[{t:'chart',fn:pal=>scurve(acts,pal)}]}}
+    case 'phases':{const P=f.phase_tbl&&Array.isArray(f.phase_tbl.phases)?f.phase_tbl.phases.filter(x=>x.present):(f.phases||[]);if(!P.length)return {has:false,blocks:[]};
+      return {has:true,blocks:[{t:'chart',fn:pal=>({type:'bar',data:{labels:P.map(x=>RPH_N[x.phase]||x.phase),datasets:[{label:'Planned %',data:P.map(x=>x.plan_pct),backgroundColor:'#'+ctx.st.c2},{label:'Actual %',data:P.map(x=>x.act_pct),backgroundColor:'#'+ctx.st.c1}]},options:{scales:{y:{min:0,max:100}}}})}]}}
+    case 'baselines':{const B=f.bl_cmp||[];return {has:B.length>0,blocks:[{t:'table',cols:['Baseline','Planned %','Actual %','Variance %','SPI','Baseline finish'],rows:B.map(x=>[x.name,pc(x.plan),pc(x.act),x.var==null?'—':fmt(+x.var,2),x.spi!=null?fmt(+x.spi,2):'—',d(x.bf)])}]}}
+    case 'milestones':{const M=f.milestones||[];return {has:M.length>0,blocks:[{t:'table',cols:['Milestone','Planned','Forecast / actual','Status'],rows:M.map(m=>[m.name,d(m.plan_date),d(m.date),m.actual?'Achieved':m.plan_date&&m.date&&m.date>m.plan_date?'Delayed':'On track'])}]}}
+    case 'keyms':{const K=(f.key_ms||[]).filter(x=>x.req!=='internal');return {has:K.length>0,blocks:[{t:'table',cols:['Milestone','Baseline','Forecast','Actual','Delay (days)'],rows:K.map(x=>[x.name,d(x.plan),x.act?'':d(x.fc),d(x.act),x.delay==null?'—':fmt(x.delay)])}]}}
+    case 'ep':{const E=f.ep;if(!E||!E.ENG&&!E.PRC)return {has:false,blocks:[]};const row=(l,x)=>x?[l,pc(x.plan),pc(x.pct),fmt(x.n||0),fmt(x.done||0),fmt(x.late||0)]:[l,'—','—','—','—','—'];
+      return {has:true,blocks:[{t:'table',cols:['','Planned %','Actual %','Activities','Completed','Forecast late'],rows:[row('Engineering',E.ENG),row('Procurement',E.PRC)]},{t:'table',title:'Activities forecast late',cols:['Activity ID','Activity','Planned %','Actual %','Baseline finish','Forecast finish','Slip (days)'],rows:(E.rows||[]).filter(r=>r.slip>0).slice(0,15).map(r=>[r.id,r.name,pc(r.plan),pc(r.pct),d(r.bf),d(r.af||r.ff),fmt(r.slip)])}]}}
+    case 'look':{const L=f.lookahead||[];return {has:L.length>0,blocks:[{t:'table',cols:['Activity ID','Activity','Phase','Planned start','Forecast finish','% complete'],rows:L.map(a=>[a.id,a.name,RPH_N[a.phase]||'',d(a.bs),d(a.ef||a.bf),fmt(+a.pct||0)+'%'])}]}}
+    case 'manpower':{if(f.mp_plan==null&&f.mp_act==null)return {has:false,blocks:[]};return {has:true,blocks:[{t:'kpis',items:[['Planned manpower',f.mp_plan!=null?fmt(+f.mp_plan):'—'],['Actual manpower',f.mp_act!=null?fmt(+f.mp_act):'—'],['Variance',f.mp_plan!=null&&f.mp_act!=null?(f.mp_act-f.mp_plan>0?'+':'')+fmt(f.mp_act-f.mp_plan):'—']]}]}}
+    case 'issues':{const I=issRows().filter(i=>i.project_id===p.id&&i.status==='Open').sort((a,b)=>issRank(a.impact)-issRank(b.impact));
+      return {has:true,blocks:I.length?[{t:'table',cols:['Issue type','Description','Impact','Owner','Action required','Action by','Target date'],rows:I.map(i=>[i.issue_type||'',i.description||'',i.impact||'',i.owner||'',i.action_required||'',i.action_by||'',d(issTarget(i))])}]:[{t:'text',lines:['No open issue this period.']}]}}
+    case 'contract':return {has:cc.orig!=null,blocks:[{t:'kv',rows:[['Original contract value',sarv(cc.orig)],['Change orders and claims approved by the client',sarv(cc.appr)],['Revised contract value',sarv(cc.rev_client)]]}]};
+    case 'photos':{const M=ctx.media.filter(m=>!rmIsVid(m)),V=ctx.media.filter(m=>rmIsVid(m));return {has:ctx.media.length>0,blocks:[...(M.length?[{t:'photos',items:M}]:[]),...(V.length?[{t:'table',title:'Videos (shared with the report in ProTrack)',cols:['Video','Date','Length'],rows:V.map(m=>[m.caption||m.name,d(m.taken_on),m.duration?Math.floor(m.duration/60)+':'+String(m.duration%60).padStart(2,'0'):'—'])}]:[])]}}
+    case 'cover':case 'contents':case 'thanks':return {has:true,blocks:[]};
+    /* v3.46: the report's own revisions (prepared, checked, approved), and the invoice register up to the period's end */
+    case 'revisions':{const R=relRows().filter(x=>x.project_id===p.id&&x.kind==='client'&&x.period_type===t&&x.period===per).sort((a,b)=>(+a.rev||0)-(+b.rev||0)),u=id=>{const x=id&&userById(id);return x?x.name:''};
+      return {has:R.length>0,blocks:[{t:'table',cols:['Rev','Description','Prepared','Checked','Approved','Date'],rows:R.map(x=>[String(x.rev??0),x.revise_reason||(x.rev?'Revised':'First issue'),u(x.prepared_by),u(x.reviewed_by),u(x.approved_by),d(String(x.approved_at||x.submitted_at||x.prepared_at||'').slice(0,10))])}]}}
+    case 'invoices':{const end=periodEnd(per,t),I=invOf(p.id).filter(x=>!x.date||x.date<=end),st2=x=>+x.coll?'Collected':+x.appr?'Approved':+x.sub?'Submitted':'Prepared';
+      return {has:I.length>0,blocks:I.length?[{t:'table',cols:['Sl. No','Invoice','Amount (SAR)','Submission date','Approval date','Status'],rows:I.map((x,i)=>[String(i+1),[x.no,x.type,x.note].filter(Boolean).join(' · '),fmt(Math.round(+x.amount||+x.sub||0)),d(x.sub_date||x.date),d(x.appr_date),st2(x)])}]:[]}}
+    default:{if(v&&v.startsWith('note:')){const x=String(nar[v.slice(5)]||'').trim();return {has:!!x,blocks:[{t:'text',lines:x.split('\n')}]}}return {has:false,blocks:[]}}}}
+/* the whole report as a document: the format, the pages with their state and content */
+async function crDoc(pid,t,per,mode){const D=clientReportData(pid,t,per);if(!D)throw new Error('Save the client report first');const {r,p,f}=D,F=crfFor(pid,t),st=Object.assign({},CRF_STYLE0,F.style||{});
+  const {pages,review}=crPagesOf(pid,t,per,r),plr=merRel(pid,'planning',perMonth(t,per));
+  const ctx={p,r,f,nar:r.narrative||{},t,per,cc:clientContract(r,pid,t,per)||{},pages,media:rmOf(pid,'client',t,per),prev:crPrevClient(pid,t,per),pl:plr?plr.figures||{}:{},st};
+  const M={project:p.name||p.short,short:p.short||'',code:pcode(p),client:p.client||'',contract_no:p.contract_no?'Contract No. '+p.contract_no:'',report:st.report||'Progress Report',
+    period:perLabel(t,per),week:t==='week'?String(per).split('-W')[1]||'':'',project_week:crWeekNo(p,per,t)?'Week '+crWeekNo(p,per,t):'',date:fmtDY(periodEnd(per,t)),data_date:fmtDY(r.data_date||periodEnd(per,t)),company:brandOf().name||'',
+    report_no:crReportNo(p,per,t)};
+  const out=[];let n1=0,n2=0;for(const s of F.sections){const pg=pages[s.key],c=await crBlocks(s,ctx),S=crState(s,pg,c.has),lvl=+s.lvl===2?2:1;let num=null;
+    if(!CRF_UNNUM.includes(s.src)){if(lvl===2&&n1)num=n1+'.'+(++n2);else{num=String(++n1);n2=0}}
+    out.push({s,lvl,num,state:S,reviewed:!!review[s.key],blocks:S.s==='na'?[{t:'note',text:'Not applicable for this period.'}]:c.blocks})}
+  return {F,st,M,p,r,t,per,mode:mode||'review',draft:r.status!=='Released',pages:out,bad:out.filter(x=>x.state.bad),logo:brandOf().logo,clogo:custLogo(p.client)}}
+
+/* ----- the Client format tab of the client report: the format, the pages, what the planning engineer enters ----- */
+const crKey=(pid,t,per)=>`${pid}|${t}|${per}`;
+function crWork(pid,t,per,r){const k=crKey(pid,t,per);if(!state.crW||state.crW.key!==k){const x=crPagesOf(pid,t,per,r);state.crW={key:k,pages:JSON.parse(JSON.stringify(x.pages)),review:Object.assign({},x.review),dirty:false}}return state.crW}
+const crBadge=S=>`<span class="crst ${S.s}">${esc(S.l)}</span>`;
+function crPreview(c){if(!c.blocks.length)return '';return c.blocks.map(b=>b.t==='table'?`table, ${b.rows.length} row${b.rows.length===1?'':'s'}`:b.t==='kv'?`${b.rows.length} figures`:b.t==='chart'?'chart':b.t==='photos'?`${b.items.length} picture${b.items.length===1?'':'s'}`:b.t==='kpis'?`${b.items.length} figures`:b.t==='text'?`${b.lines.filter(x=>x.trim()).length} line${b.lines.filter(x=>x.trim()).length===1?'':'s'}`:'').filter(Boolean).join(' · ')}
+function crTabHTML(pid,t,per,r,editable){const F=crfFor(pid,t),W=crWork(pid,t,per,r),D=r?clientReportData(pid,t,per):null,p=projById(pid),plr=merRel(pid,'planning',perMonth(t,per));
+  const ctx={p,r,f:D?D.f:relClientDefaults(pid,t,per),nar:D?D.nar:{},t,per,cc:clientContract(r,pid,t,per)||{},pages:W.pages,media:rmOf(pid,'client',t,per),prev:crPrevClient(pid,t,per),pl:plr?plr.figures||{}:{},st:Object.assign({},CRF_STYLE0,F.style||{})};
+  const opts=crfRows().filter(x=>x.active!==false&&(x.periods||[]).includes(t)),pick=crfPicks()[pid],dis=editable?'':'disabled';let n1=0,n2=0;
+  const rows=F.sections.map(s=>{const pg=W.pages[s.key],c=crBlocks(s,ctx),S=crState(s,pg,c.has),k=esc(s.key);let num='';if(!CRF_UNNUM.includes(s.src)){if(+s.lvl===2&&n1)num=n1+'.'+(++n2);else{num=String(++n1);n2=0}}
+    let body='';if(crfIsMan(s)&&!(pg&&pg.st==='na')){
+      if(s.src==='manual:text')body=`<textarea data-crpt="${k}" rows="5" ${dis} placeholder="One point a line. A line starting with # is a sub-heading.">${esc((pg&&pg.text)||'')}</textarea>`;
+      else if(s.src==='manual:table'){const R=pg&&pg.rows&&pg.rows.length?pg.rows:(s.rows0||[]).map(x=>[x,...Array(s.cols.length-1).fill('')]);
+        body=`<div class="scroll"><table class="tbl small crtb"><thead><tr>${s.cols.map(c=>`<th>${esc(c)}</th>`).join('')}${editable?'<th></th>':''}</tr></thead><tbody>${R.map((row,i)=>`<tr>${s.cols.map((c,j)=>`<td><input data-crpc="${k}|${i}|${j}" value="${esc(row[j]??'')}" ${dis}></td>`).join('')}${editable?`<td><button class="btn sm" type="button" data-crpdel="${k}|${i}" aria-label="Delete the row">✕</button></td>`:''}</tr>`).join('')}</tbody></table></div>
+          ${editable?`<button class="btn sm" type="button" data-crpadd="${k}">Add a row</button>`:''}`}
+      else{const M=ctx.media.filter(m=>!rmIsVid(m));body=M.length?`<div class="crpick">${M.map(m=>`<label class="crpk"><input type="checkbox" data-crpm="${k}|${esc(m.id)}" ${(pg&&pg.media||[]).includes(m.id)?'checked':''} ${dis}><img src="${esc(m.thumb||'')}" alt=""><span>${esc(m.caption||m.name)}</span></label>`).join('')}</div>`:'<p class="small muted">Add the pictures in the Photos & videos tab first, then choose them here.</p>'}}
+    else if(!crfIsMan(s))body=`<p class="small muted" style="margin:0">${c.has?esc(crPreview(c)||'Filled by ProTrack'):s.src==='auto:photos'?'No photo in the Photos & videos tab yet.':'No data in ProTrack for this period: enter it in ProTrack, or mark the page not applicable.'}</p>`;
+    return `<details class="crpg ${S.bad?'bad':''}" ${S.bad||crfIsMan(s)?'open':''}><summary><span class="crn">${num}</span><b>${esc(s.title)}</b><span class="t2">${esc(crfSrcName(s.src))}</span>${crBadge(S)}</summary>
+      ${s.hint?`<p class="small muted" style="margin:0 0 6px">${esc(s.hint)}</p>`:''}${body}
+      <div class="crpgf"><label class="chk"><input type="checkbox" data-crpna="${k}" ${pg&&pg.st==='na'?'checked':''} ${dis}><span>Not applicable this period</span></label><label class="chk"><input type="checkbox" data-crprev="${k}" ${W.review[s.key]?'checked':''} ${dis}><span>Reviewed</span></label></div></details>`});
+  const st=F.sections.map(s=>crState(s,W.pages[s.key],crBlocks(s,ctx).has)),cnt=k=>st.filter(x=>x.s===k).length,bad=st.filter(x=>x.bad).length,rv=F.sections.filter(s=>W.review[s.key]).length;
+  const X=(CLOUD_ME?(DB.crxSrv||[]):(DB.crExports||[])).filter(x=>x.project_id===pid&&x.period_type===t&&x.period===per).slice(-5).reverse();
+  return `<div class="rdcard" id="crPanel" data-crctx="${esc(crKey(pid,t,per))}"><div class="card-head" style="flex-wrap:wrap"><h3 style="margin:0">Client format: ${esc(F.name)}${F.builtin?'':` <span class="muted small">rev ${F.rev||1}</span>`}</h3>
+      <div class="actions" style="margin:0"><label class="field" style="margin:0">Format<select data-crfpick="${esc(pid)}" ${editable?'':'disabled'}><option value="">Automatic (the customer's format)</option>${opts.map(x=>`<option value="${esc(x.id)}" ${String(pick)===String(x.id)?'selected':''}>${esc(x.name)}${x.customer?' · '+esc(x.customer):''}</option>`).join('')}</select></label>
+      <button class="btn primary sm" type="button" data-crxopen ${r?'':'disabled title="Save the report first"'}>Export: PowerPoint, Word, PDF</button></div></div>
+    ${CLOUD_ME&&DB.crfMissing?'<div class="warn-box" style="margin:6px 0"><b>Client report formats need the v48 database update.</b> Run schema-update-v48.sql (STAGE-42-SETUP). Until then the ProTrack standard format is used.</div>':''}
+    <p class="small muted" style="margin:6px 0">${F.sections.length} pages · ${cnt('auto')} from ProTrack · ${cnt('manual')} entered · ${cnt('na')} not applicable · <b class="${bad?'r-c':'g-c'}">${bad} not updated</b> · ${rv} reviewed. Pages ProTrack does not hold are entered here and saved with the report (Save draft); a new period starts from the last released report's pages, marked carried until you change them.${W.dirty?' <b class="a-c">Unsaved changes: save the draft before exporting.</b>':''}</p>
+    <textarea name="n_pages_json" hidden>${esc(JSON.stringify({pages:W.pages,review:W.review}))}</textarea>
+    <div class="crpgs">${rows.join('')}</div>
+    ${X.length?`<h3 style="margin:12px 0 4px">Exports</h3><ul class="audit">${X.map(x=>`<li><b>${esc(x.copy==='client'?'Client copy':'Review copy')}, ${esc(x.file)}</b> by ${esc(x.by||'')} <span class="muted small">${esc(tStamp(x.at))}</span>${(x.pages_not_updated||[]).length?`<span class="note">Pages not updated: ${esc(x.pages_not_updated.join(', '))}</span>`:''}</li>`).join('')}</ul>`:''}</div>`}
+const crEditable=(pid,t,per)=>{const open=relOpen(pid,'client',t,per),released=relReleased(pid,'client',t,per),r=open||released;return (!r||r.status==='Draft')&&canPrepRel('client')&&!(!open&&released)};
+const crRedraw=()=>{const el=$('#crPanel');if(!el)return;const [pid,t,per]=el.dataset.crctx.split('|'),r=relOpen(pid,'client',t,per)||relReleased(pid,'client',t,per),ed=crEditable(pid,t,per);
+  const w=document.createElement('div');w.innerHTML=crTabHTML(pid,t,per,r,ed);el.replaceWith(w.firstElementChild)};
+const crSync=()=>{const W=state.crW,h=document.querySelector('#crPanel [name="n_pages_json"]');if(W&&h)h.value=JSON.stringify({pages:W.pages,review:W.review})};
+const crPg=k=>{const W=state.crW;W.dirty=true;const pg=W.pages[k]||(W.pages[k]={});delete pg.carried;delete pg.from;pg.by=me().name;pg.at=new Date().toISOString();return pg};
+document.addEventListener('input',e=>{const t=e.target;if(!t||!t.dataset||!state.crW)return;
+  if(t.dataset.crpt){crPg(t.dataset.crpt).text=t.value;crSync();return}
+  if(t.dataset.crpc){const [k,i,j]=t.dataset.crpc.split('|'),s=crfFor(...state.crW.key.split('|').slice(0,2)).sections.find(x=>x.key===k),pg=crPg(k);
+    if(!pg.rows||!pg.rows.length)pg.rows=[...document.querySelectorAll(`#crPanel [data-crpc^="${k}|"]`)].reduce((a,el)=>{const [,r,c]=el.dataset.crpc.split('|');(a[r]=a[r]||Array(s.cols.length).fill(''))[c]=el.value;return a},[]);
+    (pg.rows[+i]=pg.rows[+i]||Array(s.cols.length).fill(''))[+j]=t.value;crSync()}});
+document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.dataset)return;
+  if(t.dataset.crfpick){if(await crfPick(t.dataset.crfpick,t.value||null)){toast('Format chosen for the project');crRedraw()}return}
+  if(!state.crW)return;
+  if(t.dataset.crpt||t.dataset.crpc){crRedraw();return}
+  if(t.dataset.crpna){const pg=crPg(t.dataset.crpna);if(t.checked)pg.st='na';else delete pg.st;crSync();crRedraw();return}
+  if(t.dataset.crprev){state.crW.review[t.dataset.crprev]=t.checked;state.crW.dirty=true;crSync();crRedraw();return}
+  if(t.dataset.crpm){const [k,id]=t.dataset.crpm.split('|'),pg=crPg(k),L=pg.media||(pg.media=[]);if(t.checked){if(!L.includes(id))L.push(id)}else pg.media=L.filter(x=>x!==id);crSync();crRedraw()}});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-crpadd],[data-crpdel]');if(!t||!state.crW)return;
+  const [pid,tp]=state.crW.key.split('|'),F=crfFor(pid,tp);
+  if(t.dataset.crpadd){const k=t.dataset.crpadd,s=F.sections.find(x=>x.key===k),pg=crPg(k);if(!pg.rows||!pg.rows.length)pg.rows=(s.rows0||[]).map(x=>[x,...Array(s.cols.length-1).fill('')]);pg.rows.push(Array(s.cols.length).fill(''));crSync();crRedraw();return}
+  const [k,i]=t.dataset.crpdel.split('|'),pg=crPg(k);if(!pg.rows||!pg.rows.length){const s=F.sections.find(x=>x.key===k);pg.rows=(s.rows0||[]).map(x=>[x,...Array(s.cols.length-1).fill('')])}pg.rows.splice(+i,1);crSync();crRedraw()});
+
+/* ----- before an export: review and validate ----- */
+async function crxOpen(pid,t,per){if(state.crW&&state.crW.key===crKey(pid,t,per)&&state.crW.dirty){toast('Save the draft first, so the export has the pages you entered');return}
+  let doc;try{doc=await crDoc(pid,t,per)}catch(e){toast(e.message);return}const prep=canPrepRel('client')&&accessIds().includes(pid);
+  const o=document.createElement('div');o.className='rmview';o.id='crxDlg';
+  o.innerHTML=`<div class="crxbox" role="dialog" aria-modal="true" aria-labelledby="crxT"><div class="card-head"><h2 id="crxT" style="margin:0">Review before the client gets it</h2><button class="iconbtn" type="button" data-crxx aria-label="Close">✕</button></div>
+    <div class="crxwarn"><b>Disclaimer.</b> ProTrack prepared this report from the data recorded up to ${esc(doc.M.data_date)} and the pages entered by the planning engineer, in the format "${esc(doc.F.name)}". It is not checked by ProTrack for the client. The planning engineer must review and validate the complete report, page by page, before it is submitted to the client.${doc.draft?' <b>The report is not approved yet: every export is marked DRAFT.</b>':''}</div>
+    <p class="small" style="margin:8px 0 4px"><b>${doc.pages.length} pages</b> · ${doc.bad.length?`<b class="r-c">${doc.bad.length} not updated</b>`:'<b class="g-c">all updated</b>'} · ${doc.pages.filter(x=>x.reviewed).length} marked reviewed</p>
+    <div class="scroll" style="max-height:42vh"><table class="tbl small"><thead><tr><th class="n">#</th><th>Page</th><th>State</th><th>Reviewed</th></tr></thead><tbody>${doc.pages.map(x=>`<tr${x.state.bad?' class="rowwarn"':''}><td class="n">${x.num??''}</td><td>${esc(x.s.title)}</td><td>${crBadge(x.state)}</td><td>${x.reviewed?'Yes':'<span class="muted">No</span>'}</td></tr>`).join('')}</tbody></table></div>
+    ${doc.bad.length?`<p class="small r-c" style="margin:6px 0">Not updated: ${esc(doc.bad.map(x=>x.s.title).join('; '))}. Update them in the Client format tab, or mark them not applicable.</p>`:''}
+    <div class="fields" style="margin-top:8px"><label class="field">File<select id="crxFile"><option value="pptx">PowerPoint (.pptx)</option><option value="docx">Word (.docx)</option><option value="pdf">PDF</option></select></label>
+      <label class="field">Copy<select id="crxCopy"><option value="review">Review copy: pages not updated are marked</option><option value="client">Client copy: as it goes to the client</option></select></label></div>
+    <label class="chk" style="margin-top:8px"><input type="checkbox" id="crxOk"><span>I have reviewed and validated the complete report${doc.bad.length?`, including the ${doc.bad.length} page${doc.bad.length===1?'':'s'} not updated listed above`:''}. (Needed for a client copy.)</span></label>
+    <div class="actions"><button class="btn primary" type="button" data-crxgo="${esc(crKey(pid,t,per))}" ${prep||state.role==='sa'?'':'disabled title="Only those who prepare the client report export it"'}>Generate</button><button class="btn" type="button" data-crxx>Cancel</button></div></div>`;
+  document.body.appendChild(o)}
+async function crxLog(doc,file,copy){const e={release_id:doc.r.id,project_id:doc.p.id,period_type:doc.t,period:doc.per,format_id:doc.F.id,format_name:doc.F.name,file,copy,pages_not_updated:doc.bad.map(x=>x.s.title),by:me().name,at:new Date().toISOString()};
+  if(CLOUD_ME){try{await rpc('crx_log',{p:e})}catch(x){}await cloudLoadCrf();return}(DB.crExports=DB.crExports||[]).push(e);save()}
+async function crExport(pid,t,per,file,copy,okd){const doc=await crDoc(pid,t,per,copy);if(copy==='client'&&!okd)throw new Error('Confirm that you reviewed and validated the complete report');
+  const name=`${crFill('{code} {report} {period}',doc.M).replace(/[\\/:*?"<>|]/g,'-')}${doc.draft?' DRAFT':''}${copy==='review'?' (review copy)':''}`;
+  if(file==='pptx')await crPptx(doc,name);else if(file==='docx')await crDocx(doc,name);else await crPdf(doc,name);await crxLog(doc,file==='pptx'?'PowerPoint':file==='docx'?'Word':'PDF',copy);return doc}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-crxopen],[data-crxx],[data-crxgo]');if(!t)return;
+  if(t.dataset.crxx!==undefined){const o=$('#crxDlg');if(o)o.remove();return}
+  if(t.dataset.crxopen!==undefined){const f=$('#relForm');if(f)crxOpen(f.dataset.pid,f.dataset.t,f.dataset.per);return}
+  const [pid,tp,per]=t.dataset.crxgo.split('|'),file=$('#crxFile').value,copy=$('#crxCopy').value,okd=$('#crxOk').checked;
+  if(copy==='client'&&!okd){toast('Tick that you reviewed and validated the complete report, or choose a review copy');return}
+  t.disabled=true;t.textContent='Generating…';try{await crExport(pid,tp,per,file,copy,okd);const o=$('#crxDlg');if(o)o.remove();toast('Report generated');crRedraw()}catch(err){toast('The export failed: '+(err.message||srvMsg(err)));t.disabled=false;t.textContent='Generate'}});
+
+/* ----- the three files, from the same document ----- */
+async function crImgs(doc){const L={logo:await merImg(doc.logo),clogo:await merImg(doc.clogo),photo:{},chart:{}};
+  for(const pg of doc.pages)for(const [i,b] of pg.blocks.entries()){if(b.t==='chart')L.chart[pg.s.key+i]=await chartImage(b.fn,1400,620);
+    if(b.t==='photos')for(const m of b.items){if(L.photo[m.id])continue;try{const u=URL.createObjectURL(await rmBlob(m)),im=await rmLoadImg(u),c=rmDraw(im,im.naturalWidth,im.naturalHeight,1400);URL.revokeObjectURL(u);L.photo[m.id]={url:c.toDataURL('image/jpeg',0.82),w:c.width,h:c.height}}catch(x){if(m.thumb)L.photo[m.id]={url:m.thumb,w:320,h:240}}}}
+  return L}
+const crLines=b=>b.lines.map(x=>x.replace(/\s+$/,'')).filter(x=>x.trim());
+const crPhotoPages=items=>{const P=[];for(let i=0;i<items.length;i+=4)P.push(items.slice(i,i+4));return P};
+async function crPptx(doc,name){await loadLib(LIBS.pptx);const P=new PptxGenJS(),st=doc.st,font=st.font||'Arial',c1=st.c1,c2=st.c2,I=await crImgs(doc);P.layout='LAYOUT_WIDE';P.author=me().name;P.company=doc.M.company;P.title=name;
+  const W=13.333,logo=(s,img,x,y,w,h)=>{if(!img)return;const k=Math.min(w/img.w,h/img.h);s.addImage({data:img.url,x:x+(w-img.w*k),y,w:img.w*k,h:img.h*k})};
+  P.defineSlideMaster({title:'CR',background:{color:'FFFFFF'},objects:[{rect:{x:0,y:0,w:W,h:0.1,fill:{color:c1}}},{line:{x:0.4,y:0.98,w:W-0.8,h:0,line:{color:c1,width:1.2}}},
+    {text:{text:st.footer||'',options:{x:0.4,y:7.08,w:W-2,h:0.3,fontSize:9,color:'7F7F7F',fontFace:font}}}],slideNumber:{x:W-1.0,y:7.08,w:0.6,h:0.3,fontSize:9,color:'7F7F7F',fontFace:font}});
+  const head=(s,pg)=>{s.addText(pg.s.title,{x:0.4,y:0.22,w:W-4.4,h:0.7,fontSize:22,bold:true,color:c1,fontFace:font});logo(s,I.logo,W-2.2,0.2,1.8,0.66);logo(s,I.clogo,W-4.1,0.2,1.7,0.66);
+    if(doc.mode==='review'&&pg.state.bad)s.addText('NOT UPDATED: '+pg.state.l,{x:0.4,y:1.02,w:W-0.8,h:0.32,fontSize:11,bold:true,color:'FFFFFF',fill:{color:'B03A2B'},fontFace:font});
+    if(doc.draft)s.addText('DRAFT',{x:W-1.7,y:6.6,w:1.3,h:0.4,fontSize:16,bold:true,color:'B03A2B',fontFace:font,align:'right'})};
+  const tbl=(s,b,y)=>{const n=b.cols.length,fs=n>8?8:n>5?9:10;if(b.title){s.addText(b.title,{x:0.4,y,w:W-0.8,h:0.3,fontSize:12,bold:true,color:c2,fontFace:font});y+=0.34}
+    const rows=[b.cols.map(c=>({text:String(c),options:{bold:true,color:'FFFFFF',fill:{color:c1}}})),...(b.rows.length?b.rows:[b.cols.map((c,i)=>i?'':'—')]).map((r,i)=>r.map(v=>({text:String(v??''),options:Object.assign({},b.total&&i===b.rows.length-1?{bold:true}:{},i%2?{fill:{color:'F2F4F2'}}:{})})))];
+    s.addTable(rows,{x:0.4,y,w:W-0.8,fontSize:fs,fontFace:font,border:{type:'solid',pt:0.5,color:'BFBFBF'},autoPage:true,autoPageRepeatHeader:true,autoPageSlideStartY:1.2,newSlideStartY:1.2,margin:0.05});return y+Math.min(5.6,0.3*(rows.length+1))};
+  /* the cover */
+  {const s=P.addSlide();s.background={color:'FFFFFF'};s.addShape(P.ShapeType.rect,{x:0,y:5.9,w:W,h:1.6,fill:{color:c1}});logo(s,I.clogo,0.6,0.5,3,1.3);logo(s,I.logo,W-3.6,0.5,3,1.3);
+    s.addText([doc.M.project?{text:crFill(st.title,doc.M),options:{fontSize:30,bold:true,color:c1,breakLine:true}}:null,{text:crFill(st.sub,doc.M),options:{fontSize:18,color:'404040',breakLine:true}},{text:crFill(st.line3,doc.M),options:{fontSize:20,bold:true,color:c2}}].filter(Boolean),{x:0.6,y:2.1,w:W-1.2,h:3.2,align:'center',valign:'middle',fontFace:font});
+    s.addText(st.footer||'',{x:0.6,y:6.5,w:W-1.2,h:0.4,fontSize:11,color:'FFFFFF',align:'center',fontFace:font});if(doc.draft)s.addText('DRAFT, not approved',{x:0.6,y:5.3,w:W-1.2,h:0.4,fontSize:14,bold:true,color:'B03A2B',align:'center',fontFace:font})}
+  for(const pg of doc.pages){const v=String(pg.s.src);if(v==='auto:cover')continue;
+    if(v==='auto:thanks'){const s=P.addSlide({masterName:'CR'});s.addText('Thank you',{x:0,y:2.8,w:W,h:1.2,fontSize:44,bold:true,color:c1,align:'center',fontFace:font});logo(s,I.logo,W/2-1.5,4.3,3,1);continue}
+    if(v==='auto:contents'){const s=P.addSlide({masterName:'CR'});head(s,pg);const L=doc.pages.filter(x=>x.num&&String(x.s.src)!=='auto:contents'),half=Math.ceil(L.length/2),col=a=>a.map(x=>({text:`${x.num}.  ${x.s.title}`,options:{breakLine:true,paraSpaceAfter:6}}));
+      s.addText(col(L.slice(0,L.length>12?half:L.length)),{x:0.6,y:1.3,w:L.length>12?5.9:11,h:5.5,fontSize:15,color:'262626',fontFace:font,valign:'top'});if(L.length>12)s.addText(col(L.slice(half)),{x:6.9,y:1.3,w:5.9,h:5.5,fontSize:15,color:'262626',fontFace:font,valign:'top'});continue}
+    const photos=pg.blocks.filter(b=>b.t==='photos'),other=pg.blocks.filter(b=>b.t!=='photos');
+    if(other.length||!photos.length){const s=P.addSlide({masterName:'CR'});head(s,pg);let y=doc.mode==='review'&&pg.state.bad?1.45:1.2;
+      for(const [i,b] of other.entries()){
+        if(b.t==='kv'){s.addTable(b.rows.map(([k,x])=>[{text:k,options:{bold:true,color:'FFFFFF',fill:{color:c1}}},{text:String(x??'')}]),{x:0.4,y,w:W-0.8,colW:[4.2,W-5],fontSize:12,fontFace:font,border:{type:'solid',pt:0.5,color:'BFBFBF'},margin:0.06});y+=0.36*b.rows.length+0.25}
+        else if(b.t==='table')y=tbl(s,b,y)+0.2;
+        else if(b.t==='kpis'){const w=(W-0.8-0.2*(b.items.length-1))/b.items.length;b.items.forEach(([l,x],j)=>{s.addShape(P.ShapeType.rect,{x:0.4+j*(w+0.2),y,w,h:1.0,fill:{color:'F2F4F2'},line:{color:c1,width:1}});s.addText([{text:String(x),options:{fontSize:22,bold:true,color:c1,breakLine:true}},{text:l,options:{fontSize:11,color:'404040'}}],{x:0.4+j*(w+0.2),y,w,h:1.0,align:'center',valign:'middle',fontFace:font})});y+=1.2}
+        else if(b.t==='chart'){const u=I.chart[pg.s.key+pg.blocks.indexOf(b)];if(u){s.addImage({data:u,x:0.6,y,w:W-1.2,h:Math.min(5.3,7.0-y)});y+=5.4}}
+        else if(b.t==='text'){const L=crLines(b);s.addText(L.map(x=>/^#\s*/.test(x)?{text:x.replace(/^#\s*/,''),options:{bold:true,color:c2,fontSize:16,breakLine:true,paraSpaceBefore:6}}:{text:x.replace(/^[-•]\s*/,''),options:{bullet:true,breakLine:true,fontSize:14,color:'262626'}}),{x:0.5,y,w:W-1,h:Math.max(1,6.9-y),valign:'top',fontFace:font});y=6.9}
+        else if(b.t==='note')s.addText(b.text,{x:0.5,y,w:W-1,h:0.6,fontSize:16,italic:true,color:'595959',fontFace:font})}}
+    for(const b of photos)for(const grp of crPhotoPages(b.items)){const s=P.addSlide({masterName:'CR'});head(s,pg);const cols=grp.length===1?1:2,rowsN=grp.length>2?2:1,cw=(W-0.8-0.3*(cols-1))/cols,ch=(5.7-0.3*(rowsN-1))/rowsN-0.4;
+      grp.forEach((m,j)=>{const im=I.photo[m.id],x=0.4+(j%cols)*(cw+0.3),y=1.25+Math.floor(j/cols)*(ch+0.7);if(im){const k=Math.min(cw/im.w,ch/im.h);s.addImage({data:im.url,x:x+(cw-im.w*k)/2,y,w:im.w*k,h:im.h*k})}
+        s.addText(m.caption||m.name,{x,y:y+ch+0.02,w:cw,h:0.34,fontSize:11,color:'262626',align:'center',fontFace:font})})}}
+  await saveFile(name+'.pptx',await P.write({outputType:'blob'}))}
+async function crDocx(doc,name){await loadLib(LIBS.docx);const X=window.docx,st=doc.st,font=st.font||'Arial',c1=st.c1,c2=st.c2,I=await crImgs(doc),kids=[];
+  const bytes=u=>Uint8Array.from(atob(u.split(',')[1]),c=>c.charCodeAt(0)),img=(im,w,h)=>{const k=Math.min(w/im.w,h/im.h);return new X.ImageRun({data:bytes(im.url),transformation:{width:Math.round(im.w*k),height:Math.round(im.h*k)}})};
+  const P=(t,o)=>new X.Paragraph(Object.assign({children:[new X.TextRun(Object.assign({text:String(t??''),font},o&&o.run))]},o&&o.par));
+  const cell=(t,h,sh)=>new X.TableCell({shading:h?{fill:c1}:sh?{fill:'F2F4F2'}:undefined,margins:{top:40,bottom:40,left:80,right:80},children:[new X.Paragraph({children:[new X.TextRun({text:String(t??''),bold:!!h,color:h?'FFFFFF':'262626',size:h?18:18,font})]})]});
+  const table=(cols,rows)=>new X.Table({width:{size:100,type:X.WidthType.PERCENTAGE},rows:[new X.TableRow({tableHeader:true,children:cols.map(c=>cell(c,true))}),...(rows.length?rows:[cols.map((c,i)=>i?'':'—')]).map((r,i)=>new X.TableRow({children:r.map(v=>cell(v,false,i%2))}))]});
+  /* the cover */
+  const lg=[I.clogo?img(I.clogo,180,80):null,I.logo?new X.TextRun({text:'\t'}):null,I.logo?img(I.logo,180,80):null].filter(Boolean);
+  if(lg.length)kids.push(new X.Paragraph({children:lg,tabStops:[{type:X.TabStopType.RIGHT,position:13600}]}));
+  kids.push(P('',{par:{spacing:{before:1800}}}),P(crFill(st.title,doc.M),{par:{alignment:X.AlignmentType.CENTER},run:{bold:true,size:52,color:c1}}),P(crFill(st.sub,doc.M),{par:{alignment:X.AlignmentType.CENTER,spacing:{before:200}},run:{size:30,color:'404040'}}),
+    P(crFill(st.line3,doc.M),{par:{alignment:X.AlignmentType.CENTER,spacing:{before:200}},run:{bold:true,size:34,color:c2}}));if(doc.draft)kids.push(P('DRAFT, not approved',{par:{alignment:X.AlignmentType.CENTER,spacing:{before:400}},run:{bold:true,size:28,color:'B03A2B'}}));
+  for(const pg of doc.pages){const v=String(pg.s.src);if(v==='auto:cover')continue;
+    kids.push(new X.Paragraph({pageBreakBefore:true,heading:X.HeadingLevel.HEADING_1,children:[new X.TextRun({text:(pg.num?pg.num+'. ':'')+pg.s.title,bold:true,size:36,color:c1,font})]}));
+    if(doc.mode==='review'&&pg.state.bad)kids.push(P('NOT UPDATED: '+pg.state.l,{run:{bold:true,color:'FFFFFF',highlight:'red'}}));
+    if(v==='auto:thanks'){kids.push(P('Thank you',{par:{alignment:X.AlignmentType.CENTER,spacing:{before:2000}},run:{bold:true,size:72,color:c1}}));continue}
+    if(v==='auto:contents'){doc.pages.filter(x=>x.num&&String(x.s.src)!=='auto:contents').forEach(x=>kids.push(P(`${x.num}.  ${x.s.title}`,{par:{spacing:{after:80}},run:{size:24}})));continue}
+    for(const [i,b] of pg.blocks.entries()){
+      if(b.title)kids.push(P(b.title,{par:{spacing:{before:200,after:80}},run:{bold:true,size:24,color:c2}}));
+      if(b.t==='kv')kids.push(new X.Table({width:{size:100,type:X.WidthType.PERCENTAGE},rows:b.rows.map(([k,x])=>new X.TableRow({children:[cell(k,true),cell(x)]}))}));
+      else if(b.t==='table')kids.push(table(b.cols,b.rows));
+      else if(b.t==='kpis')kids.push(table(b.items.map(x=>x[0]),[b.items.map(x=>String(x[1]))]));
+      else if(b.t==='chart'){const u=I.chart[pg.s.key+i];if(u)kids.push(new X.Paragraph({children:[img({url:u,w:1400,h:620},880,390)]}))}
+      else if(b.t==='text')crLines(b).forEach(x=>kids.push(/^#\s*/.test(x)?P(x.replace(/^#\s*/,''),{par:{spacing:{before:160}},run:{bold:true,size:26,color:c2}}):new X.Paragraph({bullet:{level:0},children:[new X.TextRun({text:x.replace(/^[-•]\s*/,''),size:22,font})]})));
+      else if(b.t==='photos')b.items.forEach(m=>{const im=I.photo[m.id];if(im)kids.push(new X.Paragraph({alignment:X.AlignmentType.CENTER,spacing:{before:160},children:[img(im,560,330)]}));kids.push(P(m.caption||m.name,{par:{alignment:X.AlignmentType.CENTER},run:{size:20,italics:true}}))});
+      else if(b.t==='note')kids.push(P(b.text,{run:{italics:true,size:24,color:'595959'}}));
+      kids.push(P(''))}}
+  const hdr=new X.Header({children:[new X.Paragraph({tabStops:[{type:X.TabStopType.RIGHT,position:13600}],children:[new X.TextRun({text:crFill('{short} · {report} · {period}',doc.M)+(doc.draft?' · DRAFT':''),size:16,color:'7F7F7F',font}),...(I.logo?[new X.TextRun({text:'\t'}),img(I.logo,90,32)]:[])]})]});
+  const ftr=new X.Footer({children:[new X.Paragraph({tabStops:[{type:X.TabStopType.RIGHT,position:13600}],children:[new X.TextRun({text:st.footer||'',size:16,color:'7F7F7F',font}),new X.TextRun({text:'\t',font}),new X.TextRun({children:[X.PageNumber.CURRENT],size:16,color:'7F7F7F',font})]})]});
+  const D=new X.Document({creator:me().name,title:name,styles:{default:{document:{run:{font,size:20}}}},sections:[{properties:{page:{size:{orientation:X.PageOrientation.LANDSCAPE},margin:{top:900,bottom:900,left:900,right:900}}},headers:{default:hdr},footers:{default:ftr},children:kids}]});
+  await saveFile(name+'.docx',await X.Packer.toBlob(D))}
+async function crPdf(doc,name){await loadLib(LIBS.jspdf);await loadLib(LIBS.auto);const {jsPDF}=window.jspdf,st=doc.st,I=await crImgs(doc),R=h=>[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)],c1=R(st.c1),c2=R(st.c2);
+  const D=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'}),W=297,H=210,txt=s=>String(s??'').replace(/[–—]/g,'-').replace(/[^\x20-\x7E -ɏ]/g,' ');let pn=0;
+  const logo=(img,x,y,w,h)=>{if(!img)return;const k=Math.min(w/img.w,h/img.h);D.addImage(img.url,img.ext?img.ext.toUpperCase():'JPEG',x+(w-img.w*k),y,img.w*k,img.h*k,undefined,'FAST')};
+  const frame=pg=>{pn++;D.setFillColor(...c1);D.rect(0,0,W,2.5,'F');D.setFontSize(18);D.setTextColor(...c1);D.text(txt(pg.s.title),10,15);D.setDrawColor(...c1);D.setLineWidth(0.4);D.line(10,21,W-10,21);logo(I.logo,W-55,5,45,14);logo(I.clogo,W-105,5,45,14);
+    D.setFontSize(8);D.setTextColor(127);D.text(txt(st.footer||''),10,H-6);D.text(String(pn),W-10,H-6,{align:'right'});if(doc.draft){D.setTextColor(176,58,43);D.setFontSize(11);D.text('DRAFT',W-10,H-12,{align:'right'})}
+    D.setTextColor(0);if(doc.mode==='review'&&pg.state.bad){D.setFillColor(176,58,43);D.rect(10,23,W-20,7,'F');D.setTextColor(255);D.setFontSize(9);D.text(txt('NOT UPDATED: '+pg.state.l),12,28);D.setTextColor(0);return 33}return 26};
+  /* the cover */
+  logo(I.clogo,12,12,70,30);logo(I.logo,W-82,12,70,30);D.setFillColor(...c1);D.rect(0,H-35,W,35,'F');D.setTextColor(...c1);D.setFontSize(24);D.text(D.splitTextToSize(txt(crFill(st.title,doc.M)),W-40),W/2,80,{align:'center'});
+  D.setTextColor(64);D.setFontSize(15);D.text(txt(crFill(st.sub,doc.M)),W/2,104,{align:'center'});D.setTextColor(...c2);D.setFontSize(17);D.text(txt(crFill(st.line3,doc.M)),W/2,118,{align:'center'});
+  D.setTextColor(255);D.setFontSize(10);D.text(txt(st.footer||''),W/2,H-15,{align:'center'});if(doc.draft){D.setTextColor(176,58,43);D.setFontSize(13);D.text('DRAFT, not approved',W/2,136,{align:'center'})}pn++;
+  for(const pg of doc.pages){const v=String(pg.s.src);if(v==='auto:cover')continue;D.addPage('a4','landscape');let y=frame(pg);
+    if(v==='auto:thanks'){D.setFontSize(34);D.setTextColor(...c1);D.text('Thank you',W/2,H/2,{align:'center'});D.setTextColor(0);continue}
+    if(v==='auto:contents'){D.setFontSize(12);const L=doc.pages.filter(x=>x.num&&String(x.s.src)!=='auto:contents');L.forEach((x,i)=>{const col=i>=Math.ceil(L.length/2)&&L.length>12?1:0,row=col?i-Math.ceil(L.length/2):i;D.text(txt(`${x.num}.  ${x.s.title}`),15+col*140,y+8+row*8)});continue}
+    for(const [i,b] of pg.blocks.entries()){if(y>H-30){D.addPage('a4','landscape');y=frame(pg)}
+      if(b.title){D.setFontSize(11);D.setTextColor(...c2);D.text(txt(b.title),10,y+4);D.setTextColor(0);y+=7}
+      if(b.t==='kv'||b.t==='table'||b.t==='kpis'){const head=b.t==='kv'?null:b.t==='kpis'?b.items.map(x=>x[0]):b.cols,body=b.t==='kv'?b.rows:b.t==='kpis'?[b.items.map(x=>String(x[1]))]:(b.rows.length?b.rows:[b.cols.map((c,j)=>j?'':'-')]);
+        D.autoTable({startY:y,head:head?[head.map(txt)]:undefined,body:body.map(r=>r.map(txt)),theme:'grid',margin:{left:10,right:10,top:30,bottom:14},styles:{fontSize:b.t==='kpis'?12:8.5,cellPadding:1.4,halign:b.t==='kpis'?'center':'left'},headStyles:{fillColor:c1,textColor:255},
+          columnStyles:b.t==='kv'?{0:{cellWidth:80,fontStyle:'bold',fillColor:c1,textColor:255}}:{},didDrawPage:h=>{if(h.pageNumber>1)frame(pg)}});y=D.lastAutoTable.finalY+5}
+      else if(b.t==='chart'){const u=I.chart[pg.s.key+i];if(u){const h=Math.min(150,H-y-14);D.addImage(u,'PNG',20,y,h*1400/620,h,undefined,'FAST');y+=h+4}}
+      else if(b.t==='text'){D.setFontSize(11);crLines(b).forEach(x=>{if(y>H-18){D.addPage('a4','landscape');y=frame(pg)}const head=/^#\s*/.test(x),t=head?x.replace(/^#\s*/,''):'•  '+x.replace(/^[-•]\s*/,'');if(head){D.setTextColor(...c2);D.setFont(undefined,'bold')}const L=D.splitTextToSize(txt(t),W-30);D.text(L,14,y+5);y+=L.length*5+2;D.setTextColor(0);D.setFont(undefined,'normal')})}
+      else if(b.t==='photos'){crPhotoPages(b.items).forEach((grp,gi)=>{if(gi||y>40){D.addPage('a4','landscape');y=frame(pg)}const cols=grp.length===1?1:2,rows=grp.length>2?2:1,cw=(W-30)/cols,ch=(H-y-20)/rows-8;
+          grp.forEach((m,j)=>{const im=I.photo[m.id],x=10+(j%cols)*(cw+10),yy=y+Math.floor(j/cols)*(ch+10);if(im){const k=Math.min(cw/im.w,ch/im.h);D.addImage(im.url,'JPEG',x+(cw-im.w*k)/2,yy,im.w*k,im.h*k,undefined,'FAST')}D.setFontSize(9);D.text(txt(m.caption||m.name),x+cw/2,yy+ch+4,{align:'center'})});y=H})}
+      else if(b.t==='note'){D.setFontSize(13);D.setTextColor(89);D.text(txt(b.text),14,y+6);D.setTextColor(0);y+=10}}}
+  await saveFile(name+'.pdf',D.output('blob'))}
+
+/* ----- Settings → Client report formats (super admin) ----- */
+const CRF_FONTS=['Arial','Calibri','Segoe UI','Tahoma','Times New Roman'];
+const crfBlank=()=>({id:null,name:'',customer:null,periods:['week','month'],style:Object.assign({},CRF_STYLE0),sections:JSON.parse(JSON.stringify(CRF_STD.sections)),active:true});
+const crfNewKey=F=>'s'+(F.sections.reduce((m,s)=>Math.max(m,+String(s.key).replace(/\D/g,'')||0),0)+1);
+function crfAdminHTML(){const E=state.crfEdit,L=crfRows().slice().sort((a,b)=>a.name.localeCompare(b.name)),srcOpt=v=>`<optgroup label="From ProTrack">${CRF_SRC.map(([k,l])=>`<option value="auto:${k}" ${v==='auto:'+k?'selected':''}>${esc(l)}</option>`).join('')}</optgroup><optgroup label="Entered by the planning engineer">${CRF_MAN.map(([k,l])=>`<option value="manual:${k}" ${v==='manual:'+k?'selected':''}>${esc(l)}</option>`).join('')}</optgroup>`;
+  const used=x=>PROJECTS.filter(p=>crfFor(p.id,(x.periods||['week'])[0])===x).length;
+  return `${CLOUD_ME&&DB.crfMissing?'<div class="warn-box" style="margin:0 0 12px"><b>Client report formats need the v48 database update.</b> Run schema-update-v48.sql (STAGE-42-SETUP).</div>':''}
+  <p class="small muted" style="margin:0 0 10px">A client report is prepared in the format of its customer: the pages in their order, the colours, font, cover and footer. A page is filled from ProTrack or entered by the planning engineer in the client report (safety statistics, quality, correspondence …). Draft a format from the client's own PowerPoint: its slide titles and table headings become the pages; check each page's source before saving. Without a format the <b>ProTrack standard client report</b> is used.</p>
+  <div class="actions" style="margin:0 0 10px"><button class="btn primary" type="button" data-crfnew>Create a format</button><label class="btn" for="crfPptx">Draft a format from a client's PowerPoint</label><input id="crfPptx" type="file" accept=".pptx" hidden></div>
+  ${E?`<div class="impbox" id="crfForm"><div class="fields">${F('Format name',`<input data-crfe="name" maxlength="120" value="${esc(E.name)}" placeholder="For example: SEC weekly progress report">`)}
+      ${F('Customer',`<select data-crfe="customer"><option value="">Any customer (the default format)</option>${custRows().map(c=>`<option ${E.customer&&custKey(E.customer)===custKey(c.name)?'selected':''}>${esc(c.name)}</option>`).join('')}${E.customer&&!custOf(E.customer)?`<option selected>${esc(E.customer)}</option>`:''}</select>`)}
+      <div class="field">Reports<div class="actions" style="margin:4px 0 0">${[['week','Weekly'],['month','Monthly']].map(([k,l])=>`<label class="chk"><input type="checkbox" data-crfper="${k}" ${E.periods.includes(k)?'checked':''}><span>${l}</span></label>`).join('')}<label class="chk"><input type="checkbox" data-crfe="active" ${E.active!==false?'checked':''}><span>Active</span></label></div></div></div>
+    <div class="fields" style="margin-top:8px">${F('Main colour',`<input type="color" data-crfs="c1" value="#${esc(E.style.c1)}">`)}${F('Second colour',`<input type="color" data-crfs="c2" value="#${esc(E.style.c2)}">`)}${F('Font',`<select data-crfs="font">${CRF_FONTS.map(f=>`<option ${E.style.font===f?'selected':''}>${f}</option>`).join('')}</select>`)}
+      ${F('Report title',`<input data-crfs="report" maxlength="80" value="${esc(E.style.report||'')}" placeholder="Weekly Progress Report">`)}${F('Footer (every page)',`<input data-crfs="footer" maxlength="200" value="${esc(E.style.footer||'')}" placeholder="Classification text the client asks for">`,true)}
+      ${F('Cover, line 1',`<input data-crfs="title" maxlength="120" value="${esc(E.style.title||'')}">`)}${F('Cover, line 2',`<input data-crfs="sub" maxlength="120" value="${esc(E.style.sub||'')}">`)}${F('Cover, line 3',`<input data-crfs="line3" maxlength="120" value="${esc(E.style.line3||'')}">`)}</div>
+    <p class="small muted" style="margin:4px 0 8px">In the cover lines: {project}, {short}, {code}, {client}, {contract_no}, {report}, {period}, {week}, {project_week} (week number from the project start), {date}, {company}.</p>
+    <div class="scroll"><table class="tbl small crfsec"><thead><tr><th class="n">#</th><th>Page title</th><th>Filled from</th><th>Table columns (comma between) / first-column rows (one a line)</th><th>Guidance for the planning engineer</th><th></th></tr></thead><tbody>
+    ${E.sections.map((s,i)=>`<tr><td class="n">${i+1}</td><td><input data-crfx="${i}|title" maxlength="120" value="${esc(s.title)}"></td><td><select data-crfx="${i}|src">${srcOpt(s.src)}</select></td>
+      <td>${s.src==='manual:table'?`<input data-crfx="${i}|cols" value="${esc((s.cols||[]).join(', '))}" placeholder="Classification, This week, Project to date"><textarea data-crfx="${i}|rows0" rows="2" placeholder="Optional: the rows always listed, for example Fatalities">${esc((s.rows0||[]).join('\n'))}</textarea>`:'<span class="muted small">—</span>'}</td>
+      <td><input data-crfx="${i}|hint" maxlength="300" value="${esc(s.hint||'')}"></td>
+      <td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-crfmv="${i}|-1" aria-label="Move up" ${i?'':'disabled'}>▲</button><button class="btn sm" type="button" data-crfmv="${i}|1" aria-label="Move down" ${i<E.sections.length-1?'':'disabled'}>▼</button><button class="btn sm danger" type="button" data-crfdelsec="${i}" aria-label="Remove the page">✕</button></td></tr>`).join('')}</tbody></table></div>
+    <div class="actions"><button class="btn sm" type="button" data-crfaddsec>Add a page</button></div>
+    <div class="actions"><button class="btn primary" type="button" data-crfsave>${E.id?'Save the format':'Create the format'}</button><button class="btn" type="button" data-crfx2>Cancel</button></div>${E.note?`<p class="small a-c">${esc(E.note)}</p>`:''}</div>`:''}
+  <table class="tbl"><thead><tr><th>Format</th><th>Customer</th><th>Reports</th><th class="n">Pages</th><th class="n">Entered pages</th><th>Status</th><th></th></tr></thead><tbody>
+    <tr><td><b>${esc(CRF_STD.name)}</b><span class="t2">Built in, used when no other format applies</span></td><td class="muted">Any</td><td>Weekly, monthly</td><td class="n">${CRF_STD.sections.length}</td><td class="n">0</td><td><span class="st Approved">Built in</span></td><td class="n"><button class="btn sm" type="button" data-crfcopy="STD">Copy</button></td></tr>
+    ${L.map(x=>`<tr><td><b>${esc(x.name)}</b><span class="t2">rev ${x.rev||1}${x.by?` · ${esc(x.by)} ${esc(tStamp(x.at))}`:''}</span></td><td>${esc(x.customer||'Any (default)')}</td><td>${(x.periods||[]).map(k=>k==='week'?'Weekly':'Monthly').join(', ')}</td><td class="n">${x.sections.length}</td><td class="n">${x.sections.filter(crfIsMan).length}</td>
+      <td><span class="st ${x.active!==false?'Approved':'Draft'}">${x.active!==false?'Active':'Inactive'}</span></td><td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-crfedit="${esc(x.id)}">Edit</button> <button class="btn sm" type="button" data-crfcopy="${esc(x.id)}">Copy</button> <button class="btn sm danger" type="button" data-crfdel="${esc(x.id)}">Delete</button></td></tr>`).join('')}</tbody></table>`}
+/* a client's PowerPoint into a draft format: the slide titles and table headings, the main colour, font and classification footer */
+async function crfFromPptx(file){await loadLib(LIBS.zip);const z=await JSZip.loadAsync(await file.arrayBuffer()),get=async p=>{const f=z.file(p);return f?f.async('string'):''};
+  const pres=await get('ppt/presentation.xml'),rels=await get('ppt/_rels/presentation.xml.rels');if(!pres)throw new Error('This is not a PowerPoint file');
+  const order=[...pres.matchAll(/<p:sldId [^>]*r:id="(rId\d+)"/g)].map(m=>{const t=rels.match(new RegExp('<Relationship[^>]*Id="'+m[1]+'"[^>]*/>'));return t?'ppt/'+(t[0].match(/Target="([^"]+)"/)||[])[1]:null}).filter(Boolean);
+  const dec=s=>s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+  const skip=s=>!s||/^\s*\d+\s*$/.test(s)||/classified|confidential|public internal|مصنف|مقيد|عام \(/i.test(s)||s.trim().length<3;
+  const RULES=[[/^contents?\b|table of contents/i,'auto:contents'],[/thank/i,'auto:thanks'],[/highlight|project information|project info/i,'auto:info'],[/s[\s-]?curve|epc curves?/i,'auto:scurve'],[/life ?cycle/i,'auto:phases'],
+    [/progress summary|project summary|summary of progress|overall percent/i,'auto:summary'],[/intermediate milestone|key milestone/i,'auto:keyms'],[/milestone/i,'auto:milestones'],[/major activities|during this period|achiev/i,'auto:note:achieved'],
+    [/planned activities|next period|next week/i,'auto:note:next'],[/look.?ahead/i,'auto:look'],[/manpower/i,'auto:manpower'],[/issue|concern|challenge|bottleneck/i,'auto:issues'],[/site picture|photo/i,'auto:photos'],[/change order|variation/i,'auto:contract'],[/e ?& ?p\b|engineering and procurement/i,'auto:ep']];
+  const out=[],seen=new Set(),lays={};let footer='',colors={};
+  for(const [i,sp] of order.entries()){const x=await get(sp);if(!x)continue;
+    const shapes=[...x.matchAll(/<p:sp>[\s\S]*?<\/p:sp>/g)].map(m=>m[0]),titleSp=shapes.find(s=>/<p:ph[^>]*type="(title|ctrTitle)"/.test(s));
+    const paras=sh=>[...sh.matchAll(/<a:p>([\s\S]*?)<\/a:p>/g)].map(m=>dec([...m[1].matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(t=>t[1]).join('')).trim()).filter(Boolean);
+    const all=shapes.flatMap(paras);all.forEach(s=>{if(!footer&&/classified|confidential/i.test(s))footer=s});
+    {const lr=(await get(sp.replace('slides/','slides/_rels/')+'.rels')).match(/slideLayouts\/(slideLayout\d+\.xml)/);if(lr)lays[lr[1]]=(lays[lr[1]]||0)+1}
+    let title=(titleSp?paras(titleSp).join(' '):'')||all.find(s=>!skip(s))||'';title=title.replace(/^\s*\d+[.\-)]\s*/,'').replace(/\s+/g,' ').trim().slice(0,120);if(i===0){out.push({title:'Cover page',src:'auto:cover'});continue}if(skip(title))continue;
+    const tbl=(x.match(/<a:tbl>[\s\S]*?<\/a:tbl>/)||[])[0],pics=(x.match(/<p:pic>/g)||[]).length,hd=tbl?[...((tbl.match(/<a:tr[\s\S]*?<\/a:tr>/)||[''])[0]).matchAll(/<a:tc[\s\S]*?<\/a:tc>/g)].map(c=>dec([...c[0].matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(t=>t[1]).join(' ')).trim()).filter(c=>c&&!/^[\d\s.,%#()-]+$/.test(c)).slice(0,12):[];
+    const rule=RULES.find(([re])=>re.test(title)),key=title.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(seen.has(key))continue;seen.add(key);
+    const s={title,src:rule?rule[1]:tbl&&hd.length?'manual:table':pics?'manual:images':'manual:text'};if(s.src==='manual:table')s.cols=[...new Set(hd)].slice(0,12);out.push(s)}
+  if(!out.some(s=>s.src==='auto:contents'))out.splice(1,0,{title:'Contents',src:'auto:contents'});
+  /* the main colour: the commonest colour of the slide layouts the slides use, greys left out */
+  const grey=h=>{const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);return Math.abs(r-g)<14&&Math.abs(g-b)<14};
+  for(const [l,n] of Object.entries(lays)){const lx=await get('ppt/slideLayouts/'+l);[...lx.matchAll(/srgbClr val="([0-9A-F]{6})"/g)].forEach(m=>{if(!grey(m[1]))colors[m[1]]=(colors[m[1]]||0)+n});
+    if(!footer)footer=[...lx.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(m=>dec(m[1])).find(s=>/classified|confidential/i.test(s))||''}
+  if(!footer)footer=[...(await get('ppt/slideMasters/slideMaster1.xml')).matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(m=>dec(m[1])).find(s=>/classified|confidential/i.test(s))||'';
+  const c1=Object.entries(colors).sort((a,b)=>b[1]-a[1])[0],th=await get('ppt/theme/theme1.xml'),font=(th.match(/<a:minorFont><a:latin typeface="([^"]+)"/)||[])[1];
+  const F=crfBlank();F.name=file.name.replace(/\.pptx$/i,'').replace(/[-_]+/g,' ').replace(/\s+\d{1,2}[ -](jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*[ -]\d{2,4}.*$/i,'').trim().slice(0,120);
+  F.sections=out.map((s,i)=>Object.assign({key:'s'+(i+1)},s));if(c1)F.style.c1=c1[0];F.style.c2=F.style.c1;if(font&&CRF_FONTS.includes(font))F.style.font=font;F.style.footer=footer.slice(0,200);
+  F.note=`Drafted from ${file.name}: ${F.sections.length} pages (repeated titles kept once). Check each page's source, the table columns and the customer, then save.`;return F}
+document.addEventListener('input',e=>{const t=e.target,E=state.crfEdit;if(!t||!t.dataset||!E)return;
+  if(t.dataset.crfe&&t.dataset.crfe!=='active'&&t.dataset.crfe!=='customer')E[t.dataset.crfe]=t.value;
+  if(t.dataset.crfs)E.style[t.dataset.crfs]=t.type==='color'?t.value.replace('#','').toUpperCase():t.value;
+  if(t.dataset.crfx){const [i,k]=t.dataset.crfx.split('|'),s=E.sections[+i];if(k==='cols')s.cols=t.value.split(',').map(x=>x.trim()).filter(Boolean);else if(k==='rows0')s.rows0=t.value.split('\n').map(x=>x.trim()).filter(Boolean);else if(k!=='src')s[k]=t.value}});
+document.addEventListener('change',async e=>{const t=e.target;if(!t)return;
+  if(t.id==='crfPptx'&&t.files&&t.files[0]){const f=t.files[0];t.value='';try{state.crfEdit=await crfFromPptx(f);render()}catch(err){toast('The PowerPoint could not be read: '+(err.message||err))}return}
+  const E=state.crfEdit;if(!E||!t.dataset)return;
+  if(t.dataset.crfe==='customer')E.customer=t.value||null;if(t.dataset.crfe==='active')E.active=t.checked;
+  if(t.dataset.crfper){const k=t.dataset.crfper;E.periods=t.checked?[...new Set([...E.periods,k])]:E.periods.filter(x=>x!==k)}
+  if(t.dataset.crfx&&t.dataset.crfx.endsWith('|src')){const s=E.sections[+t.dataset.crfx.split('|')[0]];s.src=t.value;if(s.src==='manual:table'&&!(s.cols||[]).length)s.cols=['Item','Details','Remarks'];if(/^Page \d+$|^$/.test(s.title))s.title=crfSrcName(s.src);render()}});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-crfnew],[data-crfedit],[data-crfcopy],[data-crfdel],[data-crfsave],[data-crfx2],[data-crfaddsec],[data-crfdelsec],[data-crfmv]');if(!t)return;const d=t.dataset,E=state.crfEdit;
+  if(d.crfnew!==undefined){state.crfEdit=crfBlank();render();return}
+  if(d.crfedit){const x=crfById(d.crfedit);if(x){state.crfEdit=JSON.parse(JSON.stringify(x));render()}return}
+  if(d.crfcopy){const x=d.crfcopy==='STD'?CRF_STD:crfById(d.crfcopy);if(x){const c=JSON.parse(JSON.stringify(x));delete c.builtin;c.id=null;c.name=x.name+' (copy)';c.style=Object.assign({},CRF_STYLE0,c.style);state.crfEdit=c;render()}return}
+  if(d.crfdel){const x=crfById(d.crfdel);if(!x||!await confirmBox(`Delete the format "${x.name}"? Reports keep the pages already entered; their projects use the customer's or the standard format.`,'Delete'))return;if(await crfDelete(d.crfdel)){toast('Format deleted');render()}return}
+  if(!E)return;
+  if(d.crfx2!==undefined){state.crfEdit=null;render();return}
+  if(d.crfaddsec!==undefined){E.sections.push({key:crfNewKey(E),title:'New page',src:'manual:text'});render();return}
+  if(d.crfdelsec){E.sections.splice(+d.crfdelsec,1);render();return}
+  if(d.crfmv){const [i,k]=d.crfmv.split('|').map(Number),j=i+k;if(j<0||j>=E.sections.length)return;[E.sections[i],E.sections[j]]=[E.sections[j],E.sections[i]];render();return}
+  if(d.crfsave!==undefined){if(await crfSave(E)){state.crfEdit=null;toast('Format saved');render()}}});
+/* demo page: a SAMPLE format with the outline of the SEC weekly progress report (pages and headings only, no figures) */
+function seedV345(){if(CLOUD||DB.v345Seeded)return;const L=DB.crFormats||(DB.crFormats=[]);if(!L.length){const P=[['Cover page','auto:cover'],['Content','auto:contents'],['Project Main Highlights','auto:info'],['Design Status','manual:text'],['Project Progress Summary','auto:summary'],
+    ['Project S-Curve','auto:scurve'],['Project Progress (Life Cycle)','auto:phases'],['Major Activities During this Period','auto:note:achieved'],['Planned Activities during Next Period','auto:note:next'],
+    ['Material Delivery Status','manual:table',['Sl. No','Equipment','Delivery','Status','Expected date','Remarks']],['Outage Plan','manual:table',['Outage','Planned date','Duration','Status','Remarks']],['Change Order','auto:contract'],
+    ['HSE (Health, Safety and Environment) Summary','manual:table',['Classification','This week','Project to date'],['Fatalities','Lost time injuries','Restricted work cases','Medical treatment cases','First aid cases','Near misses','Man-hours worked','Safety index']],
+    ['Manpower and Equipment','auto:manpower'],['List of Correspondence','manual:table',['Date','Reference','Subject','Main bottlenecks']],
+    ['QC Report','manual:table',['Item','Previous cumulative','This week','Cumulative'],['RFIs raised','RFIs approved','MIRs raised','ITPs submitted for approval','Method statements submitted','FAT documents submitted']],
+    ['Testing & Commissioning','manual:text'],['Transmission Line Status','manual:text'],['Issues and Concerns','auto:issues'],['Site Pictures','auto:photos'],['Thank you','auto:thanks']];
+    L.push({id:'F1',name:'SEC weekly progress report (SAMPLE format)',customer:'Saudi Electricity Company',periods:['week'],active:true,rev:1,sample:true,by:'ProTrack demo',at:new Date().toISOString(),
+      style:{c1:'40916C',c2:'006937',font:'Arial',footer:'Classification footer as required by the client (sample)',report:'Weekly Progress Report',title:'{project}',sub:'{contract_no}',line3:'{report} – {project_week} – {date}',ratio:'16:9'},
+      sections:P.map(([title,src,cols,rows0],i)=>Object.assign({key:'s'+(i+1),title,src},cols?{cols}:{},rows0?{rows0}:{},src.startsWith('manual')?{hint:'Not held in ProTrack: enter it for this period, or mark it not applicable.'}:{}))})}
+  DB.v345Seeded=true;save()}
+
 function openClientRelease(pid,t,per){
+  state.crW=null;
   const p=projById(pid),open=relOpen(pid,'client',t,per),released=relReleased(pid,'client',t,per),r=open||released,editable=(!r||r.status==='Draft')&&canPrepRel('client')&&!(!open&&released);
   const u=id=>{const x=id&&userById(id);return x?x.name:'—'},H=r?relRows().filter(x=>x.project_id===pid&&x.kind==='client'&&x.period_type===t&&x.period===per).flatMap(x=>relAuditOf(x.id).map(a=>({...a,rev:x.rev}))).sort((a,b)=>String(b.at_time).localeCompare(String(a.at_time))):[];
   const comp=relClientDefaults(pid,t,per),f=r?r.figures:comp,nar=(r&&r.narrative)||{},ov=(r&&r.overrides)||[],tab=state.clTab||'overview',dis=editable?'':'disabled';
   const canDecide=open&&open.status==='Submitted'&&relCanApprove(pid,'client')&&open.submitted_by!==me().id,pc=v=>v==null||v===''?'—':fmt(+v,1)+'%';
-  const TABS=[['overview','Overview'],['phases','Progress by phase'],['ep','E&P progress'],['ms','Milestones'],['look','Look-ahead'],['media','Photos & videos'],['notes','Report notes'],['appr','Approval']],show=k=>tab===k?'':'hidden';
+  const TABS=[['overview','Overview'],['phases','Progress by phase'],['ep','E&P progress'],['ms','Milestones'],['look','Look-ahead'],['media','Photos & videos'],['notes','Report notes'],['fmt','Client format and export'],['appr','Approval']],show=k=>tab===k?'':'hidden';
   const ph=(r?f.phases:comp.phases)||[],ms=(r?f.milestones:comp.milestones)||[],la=(r?f.lookahead:comp.lookahead)||[];
   const k=(l,v,s,cls)=>`<div class="rkpi ${cls||''}"><span class="l">${l}</span><b>${v}</b><span class="t2">${s||''}</span></div>`;
   $('#sheet').innerHTML=`<div class="rdhead"><div><h2 style="margin:0">Client report · ${esc(perLabel(t,per))}</h2><span class="small muted">${esc(pcode(p))} · ${esc(p.name)} · client weightage</span></div>
@@ -6326,6 +6715,7 @@ function openClientRelease(pid,t,per){
     <section class="rdpanel" data-clp="look" ${show('look')}><div class="rdcard"><h3>Look-ahead: open activities, next 30 days</h3><table class="tbl"><thead><tr><th>Activity</th><th>Phase</th><th>Planned start</th><th>Forecast finish</th><th class="n">% complete</th></tr></thead><tbody>
       ${la.map(a=>`<tr><td class="small">${esc(a.id)}<span class="t2">${esc(a.name||'')}</span></td><td class="small">${esc(RPH_N[a.phase]||'—')}</td><td class="small">${a.bs?fmtDY(a.bs):'—'}</td><td class="small">${a.ef||a.bf?fmtDY(a.ef||a.bf):'—'}</td><td class="n">${fmt(+a.pct||0,0)}%</td></tr>`).join('')||'<tr><td colspan="5" class="muted">Nothing in the next 30 days.</td></tr>'}</tbody></table></div></section>
     <section class="rdpanel" data-clp="media" ${show('media')}>${rmTabHTML(pid,'client',t,per)}</section>
+    <section class="rdpanel" data-clp="fmt" ${show('fmt')}>${crTabHTML(pid,t,per,r,editable)}</section>
     <section class="rdpanel" data-clp="notes" ${show('notes')}><div class="rdgrid">${CL_NOTES.map(([x,l])=>`<div class="rdcard"><h3>${l}</h3><textarea name="n_${x}" rows="4" ${dis}>${esc(nar[x]||'')}</textarea></div>`).join('')}</div>
       <p class="small muted">The client report shows client-weighted figures only. Internal weightage, management remarks and cost are never in it.</p></section>
     <section class="rdpanel" data-clp="appr" ${show('appr')}><div class="rdgrid">
@@ -6359,6 +6749,7 @@ function clientPayload(f){
   ['tcc','pac','fac'].forEach(x=>{const el=f.elements['d_'+x+'_fc_date'];if(el)figures[x+'_fc_date']=el.value||null});
   CL_NOTES.forEach(([x])=>{const el=f.elements['n_'+x];if(el)nar[x]=el.value.trim()});{const s=blSelOf();if(s)figures.bl_sel=s}
   figures.key_ms=kmsFor(f.dataset.pid,'client',f.dataset.t,f.dataset.per);figures.phase_tbl=phaseTbl(f.dataset.pid,'client',f.dataset.t,f.dataset.per);
+  {const el=f.elements.n_pages_json;if(el){try{const x=JSON.parse(el.value);nar.pages=x.pages||{};nar.review=x.review||{}}catch(e){}}}
   return {figures,overrides,narrative:nar,data_date:[ASOF,periodEnd(f.dataset.per,f.dataset.t)].sort()[0]};
 }
 /* the client report as a file: Excel, or a printable page (save as PDF from the print dialog) */
@@ -8225,7 +8616,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.44';
+const APP_VERSION='3.45';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -18864,7 +19255,7 @@ function renderReports(){
 }
 function scopeLabel(){const ids=[...SCOPE];const sc=state.sector!=='ALL'?secById(state.sector)?.name+' sector, ':'';if(ids.length===1)return sc+projById(ids[0]).name;if(state.scope.startsWith('R:'))return sc+regById(state.scope.slice(2))?.name+' Region';return sc+(accessIds().length===PROJECTS.length?'whole portfolio':'all assigned projects')+` (${ids.length} projects)`}
 
-const LIBS={pptx:'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',xlsx:'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',jspdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',exceljs:'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',auto:'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',zip:'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'};
+const LIBS={pptx:'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js',xlsx:'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',jspdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',exceljs:'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',docx:'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',auto:'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',zip:'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'};
 const libP={};
 const loadLib=u=>libP[u]||(libP[u]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=u;s.onload=res;s.onerror=()=>{delete libP[u];rej(new Error('Could not load '+u))};document.head.appendChild(s)}));
 const dlP=window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null);
@@ -18933,7 +19324,7 @@ function portfolioHTML(){
 }
 
 /* ---------- settings (super admin) ---------- */
-const ATABS={projects:'Projects',users:'Users and access',rights:'Roles and rights',roles:'Role access',matrix:'Approval matrix',mail:'Email',system:'System',brand:'Logos and customers',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',dlylists:'Delay register lists',supplists:'Supplement lists',golive:'Release strategy',log:'Change log'};
+const ATABS={projects:'Projects',users:'Users and access',rights:'Roles and rights',roles:'Role access',matrix:'Approval matrix',mail:'Email',system:'System',brand:'Logos and customers',crf:'Client report formats',trades:'Trades and rates',subs:'Subcontractors',regions:'Regions',cities:'Cities',sectors:'Sectors',dlylists:'Delay register lists',supplists:'Supplement lists',golive:'Release strategy',log:'Change log'};
 const NOUN={projects:'project',users:'user',trades:'trade',subs:'subcontractor',regions:'region',cities:'city',sectors:'sector'};
 function usedBy(type,id){if(type==='regions')return PROJECTS.filter(p=>p.region===id).length+DB.master.cities.filter(c=>c.region===id).length;if(type==='cities')return PROJECTS.filter(p=>p.city===id).length;if(type==='sectors')return PROJECTS.filter(p=>p.sector===id).length;return 0}
 function accessText(u){if(u.role==='sa')return 'Everything, including settings';if(u.allProjects&&u.role!=='exec')return 'All projects';const r=u.regions.map(id=>regById(id)?.name).filter(Boolean),ps=u.projects.map(id=>projById(id)?.short).filter(Boolean);return [r.length?r.join(', ')+(r.length>1?' regions':' region'):'',ps.join(', ')].filter(Boolean).join('; ')||'No access yet'}
@@ -19160,7 +19551,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-brsa
 
 function renderAdmin(){
   if(state.role!=='sa'){go('dash');return}
-  const m=DB.master,t=state.adminTab,add=['log','roles','rights','matrix','mail','system','brand','dlylists','supplists','golive'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>${t==='projects'&&state.role==='sa'?'<button class="btn" type="button" data-pjimp>Import projects from Excel</button>':''}`;
+  const m=DB.master,t=state.adminTab,add=['log','roles','rights','matrix','mail','system','brand','crf','dlylists','supplists','golive'].includes(t)?'':`<button class="btn primary" type="button" data-aadd="${t}">${t==='users'?'Create user':'Create '+NOUN[t]}</button>${t==='projects'&&state.role==='sa'?'<button class="btn" type="button" data-pjimp>Import projects from Excel</button>':''}`;
   const edit=(k,id,del)=>`<td class="n" style="white-space:nowrap"><button class="btn sm" type="button" data-aedit="${k}:${id}">Edit</button>${del===undefined?'':del?` <button class="btn sm" type="button" disabled title="In use, cannot delete">In use</button>`:` <button class="btn sm danger" type="button" data-adel="${k}:${id}">Delete</button>`}</td>`;
   let body='',count=0;
   if(t==='projects'){count=PROJECTS.length;body=`<table class="tbl"><thead><tr><th>Project</th><th>Sector</th><th>Region and city</th><th>Team</th><th class="n">Activities</th><th class="n">Value</th><th>Status</th><th></th></tr></thead><tbody>${PROJECTS.map(p=>`<tr><td><b>${esc(p.short)}</b><span class="t2">${esc(pcode(p))}${p.te?' · '+esc(p.te):''}, ${esc(p.name)}</span></td><td>${esc(secById(p.sector)?.name||'—')}</td><td>${esc(regName(p))}<span class="t2">${esc(cityName(p))}</span></td><td>${esc(p.pm)}<span class="t2">${esc(p.eng)}, ${p.foremen.length} foreman${p.foremen.length===1?'':'en'}</span></td><td class="n">${ACTS.filter(a=>a.p===p.id).length}</td><td class="n">SAR ${fmt(p.value)}M</td><td><span class="st ${stCls(p.status)}">${p.status}</span></td>${edit('projects',p.id,false)}</tr>`).join('')}</tbody></table>`}
@@ -19178,6 +19569,7 @@ function renderAdmin(){
   if(t==='mail'){count=(DB.outbox||[]).length;body=mailAdminHTML()}
   if(t==='system'){count='';body=systemHTML()}
   if(t==='brand'){count=custRows().length+' customers';body=brandAdminHTML()}
+  if(t==='crf'){count=(crfRows().length+1)+' formats';body=crfAdminHTML()}
   if(t==='dlylists'){count=DLY_LISTS.length+' lists';body=dlyListsAdminHTML()}
   if(t==='supplists'){count='2 lists';body=suppListsAdminHTML()}
   if(t==='golive'){const c=glCfg();count=c.current?`live up to ${c.stages[c.current-1].name}`:'nothing live yet';body=glAdminHTML()}
@@ -19686,7 +20078,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBcm336();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();seedV341();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBcm336();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();seedV341();seedV345();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=homeView();showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

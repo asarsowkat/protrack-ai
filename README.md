@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.45
+
+- **Client report formats, and the client report as PowerPoint, Word and PDF.** Settings → **Client report formats** (super admin): a format per customer (pages in order, colours, font, cover lines, classification footer), each page filled from ProTrack or entered by the planning engineer (text, a table with set columns, pictures); a format can be drafted from the client's own PowerPoint. The client report's new **Client format and export** tab: enter the pages ProTrack does not hold (HSE, QC, correspondence …), mark pages not applicable or reviewed; a new period carries the last released pages, marked until changed. **Export** shows a disclaimer and every page's state, lists the pages not updated, needs a confirmation for a client copy (a review copy marks the pages), and logs each export. Server: `schema-update-v48.sql` (STAGE-42-SETUP). Word uses docx 8.5.0 (jsdelivr). `tests/client_formats_demo.js` (17 checks). See RELEASE-NOTES-v3.45.md.
+
 ## Version 3.44
 
 - **The MER's Project wise in the company format, with Excel and PDF.** Project wise follows the PE sheet (PLAN-006-FORM-01): numbered sections on the left, the company and client logos and the four charts on the right, areas of concern and the footer below. **Export to Excel** (styled, a PE-layout sheet per project with the logos and charts, print area A1:P103) and **Export to PDF** (Cost and Dashboard on A3, one A4 page per project), for all or one project. The Excel styling uses ExcelJS 4.4.0 from cdnjs.
