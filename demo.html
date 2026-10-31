@@ -11120,7 +11120,7 @@ function rkcCost(pids){const out=[];pids.forEach(pid=>{const p=projById(pid);if(
     parts:[{t:`Cost plan ${y} of ${rkPj(pid)}: internal plan ${c.int?c.int.status:'not made'}, budget SAR ${rkN(c.int&&c.int.budget)}; finance plan ${c.fin?c.fin.status:'not made'}, target POC at year end ${c.fin&&c.fin.target!=null?c.fin.target+'%':'—'}.`,loc:'Cost plan'}]})});
   return out}
 async function rkcDocs(pids){const out=[],P=new Set(pids),all=DB.docs||[];
-  for(const d of all.filter(x=>P.has(x.project_id))){const row=docRowOfKey(d.project_id,d.box_key);if(state.role!=='sa'&&!docCanRead(row))continue;
+  for(const d of all.filter(x=>P.has(x.project_id))){const row=docRowOfKey(d.project_id,d.box_key);if(!row||(state.role!=='sa'&&!docCanRead(row)))continue;
     const m=docTextMeta(d.id),u=docUnitOf(d),sup=d.status==='Superseded'||all.some(x=>x.supersedes===d.id);
     const it={rec:'doc:'+d.id,pid:d.project_id,type:'Document',title:d.title+(d.revision?' '+d.revision:''),rev:d.revision||'',appr:sup?'Superseded':(d.status||'Recorded'),eff:d.doc_date||d.period||null,
       at:d.uploaded_at||d.created_at||d.doc_date||null,owner:d.uploaded_by_name||d.created_by_name||'',cls:'doc:'+(row||''),row:row||'',box:d.box_key,route:{doc:d.id},
@@ -11669,7 +11669,7 @@ async function rkSyncLive(m,kind){const R=rkDB(),k=m.k,t0=performance.now();RK.b
     for(const it of items){const id=k+':'+it.rec;if(seen.has(id))continue;seen.add(id);const parts=(it.parts||[]).filter(x=>x&&x.t),h=rkHash(JSON.stringify([it.title,it.rev,it.appr,parts.map(x=>[x.t,x.loc])])),s=R.src[id];
       if(!it.fail&&s&&s.hash===h&&s.st==='Indexed')continue;
       send.push({id,rec:it.rec,pid:it.pid||null,type:it.type,title:String(it.title||'').slice(0,200),rev:it.rev||'',appr:it.appr||'Recorded',eff:it.eff||null,at:it.at||null,owner:it.owner||'',cls:it.cls||'all',box:it.box||null,row:it.row||null,relId:it.relId||null,prop:it.prop||null,route:it.route||m.go,note:it.note||null,fail:it.fail||null,hash:h,
-        chunks:it.fail?[]:parts.map((x,i)=>({i,t:String(x.t).slice(0,4000),loc:x.loc||'',ids:(x.ids||[]).filter(Boolean).map(String).slice(0,40)}))})}
+        chunks:it.fail?[]:parts.slice(0,400).map((x,i)=>({i,t:String(x.t).slice(0,4000),loc:x.loc||'',ids:(x.ids||[]).filter(Boolean).map(String).slice(0,40)}))})}
     const gone=Object.values(R.src).filter(s=>s.mod===k&&(!s.pid||P.has(s.pid))&&!seen.has(s.id)&&s.st!=='Deleted').map(s=>s.id);
     for(let i=0;i<send.length||i===0;i+=40)res=await rpc('rasa_sync',{p:{mod:k,kind:kind||'manual',sources:send.slice(i,i+40),removed:i===0?gone:[],seen:i+40>=send.length?seen.size:null,ms:Math.round(performance.now()-t0),last:i+40>=send.length}});
   }catch(e){try{await rpc('rasa_sync',{p:{mod:k,kind:kind||'manual',sources:[],removed:[],error:String(e&&e.message||e).slice(0,300),last:true}})}catch(x){}res={err:String(e&&e.message||e)}}

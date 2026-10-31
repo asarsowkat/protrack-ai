@@ -1,6 +1,6 @@
 # v3.47 setup: RASA Intelligence
 
-This takes about 5 minutes. **Do not** upload a new `config.js`. It needs v49 (STAGE-43-SETUP). Try it on a staging copy first: this update has not yet been run on a database.
+This takes about 5 minutes. **Do not** upload a new `config.js`. It needs v49 (STAGE-43-SETUP). It passed 93 checks on a test copy of the full schema (PGlite), but has not yet been run on Supabase, so try it on a staging copy first.
 
 ## Step 1: Update the database (2 minutes)
 
@@ -26,6 +26,7 @@ This takes about 5 minutes. **Do not** upload a new `config.js`. It needs v49 (S
   - the document rack's rows;
   - report visibility;
   - every state change of a proposal.
+- **A fix for four earlier tables:** cost plans (v45), report pictures (v47), and client report format choices and exports (v48). Their read rules refused the app with "permission denied for function user_sees". After this update the app can read them again.
 
 ## Step 2: Give the review rights (1 minute)
 

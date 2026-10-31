@@ -13,6 +13,7 @@ drop function if exists pt_rk_cls_ok(text,text,text,text);
 drop table if exists rasa_chunks, rasa_sources, rasa_runs, rasa_publications, rasa_proposals, rasa_gaps, rasa_feedback, rasa_questions, rasa_activity, rasa_config cascade;
 drop sequence if exists rasa_prop_seq;
 drop sequence if exists rasa_gap_seq;
+drop function if exists pt_rk_tsv(text,text[]);
 drop function if exists pt_rk_sees(uuid,text,text,text,text);
 drop function if exists pt_rk_can(uuid,text);
 do $$

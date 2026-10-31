@@ -171,9 +171,10 @@ RASA Settings lists each of these with its state.
 - `rasa_sync`, which checks the right, the project and each source's access class against its module;
 - `rasa_search` and `rasa_passages`, which return only what the asker may open;
 - `rasa_act`, which handles questions, gaps, feedback, teaching, the review state machine and settings, checking everything again on the server;
-- the taught knowledge, rebuilt from the published proposals.
+- the taught knowledge, rebuilt from the published proposals;
+- **a fix for four read policies of v45, v47 and v48** (`cost_plans`, `report_media`, `client_report_format_picks` and `client_report_exports`). They called `user_sees()`, which signed-in people may not execute, so the app's reads of these tables were refused with "permission denied for function user_sees". They now use `can_see()`, the same check.
 
-It needs v49. It has not yet been run on a database.
+It needs v49. It was tested on PGlite (PostgreSQL in WebAssembly) with schema.sql and every update up to v50: `supabase/tests/test_v50.cjs`, 93 checks, all passing. It has not yet been run on Supabase.
 
 ## Checks
 

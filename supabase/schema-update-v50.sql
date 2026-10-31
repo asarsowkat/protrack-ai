@@ -25,6 +25,14 @@ do $$ begin
     raise exception 'Run schema-update-v49.sql (STAGE-43-SETUP) first, then this update'; end if;
 end $$;
 
+-- ------------------------------------------------------------------ 0. fix: four read policies of v45, v47 and v48
+-- They called user_sees(), which signed-in people may not execute (schema-update-v4), so every read of these tables by the
+-- app was refused with "permission denied for function user_sees". can_see() is the same check, callable by them.
+drop policy if exists cp_read on cost_plans; create policy cp_read on cost_plans for select using (pt_money_ok() and can_see(project_id));
+drop policy if exists rm_read on report_media; create policy rm_read on report_media for select to authenticated using (can_see(project_id));
+drop policy if exists crfp_read on client_report_format_picks; create policy crfp_read on client_report_format_picks for select to authenticated using (can_see(project_id));
+drop policy if exists crx_read on client_report_exports; create policy crx_read on client_report_exports for select to authenticated using (can_see(project_id));
+
 -- ------------------------------------------------------------------ 1. rights and the screen
 do $$
 declare cur text[] := pt_rights(); src text; k text; scr text[] := pt_screens();
@@ -37,7 +45,7 @@ begin
     src := regexp_replace(src, 'else false end', E'when ''rasa.teach''              then base in (''exec'', ''rm'', ''pf'', ''plan'', ''costing'', ''pm'')\n    when ''rasa.sync''               then base in (''plan'', ''costing'')\n    when ''rasa.review''             then false\n    when ''rasa.company''            then false\n    else false end');
     execute format('create or replace function pt_right_default(base text, k text) returns boolean language sql immutable as $f$%s$f$', src);
   end if;
-  if not ('rasa' = any(scr)) then scr := scr || 'rasa'; end if;
+  if not ('rasa' = any(scr)) then scr := scr || 'rasa'::text; end if;
   execute format('create or replace function pt_screens() returns text[] language sql immutable as $f$ select %L::text[] $f$', scr::text);
 end $$;
 create or replace function pt_rk_can(u uuid, k text) returns boolean language sql stable security definer set search_path = public as $$
@@ -66,10 +74,13 @@ create table if not exists rasa_sources (
   hash text, ver int not null default 1, data jsonb not null default '{}'::jsonb check (jsonb_typeof(data) = 'object'),
   indexed_by uuid, at_time timestamptz not null default now());
 create index if not exists rasa_sources_mod on rasa_sources (mod, project_id);
+-- a passage's searchable words (its text and record numbers); immutable, as a generated column needs
+create or replace function pt_rk_tsv(t text, ids text[]) returns tsvector language sql immutable as $$
+  select to_tsvector('english'::regconfig, coalesce(t, '') || ' ' || coalesce(array_to_string(ids, ' '), '')) $$;
 create table if not exists rasa_chunks (
   source_id text not null references rasa_sources(id) on delete cascade, i int not null check (i between 0 and 999),
   t text not null check (length(t) <= 4000), loc text check (length(loc) <= 200), ids text[] not null default '{}',
-  tsv tsvector generated always as (to_tsvector('english', coalesce(t, '') || ' ' || coalesce(array_to_string(ids, ' '), ''))) stored,
+  tsv tsvector generated always as (pt_rk_tsv(t, ids)) stored,
   primary key (source_id, i));
 create index if not exists rasa_chunks_tsv on rasa_chunks using gin (tsv);
 -- ON HOLD (alfanar IT): create extension if not exists vector; alter table rasa_chunks add column embedding vector(1536);
@@ -94,15 +105,17 @@ alter table rasa_gaps enable row level security; alter table rasa_feedback enabl
 drop policy if exists rk_cfg_read on rasa_config; create policy rk_cfg_read on rasa_config for select to authenticated using (true);
 drop policy if exists rk_src_read on rasa_sources; create policy rk_src_read on rasa_sources for select to authenticated using (pt_rk_sees(auth.uid(), project_id, cls, box, appr));
 drop policy if exists rk_run_read on rasa_runs; create policy rk_run_read on rasa_runs for select to authenticated using (true);
-drop policy if exists rk_prop_read on rasa_proposals; create policy rk_prop_read on rasa_proposals for select to authenticated using (project_id is null or user_sees(auth.uid(), project_id));
-drop policy if exists rk_pub_read on rasa_publications; create policy rk_pub_read on rasa_publications for select to authenticated using (exists (select 1 from rasa_proposals p where p.id = prop_id and (p.project_id is null or user_sees(auth.uid(), p.project_id))));
-drop policy if exists rk_gap_read on rasa_gaps; create policy rk_gap_read on rasa_gaps for select to authenticated using (project_id is null or user_sees(auth.uid(), project_id));
+drop policy if exists rk_prop_read on rasa_proposals; create policy rk_prop_read on rasa_proposals for select to authenticated using (project_id is null or can_see(project_id));
+drop policy if exists rk_pub_read on rasa_publications; create policy rk_pub_read on rasa_publications for select to authenticated using (exists (select 1 from rasa_proposals p where p.id = prop_id and (p.project_id is null or can_see(p.project_id))));
+drop policy if exists rk_gap_read on rasa_gaps; create policy rk_gap_read on rasa_gaps for select to authenticated using (project_id is null or can_see(project_id));
 drop policy if exists rk_fb_read on rasa_feedback; create policy rk_fb_read on rasa_feedback for select to authenticated using (by_user = auth.uid() or pt_rk_can(auth.uid(), 'rasa.review'));
 drop policy if exists rk_q_read on rasa_questions; create policy rk_q_read on rasa_questions for select to authenticated using (by_user = auth.uid() or (pt_rk_can(auth.uid(), 'rasa.review')
-  and not exists (select 1 from jsonb_array_elements_text(coalesce(data -> 'pids', '[]'::jsonb)) x where not user_sees(auth.uid(), x))));
+  and not exists (select 1 from jsonb_array_elements_text(coalesce(data -> 'pids', '[]'::jsonb)) x where not can_see(x))));
 drop policy if exists rk_act_read on rasa_activity; create policy rk_act_read on rasa_activity for select to authenticated using (pt_rk_sees(auth.uid(), project_id, coalesce(cls, 'all'), box, 'Released'));
 drop trigger if exists trg_rk_act_append on rasa_activity; create trigger trg_rk_act_append before update or delete on rasa_activity for each row execute function pt_append_only();
 drop trigger if exists trg_rk_pub_append on rasa_publications; create trigger trg_rk_pub_append before update or delete on rasa_publications for each row execute function pt_append_only();
+drop trigger if exists trg_rk_act_truncate on rasa_activity; create trigger trg_rk_act_truncate before truncate on rasa_activity execute function pt_no_truncate();
+drop trigger if exists trg_rk_pub_truncate on rasa_publications; create trigger trg_rk_pub_truncate before truncate on rasa_publications execute function pt_no_truncate();
 revoke all on rasa_config, rasa_sources, rasa_chunks, rasa_runs, rasa_proposals, rasa_publications, rasa_gaps, rasa_feedback, rasa_questions, rasa_activity from anon;
 revoke insert, update, delete, truncate on rasa_config, rasa_sources, rasa_chunks, rasa_runs, rasa_proposals, rasa_publications, rasa_gaps, rasa_feedback, rasa_questions, rasa_activity from authenticated;
 revoke select on rasa_chunks from authenticated;
@@ -351,7 +364,7 @@ begin
     d := p -> 'cfg';
     if coalesce((d ->> 'keep')::int, 0) not between 30 and 730 then raise exception 'Keep questions 30 to 730 days'; end if;
     if coalesce((d #>> '{pol,fin}')::int, 0) not between 2 and 3 then raise exception 'A financial formula needs 2 or 3 approvals'; end if;
-    update rasa_config set data = d, set_by = me, set_at = now();
+    update rasa_config set data = d, set_by = me, set_at = now() where id;
     delete from rasa_questions where at_time < now() - make_interval(days => (d ->> 'keep')::int);
     delete from rasa_feedback where at_time < now() - make_interval(days => (d ->> 'keep')::int);
     perform pt_rk_log('settings', 'RASA settings changed', null, null, null, null);
