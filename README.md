@@ -168,6 +168,20 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.47
+
+- **RASA Intelligence, the central knowledge and learning hub.** A new menu group with eight tabs:
+  - **Overview**: welcome and Ask RASA, eight measures counted from the app's own records, every module with its real connection and indexing state, activity, gaps and learning progress.
+  - **Ask RASA**: ProTrackAI's own rules first, then cited evidence with checked citations. No guessing: unanswered questions are recorded as gaps.
+  - **Knowledge Sources**: the module registry, with each module's sources, passages and syncs.
+  - **Teach RASA**: documents through the Document Rack, corrections, business rules, gaps and module import.
+  - **Learning Activity**.
+  - **Knowledge Review**: Draft → Submitted → Under Review → Approved → Published; also Rejected, Needs Revision, Superseded and Withdrawn. Nobody approves their own proposal; company-wide knowledge needs a designated approver; a financial formula needs two approvers and a regression check; conflicts are resolved first; knowledge can be published and rolled back.
+  - **Analytics & Performance**: operational, automated-evaluation and human-reviewed measures.
+  - **RASA Settings**.
+
+  Indexing is idempotent and keeps versions, history and deletions. Every search re-checks the reader's rights. Four new rights: `rasa.teach`, `rasa.sync`, `rasa.review`, `rasa.company`. On hold until alfanar IT approves: the server language model, vector search, malware scanning and a server indexing worker. Server: `schema-update-v50.sql` (STAGE-44-SETUP). `tests/rasa_hub_demo.js` (25 checks). See RELEASE-NOTES-v3.47.md.
+
 ## Version 3.46
 
 - **Client report formats for Word reports (the SEC monthly progress report).** Pages at two levels (numbered 1, 2, 2.1 …), portrait or landscape pages, a header line, table heading colours, {report_no} (Monthly Progress Report No. 28), and two pages ProTrack fills: the document revision record and the invoices. **Draft a format from a client's PowerPoint or Word report** now reads Word too (headings, tables, orientation, header, footer, colours). Word files get a real table of contents and mixed portrait and landscape sections. A SAMPLE SEC monthly format is used for monthly client reports in the demo. Server: `schema-update-v49.sql` (STAGE-43-SETUP). `tests/client_formats_word_demo.js` (12 checks). See RELEASE-NOTES-v3.46.md.
