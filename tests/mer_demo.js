@@ -73,7 +73,7 @@
     const cr=XLSX.utils.sheet_to_json(W.Sheets['COST(I)'],{header:1,defval:''}),row=cr.find(x=>x[1]===pcode(projById(pid)));
     ok('23. Export to Excel: COST (I), DASHBOARD and one PLAN-006 sheet per project; the POC as a percentage',out.n===`MER ${per} I.xlsx`&&W.SheetNames[0]==='COST(I)'&&W.SheetNames[1]==='DASHBOARD'&&W.SheetNames.includes(pcode(projById(pid)))&&!!row&&near(row[6],r.poc/100,1e-5),W.SheetNames);
     out=null;saveFile=async(n,b)=>{out={n,b}};state.cp={pid,y};await cpExport();saveFile=keep;const W2=XLSX.read(new Uint8Array(await out.b.arrayBuffer()),{type:'array'});
-    ok('24. The cost plans export as COST PLAN (I) and COST PLAN (F)',W2.SheetNames.join()==='COST PLAN (I),COST PLAN (F)',W2.SheetNames);
+    ok('24. The cost plans export as COST PLAN (I) and COST PLAN (F) (and, from v3.42, ACTUAL POC)',['COST PLAN (I),COST PLAN (F)','COST PLAN (I),COST PLAN (F),ACTUAL POC'].includes(W2.SheetNames.join()),W2.SheetNames);
     go('cplan');await wait(80);
     ok('25. The Cost plan page lists the projects and opens one: year start, internal, finance, actual and forecast, history',['Internal plan','Finance plan','Actual and forecast','History','Year start'].every(h=>$('#view').innerText.includes(h)));
   }catch(x){ok('The checks ran to the end',false,x.message+' '+(x.stack||'').split('\n')[1])}

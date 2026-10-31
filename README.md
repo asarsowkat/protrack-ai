@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.42
+
+- **The cost plans in bulk from Excel.** Cost Control → Cost plan → **Bulk upload (Excel)**: a super admin or the costing coordinator downloads the template (the export: COST PLAN (I), COST PLAN (F) and ACTUAL POC, one row per project), changes it and uploads it. The preview says New, Change, No change or why a row is refused; the new and changed rows are saved together and return to Draft. The uploaded actual POC is used for a month without a released cost report, in the cost plan and the MER. Server: `schema-update-v46.sql` (STAGE-40-SETUP). `tests/cost_plan_import_demo.js` (15 checks). See RELEASE-NOTES-v3.42.md.
+
 ## Version 3.41
 
 - **The cost plan and the MER (Monthly Executive Report).** Cost Control → **Cost plan**: each project's plan for the year, kept by its costing engineer: the internal plan (planned cost by month, agreed with the project manager), the finance plan (the conservative POC target, approved by management), the forecast and the year start. Cost Control → **MER – Monthly Executive Report**: the company's MER from ProTrack records at a cut-off month, against the internal or the finance plan: Cost (portfolio, region and project rows with the six KPIs), Dashboard and Project wise (PLAN-006-FORM-01), with Excel export. The monthly internal report gets an **Areas of concern** tab (five areas, three concerns each, carried from last month, fillable from the issue register), and the cost report an optional **actual stock value**. Server: `schema-update-v45.sql` (STAGE-39-SETUP). `tests/mer_demo.js` (25 checks). See RELEASE-NOTES-v3.41.md.
