@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.41
+
+- **The cost plan and the MER (Monthly Executive Report).** Cost Control → **Cost plan**: each project's plan for the year, kept by its costing engineer: the internal plan (planned cost by month, agreed with the project manager), the finance plan (the conservative POC target, approved by management), the forecast and the year start. Cost Control → **MER – Monthly Executive Report**: the company's MER from ProTrack records at a cut-off month, against the internal or the finance plan: Cost (portfolio, region and project rows with the six KPIs), Dashboard and Project wise (PLAN-006-FORM-01), with Excel export. The monthly internal report gets an **Areas of concern** tab (five areas, three concerns each, carried from last month, fillable from the issue register), and the cost report an optional **actual stock value**. Server: `schema-update-v45.sql` (STAGE-39-SETUP). `tests/mer_demo.js` (25 checks). See RELEASE-NOTES-v3.41.md.
+
 ## Version 3.40.2
 
 - **An untouched WBS master never undoes a waiting change.** Importing a WBS master workbook now says **No change** for a row that matches either the element's approved content (what the download writes) or its waiting change; in v3.40.1 an untouched download, imported while a change waited, would have proposed the approved content again and replaced that change. No server change. `tests/bcm_wbs_excel_demo.js` now has 11 checks. See [RELEASE-NOTES-v3.40.2.md](RELEASE-NOTES-v3.40.2.md).

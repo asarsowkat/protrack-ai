@@ -747,7 +747,9 @@ body.pvnoscroll{overflow:hidden}
 .boqsteps li span{flex:none;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);display:inline-grid;place-items:center;font-size:11px}.boqsteps li.done span{background:#1f8a4c;color:#fff;border-color:transparent}
 .boqasset{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0}.boqasset-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
 .suppgrid td{padding:3px 4px;vertical-align:middle}.suppgrid input,.suppgrid select{width:100%;min-width:90px;padding:4px 6px;font:inherit;font-size:13px}.suppgrid input.n{text-align:right}.suppgrid select{min-width:150px}.suppgrid input[type="date"]{min-width:135px}.suppgrid tr.gdel td{opacity:.5;text-decoration:line-through}.suppgrid tr.gdel td:last-child{opacity:1;text-decoration:none}.suppgrid td[data-gc="chk"]{min-width:140px}
-tr.boqsub td{background:rgba(127,127,127,.06)}tr.sel td{background:rgba(36,80,138,.12)}
+tr.boqsub td{background:rgba(127,127,127,.06)}
+/* v3.41: the MER and the cost plan */
+.mertbl th,.mertbl td{padding:4px 6px;white-space:nowrap}.mertbl th{white-space:normal;min-width:84px;vertical-align:bottom}.mertbl th.merg{text-align:center;background:var(--accent-soft);border-bottom:1px solid var(--line)}.mertbl tr.mertot td,tr.mertot td{background:var(--surface-2);font-weight:600}.mertbl .t2{display:block;font-weight:400}.mertbl td.merconcern{white-space:normal;min-width:320px;max-width:520px}.cptbl input{width:96px;padding:4px 6px;font-size:12.5px;text-align:end}.cptbl td,.cptbl th{white-space:nowrap}table.aoc input{width:100%;min-width:90px;padding:4px 6px;font-size:12.5px}table.aoc td{vertical-align:top}tr.sel td{background:rgba(36,80,138,.12)}
 .boqbar{height:6px;border-radius:3px;background:var(--line);min-width:80px;overflow:hidden}.boqbar i{display:block;height:100%;background:var(--brand,#24508a)}
 .boqview{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:12px;margin-top:8px}@media(max-width:1280px){.boqview{grid-template-columns:1fr}}
 .boqcanvas{overflow:auto;max-height:78vh;border:1px solid var(--line);border-radius:8px;background:#fff}.boqpage{position:relative}.boqpage img,.boqpage svg{position:absolute;left:0;top:0}
@@ -1441,7 +1443,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
+    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadCostPlans();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -2816,7 +2818,7 @@ function relFormPayload(){
       const cv=comp[key],differs=unit==='date'?(val||null)!==(cv||null):(val==null?cv!=null:(cv==null||Math.abs(val-cv)>1e-9));
       if(differs)overrides.push({field:key,label:l,computed:cv==null?null:cv,value:val,reason:(f.elements['r_'+key]?.value||'').trim()})});
     ['next_ms_text','next_ms_date','baseline_finish'].forEach(x=>{figures[x]=comp[x]});figures.key_ms=kmsFor(f.dataset.pid,'planning',f.dataset.t,f.dataset.per);figures.phase_tbl=phaseTbl(f.dataset.pid,'planning',f.dataset.t,f.dataset.per);{const s=blSelOf();if(s)figures.bl_sel=s}
-    ['summary','issues','recovery','next'].forEach(x=>{const el=f.elements['n_'+x];if(el)nar[x]=el.value.trim()});
+    ['summary','issues','recovery','next'].forEach(x=>{const el=f.elements['n_'+x];if(el)nar[x]=el.value.trim()});if(f.dataset.t==='month'&&f.elements.ac_design_0_c)nar.concerns=aocRead(f);
     RD_IN.forEach(x=>{const el=f.elements['d_'+x];if(!el)return;const v=el.value.trim();figures[x]=v===''?null:RD_NUM.includes(x)?+v:v})}
   else{if(f.querySelector('#crTable'))Object.assign(figures,crFormRead(f));[...(f.querySelector('#crTable')?[]:COST_IN),...INV_IN].forEach(([key])=>{const el=f.elements['c_'+key];if(el)figures[key]=el.value.trim()===''?null:+el.value});const el=f.elements.n_summary;if(el)nar.summary=el.value.trim()}
   return {figures,overrides,narrative:nar,data_date:[ASOF,periodEnd(f.dataset.per,f.dataset.t)].sort()[0]};
@@ -4809,6 +4811,7 @@ function crCompute(pid,per,f){
     T.t+=l.tender;T.r0+=l.rev0;T.rr+=l.rev0_rev;T.p+=prev;T.b+=l.budget;T.a+=l.actual;T.c+=l.commitment;T.e+=l.etc;return l});
   ['planned_poc','actual_poc'].forEach(k=>{const v=f[k];if(v!=null&&v!==''&&(+v<0||+v>100))fail(`${k} must be between 0 and 100`)});
   if(crN(f.contract_value)<0)fail('The contract value cannot be negative');
+  if(f.stock_value!=null&&f.stock_value!==''&&(!isFinite(+f.stock_value)||+f.stock_value<0))fail('The actual stock value cannot be negative');
   const out=Object.assign({},f,{wbs:lines,tender_total:T.t,budget_rev0:T.r0,rev0_rev_total:T.rr,prev_total:T.p,budget_current:T.b,actual:T.a,commitment:T.c,etc:T.e,balance_total:T.b-T.a-T.c,
     ftc:T.c+T.e,eac:T.a+T.c+T.e,vac:T.b-(T.a+T.c+T.e),supplements_approved:suppApproved(pid,per)});
   out.budget_gap=Math.round(T.b-((T.rr||T.r0)+(+out.supplements_approved||0)));   /* v3.26.1: D − (revised Rev-0 + approved supplements); shown as a warning */
@@ -4862,7 +4865,7 @@ function crFormHTML(pid,per,f,editable){
   const ni=(n,v)=>editable?`<input name="${n}" value="${esc(v==null?'':v)}" type="number" min="0" step="1" inputmode="decimal" data-crin>`:`<span>${crFmt(v)}</span><input type="hidden" name="${n}" value="${esc(v==null?'':v)}">`;
   const hi=(n,l,v,type)=>F(l,editable?`<input name="${n}" value="${esc(v==null?'':v)}" ${type} data-crin>`:`<input value="${esc(v==null||v===''?'—':v)}" disabled>`);
   return `<div class="fields crfields">${hi('h_planned_tcc_date','Planned TCC',f.planned_tcc_date,'type="date"')}${hi('h_forecast_tcc_date','Forecasted TCC',f.forecast_tcc_date,'type="date"')}
-      ${hi('h_planned_poc','Planned POC %',f.planned_poc,'type="number" min="0" max="100" step="0.01"')}${hi('h_actual_poc','Actual POC %',f.actual_poc,'type="number" min="0" max="100" step="0.01"')}
+      ${hi('h_planned_poc','Planned POC %',f.planned_poc,'type="number" min="0" max="100" step="0.01"')}${hi('h_actual_poc','Actual POC %',f.actual_poc,'type="number" min="0" max="100" step="0.01"')}${hi('h_stock_value','Actual stock value (SAR)',f.stock_value,'type="number" min="0" step="1" title="Material on site or in store, included in the actual cost; the MER takes it out of the POC"')}
       ${(()=>{const cc=contractOf(pid,per);return cc.rev_int!=null?F('Contract value, internal revised (SAR)',`<input value="${esc(fmt(cc.rev_int))}" disabled title="Original contract value + price considered internally, from the change order and claim log">`):hi('h_contract_value','Contract value (SAR)',f.contract_value,'type="number" min="0" step="1"')})()}
       ${hi('h_tender_month_text','Tender (A) month',f.tender_month_text,'type="month"')}${hi('h_rev0_month_text','Rev-0 (B1) month',f.rev0_month_text,'type="month"')}${hi('h_rev0_rev_month_text','Revised Rev-0 (B2) month',f.rev0_rev_month_text,'type="month"')}</div>
     ${(()=>{const cc=contractOf(pid,per);return cc.rev_int!=null?`<p class="small muted" style="margin:4px 0 0">Contract value ${esc(fmt(cc.rev_int))} = original ${esc(fmt(cc.orig))} + price considered internally ${esc(fmt(cc.int))} (approved by the client ${esc(fmt(cc.int-cc.wf))}, with management approval ${esc(fmt(cc.wf))}). The gross margin is measured on it. Change orders and claims submitted: ${esc(fmt(cc.sub))}.${cc.log?'':' No change order and claim log uploaded yet.'}</p>`:''})()}
@@ -4882,7 +4885,7 @@ function crFormRead(form){
   const g=n=>{const el=form.elements[n];return el?el.value.trim():undefined},num=n=>{const v=g(n);return v===undefined||v===''?null:+v},wbs=[];
   for(let i=0;form.elements[`w${i}_code`];i++)wbs.push({code:g(`w${i}_code`),name:g(`w${i}_name`),...Object.fromEntries(CR_IN.map(k=>[k,num(`w${i}_${k}`)])),justification:g(`w${i}_justification`)||''});
   const h={wbs};['planned_tcc_date','forecast_tcc_date','tender_month_text','rev0_month_text','rev0_rev_month_text','overall_note_text'].forEach(k=>{const v=g('h_'+k);if(v!==undefined)h[k]=v||null});
-  ['planned_poc','actual_poc','contract_value'].forEach(k=>{if(form.elements['h_'+k])h[k]=num('h_'+k)});
+  ['planned_poc','actual_poc','contract_value','stock_value'].forEach(k=>{if(form.elements['h_'+k])h[k]=num('h_'+k)});
   return h;
 }
 function crPaint(){
@@ -5468,12 +5471,15 @@ function openPlanRelease(pid,t,per){
   const p=projById(pid),open=relOpen(pid,'planning',t,per),released=relReleased(pid,'planning',t,per),r=open||released,editable=(!r||r.status==='Draft')&&canPrepRel('planning')&&!(!open&&released);
   const u=id=>{const x=id&&userById(id);return x?x.name:'—'},H=r?relRows().filter(x=>x.project_id===pid&&x.kind==='planning'&&x.period_type===t&&x.period===per).flatMap(x=>relAuditOf(x.id).map(a=>({...a,rev:x.rev}))).sort((a,b)=>String(b.at_time).localeCompare(String(a.at_time))):[];
   const comp=relPlanSnapshot(pid,t,per),base=r?r.figures:Object.assign({},comp,relDashDefaults(pid,t,per));let f;try{f=relPlanCalc(pid,base,r&&r.status!=='Draft'?relContract(r):perMonth(t,per))}catch(e){f=base}
-  const nar=(r&&r.narrative)||{},ov=(r&&r.overrides)||[],prev=relPrevOf(pid,t,per),tab=state.rdTab||'overview',dis=editable?'':'disabled';
+  const nar=(r&&r.narrative)||{},ov=(r&&r.overrides)||[],prev=relPrevOf(pid,t,per),dis=editable?'':'disabled';let tab=state.rdTab||'overview';
   const pm=teamOf(pid,'pm')[0],pl=teamOf(pid,'plan')[0],canDecide=open&&open.status==='Submitted'&&relCanApprove(pid,'planning')&&open.submitted_by!==me().id,needRev=open&&open.status==='Submitted'&&relSettings().pm_review&&!open.reviewed_by;
   const di=(k,l,type,extra)=>F(l,`<input name="d_${k}" ${type==='date'?'type="date"':type==='num'?'type="number" min="0" step="any" inputmode="decimal"':''} value="${esc(f[k]??'')}" ${dis} ${extra||''} data-rdin>`);
   const calc=(l,v,s,cls)=>`<div class="rcalc ${cls||''}"><span class="l">${l}</span><b data-rdc>${v}</b>${s?`<span class="t2">${s}</span>`:''}</div>`;
   const dl=(k)=>{const v=f[k];return v==null?'—':`${v>0?'+':''}${v} days`},lt=(k,rk)=>msLight(f[k],rk&&f[rk]);
-  const TABS=[['overview','Overview'],['ms','Milestones'],['prog','Progress'],['ep','E&P progress'],['mp','Manpower'],['en','Energization'],['notes','Release notes'],['appr','Approval']];
+  const TABS=[['overview','Overview'],['ms','Milestones'],['prog','Progress'],['ep','E&P progress'],['mp','Manpower'],['en','Energization'],...(t==='month'?[['aoc','Areas of concern']]:[]),['notes','Release notes'],['appr','Approval']];
+  if(!TABS.some(x=>x[0]===tab))tab='overview';
+  /* v3.41: the areas of concern of a new monthly report are carried from last month's released report */
+  const aocNar=nar.concerns?nar:(editable&&prev&&prev.narrative&&prev.narrative.concerns?prev.narrative:nar);
   const show=k=>tab===k?'':'hidden';
   $('#sheet').innerHTML=`<div class="rdhead"><div><h2 style="margin:0">Internal report · ${esc(perLabel(t,per))}</h2><span class="small muted">${esc(pcode(p))} · ${esc(p.name)} · data date ${fmtDY((r&&r.data_date)||ASOF)}</span></div>
       ${r?`<span class="st ${r.status==='Released'?'Approved':r.status==='Submitted'?'Reviewed':'Draft'}">${esc(r.status==='Submitted'?(needRev?'Awaiting PM review':'Awaiting approval'):relReturned(r)?'Returned':r.status)} · rev ${r.rev}</span>`:'<span class="st Draft">New</span>'}
@@ -5540,6 +5546,7 @@ function openPlanRelease(pid,t,per){
         ${di('energ_date','Forecast / actual energization date','date')}
         ${F('Remarks for energization',`<input name="d_energ_remarks_text" maxlength="300" value="${esc(f.energ_remarks_text||'')}" ${dis} data-rdin>`)}</div></div></div>
     </section>
+    ${t==='month'?`<section class="rdpanel" data-rdp="aoc" ${show('aoc')}>${aocTabHTML(aocNar,editable)}</section>`:''}
     <section class="rdpanel" data-rdp="notes" ${show('notes')}><div class="rdgrid">
       ${[['summary','Progress summary'],['issues','Key issues / risks'],['recovery','Recovery actions'],['next',t==='week'?'Next week target':'Next month target']].map(([k,l])=>`<div class="rdcard"><h3>${l}</h3><textarea name="n_${k}" rows="4" ${dis}>${esc(nar[k]||'')}</textarea></div>`).join('')}
       <div class="rdcard"><h3>Management remarks</h3>${canDecide||relCanReview(open)?`<textarea id="relMgmt" rows="3" placeholder="Added by the approver with the approval">${esc(nar.mgmt||'')}</textarea>`:`<p class="small">${esc(nar.mgmt||'Added by the approver when the release is approved.')}</p>`}</div></div>
@@ -6348,7 +6355,7 @@ const RIGHT_POS={'wf.record':'costing coordinator','bcm.review':'Head of Plannin
   'issues.review':'Head of Planning and Cost Control','docs.contract':'Head of Planning and Cost Control','docs.planning':'Head of Planning and Cost Control',
   'docs.cost':'Head of Planning and Cost Control','tender.register':'Head of Planning and Cost Control; costing coordinator','tender.noa':'costing coordinator'};
 const RIGHT_N=Object.fromEntries(RIGHTS.map(r=>[r[0],r[1]]));
-const SCREENS=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','boq','rep','deck','perf'];
+const SCREENS=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','cplan','mer','boq','rep','deck','perf'];
 const RIGHT_ROLES=['exec','rm','pf','plan','costing','pm','sm','eng','foreman','ro'];
 const rightsDB=()=>DB.rights||(DB.rights={roles:[],role:{},user:{},screen:{},audit:[]});
 const appRoles=()=>rightsDB().roles||[];
@@ -8073,8 +8080,8 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{wfr:'Budget & change requests',bcm:'Budget & Cost Management',boq:'BOQ Engine',rs:'Reporting status',cout:'Cash-out forecast',cfd:'Cashflow Dashboard',dly:'Delay events register',pv:'Project Visual',mmcs:'Master Manpower Costing Sheet',po:'Subcontract purchase orders',inv:'Invoice register',cash:'Cash-inflow forecast',mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'E&P progress',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{wfr:'طلبات الميزانية والتغيير',bcm:'إدارة الميزانية والتكاليف',boq:'محرك جداول الكميات',rs:'حالة إصدار التقارير',cout:'توقعات التدفقات النقدية الصادرة',cfd:'لوحة التدفقات النقدية',dly:'سجل أحداث التأخير',pv:'العرض المرئي للمشروع',mmcs:'ورقة تكلفة القوى العاملة الرئيسية',po:'أوامر شراء المقاولين من الباطن',inv:'سجل الفواتير',cash:'توقعات التدفقات النقدية الواردة',mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'تقدم الهندسة والمشتريات',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{cplan:'Cost plan',mer:'MER – Monthly Executive Report',wfr:'Budget & change requests',bcm:'Budget & Cost Management',boq:'BOQ Engine',rs:'Reporting status',cout:'Cash-out forecast',cfd:'Cashflow Dashboard',dly:'Delay events register',pv:'Project Visual',mmcs:'Master Manpower Costing Sheet',po:'Subcontract purchase orders',inv:'Invoice register',cash:'Cash-inflow forecast',mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'E&P progress',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{cplan:'خطة التكاليف',mer:'التقرير التنفيذي الشهري',wfr:'طلبات الميزانية والتغيير',bcm:'إدارة الميزانية والتكاليف',boq:'محرك جداول الكميات',rs:'حالة إصدار التقارير',cout:'توقعات التدفقات النقدية الصادرة',cfd:'لوحة التدفقات النقدية',dly:'سجل أحداث التأخير',pv:'العرض المرئي للمشروع',mmcs:'ورقة تكلفة القوى العاملة الرئيسية',po:'أوامر شراء المقاولين من الباطن',inv:'سجل الفواتير',cash:'توقعات التدفقات النقدية الواردة',mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'تقدم الهندسة والمشتريات',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',bcm:'<path d="M4 4h6v5H4zM14 4h6v5h-6zM14 15h6v5h-6z"/><path d="M7 9v8.5h7M17 9v6"/>',
   xr:'<path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 4-5"/>',rel:'<path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/><path d="M9 12l2 2 4-4"/>',logs:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>',
@@ -8087,6 +8094,7 @@ const ICONS={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',bcm:'<path d="M4 4h6v5H4
   mmcs:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h6"/>',
   po:'<path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
   inv:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11M13 13h4M13 16h4"/>',
+  cplan:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/><path d="M4 8l6-4 6 7 5-3"/>',mer:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
   cfd:'<path d="M3 3v18h18"/><path d="M7 13l3-3 3 3 5-6"/><path d="M7 19v-2M11 19v-4M15 19v-3M19 19v-6"/>',cash:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01"/>',
   imp:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>',
   dash:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
@@ -8110,7 +8118,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.40.2';
+const APP_VERSION='3.41';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -8128,7 +8136,7 @@ const DOMAINS=[
     {plan:'Governed baseline register'},{plan:'Look-ahead and alerts'}]},
   {k:'cost',label:'Cost Control',ic:'eva',items:[
     {v:'cdash',label:'Cost Control dashboard'},{v:'eva',label:'Earned value and EAC'},{v:'mmcs',label:'Master Manpower Costing Sheet'},{v:'rep',rep:'unitrate',label:'Unit rate analysis'},
-    {v:'cdash',sec:'recon',label:'Cost reconciliation'},{v:'rel',sec:'cost',label:'Monthly cost report'},{v:'logs',sec:'supp',label:'Budget supplements'},{v:'wfr',label:'Budget & change requests'},{plan:'Accruals'}]},
+    {v:'cdash',sec:'recon',label:'Cost reconciliation'},{v:'rel',sec:'cost',label:'Monthly cost report'},{v:'cplan',label:'Cost plan'},{v:'mer',label:'MER – Monthly Executive Report'},{v:'logs',sec:'supp',label:'Budget supplements'},{v:'wfr',label:'Budget & change requests'},{plan:'Accruals'}]},
   {k:'bcm',label:'Budget & Cost Management',ic:'bcm',badge:'NEW',items:BCM_SECS.map(([sec,label,st])=>st?{plan:label,needs:'bcm',note:BCM_PLANNED[st]}:{v:'bcm',sec,label})},
   {k:'daily',label:'Daily Reports',ic:'dpr',items:[
     {v:'dpr',label:'Daily reports'},{v:'new',label:'New report'},{v:'rep',rep:'timing',label:'Report handling time'}]},
@@ -8411,10 +8419,10 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- shell ---------- */
-const NAV_ALL=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','boq','rep','deck','perf','admin'];
+const NAV_ALL=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','cplan','mer','boq','rep','deck','perf','admin'];
 let NAV_VIEWS=[];
 /* the screens a person sees under today's rules (v3.6), for their role and rights */
-function navDefault(v){if(v==='mat'&&!ROLE_VIEWS[state.role])return canMatView();return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='boq'||PLAN_ROLES.includes(state.role))&&(v!=='bcm'||can('money.view'))&&(v!=='wfr'||can('money.view'))&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='po'||canCost())&&(v!=='mmcs'||canCost()||canBaseline())&&(v!=='pv'||canPvView())&&(v!=='inv'||canCost()||canBaseline())&&(v!=='cash'||canCashView())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())&&(v!=='dly'||canDlyView())&&(v!=='cout'||canCoView())&&(v!=='cfd'||canCfdView())&&(v!=='rs'||canRsView())}
+function navDefault(v){if(v==='mat'&&!ROLE_VIEWS[state.role])return canMatView();return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='boq'||PLAN_ROLES.includes(state.role))&&(v!=='bcm'||can('money.view'))&&(v!=='wfr'||can('money.view'))&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='po'||canCost())&&(v!=='mmcs'||canCost()||canBaseline())&&(v!=='pv'||canPvView())&&(v!=='inv'||canCost()||canBaseline())&&(v!=='cash'||canCashView())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())&&(v!=='dly'||canDlyView())&&(v!=='cout'||canCoView())&&(v!=='cfd'||canCfdView())&&(v!=='rs'||canRsView())&&(v!=='cplan'||canCpView())&&(v!=='mer'||canCpView())}
 /* v3.7: the super admin may show or hide a screen for a role; Administration stays with super admins */
 function navOn(v){if(v==='admin')return state.role==='sa';const o=screenOv(v);return (o!==undefined?o:navDefault(v))&&(v!=='new'||canCreate())}
 function renderNav(){
@@ -8448,7 +8456,7 @@ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
   if(screenOv(state.view)===false){state.view=NAV_VIEWS.find(v=>v!==state.view)||'dash';renderNav()}   /* v3.7: a hidden screen sends the person to an allowed one */
-  ({wfr:renderWfr,bcm:renderBcm,boq:renderBoq,rs:renderRs,cout:renderCout,cfd:renderCfd,dly:renderDly,pv:renderPv,mmcs:renderMmcs,po:renderPo,inv:renderInv,cash:renderCash,mat:renderMat,xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpdMoved,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({wfr:renderWfr,bcm:renderBcm,boq:renderBoq,rs:renderRs,cout:renderCout,cfd:renderCfd,cplan:renderCplan,mer:renderMer,dly:renderDly,pv:renderPv,mmcs:renderMmcs,po:renderPo,inv:renderInv,cash:renderCash,mat:renderMat,xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpdMoved,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -10170,7 +10178,7 @@ const rasaProjWords=ps=>new Set(ps.flatMap(p=>[p.short,p.id,p.pe].filter(Boolean
 /* ---------- RASA: the module of each answer, and the release strategy ---------- */
 const RASA_MOD={collect:'invoices',invoice:'invoices',recon:'daily',unitrate:'cost',histo:'daily',milestones:'planning',engproc:'planning',warn:'daily',eac:'cost',reports:'reports',
   crew:'daily',foremen:'daily',subs:'daily',variance:'daily',under:'daily',today:'daily',actions:'projects',lifecycle:'projects',tender:'projects',issues:'projects',costrep:'cost',vo:'claims',released:'home',
-  boq:'boq',docs:'docs',dly:'claims',cout:'invoices',cin:'invoices',cash:'invoices',cfd:'invoices',mat:'materials',po:'materials',cv:'projects',kms:'planning',phase:'planning',ep:'planning',rs:'home',plist:'projects'};
+  boq:'boq',docs:'docs',dly:'claims',cout:'invoices',cin:'invoices',cash:'invoices',cfd:'invoices',cplan:'cost',mer:'cost',mat:'materials',po:'materials',cv:'projects',kms:'planning',phase:'planning',ep:'planning',rs:'home',plist:'projects'};
 function rasaGate(mod,h){
   if(h&&typeof h.then==='function')return h.then(x=>rasaGate(mod,x));
   if(!mod||h==null||glLive(mod))return h;const m=glMod(mod),st=glStageTxt(glStage(mod));
@@ -16631,6 +16639,368 @@ function rasaCfd(s){
     <li>Weakest: <b>${esc(worst.p.short)}</b>, net ${sar(worst.net)}${worst.fc>0.5?`, finance cost ${sar(worst.fc)}`:''}</li></ul>
     <p><button class="btn sm" type="button" data-go="cfd">Open the Cashflow Dashboard</button></p>`+rasaEv([],'the Cashflow Dashboard: the invoice register and cash-inflow forecast, Finance\'s cash-out and the cash-out forecast, and the interest rates set by the super admin')}
 
+/* ---------- v3.41: the cost plan and the MER (Monthly Executive Report), in Cost Control ----------
+   Cost plan: one per project and year, kept by the project's costing engineer (report.cost.prepare with access to it).
+   - Internal plan: the planned cost of each month (SAR), agreed with the project manager. Its monthly POC is the month's
+     planned cost ÷ the budget the plan is made on (as the company's COST PLAN (I): Jan-26 … Dec-26, Budget, monthly %).
+   - Finance plan: the conservative POC target given to Finance with management's approval: the target POC at year end
+     (cumulative from the project's start) and its monthly POC % (as COST PLAN (F)). This year's target = target − the POC
+     at the end of last year; the monthly % should add up to it (shown as a check).
+   - Forecast: the POC expected in each remaining month (the MER's "Forecast" row; actual months come from the cost reports).
+   - Year start: POC, current budget and contract value at December of last year (the company's DEC LAST YEAR sheet); taken
+     from December's released cost report when there is one, else entered here.
+   Saving a part returns its approval to draft; the project manager marks the internal plan agreed and the head of planning
+   and cost control (or an executive) marks the finance plan approved. Every save and decision is kept in the plan's history.
+   MER: the company's Monthly Executive Report from ProTrack records at a cut-off month, internal (I) or finance (F) plan:
+   Cost (the PORTFOLIO COST STATUS REPORT: portfolio, region and project rows), Dashboard (DASHBOARD STATUS) and Project wise
+   (PLAN-006-FORM-01, one page per project). Sources: the released monthly cost report (by WBS head), the released monthly
+   internal report (progress, key dates, manpower, areas of concern), the change order and claim log (contract value), the
+   invoice register and payment terms (invoiceable, billed, collected), the Cashflow Dashboard (cash in and out), the project
+   (client, city, contract number, EOT) and the cost plan. On the server: schema-update-v45.sql (cost_plans, cost_plan_save,
+   cost_plan_act, the screens cplan and mer). */
+const AOC=[['design','Design / Engineering'],['proc','Procurement'],['cons','Construction'],['res','Resources'],['cost','Cost / Invoicing / Cash collection']];
+/* the issue register's types, by area of concern ("Fill from the issue register") */
+const AOC_TYPES={design:['Design Submission / Rectifications','Design inputs','Equipment / Engineering'],proc:['Delivery','PO Issuance Delay','Revised PO','FAT Test'],
+  cons:['Construction','Installation','Test & Comm.','Shutdown','Permits / Request from Client','Enabling works / Site handing over','ROW (Right of Way)','Client Issues','Close Out'],
+  res:['Resources','IQAMA Issues','Local Content'],cost:['Funding','Treasury','VO/EOT','Tender']};
+const AOC_N=3;
+const aocOf=nar=>{const c=(nar&&nar.concerns)||{};return Object.fromEntries(AOC.map(([k])=>[k,(Array.isArray(c[k])?c[k]:[]).filter(x=>x&&(x.c||x.by||x.act))]))};
+const aocAny=nar=>AOC.some(([k])=>aocOf(nar)[k].length);
+/* the monthly internal report's "Areas of concern" tab */
+function aocTabHTML(nar,editable){const C=aocOf(nar),dis=editable?'':'disabled';
+  return `<p class="small muted" style="margin:0 0 8px">Up to ${AOC_N} concerns in each area, with who acts and the action needed. They are carried from last month's report; update them each month. The MER (Cost Control → MER – Monthly Executive Report) picks them from the released report.</p>
+    ${editable?'<div class="actions" style="margin:0 0 8px"><button class="btn sm" type="button" data-aocfill>Fill from the issue register</button><span class="small muted">Open issues of this project, by type and impact; only empty rows are filled.</span></div>':''}
+    <div class="rdgrid">${AOC.map(([k,l])=>`<div class="rdcard"><h3>${esc(l)}</h3><table class="tbl small aoc"><thead><tr><th>Concern</th><th>Action by</th><th>Action needed</th></tr></thead><tbody>
+      ${Array.from({length:AOC_N},(_,i)=>{const x=C[k][i]||{};return `<tr><td><input name="ac_${k}_${i}_c" maxlength="300" value="${esc(x.c||'')}" ${dis}></td><td><input name="ac_${k}_${i}_by" maxlength="80" value="${esc(x.by||'')}" ${dis} style="max-width:130px"></td><td><input name="ac_${k}_${i}_act" maxlength="300" value="${esc(x.act||'')}" ${dis}></td></tr>`}).join('')}
+    </tbody></table></div>`).join('')}</div>`}
+function aocRead(f){const out={};AOC.forEach(([k])=>{const L=[];for(let i=0;i<AOC_N;i++){const g=s=>{const el=f.elements[`ac_${k}_${i}_${s}`];return el?el.value.trim():''};const x={c:g('c'),by:g('by'),act:g('act')};if(x.c||x.by||x.act)L.push(x)}out[k]=L});return out}
+/* the issue register into the empty rows */
+function aocFill(form,pid){const open=issRows().filter(i=>i.project_id===pid&&i.status==='Open').sort((a,b)=>issRank(a.impact)-issRank(b.impact));let n=0;
+  AOC.forEach(([k])=>{const L=open.filter(i=>AOC_TYPES[k].includes(i.issue_type));let j=0;for(let i=0;i<AOC_N&&j<L.length;i++){const el=form.elements[`ac_${k}_${i}_c`];if(!el||el.value.trim())continue;const x=L[j++];
+    el.value=String(x.description||'').slice(0,300);form.elements[`ac_${k}_${i}_by`].value=String(x.action_by||x.owner||'').slice(0,80);form.elements[`ac_${k}_${i}_act`].value=String(x.action_required||'').slice(0,300);n++}});return n}
+
+/* ----- the cost plan ----- */
+const CP_PARTS={int:'Internal plan',fin:'Finance plan',fc:'Forecast',base:'Year start'};
+const cpRows=()=>CLOUD_ME?(DB.cpSrv||[]):(DB.costPlans||(DB.costPlans=[]));
+const cpOf=(pid,y)=>cpRows().find(x=>x.project_id===pid&&+x.year===+y)||null;
+const canCpView=()=>can('money.view')&&!isSiteRole();
+const canCpEdit=pid=>!!pid&&accessIds().includes(pid)&&(state.role==='sa'||canPrepRel('cost'));
+const canCpAgree=pid=>accessIds().includes(pid)&&(state.role==='sa'||state.role==='pm');
+const canCpApprove=()=>state.role==='sa'||state.role==='exec'||isHead();
+const cpNum=v=>v==null||v===''?null:+v;
+const cp12=a=>Array.from({length:12},(_,i)=>{const v=(a||[])[i];return v==null||v===''||!isFinite(+v)?null:+v});
+const cpSum=a=>(a||[]).reduce((t,v)=>t+(+v||0),0);
+/* the server's checks (cost_plan_save), the same here */
+function cpCheck(part,d){
+  if(!CP_PARTS[part])return 'Unknown part of the cost plan';
+  const nums=(a,lo,hi,what)=>{if(!Array.isArray(a)||a.length!==12)return `${what}: give the twelve months`;for(let i=0;i<12;i++){const v=a[i];if(v==null)continue;if(!isFinite(+v)||+v<lo||+v>hi)return `${what}, ${MON[i]}: a number from ${lo} to ${hi}`}return null};
+  if(part==='int'){if(!(+d.budget>0))return 'Give the budget the plan is made on (more than 0)';if(d.cv!=null&&!(+d.cv>=0))return 'The contract value cannot be negative';return nums(d.months,0,1e12,'Planned cost')}
+  if(part==='fin'){if(d.target==null||!(+d.target>=0&&+d.target<=100))return 'Give the target POC at year end, from 0 to 100 %';if(String(d.ref||'').length>120)return 'The approval reference is 120 characters at most';return nums(d.months,-100,100,'Monthly POC %')}
+  if(part==='fc')return nums(d.months,-100,100,'Forecast POC %');
+  if(part==='base'){if(d.poc!=null&&!(+d.poc>=0&&+d.poc<=100))return 'The POC at the end of last year is from 0 to 100 %';if(d.budget!=null&&!(+d.budget>=0))return 'The budget cannot be negative';if(d.cv!=null&&!(+d.cv>=0))return 'The contract value cannot be negative';return null}
+  return null}
+async function cpSave(pid,y,part,d,note){
+  if(!canCpEdit(pid)){toast('Only the costing engineer of the project keeps its cost plan');return false}
+  const err=cpCheck(part,d);if(err){toast(err);return false}
+  if(CLOUD_ME){try{await rpc('cost_plan_save',{p:{project_id:pid,year:+y,part,data:d,note:note||null}});await cloudLoadCostPlans();return true}catch(e){toast(srvMsg(e));return false}}
+  const L=cpRows();let r=cpOf(pid,y);const u=me(),now=new Date().toISOString();
+  if(!r){r={id:`CP-${pid}-${y}`,project_id:pid,year:+y,int:null,fin:null,fc:null,base:null,hist:[]};L.push(r)}
+  const prev=r[part]||{};r[part]=Object.assign({},d,{saved_by:u.id,saved_by_name:u.name,saved_at:now},part==='int'?{status:'Draft'}:part==='fin'?{status:'Draft'}:{});
+  if(part==='int'&&prev.status==='Agreed')r.hist.push({at:now,by:u.name,part,action:'Back to draft (changed after agreement)'});
+  if(part==='fin'&&prev.status==='Approved')r.hist.push({at:now,by:u.name,part,action:'Back to draft (changed after approval)'});
+  r.hist.push({at:now,by:u.name,part,action:'Saved',note:note||null});save();return true}
+async function cpAct(pid,y,action,note){
+  const r=cpOf(pid,y);if(!r){toast('Save the cost plan first');return false}
+  if(action==='agree'){if(!canCpAgree(pid)){toast('The project manager of the project marks the internal plan agreed');return false}if(!r.int){toast('Save the internal plan first');return false}if(r.int.status==='Agreed'){toast('Already agreed');return false}}
+  else if(action==='approve'){if(!canCpApprove()){toast('The head of planning and cost control, or an executive, approves the finance plan');return false}if(!r.fin){toast('Save the finance plan first');return false}if(r.fin.status==='Approved'){toast('Already approved');return false}}
+  else return false;
+  if(CLOUD_ME){try{await rpc('cost_plan_act',{p:{project_id:pid,year:+y,action,note:note||null}});await cloudLoadCostPlans();return true}catch(e){toast(srvMsg(e));return false}}
+  const u=me(),now=new Date().toISOString();
+  if(action==='agree')Object.assign(r.int,{status:'Agreed',agreed_by:u.id,agreed_by_name:u.name,agreed_at:now});else Object.assign(r.fin,{status:'Approved',approved_by:u.id,approved_by_name:u.name,approved_at:now});
+  r.hist.push({at:now,by:u.name,part:action==='agree'?'int':'fin',action:action==='agree'?'Agreed with the project manager':'Approved by management',note:note||null});save();return true}
+async function cloudLoadCostPlans(){if(!CLOUD_ME)return;try{DB.cpSrv=(await selAll('cost_plans','*',null,['project_id','year'])).map(x=>({id:x.id,project_id:x.project_id,year:+x.year,int:x.plan_int,fin:x.plan_fin,fc:x.plan_fc,base:x.plan_base,hist:x.hist||[]}));DB.cpMissing=false}catch(e){DB.cpSrv=[];DB.cpMissing=srvMsg(e)}}
+
+/* ----- the figures, from the released reports ----- */
+const merRel=(pid,k,per)=>relRows().filter(r=>r.project_id===pid&&r.kind===k&&r.period_type==='month'&&r.status==='Released'&&String(r.period)<=per).sort((a,b)=>String(b.period).localeCompare(String(a.period))||(b.rev||0)-(a.rev||0))[0]||null;
+const merRelAt=(pid,k,per)=>relRows().filter(r=>r.project_id===pid&&r.kind===k&&r.period_type==='month'&&r.status==='Released'&&r.period===per).sort((a,b)=>(b.rev||0)-(a.rev||0))[0]||null;
+const crBud=f=>f?crN(f.budget_current!=null?f.budget_current:f.budget_rev0):0;
+/* cumulative POC from the project's start, without the stock: (actual − stock) ÷ current budget (MER: Cumulative Actual POC) */
+const crStock=f=>f?Math.max(0,crN(f.stock_value)):0;
+const crPoc=f=>{const b=crBud(f);return f&&b?(crN(f.actual)-crStock(f))/b*100:null};
+const crHead=(f,c)=>f&&isWbs(f)?(f.wbs.find(l=>String(l.code).toUpperCase()===c)||null):null;
+/* the year start (December of last year): December's released cost report, else the cost plan */
+function merBase(pid,y){const d=merRelAt(pid,'cost',`${y-1}-12`),cp=cpOf(pid,y),b=(cp&&cp.base)||{};
+  if(d)return {poc:crPoc(d.figures),budget:crBud(d.figures),cv:(contractOf(pid,`${y-1}-12`).rev_client)??cpNum(d.figures.contract_value),src:`the ${perLabel('month',`${y-1}-12`)} cost report`};
+  return {poc:cpNum(b.poc),budget:cpNum(b.budget),cv:cpNum(b.cv),src:b.saved_at?'the cost plan (year start)':null}}
+/* the planned POC of each month of the year (internal: planned cost ÷ budget; finance: as given) */
+function cpPlanPct(cp,basis){if(!cp)return null;
+  if(basis==='fin'){if(!cp.fin)return null;return cp12(cp.fin.months).map(v=>v==null?0:v)}
+  if(!cp.int||!(+cp.int.budget>0))return null;return cp12(cp.int.months).map(v=>v==null?0:v/(+cp.int.budget)*100)}
+/* the actual POC of each month of the year: each month's released cost report, against the month before (or the year start) */
+function merActual(pid,y,upTo,base){let prev=base;const cum=[],inc=[];
+  for(let k=1;k<=12;k++){const per=`${y}-${String(k).padStart(2,'0')}`;if(per>upTo){cum.push(null);inc.push(null);continue}
+    const r=merRelAt(pid,'cost',per),v=r?crPoc(r.figures):null;cum.push(v);inc.push(v!=null&&prev!=null?v-prev:null);if(v!=null)prev=v}
+  return {cum,inc}}
+function merCash(pid,per){const o=cfdProject(pid);let i=0,u=0;Object.entries(o.cell).forEach(([m,c])=>{if(m<=per){i+=c.inA;u+=c.outA}});return {in:o.inOk?i:null,out:o.outOk?u:null}}
+/* one project at the cut-off month: the MER's figures, with where they come from */
+function merProject(p,per,basis){
+  const pid=p.id,y=+per.slice(0,4),mi=+per.slice(5,7),cr=merRel(pid,'cost',per),f=cr?cr.figures:null,pl=merRel(pid,'planning',per),pf=pl?pl.figures||{}:{},nar=pl?pl.narrative||{}:{};
+  const cp=cpOf(pid,y),cc=contractOf(pid,per),base=merBase(pid,y),money=v=>v==null||!isFinite(v)?null:v;
+  const cv=cc.rev_client!=null?cc.rev_client:(f?cpNum(f.contract_value):null),budget=f?crBud(f):null,rev0=f?crN(f.budget_rev0):null,actual=f?crN(f.actual):null,stock=f?crStock(f):null,commitment=f?crN(f.commitment):null;
+  const poc=crPoc(f);const H=c=>crHead(f,c),cont=H('CONT'),mr=H('MGT.RES'),sm=H('SM');
+  const gpR0=cv&&rev0?(1-rev0/cv)*100:null,gpCur=cv&&budget?(1-budget/cv)*100:null;
+  const plan=cpPlanPct(cp,basis),A=merActual(pid,y,per,base.poc),fc=cp&&cp.fc?cp12(cp.fc.months):Array(12).fill(null);
+  const T=plan?cpSum(plan.slice(0,mi)):null,X=plan?cpSum(plan):null,U=poc!=null&&base.poc!=null?poc-base.poc:null;
+  const Y=U!=null?U+cpSum(fc.slice(mi)):null;
+  const cash=merCash(pid,per),bp=billPosition(p,periodEnd(per,'month'));const noInv=!bp.t.n;
+  const smAct=sm?crN(sm.actual):null,smEv=sm&&pf.actual_pct!=null?(+pf.actual_pct)/100*crN(sm.budget):null;
+  const st=cp?{int:cp.int?cp.int.status:null,fin:cp.fin?cp.fin.status:null}:{int:null,fin:null};
+  const finTarget=cp&&cp.fin?cpNum(cp.fin.target):null,yearTarget=finTarget!=null&&base.poc!=null?finTarget-base.poc:null;
+  const notes=[];if(!cr)notes.push('no released cost report');else if(cr.period!==per)notes.push(`cost report of ${perLabel('month',cr.period)}`);if(f&&!isWbs(f))notes.push('cost report without WBS heads');
+  if(!pl)notes.push('no released internal report');else if(pl.period!==per)notes.push(`internal report of ${perLabel('month',pl.period)}`);if(!invOf(pid).length)notes.push('no invoice register');if(!plan)notes.push(`no ${basis==='fin'?'finance':'internal'} cost plan`);if(base.poc==null)notes.push('no year start');
+  return {p,per,basis,cr,pl,cp,nar,pf,f,cc,base,notes,st,
+    cv:money(cv),budget:money(budget),poc,pl_ytd:cv!=null&&base.cv!=null&&budget!=null&&base.budget!=null?(cv-base.cv)-(budget-base.budget):null,
+    cont_r0:cont?crN(cont.rev0):null,cont_av:cont?crN(cont.budget):null,cont_ut:cont?crN(cont.budget)-crN(cont.rev0):null,mr_av:mr?crN(mr.budget):null,
+    gp_r0:gpR0,gp_cur:gpCur,gp_var:gpR0!=null&&gpCur!=null&&cv?(gpCur-gpR0)/100*cv:null,
+    t_plan:T,t_act:U,t_var:T!=null&&U!=null&&budget?(U-T)/100*budget:null,x_plan:X,y_fc:Y,z_var:X!=null&&Y!=null&&budget?(Y-X)/100*budget:null,
+    cash_in:cash.in,cash_out:cash.out,cash_var:cash.in!=null&&cash.out!=null?cash.in-cash.out:null,
+    inv_appr:noInv?null:bp.t.approved,inv_able:bp.invoiceable,inv_var:noInv?null:bp.t.approved-bp.invoiceable,inv_sub:noInv?null:bp.t.submitted,inv_coll:noInv?null:bp.t.collected,inv_adv:noInv?null:bp.t.advance,
+    sm_act:smAct,sm_ev:smEv,sm_var:smAct!=null&&smEv!=null?smEv-smAct:null,
+    actual,stock,commitment,rev0,revenue:poc!=null&&cv!=null?poc/100*cv:null,ly_poc:base.poc,fin_target:finTarget,year_target:yearTarget,fin_check:yearTarget!=null&&X!=null?yearTarget-X:null,
+    plan,act:A,fc}}
+/* a region or the portfolio: sums, and the percentages weighted as the company's sheet does (POC by budget, margins by contract value) */
+function merTotal(R,label){const s=k=>{const v=R.map(r=>r[k]).filter(v=>v!=null&&isFinite(v));return v.length?v.reduce((a,b)=>a+b,0):null};
+  const w=(k,wk)=>{const L=R.filter(r=>r[k]!=null&&r[wk]);const W=L.reduce((t,r)=>t+r[wk],0);return W?L.reduce((t,r)=>t+r[k]*r[wk],0)/W:null};
+  const o={label,total:true,n:R.length};['cv','budget','pl_ytd','cont_r0','cont_av','cont_ut','mr_av','gp_var','t_var','z_var','cash_in','cash_out','cash_var','inv_appr','inv_able','inv_var','sm_act','sm_ev','sm_var'].forEach(k=>o[k]=s(k));
+  o.poc=w('poc','budget');o.gp_r0=w('gp_r0','cv');o.gp_cur=w('gp_cur','cv');['t_plan','t_act','x_plan','y_fc','ly_poc','fin_target','year_target','fin_check'].forEach(k=>o[k]=w(k,'budget'));return o}
+const merDefaultPer=()=>{const P=scopeProjects().map(p=>p.id),L=relRows().filter(r=>r.kind==='cost'&&r.period_type==='month'&&r.status==='Released'&&P.includes(r.project_id)&&String(r.period)<=ym(ASOF)).map(r=>r.period).sort();return L.pop()||recentMonths(2)[1]};
+const merProjects=st=>scopeProjects().filter(p=>['Active','On hold'].includes(p.status||'Active')&&(st.reg==='ALL'||p.region===st.reg)&&(st.sec==='ALL'||p.sector===st.sec));
+const merState=()=>{const s=state.mer||(state.mer={});if(!s.per)s.per=merDefaultPer();s.basis=s.basis||'int';s.tab=s.tab||'cost';s.reg=s.reg||'ALL';s.sec=s.sec||'ALL';return s};
+function merData(st){const P=merProjects(st),rows=P.map(p=>merProject(p,st.per,st.basis)),regs=DB.master.regions.filter(rg=>rows.some(r=>r.p.region===rg.id));
+  return {rows,regs:regs.map(rg=>({rg,rows:rows.filter(r=>r.p.region===rg.id),tot:merTotal(rows.filter(r=>r.p.region===rg.id),rg.name)})),all:merTotal(rows,'Overall portfolio')}}
+
+/* ----- the screens ----- */
+const mf=v=>v==null||!isFinite(v)?'—':Math.abs(v)<0.5?'-':(v<0?`(${fmt(Math.abs(Math.round(v)))})`:fmt(Math.round(v)));
+const mp=(v,dp)=>v==null||!isFinite(v)?'—':fmt(v,dp==null?2:dp)+'%';
+const mv=v=>`<span class="${v==null?'':v<-0.5?'r-c':v>0.5?'g-c':''}">${mf(v)}</span>`;
+const mvp=v=>`<span class="${v==null?'':v<-0.005?'r-c':v>0.005?'g-c':''}">${mp(v)}</span>`;
+const merPm=p=>{const u=p.pm&&userById(p.pm);return u?u.name:(p.pm&&p.pm!=='Unassigned'?p.pm:'—')};
+const merCity=p=>{const c=(DB.master.cities||[]).find(x=>x.id===p.city);return c?c.name:(p.location||'—')};
+const MER_COST_COLS=st=>[[null,[['cv','Contract value',mf],['budget','Current budget value',mf],['poc','Actual cumulative POC from project start',v=>mp(v)],['pl_ytd','Profit / loss (P&L) from the beginning of the year',mv],
+    ['cont_r0','Budget Rev.00 contingency',mf],['cont_av','Available contingency',mf],['cont_ut','Utilized contingency (till date)',mv],['mr_av','Available management reserve',mf]]],
+  ['KPI #01 – Gross profit %',[['gp_r0','Budget Rev.00',mp],['gp_cur','Current budget',mp],['gp_var','Variance amount',mv]]],
+  [`KPI #02 – Actual cost plan (POC), ${st.basis==='fin'?'finance':'internal'}`,[['t_plan',`Planned POC from the beginning of the year till ${MON[+st.per.slice(5,7)-1]}`,mp],['t_act',`Actual POC from the beginning of the year till ${MON[+st.per.slice(5,7)-1]}`,mp],['t_var','Variance amount',mv]]],
+  ['KPI #03 – End of year forecast (POC)',[['x_plan','Planned POC from the beginning of the year till December',mp],['y_fc','Forecast POC from the beginning of the year till December',mp],['z_var','POC variance (amount)',mv]]],
+  ['KPI #04 – Cash flow',[['cash_in','Cash in',mf],['cash_out','Cash out',mf],['cash_var','Variance amount',mv]]],
+  ['KPI #05 – Invoices',[['inv_appr','Cumulative approved invoices',mf],['inv_able','Invoiceable as per payment terms',mf],['inv_var','Variance amount',mv]]],
+  ['KPI #06 – Site management',[['sm_act','Cumulative actual costs up to date',mf],['sm_ev','Earned value based on current budget',mf],['sm_var','Variance amount',mv]]],
+  ...(st.basis==='fin'?[['Finance target',[['ly_poc','Actual POC end of last year',mp],['fin_target','Target POC at year end',mp],['year_target','This year\'s POC target',mp],['fin_check','Check (target − planned)',mvp]]]]:[])];
+function merCostHTML(D,st){const G=MER_COST_COLS(st),C=G.flatMap(g=>g[1]);
+  const row=(r,sn)=>`<tr class="${r.total?'mertot':''}"><td class="n">${sn}</td><td>${r.total?'':`<button class="linkbtn" type="button" data-merpid="${esc(r.p.id)}">${esc(pcode(r.p))}</button>`}</td><td>${r.total?`<b>${esc(r.label)}</b> <span class="t2">${r.n} project${r.n===1?'':'s'}</span>`:esc(r.p.short||r.p.name)}${!r.total&&r.notes.length?`<span class="t2 a-c">${esc(r.notes.join('; '))}</span>`:''}</td>
+    <td class="small">${r.total?'':esc(merPm(r.p))}</td>${C.map(([k,,fm])=>`<td class="n">${fm(r[k])}</td>`).join('')}</tr>`;
+  let sn=0;const body=[row(D.all,++sn)].concat(D.regs.flatMap(g=>[row(g.tot,++sn),...g.rows.map(r=>row(r,++sn))])).join('');
+  return `<div class="scroll"><table class="tbl small mertbl"><thead><tr><th colspan="4"></th>${G.map(([g,c])=>`<th colspan="${c.length}" class="merg">${g?esc(g):''}</th>`).join('')}</tr>
+    <tr><th class="n">S.N.</th><th>Project code</th><th>Project name</th><th>Responsible manager</th>${C.map(([,l])=>`<th class="n">${esc(l)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`}
+const MER_DASH_COLS=['Client','Region','City','Contract #','Planned %','Actual %','Start date','TCC contract','TCC revised','TCC forecast','PAC contract','PAC revised','PAC forecast','FAC contract','FAC revised','FAC forecast','EOT submitted','EOT days','Revised contract value','Advance payment','Invoiced till date (excl. advance)','Cash in','Invoiceable %','Invoiceable amount'];
+function merDashVals(r){const p=r.p,f=r.pf,d=k=>f[k]?fmtDY(f[k]):'—',e=p.eot||{},eotOn=['Submitted','Under review','Approved','Rejected'].includes(e.status);
+  return [p.client||'—',regName(p),merCity(p),p.contract_no||'—',mp(f.planned_pct,0),mp(f.actual_pct,0),f.commence_date?fmtDY(f.commence_date):(p.start?fmtDY(p.start):'—'),d('tcc_orig_date'),d('tcc_rev_date'),d('tcc_ext_fc_date'),d('pac_orig_date'),d('pac_rev_date'),d('pac_ext_fc_date'),d('fac_orig_date'),d('fac_rev_date'),d('fac_ext_fc_date'),
+    eotOn&&e.sub?fmtDY(e.sub):(eotOn?e.status:'N.A'),eotOn&&e.days?`${fmt(+e.days)} days`:'N.A',mf(r.cv),mf(r.inv_adv),mf(r.inv_appr==null?null:r.inv_appr-(r.inv_adv||0)),mf(r.inv_coll),r.cv?mp(r.inv_able/r.cv*100,0):'—',mf(r.inv_able)]}
+function merAocCell(nar){const C=aocOf(nar);let n=0;return AOC.map(([k,l])=>{const L=C[k];return L.length?`<div><b>${esc(l)}:</b> ${L.map(x=>`${++n}. ${esc(x.c)}${x.by?` <span class="muted">(${esc(x.by)})</span>`:''}`).join(' ')}</div>`:''}).join('')||'<span class="muted">None reported</span>'}
+function merDashHTML(D){let sn=0;
+  const tot=g=>`<tr class="mertot"><td class="n">${++sn}</td><td></td><td><b>${esc(g.label)}</b></td>${MER_DASH_COLS.map((c,i)=>`<td class="n">${c==='Revised contract value'?mf(g.cv):c==='Invoiceable amount'?mf(g.inv_able):c==='Invoiced till date (excl. advance)'?'':c==='Cash in'?'':c==='Invoiceable %'&&g.cv?mp(g.inv_able/g.cv*100,0):''}</td>`).join('')}<td></td></tr>`;
+  const row=r=>`<tr><td class="n">${++sn}</td><td><button class="linkbtn" type="button" data-merpid="${esc(r.p.id)}">${esc(pcode(r.p))}</button></td><td>${esc(r.p.short||r.p.name)}</td>${merDashVals(r).map(v=>`<td class="n small">${typeof v==='string'&&v.startsWith('<')?v:esc(v)}</td>`).join('')}<td class="small merconcern">${r.pl?merAocCell(r.nar):'<span class="muted">No released internal report</span>'}</td></tr>`;
+  return `<div class="scroll"><table class="tbl small mertbl"><thead><tr><th class="n">S.N.</th><th>Project code</th><th>Project name</th>${MER_DASH_COLS.map(c=>`<th class="n">${esc(c)}</th>`).join('')}<th>Areas of concern</th></tr></thead>
+    <tbody>${tot(D.all)}${D.regs.map(g=>tot(g.tot)+g.rows.map(row).join('')).join('')}</tbody></table></div>`}
+/* the progress by phase of the released report (its phase table; an older report: engineering and procurement) */
+const merPhases=f=>f.phase_tbl&&Array.isArray(f.phase_tbl.phases)?f.phase_tbl.phases.filter(x=>x.present!==false):[['Engineering','eng'],['Procurement','prc']].filter(([,k])=>f[k+'_pct']!=null).map(([phase,k])=>({phase,wt:null,plan_pct:f[k+'_plan_pct']??null,act_pct:f[k+'_pct']}));
+/* PLAN-006-FORM-01, one project */
+function merProjHTML(r){if(!r)return '<p class="muted">Choose a project.</p>';const p=r.p,f=r.pf,d=k=>f[k]?fmtDY(f[k]):'—',kv=L=>`<table class="tbl kv small"><tbody>${L.map(([a,b])=>`<tr><td>${esc(a)}</td><td class="n">${b}</td></tr>`).join('')}</tbody></table>`,cr=r.f,e=p.eot||{};
+  const ph=merPhases(f);
+  const heads=cr&&isWbs(cr)?cr.wbs:[];const var0=(a,b)=>a?((a-b)/a*100):null;
+  const months=Array.from({length:12},(_,i)=>i),cut=+r.per.slice(5,7),pl=r.plan||Array(12).fill(null);let cP=0,cA=0,cF=0;
+  const prow=(lab,arr,cls)=>`<tr><td>${lab}</td>${months.map(i=>`<td class="n ${cls||''}">${arr[i]==null?'':mp(arr[i])}</td>`).join('')}</tr>`;
+  const cumP=pl.map(v=>(cP+=+v||0,cP)),cumA=r.act.inc.map((v,i)=>i<cut?(cA+=+v||0,cA):null),fcArr=r.fc.map((v,i)=>i>=cut?v:null),cumF=fcArr.map((v,i)=>i<cut?null:(cF=(i===cut?(cumA[cut-1]||0):cF)+(+v||0),cF));
+  return `<div class="rdgrid">
+    <div class="rdcard"><h3>Project information</h3>${kv([['Project name',esc(p.name||p.short)],['Project location',esc(merCity(p))],['Project client',esc(p.client||'—')],['Project consultant',esc(p.consultant||'—')],['Project start date',f.commence_date?fmtDY(f.commence_date):(p.start?fmtDY(p.start):'—')],['Site handover date',d('site_handover_date')],['Project code',esc(pcode(p))],['Report cut-off date',fmtDY(periodEnd(r.per,'month'))]])}</div>
+    <div class="rdcard"><h3>Progress percentage</h3>${ph.length?`<table class="tbl small"><thead><tr><th></th><th class="n">Weight</th><th class="n">Planned %</th><th class="n">Actual %</th><th class="n">Var.</th></tr></thead><tbody>
+      <tr><td><b>Overall progress</b></td><td class="n">100%</td><td class="n">${mp(f.planned_pct,1)}</td><td class="n">${mp(f.actual_pct,1)}</td><td class="n">${f.planned_pct!=null&&f.actual_pct!=null?mvp(f.actual_pct-f.planned_pct):'—'}</td></tr>
+      ${ph.map(x=>`<tr><td>${esc(x.phase||x.name||'')}</td><td class="n">${x.wt!=null?mp(+x.wt,0):'—'}</td><td class="n">${mp(x.plan_pct,1)}</td><td class="n">${mp(x.act_pct,1)}</td><td class="n">${x.plan_pct!=null&&x.act_pct!=null?mvp(x.act_pct-x.plan_pct):'—'}</td></tr>`).join('')}</tbody></table>`
+      :kv([['Overall progress, planned',mp(f.planned_pct,1)],['Overall progress, actual',mp(f.actual_pct,1)]])}</div>
+    <div class="rdcard"><h3>Schedule status</h3><table class="tbl small"><thead><tr><th>Milestone</th><th>Contract finish</th><th>Revised finish</th><th>Forecast finish</th><th class="n">Delay (days)</th></tr></thead><tbody>
+      ${['tcc','pac','fac'].map(k=>{const a=f[k+'_rev_date']||f[k+'_orig_date'],b=f[k+'_ext_fc_date'];return `<tr><td><b>${k.toUpperCase()}</b></td><td>${d(k+'_orig_date')}</td><td>${d(k+'_rev_date')}</td><td>${d(k+'_ext_fc_date')}</td><td class="n">${a&&b?fmt(diffDays(a,b)):'—'}</td></tr>`}).join('')}</tbody></table></div>
+    <div class="rdcard"><h3>Claim status</h3>${kv([['EOT status',esc(e.status||'Not applicable')],['Submitted date',e.sub?fmtDY(e.sub):'—'],['Extension of time (EOT) submitted duration',e.days?`${fmt(+e.days)} days`:'—'],['EOT reference',esc(e.ref||'—')]])}</div>
+    <div class="rdcard"><h3>Commercial status <span class="muted small">SAR</span></h3>${kv([['Original contract value',mf(r.cc.orig)],['Variation orders (VO) approved',mf(r.cc.appr)],['Variation orders (VO) under negotiation',mf(Math.max(0,r.cc.sub-r.cc.appr))],['Revised contract value (original + VO approved)',mf(r.cv)],
+      ['Contract value at December of last year',mf(r.base.cv)],['Actual cost including stock value (from start)',mf(r.actual)],['Actual stock value',mf(r.stock)],['Commitment cost',mf(r.commitment)],['Cumulative actual POC (without stock value)',mp(r.poc)],['Actual revenue (based on POC)',mf(r.revenue)],
+      ['Invoiceable value as per contract payment terms',mf(r.inv_able)],['Gross billing submitted',mf(r.inv_sub)],['Gross billing approved',mf(r.inv_appr)],['Advance payment',mf(r.inv_adv)],['Cash received including advance payment',mf(r.inv_coll)],['Budget best estimate at December of last year',mf(r.base.budget)]])}</div>
+    <div class="rdcard rdwide"><h3>Budget status <span class="muted small">SAR · ${r.cr?`cost report ${esc(perLabel('month',r.cr.period))}`:'no released cost report'}</span></h3>${heads.length?`<div class="scroll"><table class="tbl small"><thead><tr><th></th><th class="n">Actual cost</th><th class="n">Budget Rev.00</th><th class="n">Current budget</th><th class="n">Var. %</th></tr></thead><tbody>
+      <tr><td><b>Gross profit %</b></td><td></td><td class="n">${mp(r.gp_r0)}</td><td class="n">${mp(r.gp_cur)}</td><td class="n">${r.gp_r0!=null&&r.gp_cur!=null?mvp(r.gp_cur-r.gp_r0):'—'}</td></tr>
+      <tr class="mertot"><td><b>Overall project</b></td><td class="n">${mf(r.actual)}</td><td class="n">${mf(r.rev0)}</td><td class="n">${mf(r.budget)}</td><td class="n">${mvp(var0(r.rev0,r.budget))}</td></tr>
+      ${heads.map(l=>`<tr><td>${esc(l.name||l.code)}</td><td class="n">${mf(crN(l.actual))}</td><td class="n">${mf(crN(l.rev0))}</td><td class="n">${mf(crN(l.budget))}</td><td class="n">${mvp(var0(crN(l.rev0),crN(l.budget)))}</td></tr>`).join('')}</tbody></table></div>`:'<p class="muted small">The cost report has no WBS heads.</p>'}</div>
+    <div class="rdcard"><h3>Manpower</h3><table class="tbl small"><thead><tr><th></th><th class="n">Planned</th><th class="n">Actual</th><th class="n">Var.</th></tr></thead><tbody>
+      ${[['dir','Total direct manpower'],['ind','Total indirect manpower'],['sub','Total subcontractor manpower']].map(([k,l])=>{const a=f['mp_'+k+'_plan'],b=f['mp_'+k+'_act'];return `<tr><td>${l}</td><td class="n">${a??'—'}</td><td class="n">${b??'—'}</td><td class="n">${a!=null&&b!=null?(b-a>0?'+':'')+fmt(b-a):'—'}</td></tr>`}).join('')}
+      <tr class="mertot"><td><b>Total manpower</b></td><td class="n">${f.mp_tot_plan??'—'}</td><td class="n">${f.mp_tot_act??'—'}</td><td class="n">${f.mp_var!=null?(f.mp_var>0?'+':'')+fmt(+f.mp_var):'—'}</td></tr>
+      <tr><td>Indirect to direct (supervision ratio)</td><td class="n">${(()=>{const a=+f.mp_dir_plan+(+f.mp_sub_plan||0);return a?mp(f.mp_ind_plan/a*100,0):'—'})()}</td><td class="n">${(()=>{const a=+f.mp_dir_act+(+f.mp_sub_act||0);return a?mp(f.mp_ind_act/a*100,0):'—'})()}</td><td></td></tr></tbody></table></div>
+    <div class="rdcard rdwide"><h3>Areas of concern <span class="muted small">${r.pl?`internal report ${esc(perLabel('month',r.pl.period))}`:'no released internal report'}</span></h3>
+      ${(()=>{const C=aocOf(r.nar);let n=0;return `<table class="tbl small"><thead><tr><th></th><th>Concern</th><th>Action by</th><th>Action needed</th></tr></thead><tbody>${AOC.map(([k,l])=>`<tr class="mertot"><td colspan="4"><b>${esc(l)}</b></td></tr>${(C[k].length?C[k]:[{}]).map(x=>`<tr><td class="n">${x.c?++n:''}</td><td>${esc(x.c||'—')}</td><td>${esc(x.by||'')}</td><td>${esc(x.act||'')}</td></tr>`).join('')}`).join('')}</tbody></table>`})()}
+      <p class="small muted" style="margin:4px 0 0">Project manager: ${esc(merPm(p))} · Planning engineer: ${esc((teamOf(p.id,'plan')[0]||{}).name||'—')}</p></div>
+    <div class="rdcard rdwide"><h3>Cost plan for the current year <span class="muted small">POC % · ${r.basis==='fin'?'finance':'internal'} plan${r.cp&&r.cp[r.basis]?` · ${esc(r.cp[r.basis].status||'Draft')}`:''}</span></h3><div class="scroll"><table class="tbl small"><thead><tr><th>Item / month</th>${months.map(i=>`<th class="n">${MON[i]}</th>`).join('')}</tr></thead><tbody>
+      ${prow('Planned',pl)}${prow('Actual',r.act.inc.map((v,i)=>i<cut?v:null))}${prow('Forecast',fcArr)}${prow('Cum. plan this year',cumP,'muted')}${prow('Cum. actual this year',cumA,'muted')}${prow('Cum. forecast this year',cumF,'muted')}</tbody></table></div>
+      <p class="small muted" style="margin:4px 0 0">Cumulative actual to the end of last year: ${mp(r.base.poc)}${r.base.src?` (${esc(r.base.src)})`:''}. Actual months: each month's released cost report, (actual − stock) ÷ current budget, against the month before.</p></div>
+    <div class="rdcard"><h3>POC for the current year</h3>${kv([['Target',mp(r.x_plan)],['Actual (till '+MON[cut-1]+')',mp(r.t_act)],['Forecast',mp(r.y_fc)]])}</div>
+    <div class="rdcard"><h3>Cash status <span class="muted small">SAR</span></h3>${kv([['Cash in',mf(r.cash_in)],['Cash out',mf(r.cash_out)],['Net cash',mv(r.cash_var)]])}</div>
+    <div class="rdcard"><h3>Site management analysis <span class="muted small">SAR</span></h3>${kv([['Tender budget site management costs',mf(cr?crN((crHead(cr,'SM')||{}).tender):null)],['Actual site management costs',mf(r.sm_act)],['Submitted invoices',mf(r.inv_sub)],['Total contract value',mf(r.cv)],['Earned value based on current budget',mf(r.sm_ev)]])}</div>
+  </div>`}
+function renderMer(){
+  if(!canCpView()){$('#view').innerHTML='<section class="panel"><p>The MER is for those who see cost and billing figures.</p></section>';return}
+  const st=merState(),D=merData(st),secs=[...new Set(scopeProjects().map(p=>p.sector).filter(Boolean))],pers=recentMonths(13);if(!pers.includes(st.per))pers.push(st.per);
+  const sel=st.pid&&D.rows.find(r=>r.p.id===st.pid)||D.rows[0];
+  const miss=D.rows.filter(r=>!r.cp||!r.cp[st.basis]).length;
+  $('#view').innerHTML=`${crumb()}<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>MER – Monthly Executive Report</h2><button class="btn" type="button" data-merx>Export to Excel</button></div>
+    <p class="small muted" style="margin:0 0 8px">The company's Monthly Executive Report from ProTrack records at the cut-off month: the released monthly cost report, the released monthly internal report (progress, key dates, manpower, areas of concern), the change order and claim log, the invoice register, the Cashflow Dashboard and the cost plan.</p>
+    <div class="fields"><label class="field">Cut-off month<select data-merf="per">${pers.sort().reverse().map(m=>`<option value="${m}" ${m===st.per?'selected':''}>${esc(perLabel('month',m))}</option>`).join('')}</select></label>
+      <label class="field">Cost plan<select data-merf="basis"><option value="int" ${st.basis==='int'?'selected':''}>Internal (I), agreed with the project manager</option><option value="fin" ${st.basis==='fin'?'selected':''}>Finance (F), conservative target</option></select></label>
+      <label class="field">Region<select data-merf="reg"><option value="ALL">All regions</option>${DB.master.regions.map(r=>`<option value="${esc(r.id)}" ${st.reg===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></label>
+      <label class="field">Sector<select data-merf="sec"><option value="ALL">All sectors</option>${secs.map(s=>`<option ${st.sec===s?'selected':''}>${esc(s)}</option>`).join('')}</select></label></div>
+    <div class="chips" role="tablist">${[['cost',`Cost (${st.basis==='fin'?'F':'I'})`],['dash','Dashboard'],['proj','Project wise']].map(([k,l])=>`<button type="button" role="tab" class="chip" data-mertab="${k}" aria-pressed="${st.tab===k}">${l}</button>`).join('')}</div>
+    ${miss?`<p class="small a-c" style="margin:6px 0 0">${miss} of ${D.rows.length} projects have no ${st.basis==='fin'?'finance':'internal'} cost plan for ${st.per.slice(0,4)}: their planned POC shows "—". The costing engineer keeps it in Cost Control → Cost plan.</p>`:''}
+    ${CLOUD_ME&&DB.cpMissing?`<div class="warn-box" style="margin-top:8px"><b>The cost plan needs the v45 database update.</b> Run schema-update-v45.sql (STAGE-39-SETUP). Until then the MER shows no planned POC.</div>`:''}</section>
+  <section class="panel">${!D.rows.length?'<p class="muted">No active project in this scope.</p>':st.tab==='cost'?`<div class="card-head"><h2>Portfolio cost status report</h2><span class="small muted">Cut-off ${esc(fmtDY(periodEnd(st.per,'month')))} · SAR</span></div>${merCostHTML(D,st)}
+      <p class="small muted">P&L from the beginning of the year = (contract value − contract value at December of last year) − (current budget − budget at December of last year). Utilized contingency = available − Rev.00. POC variances are amounts on the current budget. Site management earned value = actual overall progress × site management current budget. Regions and the portfolio: sums; POC weighted by budget, gross profit by contract value.</p>`
+    :st.tab==='dash'?`<div class="card-head"><h2>Dashboard status</h2><span class="small muted">Cut-off ${esc(fmtDY(periodEnd(st.per,'month')))}</span></div>${merDashHTML(D)}`
+    :`<div class="card-head" style="flex-wrap:wrap"><h2>Project wise</h2><label class="field" style="margin:0">Project<select data-merf="pid">${D.rows.map(r=>`<option value="${esc(r.p.id)}" ${sel&&sel.p.id===r.p.id?'selected':''}>${esc(pcode(r.p)+' · '+(r.p.short||r.p.name))}</option>`).join('')}</select></label></div>
+      ${sel&&sel.notes.length?`<p class="small a-c">${esc(sel.notes.join('; '))}</p>`:''}${merProjHTML(sel)}`}</section>`;
+}
+/* the workbook: Cost (I or F), Dashboard and one sheet per project */
+async function merExport(){await loadLib(LIBS.xlsx);const st=merState(),D=merData(st),wb=XLSX.utils.book_new(),cut=fmtDY(periodEnd(st.per,'month'));
+  const G=MER_COST_COLS(st),C=G.flatMap(g=>g[1]),num=v=>v==null||!isFinite(v)?'':Math.round(v),pc=v=>v==null||!isFinite(v)?'':+(v/100).toFixed(6);
+  const isPct=k=>['poc','gp_r0','gp_cur','t_plan','t_act','x_plan','y_fc','ly_poc','fin_target','year_target','fin_check'].includes(k);
+  const cRow=(r,sn)=>[sn,r.total?'':pcode(r.p),r.total?r.label:(r.p.short||r.p.name),r.total?'':merPm(r.p),...C.map(([k])=>isPct(k)?pc(r[k]):num(r[k]))];
+  let sn=0;const ca=[['PORTFOLIO COST STATUS REPORT'],['CUT-OFF:',cut,'Cost plan:',st.basis==='fin'?'Finance (F)':'Internal (I)'],[],['','','','',...G.flatMap(([g,c])=>c.map((x,i)=>i?'':(g||'')))],['S.N.','Project Code','Project Name','Responsible Manager',...C.map(([,l])=>l)],
+    cRow(D.all,++sn),...D.regs.flatMap(g=>[cRow(g.tot,++sn),...g.rows.map(r=>cRow(r,++sn))])];
+  const ws1=XLSX.utils.aoa_to_sheet(ca);C.forEach(([k],i)=>{if(!isPct(k))return;for(let r=5;r<ca.length;r++){const a=XLSX.utils.encode_cell({r,c:4+i});if(ws1[a]&&ws1[a].t==='n')ws1[a].z='0.00%'}});ws1['!cols']=[{wch:5},{wch:11},{wch:30},{wch:20},...C.map(()=>({wch:15}))];
+  XLSX.utils.book_append_sheet(wb,ws1,st.basis==='fin'?'COST(F)':'COST(I)');
+  sn=0;const aocTxt=nar=>{const Cc=aocOf(nar);let n=0;return AOC.map(([k,l])=>Cc[k].length?`${l}: ${Cc[k].map(x=>`${++n}. ${x.c}${x.by?` (${x.by})`:''}`).join(' ')}`:'').filter(Boolean).join(' | ')};
+  const da=[['PORTFOLIO REPORT'],['DASHBOARD STATUS','','Cut-off',cut],[],['S.N.','Project Code','Project Name',...MER_DASH_COLS,'Areas of Concern',...AOC.map(([,l])=>l)]];
+  const strip=v=>String(v).replace(/<[^>]+>/g,'');
+  da.push([++sn,'','OVERALL PORTFOLIO']);D.regs.forEach(g=>{da.push([++sn,'',g.tot.label]);g.rows.forEach(r=>{const Cc=aocOf(r.nar);da.push([++sn,pcode(r.p),r.p.short||r.p.name,...merDashVals(r).map(strip),aocTxt(r.nar),...AOC.map(([k])=>Cc[k].map((x,i)=>`${i+1}. ${x.c}`).join(' '))])})});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(da),'DASHBOARD');
+  D.rows.forEach(r=>{const p=r.p,f=r.pf,e=p.eot||{},dd=k=>f[k]||'',Cc=aocOf(r.nar),cr=r.f,heads=cr&&isWbs(cr)?cr.wbs:[];
+    const a=[['PROJECT INFORMATION','','','PLAN-006-FORM-01'],['Project Name',p.name||p.short],['Project Location',merCity(p)],['Project Client',p.client||''],['Project Consultant',p.consultant||''],['Project Start Date',f.commence_date||p.start||''],['Site Handover Date',dd('site_handover_date')],['Project Code',pcode(p)],['Report Cut-off Date',periodEnd(st.per,'month')],[],
+      ['PROGRESS PERCENTAGE','Weight','Planned %','Actual %','Var.'],['Overall Progress',1,pc(f.planned_pct),pc(f.actual_pct),f.planned_pct!=null&&f.actual_pct!=null?pc(f.actual_pct-f.planned_pct):''],
+      ...(merPhases(f).map(x=>[x.phase||x.name||'',x.wt!=null?+x.wt/100:'',pc(x.plan_pct),pc(x.act_pct),x.plan_pct!=null&&x.act_pct!=null?pc(x.act_pct-x.plan_pct):''])),[],
+      ['SCHEDULE STATUS','Contract Finish','Revised Finish','Forecast Finish'],...['tcc','pac','fac'].map(k=>[k.toUpperCase(),dd(k+'_orig_date'),dd(k+'_rev_date'),dd(k+'_ext_fc_date')]),[],
+      ['CLAIM STATUS'],['Submitted Date',e.sub||''],['Extension of Time [EOT] Submitted Duration',e.days||''],[],
+      ['COMMERCIAL STATUS','SAR'],['Original Contract Value',num(r.cc.orig)],['Variation Orders [VO] Approved',num(r.cc.appr)],['Variation Orders [VO] Under Negotiation',num(Math.max(0,r.cc.sub-r.cc.appr))],['Revised Contract Value [Original Contract + VO approved]',num(r.cv)],
+      ['Contract Value at December of Last Year',num(r.base.cv)],['Actual Cost including Stock Value [From Start]',num(r.actual)],['Actual Stock Value',num(r.stock)],['Commitment Cost',num(r.commitment)],['Cumulative Actual POC [Without Stock Value]',pc(r.poc)],['Actual Revenue [Based on POC]',num(r.revenue)],
+      ['Invoiceable Value as per Contract Payment Terms',num(r.inv_able)],['Gross Billing Submitted',num(r.inv_sub)],['Gross Billing Approved',num(r.inv_appr)],['Advance Payment',num(r.inv_adv)],['Cash Received including Advance Payment',num(r.inv_coll)],['Budget Best Estimate at December of Last Year',num(r.base.budget)],[],
+      ['BUDGET STATUS','Actual Cost','Budget Rev.00','Current Budget','Var. %'],['Gross Profit %','',pc(r.gp_r0),pc(r.gp_cur),r.gp_r0!=null&&r.gp_cur!=null?pc(r.gp_cur-r.gp_r0):''],['Overall Project',num(r.actual),num(r.rev0),num(r.budget),r.rev0?pc((r.rev0-r.budget)/r.rev0*100):''],
+      ...heads.map(l=>[l.name||l.code,num(crN(l.actual)),num(crN(l.rev0)),num(crN(l.budget)),crN(l.rev0)?pc((crN(l.rev0)-crN(l.budget))/crN(l.rev0)*100):'']),[],
+      ['MANPOWER','Planned','Actual'],['Total Direct Manpower',f.mp_dir_plan??'',f.mp_dir_act??''],['Total Indirect Manpower',f.mp_ind_plan??'',f.mp_ind_act??''],['Total Subcontractor Manpower',f.mp_sub_plan??'',f.mp_sub_act??''],['Total Manpower',f.mp_tot_plan??'',f.mp_tot_act??''],[],
+      ['AREAS OF CONCERN','Action by','Action needed'],...AOC.flatMap(([k,l])=>[[l.toUpperCase()],...Cc[k].map(x=>[x.c,x.by||'',x.act||''])]),[],
+      ['COST PLAN FOR CURRENT YEAR (POC)',...MON],['Planned',...(r.plan||[]).map(pc)],['Actual',...r.act.inc.map((v,i)=>i<+st.per.slice(5,7)?pc(v):'')],['Forecast',...r.fc.map((v,i)=>i>=+st.per.slice(5,7)?pc(v):'')],[],
+      ['POC FOR CURRENT YEAR'],['Target',pc(r.x_plan)],['Actual',pc(r.t_act)],['Forecast',pc(r.y_fc)],[],['CASH STATUS'],['Cash In',num(r.cash_in)],['Cash Out',num(r.cash_out)],['Net Cash',num(r.cash_var)],[],
+      ['SITE MANAGEMENT ANALYSIS'],['Actual Site Management Costs',num(r.sm_act)],['Submitted Invoices',num(r.inv_sub)],['Total Contract Value',num(r.cv)],['Earned Value Based on Current Budget',num(r.sm_ev)]];
+    const ws=XLSX.utils.aoa_to_sheet(a);Object.keys(ws).forEach(k=>{if(k[0]!=='!'&&ws[k].t==='n'&&Math.abs(ws[k].v)<=1.5&&ws[k].v!==Math.round(ws[k].v))ws[k].z='0.00%'});ws['!cols']=[{wch:46},...Array(12).fill({wch:13})];
+    XLSX.utils.book_append_sheet(wb,ws,String(pcode(p)).replace(/[\\/?*[\]:]/g,'-').slice(0,31))});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ProTrack, Monthly Executive Report'],['Cut-off',cut],['Cost plan',st.basis==='fin'?'Finance (F)':'Internal (I)'],['Exported',stamp()+' by '+(me()||{}).name],
+    ['Sources: released monthly cost reports and internal reports, change order and claim log, invoice register, Cashflow Dashboard, cost plans. Figures are as recorded in ProTrack at export.']]),'About');
+  await saveBook(wb,`MER ${st.per} ${st.basis==='fin'?'F':'I'}.xlsx`)}
+
+/* ----- the cost plan screen ----- */
+const cpState=()=>{const s=state.cp||(state.cp={});const P=scopeProjects().filter(p=>['Active','On hold'].includes(p.status||'Active'));if(!s.pid||!P.some(p=>p.id===s.pid))s.pid=(P[0]||{}).id||null;s.y=s.y||+ym(ASOF).slice(0,4);return s};
+function renderCplan(){
+  if(!canCpView()){$('#view').innerHTML='<section class="panel"><p>The cost plan is for those who see cost figures.</p></section>';return}
+  const s=cpState(),P=scopeProjects().filter(p=>['Active','On hold'].includes(p.status||'Active')),y=s.y,p=projById(s.pid);
+  const ov=P.map(x=>{const c=cpOf(x.id,y),pi=cpPlanPct(c,'int'),pf=cpPlanPct(c,'fin');return `<tr ${x.id===s.pid?'class="sel"':''}><td><button class="linkbtn" type="button" data-cppid="${esc(x.id)}">${esc(pcode(x))}</button></td><td>${esc(x.short||x.name)}</td>
+    <td>${c&&c.int?`<span class="st ${c.int.status==='Agreed'?'Approved':'Draft'}">${esc(c.int.status)}</span>`:'<span class="muted">Not made</span>'}</td><td class="n">${pi?mp(cpSum(pi)):'—'}</td>
+    <td>${c&&c.fin?`<span class="st ${c.fin.status==='Approved'?'Approved':'Draft'}">${esc(c.fin.status)}</span>`:'<span class="muted">Not made</span>'}</td><td class="n">${c&&c.fin?mp(cpNum(c.fin.target)):'—'}</td><td class="n">${pf?mp(cpSum(pf)):'—'}</td>
+    <td class="small">${c?esc(((c.hist||[]).slice(-1)[0]||{}).by||''):''}<span class="t2">${c&&(c.hist||[]).length?esc(tStamp(c.hist.slice(-1)[0].at)):''}</span></td></tr>`}).join('');
+  $('#view').innerHTML=`${crumb()}<section class="panel"><div class="card-head" style="flex-wrap:wrap"><h2>Cost plan ${y}</h2><button class="btn" type="button" data-cpx>Export the cost plans to Excel</button></div>
+    <p class="small muted" style="margin:0 0 8px">Each project's cost plan for the year, kept by its costing engineer. <b>Internal</b>: the planned cost of each month, agreed with the project manager; its POC is the month's planned cost ÷ the plan's budget. <b>Finance</b>: the conservative POC target given to Finance with management's approval. The MER measures the actual POC against either.</p>
+    ${CLOUD_ME&&DB.cpMissing?'<div class="warn-box" style="margin:0 0 8px"><b>The cost plan needs the v45 database update.</b> Run schema-update-v45.sql (STAGE-39-SETUP). Until then cost plans cannot be saved.</div>':''}
+    <div class="fields"><label class="field">Year<select data-cpf="y">${[y-1,y,y+1].map(v=>`<option ${v===y?'selected':''}>${v}</option>`).join('')}</select></label></div>
+    <div class="scroll"><table class="tbl small"><thead><tr><th>Project</th><th></th><th>Internal plan</th><th class="n">Planned POC this year</th><th>Finance plan</th><th class="n">Target POC at year end</th><th class="n">Planned POC this year</th><th>Last change</th></tr></thead><tbody>${ov||'<tr><td colspan="8" class="muted">No active project in your scope.</td></tr>'}</tbody></table></div></section>
+  ${p?cpProjectHTML(p,y):''}`;
+}
+function cpProjectHTML(p,y){const c=cpOf(p.id,y)||{},ed=canCpEdit(p.id),dis=ed?'':'disabled',base=merBase(p.id,y),lcr=merRel(p.id,'cost',`${y}-12`),lf=lcr?lcr.figures:null;
+  const I=c.int||{},Fp=c.fin||{},Fc=c.fc||{},B=c.base||{},im=cp12(I.months),fm=cp12(Fp.months),cm=cp12(Fc.months),bud=cpNum(I.budget)??(lf?crBud(lf):null),cv=cpNum(I.cv)??contractOf(p.id,`${y}-12`).rev_client;
+  const decR=merRelAt(p.id,'cost',`${y-1}-12`),lastAct=relRows().filter(r=>r.project_id===p.id&&r.kind==='cost'&&r.period_type==='month'&&r.status==='Released'&&String(r.period).startsWith(String(y))).map(r=>+r.period.slice(5,7)).sort((a,b)=>b-a)[0]||0;
+  const A=merActual(p.id,y,`${y}-12`,base.poc),inp=(n,v,extra)=>`<input name="${n}" value="${esc(v==null?'':v)}" type="number" step="any" ${dis} ${extra||''} style="min-width:84px">`;
+  const ipct=im.map(v=>bud?((+v||0)/bud*100):null);let cu=0;const icum=ipct.map(v=>(cu+=+v||0,cu));cu=0;const fcum=fm.map(v=>(cu+=+v||0,cu));
+  const qrev=[0,1,2,3].map(q=>bud&&cv?cpSum(im.slice(q*3,q*3+3))/bud*cv:null),yTarget=cpNum(Fp.target)!=null&&base.poc!=null?cpNum(Fp.target)-base.poc:null;
+  const stt=(o,ok)=>o.status?`<span class="st ${o.status===ok?'Approved':'Draft'}">${esc(o.status)}</span>`:'<span class="muted small">Not saved</span>';
+  const H=(c.hist||[]).slice().reverse();
+  return `<section class="panel" id="cpForm" data-pid="${esc(p.id)}" data-y="${y}"><div class="card-head" style="flex-wrap:wrap"><h2>${esc(pcode(p))} · ${esc(p.short||p.name)}</h2><span class="small muted">${ed?'You keep this project\'s cost plan.':'Read only: the costing engineer of the project keeps it.'}</span></div>
+    <div class="rdgrid">
+    <div class="rdcard"><h3>Year start <span class="muted small">December ${y-1}</span></h3>${decR?`<p class="small">From the ${esc(perLabel('month',`${y-1}-12`))} cost report: POC ${mp(base.poc)}, current budget ${mf(base.budget)}, contract value ${mf(base.cv)}.</p>`:`<div class="fields fields1">
+      ${F('Actual POC at the end of last year (from start, %)',inp('b_poc',B.poc,'min="0" max="100"'))}${F('Budget best estimate at December (SAR)',inp('b_budget',B.budget,'min="0"'))}${F('Contract value at December (SAR)',inp('b_cv',B.cv,'min="0"'))}</div>
+      ${ed?'<div class="actions"><button class="btn sm" type="button" data-cpsave="base">Save the year start</button></div>':''}<p class="small muted">No released cost report for December ${y-1}; enter the year-start figures (the company's DEC LAST YEAR sheet).</p>`}</div>
+    <div class="rdcard rdwide"><h3>Internal plan ${stt(I,'Agreed')} <span class="muted small">planned cost, agreed with the project manager</span></h3>
+      <div class="fields">${F('Budget the plan is made on (SAR)',inp('i_budget',bud,'min="0"'))}${F('Contract value (SAR)',inp('i_cv',cv,'min="0"'))}</div>
+      <div class="scroll"><table class="tbl small cptbl"><thead><tr><th></th>${MON.map(m=>`<th class="n">${m}</th>`).join('')}<th class="n">Total</th></tr></thead><tbody>
+        <tr><td>Planned cost (SAR)</td>${im.map((v,i)=>`<td>${inp('i_m'+i,v,'min="0"')}</td>`).join('')}<td class="n"><b>${mf(cpSum(im))}</b></td></tr>
+        <tr><td>Planned POC %</td>${ipct.map(v=>`<td class="n">${mp(v)}</td>`).join('')}<td class="n"><b>${mp(cpSum(ipct))}</b></td></tr>
+        <tr class="muted"><td>Cumulative this year</td>${icum.map(v=>`<td class="n">${mp(v)}</td>`).join('')}<td></td></tr>
+        <tr class="muted"><td>Revenue by quarter (SAR)</td>${qrev.map(v=>`<td class="n" colspan="3">${mf(v)}</td>`).join('')}<td></td></tr></tbody></table></div>
+      ${I.agreed_at?`<p class="small muted">Agreed by ${esc(I.agreed_by_name||'')} ${esc(tStamp(I.agreed_at))}.</p>`:''}
+      <div class="actions">${ed?'<button class="btn primary sm" type="button" data-cpsave="int">Save the internal plan</button>':''}${I.status==='Draft'&&canCpAgree(p.id)&&state.role!=='costing'?'<button class="btn sm" type="button" data-cpact="agree">Mark agreed (project manager)</button>':''}</div></div>
+    <div class="rdcard rdwide"><h3>Finance plan ${stt(Fp,'Approved')} <span class="muted small">conservative POC target, with management's approval</span></h3>
+      <div class="fields">${F('Target POC at year end (from start, %)',inp('f_target',Fp.target,'min="0" max="100"'))}${F('Management approval reference',`<input name="f_ref" maxlength="120" value="${esc(Fp.ref||'')}" ${dis}>`)}</div>
+      <p class="small muted">Actual POC at the end of last year ${mp(base.poc)} · this year's target ${mp(yTarget)} · planned month by month ${mp(cpSum(fm))}${yTarget!=null?` · check ${mvp(yTarget-cpSum(fm))} (should be zero)`:''}</p>
+      <div class="scroll"><table class="tbl small cptbl"><thead><tr><th></th>${MON.map(m=>`<th class="n">${m}</th>`).join('')}<th class="n">Total</th></tr></thead><tbody>
+        <tr><td>Planned POC %</td>${fm.map((v,i)=>`<td>${inp('f_m'+i,v,'min="-100" max="100"')}</td>`).join('')}<td class="n"><b>${mp(cpSum(fm))}</b></td></tr>
+        <tr class="muted"><td>Cumulative this year</td>${fcum.map(v=>`<td class="n">${mp(v)}</td>`).join('')}<td></td></tr></tbody></table></div>
+      ${Fp.approved_at?`<p class="small muted">Approved by ${esc(Fp.approved_by_name||'')} ${esc(tStamp(Fp.approved_at))}.</p>`:''}
+      <div class="actions">${ed?'<button class="btn primary sm" type="button" data-cpsave="fin">Save the finance plan</button>':''}${Fp.status==='Draft'&&canCpApprove()?'<button class="btn sm" type="button" data-cpact="approve">Approve (management)</button>':''}</div></div>
+    <div class="rdcard rdwide"><h3>Actual and forecast <span class="muted small">POC %, month by month</span></h3>
+      <div class="scroll"><table class="tbl small cptbl"><thead><tr><th></th>${MON.map(m=>`<th class="n">${m}</th>`).join('')}<th class="n">Year</th></tr></thead><tbody>
+        <tr><td>Actual (cost reports)</td>${A.inc.map(v=>`<td class="n">${mp(v)}</td>`).join('')}<td class="n"><b>${mp(cpSum(A.inc.filter(v=>v!=null)))}</b></td></tr>
+        <tr><td>Forecast</td>${cm.map((v,i)=>`<td>${i<lastAct?'<span class="muted small">actual</span>':inp('c_m'+i,v,'min="-100" max="100"')}</td>`).join('')}<td class="n"><b>${mp(cpSum(A.inc.filter(v=>v!=null))+cpSum(cm.slice(lastAct)))}</b></td></tr></tbody></table></div>
+      <p class="small muted">Actual months: each month's released cost report, (actual − stock) ÷ current budget, against the month before. Forecast the months after the last released cost report; the MER adds them to the actual for the year-end forecast.</p>
+      ${ed?'<div class="actions"><button class="btn sm" type="button" data-cpsave="fc">Save the forecast</button></div>':''}</div>
+    <div class="rdcard"><h3>History</h3><ul class="audit">${H.map(h=>`<li><b>${esc(h.action)}</b> · ${esc(CP_PARTS[h.part]||'')} by ${esc(h.by||'')} <span class="muted small">${esc(tStamp(h.at))}</span>${h.note?`<span class="note">${esc(h.note)}</span>`:''}</li>`).join('')||'<li class="muted">Not saved yet.</li>'}</ul></div>
+    </div></section>`}
+function cpRead(part){const f=$('#cpForm');const v=n=>{const el=f.querySelector(`[name="${n}"]`);return el?cpNum(el.value.trim()):null};
+  if(part==='int')return {budget:v('i_budget'),cv:v('i_cv'),months:Array.from({length:12},(_,i)=>v('i_m'+i))};
+  if(part==='fin')return {target:v('f_target'),ref:(f.querySelector('[name="f_ref"]')||{}).value||'',months:Array.from({length:12},(_,i)=>v('f_m'+i))};
+  if(part==='fc')return {months:Array.from({length:12},(_,i)=>v('c_m'+i))};
+  return {poc:v('b_poc'),budget:v('b_budget'),cv:v('b_cv')}}
+async function cpExport(){await loadLib(LIBS.xlsx);const s=cpState(),y=s.y,P=scopeProjects().filter(p=>['Active','On hold'].includes(p.status||'Active')),wb=XLSX.utils.book_new(),M=MON.map(m=>`${m}-${String(y).slice(2)}`);
+  const ai=[['Proj. ID','Project Name','Region','Project Type','Contract value','Budget',...M,'Total Cost','Q1','Q2','Q3','Q4',...M.map(m=>m+' %'),'Status','Agreed by']];
+  const af=[['Proj. ID','Project Name','Region','Actual POC end of last year','Target POC at year end','This year\'s target',...M.map(m=>m+' %'),'Check','Status','Approved by','Approval reference']];
+  P.forEach(p=>{const c=cpOf(p.id,y)||{},I=c.int||{},Fp=c.fin||{},im=cp12(I.months),bud=+I.budget||0,cv=+I.cv||0,b=merBase(p.id,y),fm=cp12(Fp.months),yt=cpNum(Fp.target)!=null&&b.poc!=null?cpNum(Fp.target)-b.poc:null;
+    ai.push([pcode(p),p.short||p.name,regName(p),p.ptype||'',cv||'',bud||'',...im.map(v=>v??''),cpSum(im),...[0,1,2,3].map(q=>bud&&cv?Math.round(cpSum(im.slice(q*3,q*3+3))/bud*cv):''),...im.map(v=>bud&&v!=null?+(v/bud).toFixed(6):''),I.status||'Not made',I.agreed_by_name||'']);
+    af.push([pcode(p),p.short||p.name,regName(p),b.poc!=null?+(b.poc/100).toFixed(6):'',cpNum(Fp.target)!=null?+(Fp.target/100).toFixed(6):'',yt!=null?+(yt/100).toFixed(6):'',...fm.map(v=>v!=null?+(v/100).toFixed(6):''),yt!=null?+((yt-cpSum(fm))/100).toFixed(6):'',Fp.status||'Not made',Fp.approved_by_name||'',Fp.ref||''])});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ai),'COST PLAN (I)');XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(af),'COST PLAN (F)');
+  await saveBook(wb,`Cost plan ${y}.xlsx`)}
+document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
+  if(t.matches('[data-merf]')){const s=merState();s[t.dataset.merf]=t.value;if(t.dataset.merf!=='pid')s.pid=s.pid;render();return}
+  if(t.matches('[data-cpf]')){const s=cpState();s.y=+t.value;render();return}});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-mertab],[data-merpid],[data-merx],[data-cppid],[data-cpsave],[data-cpact],[data-cpx],[data-aocfill]');if(!t)return;const d=t.dataset;
+  if(d.mertab){merState().tab=d.mertab;render();return}
+  if(d.merpid){const s=merState();s.pid=d.merpid;s.tab='proj';render();return}
+  if(d.merx!==undefined){try{await merExport()}catch(err){toast('The export failed: '+srvMsg(err))}return}
+  if(d.cppid){cpState().pid=d.cppid;render();setTimeout(()=>{const el=$('#cpForm');if(el)el.scrollIntoView({block:'start'})},40);return}
+  if(d.cpx!==undefined){try{await cpExport()}catch(err){toast('The export failed: '+srvMsg(err))}return}
+  if(d.aocfill!==undefined){const f=$('#relForm');if(!f)return;const n=aocFill(f,f.dataset.pid);toast(n?`${n} concern${n===1?'':'s'} filled from the issue register; check and save`:'No open issue of this project for the empty rows');return}
+  if(d.cpsave){const f=$('#cpForm');if(!f)return;t.disabled=true;const ok=await cpSave(f.dataset.pid,+f.dataset.y,d.cpsave,cpRead(d.cpsave));t.disabled=false;if(ok){toast(`${CP_PARTS[d.cpsave]} saved`);render()}return}
+  if(d.cpact){const f=$('#cpForm');if(!f)return;const ok=await cpAct(f.dataset.pid,+f.dataset.y,d.cpact);if(ok){toast(d.cpact==='agree'?'Internal plan agreed':'Finance plan approved');render()}return}});
+/* demo page: SAMPLE cost plans for this year, and SAMPLE areas of concern in the released monthly internal reports */
+function seedV341(){if(CLOUD||DB.v341Seeded)return;const y=+ym(ASOF).slice(0,4),L=DB.costPlans||(DB.costPlans=[]),hd=pccHeads()[0]||DB.master.users.find(u=>u.role==='sa');
+  PROJECTS.forEach((p,i)=>{if(L.some(x=>x.project_id===p.id&&+x.year===y))return;const cr=merRel(p.id,'cost',`${y}-12`);if(!cr)return;const f=cr.figures,bud=crBud(f);if(!bud)return;
+    const co=teamOf(p.id,'costing')[0]||hd,pm=userById(p.pm)||hd,poc=crPoc(f)||0,ly=Math.max(0,+(poc-12-(i%3)*2).toFixed(2)),w=[4,6,8,9,9,10,9,9,9,9,9,9],tw=w.reduce((a,b)=>a+b,0),yr=Math.min(100-ly,20+(i%4)*3);
+    const int={budget:bud,cv:contractOf(p.id,`${y}-12`).rev_client||cpNum(f.contract_value),months:w.map(x=>Math.round(bud*yr/100*x/tw)),status:i%3===2?'Draft':'Agreed',saved_by:co.id,saved_by_name:co.name,saved_at:`${y}-01-20T09:00:00`,agreed_by:pm.id,agreed_by_name:pm.name,agreed_at:`${y}-01-25T10:00:00`};
+    if(int.status==='Draft'){delete int.agreed_by;delete int.agreed_by_name;delete int.agreed_at}
+    const fy=+(yr*0.85).toFixed(2),fin={target:+(ly+fy).toFixed(2),ref:'SAMPLE management approval',months:w.map(x=>+(fy*x/tw).toFixed(2)),status:'Approved',saved_by:co.id,saved_by_name:co.name,saved_at:`${y}-01-21T09:00:00`,approved_by:hd.id,approved_by_name:hd.name,approved_at:`${y}-01-28T10:00:00`};
+    fin.months[11]=+(fy-fin.months.slice(0,11).reduce((a,b)=>a+b,0)).toFixed(2);
+    L.push({id:`CP-${p.id}-${y}`,project_id:p.id,year:y,sample:true,int,fin,fc:{months:w.map(x=>+(yr*1.02*x/tw).toFixed(2)),saved_by_name:co.name,saved_at:`${ym(ASOF)}-05T09:00:00`},
+      base:{poc:ly,budget:Math.round(bud*0.98),cv:int.cv,saved_by_name:co.name,saved_at:`${y}-01-20T09:00:00`},hist:[{at:`${y}-01-20T09:00:00`,by:co.name,part:'int',action:'Saved',note:'SAMPLE cost plan (demo data)'}]})});
+  const S=[['Shop drawings for the GIS building awaiting approval','Consultant','Follow up the approval at the weekly meeting'],['Power transformer delivery confirmation pending','Procurement','Expedite with the vendor'],['Night-work permit for the road crossing','Client','Obtain the permit from the municipality'],
+    ['Shortage of certified cable jointers','HR','Mobilise two jointers from the Eastern region'],['IPC approval delayed by the client','Commercial','Escalate to the client\'s project director']];
+  relRows().filter(r=>r.kind==='planning'&&r.period_type==='month'&&r.status==='Released'&&/^RS/.test(String(r.id))).forEach((r,i)=>{r.narrative=r.narrative||{};if(r.narrative.concerns)return;
+    r.narrative.concerns=Object.fromEntries(AOC.map(([k],j)=>[k,(i+j)%3===0?[]:[{c:S[j][0]+' (sample)',by:S[j][1],act:S[j][2]}]]))});
+  DB.v341Seeded=true;save()}
+
 function renderCout(){
   if(!canCoView()){$('#view').innerHTML='<section class="panel"><p>The cash-out forecast is for costing, planning, project managers and management, on the projects in their access.</p></section>';return}
   const tab=state.coTab||'overview',tabs=`<div class="chips" role="tablist" style="margin:0 0 12px">${CO_TABS.map(([k,l])=>`<button type="button" role="tab" class="chip" data-cotab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>`;
@@ -18840,7 +19210,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBcm336();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBcm336();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();seedV341();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=homeView();showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');
