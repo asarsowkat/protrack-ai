@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.46
+
+- **Client report formats for Word reports (the SEC monthly progress report).** Pages at two levels (numbered 1, 2, 2.1 …), portrait or landscape pages, a header line, table heading colours, {report_no} (Monthly Progress Report No. 28), and two pages ProTrack fills: the document revision record and the invoices. **Draft a format from a client's PowerPoint or Word report** now reads Word too (headings, tables, orientation, header, footer, colours). Word files get a real table of contents and mixed portrait and landscape sections. A SAMPLE SEC monthly format is used for monthly client reports in the demo. Server: `schema-update-v49.sql` (STAGE-43-SETUP). `tests/client_formats_word_demo.js` (12 checks). See RELEASE-NOTES-v3.46.md.
+
 ## Version 3.45
 
 - **Client report formats, and the client report as PowerPoint, Word and PDF.** Settings → **Client report formats** (super admin): a format per customer (pages in order, colours, font, cover lines, classification footer), each page filled from ProTrack or entered by the planning engineer (text, a table with set columns, pictures); a format can be drafted from the client's own PowerPoint. The client report's new **Client format and export** tab: enter the pages ProTrack does not hold (HSE, QC, correspondence …), mark pages not applicable or reviewed; a new period carries the last released pages, marked until changed. **Export** shows a disclaimer and every page's state, lists the pages not updated, needs a confirmation for a client copy (a review copy marks the pages), and logs each export. Server: `schema-update-v48.sql` (STAGE-42-SETUP). Word uses docx 8.5.0 (jsdelivr). `tests/client_formats_demo.js` (17 checks). See RELEASE-NOTES-v3.45.md.
