@@ -68,8 +68,9 @@
     merState().tab='dash';render();await wait(50);const tD=$('#view').innerText;merState().tab='proj';merState().pid=pid;render();await wait(50);const tP=$('#view').innerText;
     ok('22. The MER shows Cost (I), Dashboard and Project wise, with the six KPIs, the concerns and the PLAN-006 sections',
       /KPI #01 – Gross profit %/.test(tC)&&/KPI #06 – Site management/.test(tC)&&/Overall portfolio/.test(tC)&&/Areas of concern/.test(tD)&&/\(sample\)/.test(tD)&&
-      ['Project information','Progress percentage','Schedule status','Claim status','Commercial status','Budget status','Manpower','Areas of concern','Cost plan for the current year','Cash status','Site management analysis'].every(h=>tP.includes(h)));
-    let out=null;saveFile=async(n,b)=>{out={n,b}};await merExport();saveFile=keep;const W=XLSX.read(new Uint8Array(await out.b.arrayBuffer()),{type:'array'});
+      (+APP_VERSION.split('.')[1]>=44?['PROJECT INFORMATION','PROGRESS PERCENTAGE','SCHEDULE STATUS','CLAIM STATUS','COMMERCIAL STATUS','BUDGET STATUS','MANPOWER','AREAS OF CONCERN','PLAN-006-FORM-01']
+        :['Project information','Progress percentage','Schedule status','Claim status','Commercial status','Budget status','Manpower','Areas of concern','Cost plan for the current year','Cash status','Site management analysis']).every(h=>tP.includes(h)));
+    await loadLib(LIBS.xlsx);let out=null;saveFile=async(n,b)=>{out={n,b}};await merExport();saveFile=keep;const W=XLSX.read(new Uint8Array(await out.b.arrayBuffer()),{type:'array'});
     const cr=XLSX.utils.sheet_to_json(W.Sheets['COST(I)'],{header:1,defval:''}),row=cr.find(x=>x[1]===pcode(projById(pid)));
     ok('23. Export to Excel: COST (I), DASHBOARD and one PLAN-006 sheet per project; the POC as a percentage',out.n===`MER ${per} I.xlsx`&&W.SheetNames[0]==='COST(I)'&&W.SheetNames[1]==='DASHBOARD'&&W.SheetNames.includes(pcode(projById(pid)))&&!!row&&near(row[6],r.poc/100,1e-5),W.SheetNames);
     out=null;saveFile=async(n,b)=>{out={n,b}};state.cp={pid,y};await cpExport();saveFile=keep;const W2=XLSX.read(new Uint8Array(await out.b.arrayBuffer()),{type:'array'});
