@@ -1,0 +1,222 @@
+{
+ "run": "2026-11-01T13:18:31.262Z",
+ "pass": 43,
+ "total": 43,
+ "results": [
+  {
+   "check": "Install: v53 runs a second time without errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: cib_features reports version 53 with formats",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: the bucket cib-formats is private, 25 MB, .xlsx only",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: who keeps formats: costing yes (cib.setup), the project manager and a foreman no; who reads: the project manager yes, a foreman no",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Fix: a signed-in person reads files in storage again (a report photo of a project they see)",
+   "pass": true,
+   "detail": "[{\"n\":1}]"
+  },
+  {
+   "check": "Fix: pt_rm_see answers only for the person asking",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Storage: a project manager does not store a format workbook",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Storage: only fmt/<id>.xlsx is accepted",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Storage: the costing engineer stores the workbook",
+   "pass": true,
+   "detail": "[]"
+  },
+  {
+   "check": "Format: the project manager does not keep formats",
+   "pass": true,
+   "detail": "Only those who keep the Schedule-C keep the invoice formats"
+  },
+  {
+   "check": "Format: a workbook that was not stored is refused",
+   "pass": true,
+   "detail": "The workbook was not stored"
+  },
+  {
+   "check": "Format: the path must be the format's own",
+   "pass": true,
+   "detail": "The workbook path is not valid"
+  },
+  {
+   "check": "Format: a map without its tables is refused",
+   "pass": true,
+   "detail": "The format map is not valid"
+  },
+  {
+   "check": "Format: more than 25 MB is refused",
+   "pass": true,
+   "detail": "The workbook is larger than 25 MB"
+  },
+  {
+   "check": "Format: a name of one letter is refused",
+   "pass": true,
+   "detail": "Give the format a name (2 to 80 characters)"
+  },
+  {
+   "check": "Format: the costing engineer keeps it for a client",
+   "pass": true,
+   "detail": "{\"id\":\"CFabc12345\"}"
+  },
+  {
+   "check": "Format: a second workbook is stored",
+   "pass": true,
+   "detail": "[]"
+  },
+  {
+   "check": "Format: the same name for the same client is refused",
+   "pass": true,
+   "detail": "A format with this name is already kept for this client"
+  },
+  {
+   "check": "Format: the same name for any client is another format",
+   "pass": true,
+   "detail": "{\"id\":\"CFdef67890\"}"
+  },
+  {
+   "check": "Read: the project manager sees both formats and their files",
+   "pass": true,
+   "detail": "[2,2]"
+  },
+  {
+   "check": "Read: a foreman sees neither",
+   "pass": true,
+   "detail": "[0,0]"
+  },
+  {
+   "check": "Read: nobody writes the table directly",
+   "pass": true,
+   "detail": "permission denied for table cib_formats"
+  },
+  {
+   "check": "Map: the costing engineer changes the name, client and map",
+   "pass": true,
+   "detail": "{\"ok\":true}"
+  },
+  {
+   "check": "Map: kept with who changed it and the history",
+   "pass": true,
+   "detail": "{\"name\":\"Utility layout 2026\",\"hist\":2}"
+  },
+  {
+   "check": "Map: the project manager does not change it",
+   "pass": true,
+   "detail": "Only those who keep the Schedule-C keep the invoice formats"
+  },
+  {
+   "check": "Delete: the workbook of a kept format cannot be removed",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Delete: the costing engineer deletes the format; the answer names its file",
+   "pass": true,
+   "detail": "{\"ok\":true,\"path\":\"fmt/CFabc12345.xlsx\"}"
+  },
+  {
+   "check": "Delete: then its workbook is removed",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Export: a SAMPLE Schedule-C",
+   "pass": true,
+   "detail": "{\"id\":\"CS-P1-1\",\"st\":\"Draft\",\"rev\":1}"
+  },
+  {
+   "check": "Export: approved",
+   "pass": true,
+   "detail": "{\"id\":\"CS-P1-1\",\"ok\":true}"
+  },
+  {
+   "check": "Export: mapped",
+   "pass": true,
+   "detail": "{\"changed\":1}"
+  },
+  {
+   "check": "Export: invoice #1 prepared",
+   "pass": true,
+   "detail": "{\"id\":\"CI-P1-1-20261101131831030\",\"exc\":[],\"seq\":1,\"tot\":{\"cv\":10000,\"net\":4500,\"vat\":675,\"total\":5175,\"adv_amt\":0,\"adv_cum\":0,\"balance\":5500,\"rel_cum\":0,\"rel_fac\":false,\"rel_tcc\":false,\"ret_cum\":0,\"vat_pct\":15,\"adv_this\":0,\"rel_this\":0,\"ret_this\":0,\"gross_cum\":4500,\"gross_prev\":0,\"gross_this\":4500}"
+  },
+  {
+   "check": "Export: the project manager exports it in a format",
+   "pass": true,
+   "detail": "{\"ok\":true}"
+  },
+  {
+   "check": "Export: the audit trail names the invoice, the format and who",
+   "pass": true,
+   "detail": "{\"id\":5,\"project_id\":\"P1\",\"action\":\"Invoice exported\",\"ref\":\"#01 · Utility layout\",\"before_v\":null,\"after_v\":{\"fmt\":\"Utility layout\"},\"note\":\"1 item row; 0 differences\",\"by_user\":\"00000000-0000-0000-0000-000000005303\",\"by_name\":\"Paul Manager\",\"at_time\":\"2026-11-01T13:18:31.043Z\"}"
+  },
+  {
+   "check": "Export: a foreman does not export",
+   "pass": true,
+   "detail": "Billing figures are not open to you"
+  },
+  {
+   "check": "Export: in the ProTrackAI layout when no format is named",
+   "pass": true,
+   "detail": "{\"ok\":true}"
+  },
+  {
+   "check": "Export: noted as the ProTrackAI layout",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: schema-rollback-v53.sql runs",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: version 52 again; cib_fmt_act is gone",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: an export is an unknown action again",
+   "pass": true,
+   "detail": "Unknown action"
+  },
+  {
+   "check": "Rollback: invoices still recalculate",
+   "pass": true,
+   "detail": "{\"id\":\"CI-P1-1-20261101131831030\",\"exc\":[],\"seq\":1,\"tot\":{\"cv\":10000,\"net\":4500,\"vat\":675,\"total\":5175,\"adv_amt\":0,\"adv_cum\":0,\"balance\":5500,\"rel_cum\":0,\"rel_fac\":false,\"rel_tcc\":false,\"ret_cum\":0,\"vat_pct\":15,\"adv_this\":0,\"rel_this\":0,\"ret_this\":0,\"gross_cum\":4500,\"gross_prev\":0,\"gross_this\":4500}"
+  },
+  {
+   "check": "Rollback: the formats are kept on the server, unread",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: v53 installs again; the kept format is read again",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

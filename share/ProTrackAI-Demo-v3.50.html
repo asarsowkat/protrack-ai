@@ -8813,7 +8813,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.49';
+const APP_VERSION='3.50';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -11759,7 +11759,7 @@ const CIB_OPEN=['Submitted','Reviewed','Approved','Issued'];
 const CIB_DONE=['Certified','Paid'];
 const CIB_DOCS=[['appr','Payment approval, summary and forecast',1],['sum','Invoice summary and Schedule-C breakdown',1],['mat','Material supporting documents (delivery and inspection certificates)',0],['prog','Approved progress reports',1],
   ['spare','Spare parts and special tools handover',0],['train','Training certificates',0],['cont','Contractor documents and certificates (Zakat, VAT, GOSI, salary)',1],['ins','Valid project insurance',1],['cert','Completion certificates (TCC, PAC, FAC, time extension)',0]];
-const CIB_TABS=[['dash','Dashboard'],['sch','Schedule-C'],['map','Mapping audit'],['inv','Client invoices'],['fc','Forecast'],['aud','Audit trail']];
+const CIB_TABS=[['dash','Dashboard'],['sch','Schedule-C'],['map','Mapping audit'],['inv','Client invoices'],['fc','Forecast'],['fmt','Invoice formats'],['aud','Audit trail']];
 const cibR2=x=>Math.round((+x||0)*100)/100;
 const cibNo=s=>String(s??'').replace(/\s+/g,'').replace(/[‐-―]/g,'-').toUpperCase();
 const cibNow=()=>new Date().toISOString();
@@ -11900,6 +11900,8 @@ function cibActLocal(op,p){const fail=t=>{throw new Error(t)},C=cibDB(),pid=p.pi
       before[a]=o?o.item:null;after[a]=it;n++;if(it)M[a]={item:it,name:String(x.name||'').slice(0,300),src:man?'manual':'p6',w,via,by:u.name,at:cibNow()};else delete M[a]});
     if(p.replace_p6){const keep=new Set((p.rows||[]).map(x=>String(x.act).trim()));Object.keys(M).forEach(a=>{if(M[a].src==='p6'&&!keep.has(a)){before[a]=M[a].item;after[a]=null;delete M[a];n++}})}
     if(n)cibLog(pid,p.replace_p6?'Mapping read from P6':'Mapping changed',p.file||null,before,after,p.note);return {changed:n}}
+  if(op==='inv_export'){const I=C.inv.find(x=>x.id===p.id&&x.pid===pid);if(!I)fail('Unknown invoice');
+    cibLog(pid,'Invoice exported',`#${pad(I.seq)} · ${String(p.fmt||'ProTrackAI layout').slice(0,80)}`,null,{fmt:p.fmt||null},String(p.note||'').slice(0,500));return {ok:true}}
   if(op==='map_review'){need('cib.map');const R=C.rev[pid]||(C.rev[pid]={}),no=cibNo(p.item),b=R[no]||null;if(!cur0(pid).items.some(i=>i.no===no))fail('Unknown item');
     if(!p.d){delete R[no];cibLog(pid,'Mapping review removed',no,b,null);return {ok:true}}
     if(!['manual','zero'].includes(p.d))fail('Unknown review');const note=String(p.note||'').trim();if(note.length<5)fail('Give the reason (at least 5 characters)');
@@ -12166,7 +12168,7 @@ function renderCib(){const s=cibUiOf(),L=cibProjects(),pid=cibPid();
   $('#view').innerHTML=`<div class="cib">${CLOUD_ME&&DB.cibMissing?'<div class="warn-box"><b>The Client Invoice Builder needs the v51 database update.</b> Run schema-update-v51.sql (STAGE-45-SETUP). Until then nothing is kept on the server.</div>':''}
     <div class="card-head" style="flex-wrap:wrap;gap:10px"><h2 style="margin:0">Client Invoice Builder</h2><label class="field" style="margin:0;min-width:260px">Project<select data-cibpid>${L.map(p=>`<option value="${esc(p.id)}" ${p.id===pid?'selected':''}>${esc(p.short)} · ${esc(p.name)}</option>`).join('')}</select></label></div>
     <div class="ptabs" role="tablist" aria-label="Client Invoice Builder">${CIB_TABS.map(([k,l])=>`<button type="button" role="tab" class="ptab ${s.tab===k?'on':''}" aria-selected="${s.tab===k}" data-cibtab="${k}">${esc(l)}${k==='dash'&&todo?` <span class="rk-badge">${todo}</span>`:''}</button>`).join('')}</div>
-    ${(({dash:cibDashHTML,sch:cibSchHTML,map:cibMapHTML,inv:cibInvHTML,fc:cibFcHTML,aud:cibAudHTML})[s.tab]||cibDashHTML)(pid,s)}</div>`}
+    ${(({dash:cibDashHTML,sch:cibSchHTML,map:cibMapHTML,inv:cibInvHTML,fc:cibFcHTML,fmt:cibFmtHTML,aud:cibAudHTML})[s.tab]||cibDashHTML)(pid,s)}</div>`}
 /* what waits for me: drafts to submit, invoices to review, approve, issue, certify */
 function cibTodo(){const u=me(),out=[];cibProjects().forEach(p=>cibInvOf(p.id).forEach(I=>{const mine=I.by_id===u.id,rh=I.hist.filter(h=>h.st==='Reviewed').pop()||{},rv=rh.by_id?rh.by_id===u.id:rh.by===u.name;
   if(I.st==='Submitted'&&can('cib.review')&&(!mine||u.role==='sa'))out.push([p,I,'Review']);
@@ -12298,13 +12300,13 @@ function cibInvOne(pid,I,s){const p=projById(pid),S=cibDB().sch.find(x=>x.id===I
   if(st==='Issued'&&can('cib.certify'))act.push(`<button class="btn sm primary" type="button" data-cibform="certify|${I.id}">Record the client certificate</button>`);
   if(st==='Certified'&&can('cib.certify'))act.push(`<button class="btn sm primary" type="button" data-cibform="pay|${I.id}">Record the payment</button>`);
   if((st==='Draft'&&can('cib.prepare'))||(['Submitted','Reviewed','Approved'].includes(st)&&can('cib.approve')))act.push(`<button class="btn sm danger" type="button" data-cibdo="inv_cancel|${I.id}">Cancel</button>`);
-  if(I.kind!=='Migrated')act.push(`<button class="btn sm" type="button" data-cibxls="${I.id}">Excel invoice</button>`);
+  if(I.kind!=='Migrated')act.push(cibXlsPick(pid,I,s));
   const FM=s.form&&s.form.id===I.id?s.form:null;const comps=CIB_COMP.map(([k,n])=>({k,n,L:I.lines.filter(l=>l.comp===k)})).filter(c=>c.L.length);
   const lines=I.lines.filter(l=>!comp||l.comp===comp);
   return `<button class="link back" type="button" data-cibopen="">← All client invoices</button>
     <section class="panel"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">Invoice #${pad(I.seq)} · ${esc(I.ref)} ${cibStChip(st)}</h3><div class="actions" style="margin:0;flex-wrap:wrap">${act.join('')}</div></div>
       <p class="small muted" style="margin:0 0 6px">${esc(p.short)} · period ${I.from?fmtDY(I.from):'—'} to ${fmtDY(I.to)} · Schedule-C revision ${I.rev} · ${I.kind==='Migrated'?`loaded from ${esc(I.file||'the latest client invoice')}`:`progress from ${I.dd?`the updated schedule of ${fmtDY(I.dd)}`:'no updated schedule'}`} · prepared by ${esc(I.by)}</p>
-      ${I.kind!=='Migrated'&&st!=='Cancelled'?`<ol class="cib-steps-bar">${steps.map(x=>`<li class="${steps.indexOf(x)<steps.indexOf(st)?'done':x===st?'on':''}">${x}</li>`).join('')}</ol>`:''}<p class="err" id="cibInvErr"></p>
+      ${I.kind!=='Migrated'&&st!=='Cancelled'?`<ol class="cib-steps-bar">${steps.map(x=>`<li class="${steps.indexOf(x)<steps.indexOf(st)?'done':x===st?'on':''}">${x}</li>`).join('')}</ol>`:''}<p class="err" id="cibInvErr"></p>${cibXRepHTML(s,I)}
       ${FM?cibFormHTML(I,FM):''}</section>
     ${I.kind!=='Migrated'?`<div class="grid2"><section class="panel"><h3 style="margin-top:0">Exceptions</h3>${(I.exc||[]).length?`<ul class="cib-exc">${I.exc.map(e=>`<li class="${e.sev}"><b>${e.sev==='block'?'Blocks':'Check'}</b> ${esc(e.msg)}</li>`).join('')}</ul>`:'<p class="small g-c">No exception.</p>'}</section>
       <section class="panel"><h3 style="margin-top:0">Readiness · ${pct(R.pct,0)}</h3><ul class="cib-check">${R.it.map(([l,ok,x])=>`<li class="${ok?'ok':'no'}">${ok?'✓':'✗'} ${esc(l)}${x?` <span class="muted">(${esc(x)})</span>`:''}</li>`).join('')}</ul></section></div>
@@ -12407,7 +12409,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest&&e.target.c
   if(d.cibfmgo){const [op,id]=d.cibfmgo.split('|'),b=t.closest('.cib-edit'),o={pid,id};b.querySelectorAll('[data-cibfm]').forEach(x=>{o[x.dataset.cibfm]=x.value});
     if(s.form&&s.form.ch){o.lines={};b.querySelectorAll('[data-cibcl]').forEach(x=>{o.lines[x.dataset.cibcl]=x.value})}
     return busy(async()=>{await cibAct(op,o);s.form=null;toast({inv_issue:'Issued: it is now in the invoice register',inv_certify:'Certificate recorded',inv_pay:'Payment recorded'}[op])})}
-  if(d.cibxls){const x=I(d.cibxls);t.disabled=true;try{await cibExcel(pid,x)}catch(err){toast('Could not build the workbook: '+(err.message||''))}t.disabled=false;render();return}
+  if(d.cibxls){const x=I(d.cibxls);t.disabled=true;try{await cibXls(pid,x)}catch(err){toast('Could not build the workbook: '+(err.message||''))}t.disabled=false;render();return}
   if(d.cibmigman!=null){s.mig={pid,comp:{},seq:'',to:'',ref:''};render();return}
   if(d.cibmigcancel!=null){s.mig=null;render();return}
   if(d.cibmigsave!=null){const S=cibAppr(pid),M=cibMigLines(S,s.mig);return busy(async()=>{await cibAct('inv_migrate',Object.assign({pid,file:s.mig.file||'typed per component',lines:M.ok},s.mig,{pid}));s.mig=null;toast('History loaded: the next invoice continues from it')},'cibMigErr')}
@@ -12421,8 +12423,11 @@ async function cloudLoadCib(){if(!CLOUD_ME)return;try{await rpc('cib_features');
   R.forEach(x=>{(rev[x.project_id]=rev[x.project_id]||{})[x.item_no]={d:x.decision,pct:+x.pct||0,note:x.note,by:x.by_name,at:x.at_time}});
   DB.cibSrv={sch:S.map(x=>({id:x.id,pid:x.project_id,rev:x.rev,st:x.status,head:x.head||{},rules:x.rules||{},items:items[x.id]||[],file:x.file_name,hash:x.file_hash,by:x.created_name,by_id:x.created_by,at:x.created_at,appr_by:x.approved_name,appr_at:x.approved_at})),
     inv:V.map(x=>Object.assign({},x.data||{},{id:x.id,pid:x.project_id,seq:x.seq,st:x.status,kind:x.kind,sch:x.schedule_id,from:x.period_from,to:x.period_to,by:x.prepared_name,by_id:x.prepared_by,at:x.created_at,upd:x.updated_at,hist:x.hist||[]})),
-    map,rev,audit:A.reverse().map(x=>({id:x.id,pid:x.project_id,at:x.at_time,by:x.by_name,by_id:x.by_user,act:x.action,ref:x.ref,before:x.before_v,after:x.after_v,note:x.note}))};DB.cibMissing=false}
-  catch(e){DB.cibSrv={sch:[],inv:[],map:{},rev:{},audit:[]};DB.cibMissing=srvMsg(e)}}
+    map,rev,audit:A.reverse().map(x=>({id:x.id,pid:x.project_id,at:x.at_time,by:x.by_name,by_id:x.by_user,act:x.action,ref:x.ref,before:x.before_v,after:x.after_v,note:x.note}))};DB.cibMissing=false;
+    /* v3.50: the client invoice formats (schema-update-v53) */
+    try{const FM=await selAll('cib_formats','*',null,['name']);DB.cibSrv.fmt=FM.map(x=>({id:x.id,name:x.name,client:x.client,path:x.file_path,file:x.file_name,size:+x.file_size||0,hash:x.file_hash,map:x.map,by:x.created_name,by_id:x.created_by,at:x.created_at,upd:x.updated_at,upd_by:x.updated_name,hist:x.hist||[]}));DB.cibFmtMissing=false}
+    catch(e){DB.cibSrv.fmt=[];DB.cibFmtMissing=srvMsg(e)}}
+  catch(e){DB.cibSrv={sch:[],inv:[],map:{},rev:{},audit:[],fmt:[]};DB.cibMissing=srvMsg(e)}}
 
 /* ----- demo: a SAMPLE Schedule-C for QOT, made from the demo schedule (not from any contract), its mapping and a loaded history ----- */
 /* v3.49: S.3.2, SAMPLE: every activity of one WBS package mapped from the WBS, and only the delivery (inspected at site) carries the
@@ -12461,6 +12466,521 @@ function seedV348(){if(CLOUD||DB.v348Seeded)return;const pid='QOT',p=projById(pi
     exc:[],docs:{},ai:null,cert:{amt:g,date:to,ref:'SAMPLE',by:S.by,at:S.at,changed:false},hist:[{st:'Certified',by:S.by,at:addDays(ASOF,-60)+'T11:00:00',note:'Loaded from SAMPLE_client_invoice_03.xlsx (demo data)'}],file:'SAMPLE_client_invoice_03.xlsx (demo data)',by:S.by,by_id:S.by_id,at:addDays(ASOF,-60)+'T11:00:00',upd:addDays(ASOF,-60)+'T11:00:00'});
   [['Schedule-C uploaded','Revision 1',{file:S.file,items:items.length,value}],['Schedule-C approved','Revision 1',{value}],['Mapping read from P6',S.file,{activities:Object.keys(M).length}],['Invoice history loaded','#3',{certified:g}]].forEach(([a,r,x],k)=>C.audit.unshift({id:'CA-demo-'+k,pid,at:addDays(ASOF,-90+k*10)+'T10:00:00',by:S.by,by_id:S.by_id,act:a,ref:r,before:null,after:x,note:'Sample demo data'}));
   DB.v348Seeded=true;save()}
+
+/* ---------- v3.50: client invoice formats. The client's own invoice workbook, filled cell by cell ----------
+   The .xlsx is edited as XML (JSZip): only the cells ProTrack fills change, and the rows of a breakdown table when the price
+   schedule differs. Logos, drawings, comments, external links, styles, hidden sheets and every formula stay as the client made
+   them. Rows are inserted and deleted as Excel does: formulas, merged cells, print areas, drawings and comments move with them.
+   Formulas are worked out again (xlCalc) so the file shows the figures even before Excel recalculates it on opening. */
+const XL_NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main',XL_RNS='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+const xlCol=s=>{let n=0;for(const ch of s)n=n*26+ch.charCodeAt(0)-64;return n};
+const xlColS=n=>{let s='';while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-1-m)/26}return s};
+const xlA=(c,r)=>xlColS(c)+r;
+const xlP=a=>{const m=/^\$?([A-Z]{1,3})\$?(\d+)$/.exec(String(a||''));return m?{c:xlCol(m[1]),r:+m[2]}:null};
+const xlRng=s=>{const [a,b]=String(s).split(':'),p=xlP(a),q=b?xlP(b):p;return p&&q?{c1:p.c,r1:p.r,c2:q.c,r2:q.r}:null};
+const xlRngS=g=>g.r1===g.r2&&g.c1===g.c2?xlA(g.c1,g.r1):xlA(g.c1,g.r1)+':'+xlA(g.c2,g.r2);
+const xlSerial=d=>{const m=/^(\d{4})-(\d\d)-(\d\d)/.exec(String(d||''));return m?(Date.UTC(+m[1],+m[2]-1,+m[3])-Date.UTC(1899,11,30))/864e5:null};
+const xlKids=(el,tag)=>[...el.childNodes].filter(n=>n.nodeType===1&&n.localName===tag);
+const xlKid=(el,tag)=>xlKids(el,tag)[0]||null;
+const xlAll=(doc,tag)=>[...doc.getElementsByTagNameNS('*',tag)];
+
+/* ----- references inside a formula: every A1 reference, with its sheet; strings and external workbooks left alone ----- */
+const XL_REF=/(?:(\[\d+\])?(?:'((?:[^']|'')+)'|([A-Za-z_À-￿][\w.À-￿]*))!)?(\$?)([A-Z]{1,3})(\$?)(\d+)(?::(\$?)([A-Z]{1,3})(\$?)(\d+))?(?![\w(!])/y;
+function xlRefs(f,cb){let out='',i=0;const n=f.length;
+  while(i<n){const ch=f[i];
+    if(ch==='"'){let j=i+1;while(j<n){if(f[j]==='"'){if(f[j+1]==='"'){j+=2;continue}break}j++}out+=f.slice(i,j+1);i=j+1;continue}
+    const prev=i?f[i-1]:'';if(!/[\w.$À-￿\]]/.test(prev)||prev===''){XL_REF.lastIndex=i;const m=XL_REF.exec(f);
+      if(m&&(m[2]||m[3]||!/[A-Za-z]/.test(f[i+m[0].length]||''))){const q=m[2]!=null?m[2].replace(/''/g,"'"):m[3]||null,ext=!!m[1]||(q&&q[0]==='[');
+        const t={sheet:q,ext,quoted:m[2]!=null,a:{ca:!!m[4],c:xlCol(m[5]),ra:!!m[6],r:+m[7]},b:m[8]!=null||m[9]?{ca:!!m[8],c:xlCol(m[9]),ra:!!m[10],r:+m[11]}:null,raw:m[0]};
+        const r=ext?null:cb(t);out+=r==null?m[0]:r;i+=m[0].length;continue}}
+    out+=ch;i++}
+  return out}
+const xlRefS=(t)=>{const p=x=>(x.ca?'$':'')+xlColS(x.c)+(x.ra?'$':'')+x.r;const sh=t.sheet==null?'':(/^[A-Za-z_][\w.]*$/.test(t.sheet)&&!t.quoted?t.sheet:`'${t.sheet.replace(/'/g,"''")}'`)+'!';return sh+p(t.a)+(t.b?':'+p(t.b):'')};
+/* the formula copied dr rows and dc columns away: relative parts move */
+const xlMove=(f,dr,dc)=>xlRefs(f,t=>{const mv=x=>({...x,r:x.ra?x.r:x.r+dr,c:x.ca?x.c:x.c+dc});return xlRefS({...t,a:mv(t.a),b:t.b?mv(t.b):null})});
+/* rows inserted (n>0, before row at) or deleted (n<0, rows at..at-n-1) on sheet nm, for a formula on sheet own */
+function xlShiftF(f,nm,own,at,n){let bad=0;const s=xlRefs(f,t=>{if((t.sheet==null?own:t.sheet)!==nm)return null;const g=xlShiftRows({r1:t.a.r,r2:(t.b||t.a).r},at,n);if(!g){bad++;return '#REF!'}
+  if(g.r1===t.a.r&&(!t.b||g.r2===t.b.r))return null;return xlRefS({...t,a:{...t.a,r:g.r1},b:t.b?{...t.b,r:g.r2}:null})});return {f:s,bad}}
+function xlShiftRows(g,at,n){if(n>0){return {r1:g.r1>=at?g.r1+n:g.r1,r2:g.r2>=at?g.r2+n:g.r2}}
+  const d1=at,d2=at-n-1,k=-n;if(g.r1>=d1&&g.r2<=d2)return null;
+  const m=r=>r<d1?r:r>d2?r-k:null;let r1=m(g.r1),r2=m(g.r2);if(r1==null)r1=d1;if(r2==null)r2=d1-1;return r2<r1?null:{r1,r2}}
+const xlShiftSq=(sq,at,n)=>String(sq).split(/\s+/).filter(Boolean).map(x=>{const g=xlRng(x);if(!g)return x;const h=xlShiftRows(g,at,n);return h?xlRngS({...g,r1:h.r1,r2:h.r2}):null}).filter(Boolean).join(' ');
+
+/* ----- open: the workbook, its sheets with their cells, shared strings; shared formulas made explicit ----- */
+async function xlOpen(buf){await loadLib(LIBS.zip);const zip=await JSZip.loadAsync(buf),P=new DOMParser(),rd=async p=>{const f=zip.file(p);return f?f.async('string'):null};
+  const xml=async p=>{const s=await rd(p);return s==null?null:P.parseFromString(s,'application/xml')};
+  const wb=await xml('xl/workbook.xml');if(!wb)throw new Error('This is not an Excel workbook (.xlsx)');
+  const rel=await xml('xl/_rels/workbook.xml.rels'),R={};xlAll(rel,'Relationship').forEach(x=>R[x.getAttribute('Id')]={t:x.getAttribute('Target'),type:x.getAttribute('Type')});
+  const abs=(base,t)=>{if(t.startsWith('/'))return t.slice(1);const p=base.split('/');p.pop();t.split('/').forEach(s=>{if(s==='..')p.pop();else if(s&&s!=='.')p.push(s)});return p.join('/')};
+  const ssd=await xml('xl/sharedStrings.xml'),ss=ssd?xlAll(ssd,'si').map(si=>xlAll(si,'t').filter(t=>!(t.parentNode&&t.parentNode.localName==='rPh')&&!(t.parentNode&&t.parentNode.parentNode&&t.parentNode.parentNode.localName==='rPh')).map(t=>t.textContent).join('')):[];
+  const B={zip,wb,P,ss,sheets:[],dirty:new Set(),extra:{},abs,xml,rd,
+    links:Object.values(R).filter(r=>/externalLink$/.test(r.type)).length,macro:!!zip.file('xl/vbaProject.bin'),charts:Object.keys(zip.files).filter(k=>/^xl\/charts\/chart\d+\.xml$/.test(k)).length};
+  for(const s of xlAll(wb,'sheet')){const rid=s.getAttributeNS(XL_RNS,'id')||s.getAttribute('r:id'),r=R[rid];if(!r||!/\/worksheet$/.test(r.type))continue;const path=abs('xl/workbook.xml',r.t),doc=await xml(path);if(!doc)continue;
+    const sh={name:s.getAttribute('name'),state:s.getAttribute('state')||'visible',el:s,path,doc,relPath:path.replace(/([^/]+)$/,'_rels/$1.rels')};xlIndex(sh);B.sheets.push(sh)}
+  B.sheets.forEach(sh=>xlUnshare(B,sh));return B}
+function xlIndex(sh){const sd=xlKid(sh.doc.documentElement,'sheetData');sh.sd=sd;sh.rows=new Map();sh.cells=new Map();
+  xlKids(sd,'row').forEach(r=>{const n=+r.getAttribute('r');sh.rows.set(n,r);xlKids(r,'c').forEach(c=>sh.cells.set(c.getAttribute('r'),c))})}
+const xlSheet=(B,nm)=>B.sheets.find(s=>s.name===nm)||null;
+function xlUnshare(B,sh){const M={};let ch=false;
+  sh.cells.forEach((c,a)=>{const f=xlKid(c,'f');if(f&&f.getAttribute('t')==='shared'&&f.textContent)M[f.getAttribute('si')]={f:f.textContent,p:xlP(a)}});
+  sh.cells.forEach((c,a)=>{const f=xlKid(c,'f');if(!f||f.getAttribute('t')!=='shared')return;const m=M[f.getAttribute('si')];if(!m)return;const p=xlP(a);
+    if(!f.textContent)f.textContent=xlMove(m.f,p.r-m.p.r,p.c-m.p.c);f.removeAttribute('t');f.removeAttribute('ref');f.removeAttribute('si');ch=true});
+  /* the sheet is written back only if something else changes in it: its own file stays as it was otherwise */
+  return ch}
+
+/* ----- a cell: its value (number, text, true/false, {err}) and formula ----- */
+function xlGet(B,sh,a){const c=sh.cells.get(a);if(!c)return {v:null,f:null,s:null};const t=c.getAttribute('t'),f=xlKid(c,'f'),v=xlKid(c,'v'),vt=v?v.textContent:null;let val=null;
+  if(t==='s')val=B.ss[+vt]??'';else if(t==='inlineStr'){const is=xlKid(c,'is');val=is?xlAll(is,'t').map(x=>x.textContent).join(''):''}else if(t==='str')val=vt??'';else if(t==='b')val=vt==='1';else if(t==='e')val={err:vt};else if(vt!=null&&vt!=='')val=+vt;
+  return {v:val,f:f?f.textContent:null,s:c.getAttribute('s')}}
+const xlTxt=(B,sh,a)=>{const x=xlGet(B,sh,a).v;return x==null||typeof x==='object'?'':String(x)};
+function xlRow(sh,r){let row=sh.rows.get(r);if(row)return row;row=sh.doc.createElementNS(XL_NS,'row');row.setAttribute('r',r);const after=[...sh.rows.keys()].filter(k=>k>r).sort((a,b)=>a-b)[0];
+  sh.sd.insertBefore(row,after?sh.rows.get(after):null);sh.rows.set(r,row);return row}
+function xlCell(sh,a){let c=sh.cells.get(a);if(c)return c;const p=xlP(a),row=xlRow(sh,p.r);c=sh.doc.createElementNS(XL_NS,'c');c.setAttribute('r',a);
+  const nx=xlKids(row,'c').find(x=>xlP(x.getAttribute('r')).c>p.c);row.insertBefore(c,nx||null);const rs=row.getAttribute('s');if(rs&&row.getAttribute('customFormat')==='1')c.setAttribute('s',rs);sh.cells.set(a,c);return c}
+/* write a value (number, text, null to empty, {date:'YYYY-MM-DD'}); the cell keeps its style */
+function xlSet(B,sh,a,val){const c=xlCell(sh,a);[...c.childNodes].forEach(n=>c.removeChild(n));c.removeAttribute('t');B.dirty.add(sh);
+  if(val==null||val==='')return;if(val&&typeof val==='object'&&val.date)val=xlSerial(val.date);
+  const d=sh.doc;if(typeof val==='number'){if(!isFinite(val))return;const v=d.createElementNS(XL_NS,'v');v.textContent=String(Math.round(val*1e10)/1e10);c.appendChild(v);return}
+  if(typeof val==='boolean'){c.setAttribute('t','b');const v=d.createElementNS(XL_NS,'v');v.textContent=val?'1':'0';c.appendChild(v);return}
+  c.setAttribute('t','inlineStr');const is=d.createElementNS(XL_NS,'is'),t=d.createElementNS(XL_NS,'t');t.setAttribute('xml:space','preserve');t.textContent=String(val);is.appendChild(t);c.appendChild(is)}
+function xlSetF(B,sh,a,f){const c=xlCell(sh,a);[...c.childNodes].forEach(n=>c.removeChild(n));c.removeAttribute('t');const e=sh.doc.createElementNS(XL_NS,'f');e.textContent=f;c.appendChild(e);B.dirty.add(sh)}
+function xlMerges(sh){const m=xlKid(sh.doc.documentElement,'mergeCells');return m?xlKids(m,'mergeCell').map(x=>({el:x,g:xlRng(x.getAttribute('ref'))})).filter(x=>x.g):[]}
+/* the text of a cell or of the merged area it sits in */
+function xlMTxt(B,sh,c,r,M){const m=(M||xlMerges(sh)).find(x=>r>=x.g.r1&&r<=x.g.r2&&c>=x.g.c1&&c<=x.g.c2);return m?xlTxt(B,sh,xlA(m.g.c1,m.g.r1)):xlTxt(B,sh,xlA(c,r))}
+
+/* ----- rows: inserted before row at (n>0, copies of row proto) or deleted (n<0, rows at..at-n-1), everywhere they are referred to ----- */
+async function xlShift(B,sh,at,n,proto){const nm=sh.name,rep={bad:0};
+  /* the sheet's own rows and cells */
+  if(n<0){for(let r=at;r<at-n;r++){const row=sh.rows.get(r);if(row)sh.sd.removeChild(row)}}
+  [...sh.rows.entries()].sort((a,b)=>n>0?b[0]-a[0]:a[0]-b[0]).forEach(([r,row])=>{if(r<at||(n<0&&r<at-n))return;const nr=r+n;row.setAttribute('r',nr);
+    xlKids(row,'c').forEach(c=>{const p=xlP(c.getAttribute('r'));c.setAttribute('r',xlA(p.c,nr))})});
+  xlIndex(sh);
+  /* every formula of the workbook that refers to this sheet */
+  B.sheets.forEach(s=>{let ch=false;s.cells.forEach(c=>{const f=xlKid(c,'f');if(!f||!f.textContent)return;const x=xlShiftF(f.textContent,nm,s.name,at,n);if(x.f!==f.textContent){f.textContent=x.f;rep.bad+=x.bad;ch=true}
+    const rf=f.getAttribute('ref');if(rf&&s===sh){const y=xlShiftSq(rf,at,n);if(y)f.setAttribute('ref',y)}});if(ch)B.dirty.add(s)});
+  /* merged cells, conditional formats, validations, hyperlinks, the used range, page breaks */
+  const root=sh.doc.documentElement;
+  xlMerges(sh).forEach(m=>{const h=xlShiftRows(m.g,at,n);if(!h)m.el.parentNode.removeChild(m.el);else m.el.setAttribute('ref',xlRngS({...m.g,...h}))});
+  const mc=xlKid(root,'mergeCells');if(mc)mc.setAttribute('count',xlKids(mc,'mergeCell').length);
+  [['conditionalFormatting','sqref'],['dataValidation','sqref'],['hyperlink','ref'],['selection','sqref'],['protectedRange','sqref'],['autoFilter','ref']].forEach(([tag,at2])=>xlAll(sh.doc,tag).forEach(e=>{const v=e.getAttribute(at2);if(!v)return;const y=xlShiftSq(v,at,n);if(y)e.setAttribute(at2,y);else e.parentNode.removeChild(e)}));
+  xlAll(sh.doc,'formula').forEach(e=>{const x=xlShiftF(e.textContent,nm,nm,at,n);e.textContent=x.f});
+  const dim=xlKid(root,'dimension');if(dim){const g=xlRng(dim.getAttribute('ref'));if(g){const h=xlShiftRows(g,at,n)||{r1:g.r1,r2:g.r1};dim.setAttribute('ref',xlRngS({...g,...h}))}}
+  const rb=xlKid(root,'rowBreaks');if(rb)xlKids(rb,'brk').forEach(b=>{const id=+b.getAttribute('id');if(id>=at)b.setAttribute('id',Math.max(at,id+n))});
+  /* new rows: the prototype's height and style; its formulas moved to each new row */
+  if(n>0&&proto){const pr=sh.rows.get(proto>=at?proto+n:proto);
+    for(let k=0;k<n;k++){const r=at+k,row=xlRow(sh,r);if(pr){['ht','customHeight','s','customFormat'].forEach(x=>{const v=pr.getAttribute(x);if(v!=null)row.setAttribute(x,v)})}
+      if(pr)xlKids(pr,'c').forEach(c=>{const p=xlP(c.getAttribute('r')),a=xlA(p.c,r),nc=xlCell(sh,a),s=c.getAttribute('s');if(s)nc.setAttribute('s',s);const f=xlKid(c,'f');
+        if(f&&f.textContent)xlSetF(B,sh,a,xlMove(f.textContent,r-xlP(c.getAttribute('r')).r,0))});
+      /* merged cells across the prototype row are repeated on each new row */
+      xlMerges(sh).filter(m=>m.g.r1===m.g.r2&&m.g.r1===(proto>=at?proto+n:proto)).forEach(m=>{const e=sh.doc.createElementNS(XL_NS,'mergeCell');e.setAttribute('ref',xlRngS({...m.g,r1:r,r2:r}));m.el.parentNode.appendChild(e)})}
+    if(mc)mc.setAttribute('count',xlKids(mc,'mergeCell').length)}
+  /* print areas and names */
+  xlAll(B.wb,'definedName').forEach(d=>{const x=xlShiftF(d.textContent,nm,'\u0000',at,n);if(x.f!==d.textContent)d.textContent=x.f;B.wbDirty=true});
+  /* drawings (logos, stamps) and comments of the sheet */
+  const rels=await B.xml(sh.relPath);if(rels)for(const r of xlAll(rels,'Relationship')){const type=r.getAttribute('Type')||'',p=B.abs(sh.path,r.getAttribute('Target'));
+    if(/\/drawing$/.test(type)){const d=await xlDoc(B,p);if(!d)continue;xlAll(d,'from').concat(xlAll(d,'to')).forEach(e=>{const rw=xlKids(e,'row')[0];if(!rw)return;const v=+rw.textContent;
+      if(v>=at-1)rw.textContent=String(n>0||v>=at-n-1?v+n:at-1)});B.extra[p].dirty=true}
+    else if(/\/comments$/.test(type)){const d=await xlDoc(B,p);if(!d)continue;xlAll(d,'comment').forEach(e=>{const y=xlShiftSq(e.getAttribute('ref'),at,n);if(y)e.setAttribute('ref',y);else e.parentNode.removeChild(e)});B.extra[p].dirty=true}
+    else if(/\/vmlDrawing$/.test(type)){const s=await B.rd(p);if(s==null)continue;B.extra[p]={raw:s.replace(/<x:Row>(\d+)<\/x:Row>/g,(m,v)=>{v=+v;return `<x:Row>${n>0?(v>=at-1?v+n:v):(v>=at-n-1?v+n:v)}</x:Row>`}),dirty:true}}}
+  B.dirty.add(sh);return rep}
+async function xlDoc(B,p){if(B.extra[p])return B.extra[p].doc;const d=await B.xml(p);if(!d)return null;B.extra[p]={doc:d,dirty:false};return d}
+
+/* ----- the formulas worked out: + - * / ^ & %, comparisons, ranges and the usual functions; anything else keeps the file's figure ----- */
+const XL_FN={
+  SUM:a=>xlNums(a).reduce((t,x)=>t+x,0),MIN:a=>{const v=xlNums(a);return v.length?Math.min(...v):0},MAX:a=>{const v=xlNums(a);return v.length?Math.max(...v):0},
+  AVERAGE:a=>{const v=xlNums(a);if(!v.length)throw {e:'#DIV/0!'};return v.reduce((t,x)=>t+x,0)/v.length},COUNT:a=>xlFlat(a).filter(x=>typeof x==='number').length,COUNTA:a=>xlFlat(a).filter(x=>x!=null&&x!=='').length,
+  ABS:a=>Math.abs(xlN(a[0])),INT:a=>Math.floor(xlN(a[0])),ROUND:a=>xlRound(xlN(a[0]),xlN(a[1]),0),ROUNDUP:a=>xlRound(xlN(a[0]),xlN(a[1]),1),ROUNDDOWN:a=>xlRound(xlN(a[0]),xlN(a[1]),-1),
+  IF:null,IFERROR:null,AND:a=>xlFlat(a).every(x=>xlB(x)),OR:a=>xlFlat(a).some(x=>xlB(x)),NOT:a=>!xlB(a[0]),
+  SUMPRODUCT:a=>{const L=a.map(x=>xlFlat(x).map(v=>typeof v==='number'?v:0));return L[0].reduce((t,_,i)=>t+L.reduce((p,l)=>p*(l[i]||0),1),0)},
+  CONCATENATE:a=>a.map(x=>xlS(x)).join(''),UPPER:a=>xlS(a[0]).toUpperCase(),LOWER:a=>xlS(a[0]).toLowerCase(),TRIM:a=>xlS(a[0]).trim().replace(/\s+/g,' ')};
+const xlFlat=a=>a.flat(Infinity);
+const xlNums=a=>xlFlat(a).filter(x=>typeof x==='number');
+const xlN=x=>{if(Array.isArray(x))x=xlFlat(x)[0];if(x&&typeof x==='object'&&x.err)throw {e:x.err};if(x==null||x==='')return 0;if(typeof x==='boolean')return x?1:0;if(typeof x==='number')return x;const n=+x;if(isNaN(n))throw {e:'#VALUE!'};return n};
+const xlS=x=>{if(Array.isArray(x))x=xlFlat(x)[0];if(x&&typeof x==='object'&&x.err)throw {e:x.err};return x==null?'':typeof x==='boolean'?(x?'TRUE':'FALSE'):String(x)};
+const xlB=x=>{if(Array.isArray(x))x=xlFlat(x)[0];if(typeof x==='string')return x.toUpperCase()==='TRUE';return !!xlN(x)};
+const xlRound=(v,d,m)=>{const f=10**d,x=v*f;return (m===0?Math.sign(x)*Math.round(Math.abs(x)+1e-9):m>0?Math.sign(x)*Math.ceil(Math.abs(x)-1e-9):Math.sign(x)*Math.floor(Math.abs(x)+1e-9))/f};
+function xlTok(f){const T=[];let i=0;const n=f.length;
+  while(i<n){const ch=f[i];if(/\s/.test(ch)){i++;continue}
+    if(ch==='"'){let j=i+1,s='';while(j<n){if(f[j]==='"'){if(f[j+1]==='"'){s+='"';j+=2;continue}break}s+=f[j++]}T.push({k:'s',v:s});i=j+1;continue}
+    if(ch==='#'){const m=/^#(?:DIV\/0!|N\/A|NAME\?|NULL!|NUM!|REF!|VALUE!)/.exec(f.slice(i));if(m){T.push({k:'e',v:m[0]});i+=m[0].length;continue}}
+    XL_REF.lastIndex=i;const m=XL_REF.exec(f);if(m&&(m[2]||m[3]||!/[A-Za-z]/.test(f[i+m[0].length]||''))){const q=m[2]!=null?m[2].replace(/''/g,"'"):m[3]||null;
+      T.push({k:'r',ext:!!m[1]||(q&&q[0]==='['),sheet:q,a:{c:xlCol(m[5]),r:+m[7]},b:m[9]?{c:xlCol(m[9]),r:+m[11]}:null});i+=m[0].length;continue}
+    const nm=/^(\d+\.?\d*(?:[eE][+-]?\d+)?|\.\d+)/.exec(f.slice(i));if(nm){T.push({k:'n',v:+nm[0]});i+=nm[0].length;continue}
+    const fn=/^([A-Za-z_][\w.]*)\s*\(/.exec(f.slice(i));if(fn){T.push({k:'f',v:fn[1].toUpperCase().replace(/^_XLFN\./,'')});i+=fn[0].length;continue}
+    const bo=/^(TRUE|FALSE)\b/i.exec(f.slice(i));if(bo){T.push({k:'b',v:bo[1].toUpperCase()==='TRUE'});i+=bo[0].length;continue}
+    const op=/^(<>|<=|>=|[-+*/^&=<>%(),:;])/.exec(f.slice(i));if(op){T.push({k:'o',v:op[0]===';'?',':op[0]});i+=op[0].length;continue}
+    throw {u:'token '+f.slice(i,i+12)}}
+  return T}
+/* a formula evaluator for one workbook; val(sheet, address) works out a cell once */
+function xlCalc(B){const memo=new Map(),busy=new Set();
+  const cellV=(sn,a)=>{const k=sn+'!'+a;if(memo.has(k))return memo.get(k);const sh=xlSheet(B,sn);if(!sh)throw {u:'sheet '+sn};const g=xlGet(B,sh,a);if(!g.f){memo.set(k,g.v);return g.v}
+    if(busy.has(k))throw {u:'circular'};busy.add(k);let v;try{v=run(g.f,sn)}catch(e){if(e&&e.e)v={err:e.e};else{busy.delete(k);if(g.v==null||g.v==='')throw e;v=g.v;memo.set(k,v);return v}}busy.delete(k);memo.set(k,v);return v};
+  const rng=(sn,t)=>{const b=t.b||t.a,out=[];for(let r=Math.min(t.a.r,b.r);r<=Math.max(t.a.r,b.r);r++){const row=[];for(let c=Math.min(t.a.c,b.c);c<=Math.max(t.a.c,b.c);c++)row.push(cellV(sn,xlA(c,r)));out.push(row)}return out};
+  function run(f,sn){const T=xlTok(f);let i=0;const pk=()=>T[i],nx=()=>T[i++];
+    const prim=()=>{const t=nx();if(!t)throw {u:'end'};
+      if(t.k==='n'||t.k==='s'||t.k==='b')return t.v;if(t.k==='e')return {err:t.v};
+      if(t.k==='r'){if(t.ext)throw {u:'external'};const s=t.sheet||sn;if(!t.b){const v=cellV(s,xlA(t.a.c,t.a.r));return v}return rng(s,t)}
+      if(t.k==='o'&&t.v==='('){const v=expr(0);if(!(pk()&&pk().v===')'))throw {u:')'};i++;return v}
+      if(t.k==='o'&&(t.v==='-'||t.v==='+')){const v=un();return t.v==='-'?-xlN(v):xlN(v)}
+      if(t.k==='f'){const name=t.v,args=[];
+        /* arguments are found first and worked out only when needed (IF, IFERROR) */
+        if(pk()&&pk().k==='o'&&pk().v===')')i++;else for(;;){const st=i;skipArg();args.push(i>st?{st}:null);const d=nx();if(!d)throw {u:'args'};if(d.v===')')break;if(d.v!==',')throw {u:'args'}}
+        const ev=x=>{if(!x)return null;const keep=i;i=x.st;try{return expr(0)}finally{i=keep}};
+        if(name==='IF'){const c=ev(args[0]);return xlB(c)?(args[1]?ev(args[1]):true):(args[2]?ev(args[2]):false)}
+        if(name==='IFERROR'){try{const v=ev(args[0]);if(v&&typeof v==='object'&&!Array.isArray(v)&&v.err)return ev(args[1]);return v}catch(e){if(e&&e.e)return ev(args[1]);throw e}}
+        const fn=XL_FN[name];if(!fn)throw {u:'function '+name};return fn(args.map(ev))}
+      throw {u:'syntax'}};
+    const un=()=>{let v=prim();while(pk()&&pk().k==='o'&&pk().v==='%'){i++;v=xlN(v)/100}return v};
+    const PR={'=':1,'<>':1,'<':1,'>':1,'<=':1,'>=':1,'&':2,'+':3,'-':3,'*':4,'/':4,'^':5};
+    function expr(min){let l=un();for(;;){const t=pk();if(!t||t.k!=='o'||!(t.v in PR)||PR[t.v]<min)break;i++;const r=expr(PR[t.v]+(t.v==='^'?0:1));l=bin(t.v,l,r)}return l}
+    function skipArg(){let d=0;while(i<T.length){const t=T[i];if(t.k==='f'||(t.k==='o'&&t.v==='(')){d++;i++;continue}if(t.k==='o'&&t.v===')'){if(!d)return;d--;i++;continue}if(t.k==='o'&&t.v===','&&!d)return;i++}}
+    const v=expr(0);if(i<T.length)throw {u:'rest'};return Array.isArray(v)?xlFlat(v)[0]:v}
+  function bin(o,l,r){if(o==='&')return xlS(l)+xlS(r);
+    if(['=','<>','<','>','<=','>='].includes(o)){const a=Array.isArray(l)?xlFlat(l)[0]:l,b=Array.isArray(r)?xlFlat(r)[0]:r;const c=typeof a==='string'||typeof b==='string'?String(a??'').toLowerCase().localeCompare(String(b??'').toLowerCase()):xlN(a)-xlN(b);
+      return o==='='?c===0:o==='<>'?c!==0:o==='<'?c<0:o==='>'?c>0:o==='<='?c<=0:c>=0}
+    const a=xlN(l),b=xlN(r);if(o==='+')return a+b;if(o==='-')return a-b;if(o==='*')return a*b;if(o==='/'){if(!b)throw {e:'#DIV/0!'};return a/b}return a**b}
+  return {val:(sn,a)=>{try{return cellV(sn,a)}catch(e){return e&&e.e?{err:e.e}:undefined}},clear:()=>memo.clear()}}
+/* every formula's figure written back into the file (what Excel shows before it recalculates); n of them worked out */
+function xlRecalc(B){const C=xlCalc(B);let n=0,u=0;B.sheets.forEach(sh=>{sh.cells.forEach((c,a)=>{const f=xlKid(c,'f');if(!f||!f.textContent)return;const v=C.val(sh.name,a);if(v===undefined){u++;return}n++;
+  let vv=xlKid(c,'v');const t=v&&typeof v==='object'?'e':typeof v==='string'?'str':typeof v==='boolean'?'b':null,txt=t==='e'?v.err:t==='b'?(v?'1':'0'):t==='str'?v:String(Math.round(v*1e10)/1e10);
+  if(vv&&vv.textContent===txt&&(c.getAttribute('t')||null)===t)return;if(!vv){vv=sh.doc.createElementNS(XL_NS,'v');c.appendChild(vv)}vv.textContent=txt;if(t)c.setAttribute('t',t);else c.removeAttribute('t');B.dirty.add(sh)})});return {n,u,C}}
+
+/* ----- save: the changed parts only; Excel recalculates everything when it opens the file ----- */
+async function xlSave(B){const S=new XMLSerializer(),z=B.zip;
+  B.dirty.forEach(sh=>z.file(sh.path,S.serializeToString(sh.doc)));
+  Object.entries(B.extra).forEach(([p,x])=>{if(!x.dirty)return;z.file(p,x.raw!=null?x.raw:S.serializeToString(x.doc))});
+  let cp=xlAll(B.wb,'calcPr')[0];if(!cp){cp=B.wb.createElementNS(XL_NS,'calcPr');const root=B.wb.documentElement,nx=[...root.childNodes].find(n=>n.nodeType===1&&['oleSize','customWorkbookViews','pivotCaches','smartTagPr','smartTagTypes','webPublishing','fileRecoveryPr','webPublishObjects','extLst'].includes(n.localName));root.insertBefore(cp,nx||null)}
+  cp.setAttribute('fullCalcOnLoad','1');
+  z.file('xl/workbook.xml',S.serializeToString(B.wb));
+  if(z.file('xl/calcChain.xml')){z.remove('xl/calcChain.xml');const rel=await B.xml('xl/_rels/workbook.xml.rels');xlAll(rel,'Relationship').filter(r=>/calcChain$/.test(r.getAttribute('Type'))).forEach(r=>r.parentNode.removeChild(r));z.file('xl/_rels/workbook.xml.rels',S.serializeToString(rel));
+    const ct=await B.xml('[Content_Types].xml');xlAll(ct,'Override').filter(o=>/calcChain/.test(o.getAttribute('PartName'))).forEach(o=>o.parentNode.removeChild(o));z.file('[Content_Types].xml',S.serializeToString(ct))}
+  return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',compression:'DEFLATE'})}
+/* a sheet taken out (only when no kept sheet refers to it) */
+async function xlDrop(B,nm){const sh=xlSheet(B,nm);if(!sh)return;const S=new XMLSerializer(),i=B.sheets.indexOf(sh);
+  const used=B.sheets.some(s=>s!==sh&&[...s.cells.values()].some(c=>{const f=xlKid(c,'f');let hit=false;if(f&&f.textContent)xlRefs(f.textContent,t=>{if(t.sheet===nm)hit=true;return null});return hit}));if(used)throw new Error(`Sheet "${nm}" is used by the formulas of another sheet; it cannot be taken out`);
+  const rid=sh.el.getAttributeNS(XL_RNS,'id')||sh.el.getAttribute('r:id');sh.el.parentNode.removeChild(sh.el);
+  xlAll(B.wb,'definedName').forEach(d=>{const l=d.getAttribute('localSheetId');if(l==null)return;if(+l===i)d.parentNode.removeChild(d);else if(+l>i)d.setAttribute('localSheetId',+l-1)});
+  const bv=xlAll(B.wb,'workbookView')[0];if(bv){bv.setAttribute('activeTab','0');bv.removeAttribute('firstSheet')}
+  const rel=await B.xml('xl/_rels/workbook.xml.rels');xlAll(rel,'Relationship').filter(r=>r.getAttribute('Id')===rid).forEach(r=>r.parentNode.removeChild(r));B.zip.file('xl/_rels/workbook.xml.rels',S.serializeToString(rel));
+  const ct=await B.xml('[Content_Types].xml');xlAll(ct,'Override').filter(o=>o.getAttribute('PartName')==='/'+sh.path).forEach(o=>o.parentNode.removeChild(o));B.zip.file('[Content_Types].xml',S.serializeToString(ct));
+  B.zip.remove(sh.path);B.sheets.splice(i,1);B.dirty.delete(sh);
+  /* no sheet selected twice: the first visible one is the active one */
+  B.sheets.forEach((s,k)=>{const v=xlAll(s.doc,'sheetView')[0];if(v&&v.getAttribute('tabSelected')==='1'&&k){v.removeAttribute('tabSelected');B.dirty.add(s)}})}
+/* ----- reading a client format: its breakdown tables, header cells, TCC/FAC lines and forecast ----- */
+const CIBF_FIELDS=[['inv_no','Invoice number'],['inv_ref','Invoice reference'],['inv_date','Invoice date'],['due_date','Due date'],['from','Period from'],['to','Period to'],['contract_no','Contract number'],
+  ['title','Contract title'],['cv','Contract value'],['type','Type of invoice'],['contractor','Contractor'],['client','Client'],['gross_this','Gross amount this period'],['ret_this','Retention this period'],
+  ['rel_this','Retention released'],['adv_this','Advance recovery this period'],['vat_pct','VAT %'],['net','Net payable'],['vat','VAT amount'],['total','Total with VAT']];
+const CIBF_LABELS=[[/^(date of invoice|invoice date)\b/i,'inv_date'],[/^date\s*:?\s*$/i,'inv_date'],[/^due\s*date/i,'due_date'],[/^invoice\s*(no\.?|number|#)\s*:?\s*$/i,'inv_no'],
+  [/^ref(erence)?\.?\s*(no\.?)?\s*:?\s*$/i,'inv_ref'],[/^(duration\s*)?from\s*:?\s*$|\/\s*from\s*:?\s*$/i,'from'],[/^to\s*:?\s*$|\/\s*to\s*:?\s*$/i,'to'],[/^contract\s*(no\.?|number|#)\s*:?\s*$/i,'contract_no'],
+  [/^(contract|project)\s*(title|name)\s*:?\s*$/i,'title'],[/^contract\s*value\s*:?\s*$/i,'cv'],[/^(type of invoice|invoice type)\s*:?\s*$/i,'type'],[/^contractor\s*:?\s*$/i,'contractor'],[/^client\s*:?\s*$/i,'client'],
+  [/^(gross\s*amount|amount)\s*(for\s*)?this\s*(period|invoice)\s*:?\s*$/i,'gross_this'],[/^retention\s*(this\s*period|deducted|held)?\s*:?\s*$/i,'ret_this'],[/^retention\s*releas/i,'rel_this'],
+  [/^advance\s*(payment\s*)?(recovery|deduction)(\s*this\s*period)?\s*:?\s*$/i,'adv_this'],[/^vat\s*(%|rate|percent(age)?)\s*:?\s*$/i,'vat_pct'],[/^net\s*(amount\s*)?payable/i,'net'],[/^vat\s*(amount)?\s*:?\s*$/i,'vat'],[/^(grand\s*)?total.*(with|incl\w*)\s*vat/i,'total']];
+const CIBF_CALC=['gross_this','net','vat','total'];
+const CIBF_ROLES=[['item','Item number'],['desc','Description'],['unit','Unit'],['qty','Quantity'],['rate','Unit price'],['value','Contract amount'],
+  ...['prog','pay'].flatMap(g=>['prev','this','cum'].flatMap(p=>['pct','qty','amt'].filter(m=>!(g==='pay'&&m==='qty')).map(m=>[`${g}_${p}_${m}`,`${g==='prog'?'Progress':'Payment'} ${p==='prev'?'previously':p==='this'?'this period':'to date'} ${m==='pct'?'%':m==='qty'?'quantity':'amount'}`])))];
+const CIBF_RN=Object.fromEntries(CIBF_ROLES);
+const cibfLab=s=>{s=String(s||'').replace(/\s+/g,' ').trim();if(!s)return null;const x=CIBF_LABELS.find(([re])=>re.test(s));return x?x[1]:null};
+const cibfLabelLike=s=>!!cibfLab(s)||(/[؀-ۿ]/.test(s)&&!/\d/.test(s))||/:\s*$/.test(String(s).trim());
+function cibfRole(path){const p=path.toLowerCase();if(!p.trim()||/\bsap\b/.test(p))return null;
+  if(/item\s*(no|#|number)|^item$/.test(p))return 'item';if(/desc/.test(p))return 'desc';
+  const grp=/payment|payable|invoic|claim|billing|amount\s*certified/.test(p)?'pay':/progress|work\s*done|achiev|complet|physical/.test(p)?'prog':null;
+  const per=/previous|prior|last\s*period|up\s*to\s*(last|previous)|brought\s*forward/.test(p)?'prev':/this\s*period|new\s*period|current|present|this\s*(month|invoice)/.test(p)?'this':/cumulat|to\s*date|todate/.test(p)?'cum':null;
+  const meas=/%|percent|ratio/.test(p)?'pct':/\bqty\b|quantit/.test(p)?'qty':/amount|value|s\.\s*r|\bsar\b|\bsr\b|riyal/.test(p)?'amt':null;
+  if(grp&&per&&meas)return grp==='pay'&&meas==='qty'?null:`${grp}_${per}_${meas}`;if(per)return null;
+  if(/unit\s*price|\brate\b/.test(p))return 'rate';if(/\bqty\b|quantit/.test(p))return 'qty';if(/total\s*amount|price|amount|value/.test(p))return 'value';if(/\bunit\b|uom/.test(p))return 'unit';return null}
+const CIBF_COMPKW=[[/general/i,'GEN'],[/engineer|design/i,'ENG'],[/material|equipment|supply/i,'MAT'],[/civil|construct/i,'CON'],[/install|erection/i,'INS'],[/test|commission/i,'TC'],[/close/i,'CLO']];
+/* the format as ProTrack reads it; S (the project's approved Schedule-C, optional) helps to tell each table's component */
+function cibfScan(B,S){const items=S?Object.fromEntries((S.items||[]).map(i=>[i.no,i])):{},F={v:1,sheets:[],fields:[],calc:[],tnum:[],tables:[],ms:[],fc:null,checks:{links:B.links,charts:B.charts,macro:B.macro}};
+  for(const sh of B.sheets){const M=xlMerges(sh),rec={name:sh.name,state:sh.state,act:'keep',kind:'other'};F.sheets.push(rec);const used=new Set();
+    /* item numbers in the first eight columns */
+    const cnt={},rowsOf={};sh.cells.forEach((c,a)=>{const p=xlP(a);if(p.c>8)return;const g=xlGet(B,sh,a);if(g.f||typeof g.v!=='string')return;const no=cibNo(g.v);if(no.length<3||!CIB_ITEMRE.test(no)||!/\d/.test(no))return;
+      cnt[p.c]=(cnt[p.c]||0)+1;(rowsOf[p.c]=rowsOf[p.c]||[]).push(p.r)});
+    const ic=+Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+    if(ic&&cnt[ic]>=2){const R=rowsOf[ic].sort((a,b)=>a-b);
+      /* blocks: item rows with at most two empty rows between */
+      /* one table: its item rows, with a page's signature block or headings between them; a long gap starts another */
+      const blocks=[];let cur=[R[0]];for(let k=1;k<R.length;k++){if(R[k]-R[k-1]<=25)cur.push(R[k]);else{blocks.push(cur);cur=[R[k]]}}blocks.push(cur);
+      blocks.filter(b=>b.length>=1).forEach(b=>{const first=b[0],last=b[b.length-1],hdr=[];for(let r=Math.max(1,first-6);r<first;r++)hdr.push(r);
+        const maxC=Math.max(...[...sh.cells.keys()].map(a=>xlP(a)).filter(p=>p.r===first).map(p=>p.c),ic);const cols=[];
+        for(let c=1;c<=maxC;c++){const parts=[];hdr.forEach(r=>{const t=xlMTxt(B,sh,c,r,M).replace(/\s+/g,' ').trim();if(t&&parts[parts.length-1]!==t)parts.push(t)});const path=parts.join(' | ');
+          let role=c===ic?'item':cibfRole(path);if(!role||(role==='item'&&c!==ic))continue;const g=xlGet(B,sh,xlA(c,first));
+          const vals=b.map(r=>xlGet(B,sh,xlA(c,r))).filter(x=>!x.f&&typeof x.v==='number').map(x=>x.v),scale=/_pct$/.test(role)&&vals.some(v=>Math.abs(v)>1.5)?100:1;
+          cols.push({c,role,f:!!g.f,scale,path:path.slice(0,160)})}
+        if(!cols.some(x=>/^(prog|pay)_|^value$|^rate$/.test(x.role)))return;
+        /* the component: from the items of the Schedule-C, else from the sheet's name or title */
+        const nos=b.map(r=>cibNo(xlTxt(B,sh,xlA(ic,r)))),cs={};nos.forEach(n=>{const it=items[n];if(it&&it.comp)cs[it.comp]=(cs[it.comp]||0)+1});
+        const top=Object.keys(cs).sort((a,b)=>cs[b]-cs[a])[0];let comp=null;
+        if(top&&cs[top]>=Math.max(1,nos.filter(n=>items[n]).length*0.7))comp=top;else if(Object.keys(cs).length>1)comp='*';
+        const kind=cols.some(x=>/^(prog|pay)_/.test(x.role))?'progress':'price';
+        if(!comp){const kw=CIBF_COMPKW.find(([re])=>re.test(sh.name))||(kind==='progress'?CIBF_COMPKW.find(([re])=>re.test(hdr.map(r=>[...Array(maxC).keys()].map(k=>xlTxt(B,sh,xlA(k+1,r))).join(' ')).join(' '))):null);comp=kw?kw[1]:'*'}
+        /* a progress table is rebuilt from the Schedule-C; a price list is left as it is unless chosen */
+        const mode=kind==='progress'?'rebuild':'off',vis=sh.state==='visible';
+        let total=null;for(let r=last+1;r<=last+4;r++){if([...Array(ic+2).keys()].some(k=>/total/i.test(xlTxt(B,sh,xlA(k+1,r)))))total=total||r}
+        F.tables.push({sheet:sh.name,first,last,itemCol:ic,comp,mode,kind,cols,total,n:b.length,slots:b});for(let r=first;r<=last;r++)used.add(r);rec.kind='table';if(vis&&kind==='progress')rec.act='fill'})}
+    /* header cells: a label, and its value to the right or below */
+    sh.cells.forEach((c,a)=>{const p=xlP(a);if(used.has(p.r)||p.r>80)return;const g=xlGet(B,sh,a);if(g.f||typeof g.v!=='string')return;
+      const fld=cibfLab(g.v);
+      if(!fld){const m=/^(.*?(?:payment\s*certificate|invoice)\s*(?:#|no\.?)\s*)(\d+)\s*$/i.exec(g.v.trim());if(m)F.tnum.push({sheet:sh.name,addr:a,w:m[2].length});return}
+      if(['contractor','client'].includes(fld)&&!/:\s*$/.test(g.v))return;
+      const mg=M.find(x=>x.g.r1===p.r&&x.g.c1===p.c),ce=mg?mg.g.c2:p.c;let tgt=null,derived=null,empty=null;
+      for(let cc=ce+1;cc<=ce+7;cc++){const m2=M.find(x=>p.r>=x.g.r1&&p.r<=x.g.r2&&cc>=x.g.c1&&cc<=x.g.c2);if(m2&&(m2.g.c1!==cc||m2.g.r1!==p.r))continue;const a2=xlA(cc,p.r),x=xlGet(B,sh,a2);
+        if(x.v==null&&!x.f){if(!empty&&sh.cells.has(a2))empty=a2;continue}if(x.f){derived=a2;break}if(typeof x.v==='string'&&cibfLabelLike(x.v))break;tgt=a2;break}
+      if(!tgt&&!derived&&empty)tgt=empty;
+      const rb=(mg?mg.g.r2:p.r)+1,mb=M.find(x=>rb>=x.g.r1&&rb<=x.g.r2&&p.c>=x.g.c1&&p.c<=x.g.c2);
+      if(!tgt&&!derived&&!(mb&&(mb.g.r1!==rb||mb.g.c1!==p.c))){const a2=xlA(p.c,rb),x=xlGet(B,sh,a2);if(x.f)derived=a2;else if(x.v!=null?!(typeof x.v==='string'&&cibfLabelLike(x.v)):sh.cells.has(a2))tgt=a2}
+      if(derived&&CIBF_CALC.includes(fld)&&!F.calc.some(x=>x.sheet===sh.name&&x.addr===derived))F.calc.push({sheet:sh.name,addr:derived,field:fld});
+      if(!tgt&&CIBF_CALC.includes(fld))return;
+      if(tgt){const x=xlGet(B,sh,tgt);if(['inv_date','due_date','from','to','inv_no','cv','ret_this','rel_this','adv_this','vat_pct','gross_this','net','vat','total'].includes(fld)&&x.v!=null&&typeof x.v!=='number'&&!(fld==='cv'&&/\d/.test(x.v)))tgt=null}
+      if(tgt&&!F.fields.some(x=>x.sheet===sh.name&&x.addr===tgt)){const x=xlGet(B,sh,tgt);F.fields.push({sheet:sh.name,addr:tgt,field:fld,label:g.v.replace(/\s+/g,' ').trim().slice(0,60),as:typeof x.v==='string'?'text':'num'});if(rec.kind==='other')rec.kind='header';if(rec.act==='keep'&&sh.state==='visible')rec.act='fill'}});
+    /* TCC and FAC lines under a header with previous and this period */
+    sh.cells.forEach((c,a)=>{const p=xlP(a);if(p.c>3||used.has(p.r))return;const t=xlTxt(B,sh,a).trim();const which=/^(tcc|taking[\s-]*over)/i.test(t)?'tcc':/^(fac|final\s*accept)/i.test(t)?'fac':null;if(!which)return;
+      let h=null;for(let r=p.r-1;r>=Math.max(1,p.r-15)&&!h;r--){const n=[...Array(30).keys()].filter(k=>/previous|this\s*period|cumulat|to\s*date/i.test(xlTxt(B,sh,xlA(k+1,r)))).length;if(n>=2)h=r}if(!h)return;
+      for(let cc=1;cc<=30;cc++){const x=xlGet(B,sh,xlA(cc,p.r));if(x.f||(x.v!=null&&typeof x.v!=='number'))continue;const parts=[];[h-1,h,h+1].filter(r=>r<p.r&&r>0).forEach(r=>{const tt=xlMTxt(B,sh,cc,r,M).replace(/\s+/g,' ').trim();if(tt&&parts[parts.length-1]!==tt)parts.push(tt)});
+        const path=parts.join(' | ').toLowerCase(),per=/previous/.test(path)?'prev':/this\s*period|new\s*period/.test(path)?'this':/cumulat|to\s*date/.test(path)?'cum':null,meas=/%/.test(path)?'pct':/amount|s\.?\s*r|sar/.test(path)?'amt':null;
+        if(per&&meas)F.ms.push({sheet:sh.name,addr:xlA(cc,p.r),role:`${which}_${per}_${meas}`})}
+      if(rec.act==='keep'&&sh.state==='visible')rec.act='fill'});
+    /* the forecast of invoices: Invoice No. 01, 02 … with a gross amount */
+    if(!F.fc&&sh.state==='visible')for(let r=1;r<=40&&!F.fc;r++){const hc={refs:[]};for(let cc=1;cc<=20;cc++){const t=xlMTxt(B,sh,cc,r,M).toLowerCase();if(/invoice\s*ref|invoice\s*no/.test(t))hc.refs.push(cc);if(/gross/.test(t))hc.gross=cc;if(/^status/.test(t.trim()))hc.status=cc}
+      if(hc.refs.length&&hc.gross)for(const rc of hc.refs){const rows=[];for(let rr=r+1;rr<=r+60;rr++){const m=/invoice\s*no\.?\s*(\d+)/i.exec(xlTxt(B,sh,xlA(rc,rr)));if(m)rows.push({r:rr,seq:+m[1]})}
+        if(rows.length>=2){F.fc={sheet:sh.name,ref:rc,gross:hc.gross,status:hc.status||null,rows};if(rec.act==='keep')rec.act='fill';if(rec.kind==='other'||rec.kind==='header')rec.kind='forecast';break}}}}
+  /* a number inside a title is one invoice's number, not a list of them */
+  const per={};F.tnum.forEach(x=>{const k=x.sheet+'|'+xlP(x.addr).c;per[k]=(per[k]||0)+1});
+  F.tnum=F.tnum.filter(x=>per[x.sheet+'|'+xlP(x.addr).c]===1&&!(F.fc&&x.sheet===F.fc.sheet&&F.fc.rows.some(r=>xlA(F.fc.ref,r.r)===x.addr)));
+  return F}
+
+/* ----- the figures of one invoice for a format: progress and payment of each item, TCC and FAC apart where the format has them ----- */
+function cibfCtx(pid,I,F){const p=projById(pid),S=cibDB().sch.find(s=>s.id===I.sch)||cibAppr(pid),H=S.head,L=Object.fromEntries((I.lines||[]).map(l=>[l.no,l])),split=!!(F&&F.ms&&F.ms.length);
+  const msNow=cibMs(p,I.to),msPrev=I.from?cibMs(p,addDays(I.from,-1)):{tcc:false,fac:false};
+  const share=r=>r.t==='split'?(+r.first||0)/100:['pct','phase'].includes(r.t)?(+r.cap||0)/100:0;
+  const msPart=(r,v,ms)=>({tcc:['pct','phase'].includes(r.t)?(ms.tcc?v*(+r.tcc||0)/100:0):r.t==='tcc'&&ms.tcc?v:0,fac:['pct','phase'].includes(r.t)?(ms.fac?v*(+r.fac||0)/100:0):r.t==='split'?(ms.fac?v*(1-(+r.first||0)/100):0):r.t==='fac'&&ms.fac?v:0});
+  const IT={},MS={tcc:{prev:0,cum:0},fac:{prev:0,cum:0}};
+  cibBill(S).forEach(i=>{const l=L[i.no]||{},r=cibRule(S,i),v=+i.value||0,sh=share(r),pc=l.prog??0;
+    const pp=l.prev_prog!=null?+l.prev_prog:(sh>0&&v>0?clamp((+l.prev_pay||0)/(v*sh),0,1):0);
+    const a=msPart(r,v,msNow),b=msPart(r,v,msPrev);MS.tcc.cum+=a.tcc;MS.tcc.prev+=b.tcc;MS.fac.cum+=a.fac;MS.fac.prev+=b.fac;
+    const payCum=split?v*pc*sh:+l.cum_pay||0,payPrev=split?v*pp*sh:+l.prev_pay||0;
+    IT[i.no]={i,v,prog:{prev:pp,cum:pc,this:pc-pp},pay:{prev:payPrev,cum:payCum,this:payCum-payPrev}}});
+  ['tcc','fac'].forEach(k=>MS[k].this=MS[k].cum-MS[k].prev);
+  const iss=(I.hist||[]).find(h=>h.st==='Issued'),date=(iss&&iss.at||'').slice(0,10)||TODAY;
+  const V={inv_no:I.seq,inv_ref:I.ref||`${pcode(p)}-INV-${pad(I.seq)}`,inv_date:{date},due_date:{date:addDays(date,+H.pay_days||0)},from:I.from?{date:I.from}:null,to:{date:I.to},
+    contract_no:H.contract_no||null,title:H.title||p.name,cv:+H.value||0,type:'Progress',contractor:(DB.branding&&DB.branding.name)||null,client:p.client||null};
+  const T=I.tot||{};Object.assign(V,{gross_this:+T.gross_this||0,ret_this:+T.ret_this||0,rel_this:+T.rel_this||0,adv_this:+T.adv_this||0,vat_pct:T.vat_pct??(+H.vat||0),net:+T.net||0,vat:+T.vat||0,total:+T.total||0});
+  return {p,S,H,I,IT,MS,V,split}}
+
+/* ----- fill: the format's workbook with one invoice; returns the file and what was done ----- */
+async function cibfFill(buf,F,X){const B=await xlOpen(buf),rep={fields:0,rows:0,rebuilt:[],missing:[],extra:[],checks:[],dropped:[],refErr:0};
+  const on=new Set(F.sheets.filter(s=>s.act==='fill').map(s=>s.name)),put=(sh,a,v)=>{if(!sh)return;const g=xlGet(B,sh,a);if(g.f)return;xlSet(B,sh,a,v)};
+  const fl=x=>on.has(x.sheet);
+  /* header cells, numbers inside titles, TCC and FAC, the forecast: before any row moves (they move with their rows) */
+  F.fields.filter(fl).forEach(x=>{const sh=xlSheet(B,x.sheet),v=X.V[x.field];if(!sh||x.field==='skip'||v==null)return;
+    put(sh,x.addr,x.field==='cv'&&x.as==='text'?'SAR '+fmt(v,0):x.field==='inv_no'&&x.as==='text'?pad(v):v);rep.fields++});
+  (F.tnum||[]).filter(fl).forEach(x=>{const sh=xlSheet(B,x.sheet);if(!sh)return;const t=xlTxt(B,sh,x.addr);put(sh,x.addr,t.replace(/(\d+)\s*$/,String(X.I.seq).padStart(x.w,'0')));rep.fields++});
+  (F.ms||[]).filter(fl).forEach(x=>{const sh=xlSheet(B,x.sheet),[k,per,m]=x.role.split('_'),amt=X.MS[k][per],cv=+X.H.value||0;put(sh,x.addr,m==='pct'?(cv?amt/cv:0):cibR2(amt));rep.fields++});
+  if(F.fc&&on.has(F.fc.sheet)){const sh=xlSheet(B,F.fc.sheet),L=cibInvOf(X.p.id).filter(x=>x.st!=='Cancelled'),fcR=(cibForecast(X.p.id)||{rows:[]}).rows;let k=0;
+    F.fc.rows.forEach(({r,seq})=>{const I=L.find(x=>x.seq===seq);if(I){if(I.kind!=='Migrated')put(sh,xlA(F.fc.gross,r),cibR2(I.tot.gross_this));if(F.fc.status)put(sh,xlA(F.fc.status,r),I.st)}
+      else if(seq>X.I.seq&&fcR[k]){put(sh,xlA(F.fc.gross,r),fcR[k].gross);if(F.fc.status)put(sh,xlA(F.fc.status,r),'Forecast');k++}})}
+  /* the tables, from the bottom of each sheet up, so the rows of one do not move the next */
+  const T=F.tables.filter(t=>fl(t)&&t.mode!=='off').sort((a,b)=>a.sheet===b.sheet?b.first-a.first:0);
+  for(const t of T){const sh=xlSheet(B,t.sheet);if(!sh)continue;const want=cibBill(X.S).filter(i=>t.comp==='*'||i.comp===t.comp).map(i=>i.no);
+    let slots=(t.slots||[]).slice(),rows=slots.map(r=>({r,no:cibNo(xlTxt(B,sh,xlA(t.itemCol,r)))})).filter(x=>x.no);
+    const same=rows.length===want.length&&rows.every((x,k)=>x.no===want[k]);
+    if(t.mode==='rebuild'&&!same&&want.length){const n0=slots.length,N=want.length,last=slots[n0-1];
+      /* more items: rows inserted at the last item row (inside every total's range); fewer: the last item rows taken out */
+      if(N>n0){const s=await xlShift(B,sh,last,N-n0,last);rep.refErr+=s.bad;slots=slots.slice(0,-1).concat([...Array(N-n0+1).keys()].map(k=>last+k))}
+      else if(N<n0){const gone=slots.slice(N),runs=[];gone.forEach(r=>{const L=runs[runs.length-1];if(L&&L[1]===r-1)L[1]=r;else runs.push([r,r])});
+        for(const [a,b] of runs.reverse()){const s=await xlShift(B,sh,a,a-b-1);rep.refErr+=s.bad}slots=slots.slice(0,N)}
+      rows=want.map((no,k)=>({r:slots[k],no,fresh:true}));rep.rebuilt.push({sheet:t.sheet,from:n0,to:N})}
+    const done=new Set();
+    rows.forEach(({r,no,fresh})=>{const x=X.IT[no];
+      t.cols.forEach(col=>{const a=xlA(col.c,r);if(xlGet(B,sh,a).f)return;let v;
+        if(!x){if(/^(prog|pay)_/.test(col.role))v=0;else return}
+        else if(col.role==='item')v=fresh?no:undefined;else if(col.role==='desc')v=fresh?x.i.desc:undefined;else if(col.role==='unit')v=fresh?x.i.unit||'':undefined;
+        else if(col.role==='qty')v=fresh?+x.i.qty||0:undefined;else if(col.role==='rate')v=fresh?+x.i.rate||0:undefined;else if(col.role==='value')v=x.v;
+        else{const [g,per,m]=col.role.split('_'),P=x.prog[per],A=g==='prog'?P*x.v:x.pay[per];v=m==='pct'?(g==='prog'?P:(x.v?A/x.v:0))*col.scale:m==='qty'?P*(+x.i.qty||0):cibR2(A)}
+        if(v!==undefined)put(sh,a,v)});
+      if(x){done.add(no);rep.rows++}else rep.extra.push(`${t.sheet}: ${no}`)});
+    want.filter(no=>!done.has(no)).forEach(no=>rep.missing.push(`${t.sheet}: ${no}`));t._rows=rows}
+  /* sheets taken out */
+  for(const s of F.sheets.filter(s=>s.act==='drop')){try{await xlDrop(B,s.name);rep.dropped.push(s.name)}catch(e){rep.checks.push({sev:'warn',msg:e.message})}}
+  /* the format's own arithmetic against ProTrack's */
+  const RC=xlRecalc(B),C=RC.C;rep.calc={n:RC.n,u:RC.u};
+  T.forEach(t=>{if(!xlSheet(B,t.sheet)||!t._rows)return;const col=t.cols.find(c=>c.role==='pay_this_amt')||t.cols.find(c=>c.role==='pay_cum_amt');if(!col)return;const per=col.role.split('_')[1];
+    let got=0,exp=0,ok=true;t._rows.forEach(({r,no})=>{const v=C.val(t.sheet,xlA(col.c,r));if(typeof v!=='number'){if(v!==null&&v!==''&&v!==undefined)ok=false;return}got+=v;exp+=X.IT[no]?X.IT[no].pay[per]:0});
+    if(!ok)rep.checks.push({sev:'warn',msg:`${t.sheet}: some payment cells could not be worked out`});else if(Math.abs(got-exp)>1)rep.checks.push({sev:'diff',sheet:t.sheet,msg:`${t.sheet}: the format's payment ${per==='this'?'this period':'to date'} is ${fmt(got,2)}, ProTrack's is ${fmt(exp,2)} (difference ${fmt(got-exp,2)}). Check the format's payment formula against the approved rules.`,got,exp})});
+  (F.ms||[]).forEach(x=>{if(!xlSheet(B,x.sheet))return;const [k,per,m]=x.role.split('_');if(m!=='amt')return;const v=C.val(x.sheet,x.addr);if(typeof v==='number'&&Math.abs(v-X.MS[k][per])>1)rep.checks.push({sev:'diff',msg:`${x.sheet}: ${k.toUpperCase()} ${per} differs`})});
+  (F.calc||[]).filter(fl).forEach(x=>{const v=C.val(x.sheet,x.addr),e=X.V[x.field];if(typeof v==='number'&&typeof e==='number'&&Math.abs(v-e)>1)rep.checks.push({sev:'diff',sheet:x.sheet,msg:`${x.sheet.trim()}: the format's ${CIBF_FIELDS.find(f=>f[0]===x.field)[1].toLowerCase()} is ${fmt(v,2)}, ProTrack's is ${fmt(e,2)}`,got:v,exp:e})});
+  if(rep.refErr)rep.checks.push({sev:'warn',msg:`${rep.refErr} reference${rep.refErr===1?'':'s'} to removed rows became #REF!`});
+  if(rep.missing.length)rep.checks.push({sev:'warn',msg:`${rep.missing.length} item${rep.missing.length===1?' is':'s are'} not in the format's tables (${rep.missing.slice(0,5).join(', ')})`});
+  if(rep.extra.length)rep.checks.push({sev:'warn',msg:`${rep.extra.length} row${rep.extra.length===1?'':'s'} of the format ${rep.extra.length===1?'is':'are'} not in this Schedule-C; set to zero (${rep.extra.slice(0,5).join(', ')})`});
+  const blob=await xlSave(B);return {blob,rep}}
+/* ----- the formats: kept by those with cib.setup; the workbook in this browser (demo) or in the server's storage ----- */
+function cibFmts(){if(CLOUD_ME&&DB.cibSrv)return DB.cibSrv.fmt||[];const C=cibDB();if(!Array.isArray(C.fmt))C.fmt=[];return C.fmt}
+/* the formats offered for a project: its client's first, then those for any client */
+const cibFmtsFor=pid=>{const c=String((projById(pid)||{}).client||'').trim().toLowerCase();return cibFmts().filter(f=>!f.client||String(f.client).trim().toLowerCase()===c).sort((a,b)=>(b.client?1:0)-(a.client?1:0)||a.name.localeCompare(b.name))};
+async function cibFmtBlob(F){if(CLOUD_ME){const {data,error}=await SB.storage.from('cib-formats').createSignedUrl(F.path,600);if(error||!data)throw new Error('The format could not be opened: '+srvMsg(error));const r=await fetch(data.signedUrl);if(!r.ok)throw new Error('The format could not be read');return r.blob()}
+  let b=await DOCIDB.get('cibf:'+F.id);if(!b&&F.sample){b=await cibSampleFormat();await DOCIDB.put('cibf:'+F.id,b)}if(!b)throw new Error('The format workbook is not in this browser');return b}
+async function cibHash(buf){const h=await crypto.subtle.digest('SHA-256',buf);return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+const CIBF_MAX=25*1024*1024;
+/* the map kept with a format: what to fill, without the cells' own figures */
+/* the version of what ProTrack reads from a workbook: a map kept for the SAMPLE format is read again when it changes */
+const CIBF_V=2;
+const cibfMapClean=F=>({v:CIBF_V,sheets:F.sheets.map(s=>({name:s.name,state:s.state,act:s.act,kind:s.kind})),fields:F.fields,calc:F.calc||[],tnum:F.tnum,ms:F.ms,fc:F.fc,checks:F.checks,
+  tables:F.tables.map(t=>({sheet:t.sheet,first:t.first,last:t.last,itemCol:t.itemCol,comp:t.comp,mode:t.mode,kind:t.kind,total:t.total,n:t.n,slots:t.slots,cols:t.cols.map(c=>({c:c.c,role:c.role,f:c.f,scale:c.scale,path:c.path}))}))});
+async function cibFmtAct(op,p){if(!can('cib.setup'))throw new Error('Only those who keep the Schedule-C keep the invoice formats');
+  if(CLOUD_ME){if(DB.cibFmtMissing)throw new Error('Invoice formats need the v53 database update (STAGE-47-SETUP)');const r=await rpc('cib_fmt_act',{p:Object.assign({op},p)});await cloudLoadCib();save();return r}
+  const L=cibFmts(),u=me(),now=cibNow(),nm=String(p.name||'').trim(),cl=String(p.client||'').trim()||null;
+  const ok=()=>{if(nm.length<2||nm.length>80)throw new Error('Give the format a name (2 to 80 characters)');if(L.some(f=>f.id!==p.id&&f.name.toLowerCase()===nm.toLowerCase()&&(f.client||'')===(cl||'')))throw new Error('A format with this name is already kept for this client')};
+  if(op==='fmt_add'){ok();const F={id:p.id,name:nm,client:cl,file:p.file,size:p.size,hash:p.hash,map:p.map,by:u.name,by_id:u.id,at:now,upd:now,upd_by:u.name,hist:[{at:now,by:u.name,act:'Uploaded',note:p.file}]};L.unshift(F);save();return {id:F.id}}
+  const F=L.find(f=>f.id===p.id);if(!F)throw new Error('Unknown format');
+  if(op==='fmt_map'){ok();Object.assign(F,{name:nm,client:cl,map:p.map,upd:now,upd_by:u.name});F.hist=(F.hist||[]).concat({at:now,by:u.name,act:'Map changed'});save();return {ok:true}}
+  if(op==='fmt_del'){L.splice(L.indexOf(F),1);try{await DOCIDB.del('cibf:'+F.id)}catch(e){}save();return {ok:true}}
+  throw new Error('Unknown action')}
+/* upload: read and map the workbook; nothing is kept until it is saved */
+async function cibFmtRead(file,pid){if(!/\.xlsx$/i.test(file.name))throw new Error(/\.xlsm$/i.test(file.name)?'A workbook with macros (.xlsm) is not accepted: save it as .xlsx':'Choose an Excel workbook (.xlsx). Save an .xls as .xlsx first');
+  if(file.size>CIBF_MAX)throw new Error('The workbook is larger than 25 MB');const buf=await file.arrayBuffer(),B=await xlOpen(buf);if(B.macro)throw new Error('This workbook carries macros: save it as .xlsx without them');
+  const map=cibfScan(B,cibAppr(pid));if(!map.tables.length&&!map.fields.length)throw new Error('No breakdown table (item numbers under progress or payment headings) and no invoice header cells were found in this workbook');
+  return {file:file.name,size:file.size,buf,hash:await cibHash(buf),map:cibfMapClean(map),name:file.name.replace(/\.xlsx$/i,'').slice(0,80),client:(projById(pid)||{}).client||''}}
+async function cibFmtSave(fx){const id=fx.id||('CF'+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+  if(fx.id)return cibFmtAct('fmt_map',{id,name:fx.name,client:fx.client,map:fx.map});
+  if(CLOUD_ME){const path=`fmt/${id}.xlsx`,{error}=await SB.storage.from('cib-formats').upload(path,new Blob([fx.buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),{upsert:false});if(error)throw new Error('The workbook was not stored: '+srvMsg(error));
+    try{return await cibFmtAct('fmt_add',{id,path,name:fx.name,client:fx.client,file:fx.file,size:fx.size,hash:fx.hash,map:fx.map})}catch(e){await SB.storage.from('cib-formats').remove([path]);throw e}}
+  await DOCIDB.put('cibf:'+id,new Blob([fx.buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));return cibFmtAct('fmt_add',{id,name:fx.name,client:fx.client,file:fx.file,size:fx.size,hash:fx.hash,map:fx.map})}
+/* export one invoice in a format: the file, and a note in the audit trail */
+async function cibExportFmt(pid,I,fid){const F=cibFmts().find(f=>f.id===fid);if(!F)throw new Error('Choose a format');await loadLib(LIBS.zip);const buf=await (await cibFmtBlob(F)).arrayBuffer();
+  let map=F.map;if(!map||!map.tables||(F.sample&&map.v!==CIBF_V)){map=cibfMapClean(cibfScan(await xlOpen(buf),cibAppr(pid)));if(!CLOUD_ME&&F.sample){F.map=map;save()}}
+  const X=cibfCtx(pid,I,map),r=await cibfFill(buf,map,X),p=projById(pid);
+  saveFile(`${pcode(p)}-INV-${pad(I.seq)} (${F.name.replace(/[\\/:*?"<>|]+/g,' ').slice(0,60)}).xlsx`,r.blob);
+  const nd=r.rep.checks.filter(c=>c.sev==='diff').length,nw=r.rep.checks.filter(c=>c.sev==='warn').length;
+  try{await cibAct('inv_export',{pid,id:I.id,fmt:F.name,note:`${r.rep.rows} item rows${r.rep.rebuilt.length?`, rows rebuilt on ${r.rep.rebuilt.map(x=>x.sheet.trim()).join(', ')}`:''}; ${nd} difference${nd===1?'':'s'}, ${nw} warning${nw===1?'':'s'}`})}catch(e){}
+  return r.rep}
+
+/* ----- the SAMPLE format: the layout of a utility client's invoice workbook (tax invoice, cover page, summary, a breakdown sheet per
+   price component, forecast), with SAMPLE names only. Progress and payment % are typed cells; amounts and totals are formulas. ----- */
+async function cibSampleFormat(){await loadLib(LIBS.exceljs);const wb=new ExcelJS.Workbook();wb.creator='ProTrackAI';
+  const thin={style:'thin'},box={top:thin,left:thin,bottom:thin,right:thin},hd={type:'pattern',pattern:'solid',fgColor:{argb:'FFD9E1F2'}},tl={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF2CC'}};
+  const SH=[['GEN','GENERAL','1-GENERAL PRICE','I'],['ENG','ENGINEERING','2-ENGINEERING AND DESIGN PRICE','II'],['MAT','MATERIAL','3-MATERIAL AND EQUIPMENT PRICE','III'],['CON','CONSTRUCTION','4-CIVIL WORKS PRICE','IV'],
+    ['INS','INSTALLATION','5-INSTALLATION WORKS PRICE','V'],['TC','TESTING & COMM','6-TESTING AND COMMISSIONING PRICE','VI'],['CLO','CLOSE-OUT','7-CLOSE-OUT PRICE','VII']];
+  const tax=wb.addWorksheet('TAX INVOICE'),cov=wb.addWorksheet('COVER PAGE'),sum=wb.addWorksheet('INVOICE SUMMARY'),q=s=>`'${s}'`;
+  const cell=(ws,a,v,o={})=>{const c=ws.getCell(a);c.value=v;if(o.b)c.font={bold:true};if(o.f)c.fill=o.f;if(o.n)c.numFmt=o.n;if(o.box)c.border=box;if(o.al)c.alignment=o.al;return c};
+  const head=(ws)=>{cell(ws,'A1','Client',{b:true});cell(ws,'L1',{formula:`${q('INVOICE SUMMARY')}!F9`},{b:true});cell(ws,'I3','Type of Invoice:');cell(ws,'K3','Progress');
+    cell(ws,'I4','Contract No:');cell(ws,'K4',{formula:`${q('INVOICE SUMMARY')}!G7`});cell(ws,'T4','Date:');cell(ws,'V4',{formula:`${q('INVOICE SUMMARY')}!M6`},{n:'dd/mm/yyyy'});
+    cell(ws,'I5','Contractor:');cell(ws,'K5',{formula:`${q('INVOICE SUMMARY')}!G6`});cell(ws,'A6','SAMPLE CLIENT',{b:true});cell(ws,'I6','Contract Title :');cell(ws,'K6',{formula:`${q('INVOICE SUMMARY')}!G5`});
+    cell(ws,'T6','Invoice Period:');cell(ws,'V6','From');cell(ws,'W6',{formula:`${q('INVOICE SUMMARY')}!M8`},{n:'dd/mm/yyyy'});cell(ws,'V7','To');cell(ws,'W7',{formula:`${q('INVOICE SUMMARY')}!M9`},{n:'dd/mm/yyyy'})};
+  const tot={};
+  SH.forEach(([k,name,title])=>{const ws=wb.addWorksheet(name,{pageSetup:{orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9}});head(ws);
+    ws.columns=[14,3,38,7,7,14,16,1,8,8,14,8,8,14,8,8,14,1,8,14,8,14,8,14].map(w=>({width:w}));
+    ws.mergeCells('I9:Q9');cell(ws,'I9',title,{b:true,al:{horizontal:'center'}});
+    [['A10:B12','ITEM NO.'],['C10:C13','ITEM DESCRIPTION'],['D10:G10','CONTRACTUAL'],['I10:Q10','CERTIFIED PROGRESS'],['S10:X10','PAYMENT CERTIFIED'],['D11:D13','UNIT'],['E11:E13','QTY'],['F11:F12','UNIT PRICE'],['G11:G12','TOTAL AMOUNT'],
+      ['I11:K12','PREVIOUSLY'],['L11:N12','NEW PERIOD'],['O11:Q12','TOTAL CUMULATIVE'],['S11:T12','PREVIOUSLY'],['U11:V12','NEW PERIOD'],['W11:X12','CUMULATIVE']].forEach(([r,t])=>{ws.mergeCells(r);cell(ws,r.split(':')[0],t,{b:true,f:hd,box:true,al:{horizontal:'center',vertical:'middle',wrapText:true}})});
+    cell(ws,'A13','SAP NO',{b:true,f:hd,box:true});cell(ws,'F13','( S. R )',{f:hd,box:true});cell(ws,'G13','( S. R )',{f:hd,box:true});
+    ['I','L','O','S','U','W'].forEach(c=>cell(ws,c+'13','%',{b:true,f:hd,box:true}));['J','M','P'].forEach(c=>cell(ws,c+'13','QTY',{b:true,f:hd,box:true}));['K','N','Q','T','V','X'].forEach(c=>cell(ws,c+'13','AMOUNT',{b:true,f:hd,box:true}));
+    /* two placeholder rows: ProTrack rebuilds them from the Schedule-C */
+    [14,15].forEach((r,j)=>{cell(ws,'A'+r,`X.${j+1}`,{box:true});cell(ws,'C'+r,'SAMPLE item',{box:true});cell(ws,'D'+r,'LT',{box:true});cell(ws,'E'+r,1,{box:true});cell(ws,'F'+r,0,{box:true,n:'#,##0.00'});
+      const F=(a,f,n)=>cell(ws,a+r,{formula:f.replace(/#/g,r)},{box:true,n:n||'#,##0.00'});F('G','E#*F#');
+      cell(ws,'I'+r,0,{box:true,n:'0.00%',f:tl});F('J','I#*E#','0.00');F('K','I#*G#');cell(ws,'L'+r,0,{box:true,n:'0.00%',f:tl});F('M','L#*E#','0.00');F('N','L#*G#');F('O','L#+I#','0.00%');F('P','O#*E#','0.00');F('Q','O#*G#');
+      cell(ws,'S'+r,0,{box:true,n:'0.00%',f:tl});F('T','S#*G#');cell(ws,'U'+r,0,{box:true,n:'0.00%',f:tl});F('V','U#*G#');F('W','U#+S#','0.00%');F('X','W#*G#')});
+    ws.mergeCells('A17:F17');cell(ws,'A17','SUB TOTAL',{b:true,box:true});const S=c=>({formula:`SUM(${c}14:${c}16)`});
+    ['G','K','N','Q','T','V','X'].forEach(c=>cell(ws,c+'17',S(c),{b:true,box:true,n:'#,##0.00'}));[['I','K'],['L','N'],['O','Q'],['S','T'],['U','V'],['W','X']].forEach(([p,a])=>cell(ws,p+'17',{formula:`IFERROR(${a}17/G17,0)`},{b:true,box:true,n:'0.00%'}));
+    ws.mergeCells('A18:F18');cell(ws,'A18','TOTAL',{b:true,box:true});['G','I','K','L','N','O','Q','S','T','U','V','W','X'].forEach(c=>cell(ws,c+'18',{formula:`${c}17`},{b:true,box:true,n:/[ILOSUW]/.test(c)?'0.00%':'#,##0.00'}));
+    cell(ws,'A20','CONTRACTOR',{b:true});cell(ws,'H20','CLIENT APPROVAL',{b:true});cell(ws,'A21','SAMPLE contractor');cell(ws,'H21','SAMPLE client department');cell(ws,'A25','Project Manager (SAMPLE)');cell(ws,'H25','Project Manager (SAMPLE)');
+    tot[k]={name,row:18}});
+  /* the summary: a line per component from its sheet's TOTAL row; TCC and FAC typed */
+  sum.columns=[8,30,8,16,16,16,16,8,16,8,16,8,16].map(w=>({width:w}));
+  cell(sum,'A1','Client:',{b:true});cell(sum,'G1','');cell(sum,'F5','Contract Title :');cell(sum,'G5','SAMPLE contract title');cell(sum,'F6','Contractor:');cell(sum,'G6','SAMPLE contractor');cell(sum,'K6','Date:');cell(sum,'M6',{formula:`${q('TAX INVOICE')}!B17`},{n:'dd/mm/yyyy'});
+  cell(sum,'F7','Contract No:');cell(sum,'G7','SAMPLE-0000');cell(sum,'F8','INVOICE SUMMARY',{b:true});cell(sum,'K8','Invoice Period:');cell(sum,'L8','From');cell(sum,'M8',{formula:`${q('TAX INVOICE')}!C21`},{n:'dd/mm/yyyy'});
+  cell(sum,'F9','PAYMENT CERTIFICATE # 01',{b:true});cell(sum,'L9','To');cell(sum,'M9',{formula:`${q('TAX INVOICE')}!B21`},{n:'dd/mm/yyyy'});
+  [['A11:A13','ITEM #'],['B11:B13','PRICE COMPONENT'],['C11:E12','CONTRACT PRICE AS PER SCHEDULE "C"'],['F11:G12','Invoice Payment'],['H11:M11','NET AMOUNT PAYABLE AS PER SCHEDULE "C"'],['H12:I12','PREVIOUSLY CERTIFIED'],['J12:K12','THIS PERIOD'],['L12:M12','CERTIFIED TO DATE CUMULATIVE']]
+    .forEach(([r,t])=>{sum.mergeCells(r);cell(sum,r.split(':')[0],t,{b:true,f:hd,box:true,al:{horizontal:'center',vertical:'middle',wrapText:true}})});
+  [['C','%'],['D','AMOUNT (SR)'],['E','Total AMOUNT (SR)'],['F','%'],['G','AMOUNT (SR)'],['H','%'],['I','AMOUNT (SR)'],['J','%'],['K','AMOUNT (SR)'],['L','%'],['M','AMOUNT (SR)']].forEach(([c,t])=>cell(sum,c+'13',t,{b:true,f:hd,box:true}));
+  const r0=14,rT=r0+SH.length,rF=rT+1,rTot=rF+1;
+  SH.forEach(([k,name,,roman],j)=>{const r=r0+j,s=q(name),T=tot[k].row;cell(sum,'A'+r,roman,{box:true});cell(sum,'B'+r,CIB_COMP.find(c=>c[0]===k)[1],{box:true});cell(sum,'C'+r,{formula:`IFERROR(D${r}/D${rTot},0)`},{box:true,n:'0.00%'});
+    cell(sum,'D'+r,{formula:`${s}!G${T}`},{box:true,n:'#,##0.00'});[['H','S'],['I','T'],['J','U'],['K','V'],['L','W'],['M','X']].forEach(([c,f])=>cell(sum,c+r,{formula:`${s}!${f}${T}`},{box:true,n:/[HJL]/.test(c)?'0.00%':'#,##0.00'}))});
+  [[rT,'TCC'],[rF,'FAC']].forEach(([r,l])=>{cell(sum,'A'+r,l,{b:true,box:true});cell(sum,'H'+r,{formula:`IFERROR(I${r}/D${rTot},0)`},{box:true,n:'0.00%'});cell(sum,'I'+r,0,{box:true,n:'#,##0.00',f:tl});
+    cell(sum,'J'+r,{formula:`IFERROR(K${r}/D${rTot},0)`},{box:true,n:'0.00%'});cell(sum,'K'+r,0,{box:true,n:'#,##0.00',f:tl});cell(sum,'L'+r,{formula:`H${r}+J${r}`},{box:true,n:'0.00%'});cell(sum,'M'+r,{formula:`I${r}+K${r}`},{box:true,n:'#,##0.00'})});
+  cell(sum,'A'+rTot,'TOTAL LUMP SUM CONTRACT PRICE',{b:true,box:true});cell(sum,'D'+rTot,{formula:`SUM(D${r0}:D${rF})`},{b:true,box:true,n:'#,##0.00'});
+  ['I','K','M'].forEach(c=>cell(sum,c+rTot,{formula:`SUM(${c}${r0}:${c}${rF})`},{b:true,box:true,n:'#,##0.00'}));[['H','I'],['J','K'],['L','M']].forEach(([p,a])=>cell(sum,p+rTot,{formula:`IFERROR(${a}${rTot}/D${rTot},0)`},{b:true,box:true,n:'0.00%'}));
+  /* the tax invoice: dates, number and contract typed; deductions typed from ProTrack's invoice; net, VAT and total worked out */
+  tax.columns=[30,18,18,22,8,16,22,24,12,14,12].map(w=>({width:w}));cell(tax,'D16','INVOICE APPENDIX (SAMPLE layout)',{b:true});
+  cell(tax,'A17','Date of Invoice',{b:true});cell(tax,'B17',null,{n:'dd/mm/yyyy',f:tl});cell(tax,'A18','Due Date',{b:true});cell(tax,'B18',null,{n:'dd/mm/yyyy',f:tl});cell(tax,'A19','Invoice No',{b:true});cell(tax,'B19',null,{f:tl});
+  cell(tax,'A20','Delivery Date / Progress Period',{b:true});cell(tax,'B20','TO :');cell(tax,'C20','From :');cell(tax,'B21',null,{n:'dd/mm/yyyy',f:tl});cell(tax,'C21',null,{n:'dd/mm/yyyy',f:tl});
+  cell(tax,'A22','Contract No',{b:true});cell(tax,'B22','SAMPLE-0000',{f:tl});cell(tax,'A23','Project Name',{b:true});cell(tax,'B23','SAMPLE project',{f:tl});cell(tax,'A25','Contract Value',{b:true});cell(tax,'B25',0,{n:'#,##0.00',f:tl});
+  [['A','Item No.'],['B','Item Description'],['C','Progress Period'],['D','Unit Price (this period)'],['E','QTY'],['F','Total Price without VAT']].forEach(([c,t])=>cell(tax,c+'29',t,{b:true,f:hd,box:true}));
+  SH.concat([['TCC','TCC'],['FAC','FAC']]).forEach((x,j)=>{const r=30+j,sr=x[0]==='TCC'?rT:x[0]==='FAC'?rF:r0+j;cell(tax,'A'+r,j+1,{box:true});cell(tax,'B'+r,x[0]==='TCC'||x[0]==='FAC'?x[0]:x[1],{box:true});cell(tax,'C'+r,{formula:'C21'},{box:true,n:'dd/mm/yyyy'});
+    cell(tax,'D'+r,{formula:`${q('INVOICE SUMMARY')}!K${sr}`},{box:true,n:'#,##0.00'});cell(tax,'E'+r,1,{box:true});cell(tax,'F'+r,{formula:`D${r}*E${r}`},{box:true,n:'#,##0.00'})});
+  const rL=30+SH.length+1,rG=rL+2;cell(tax,'A'+rG,'Gross amount this period',{b:true});cell(tax,'C'+rG,{formula:`SUM(F30:F${rL})`},{n:'#,##0.00'});
+  cell(tax,'A'+(rG+1),'Retention this period',{b:true});cell(tax,'C'+(rG+1),0,{n:'#,##0.00',f:tl});cell(tax,'A'+(rG+2),'Retention released',{b:true});cell(tax,'C'+(rG+2),0,{n:'#,##0.00',f:tl});
+  cell(tax,'A'+(rG+3),'Advance recovery this period',{b:true});cell(tax,'C'+(rG+3),0,{n:'#,##0.00',f:tl});cell(tax,'A'+(rG+4),'Net Payable',{b:true});cell(tax,'C'+(rG+4),{formula:`C${rG}-C${rG+1}+C${rG+2}-C${rG+3}`},{n:'#,##0.00'});
+  cell(tax,'A'+(rG+5),'VAT %',{b:true});cell(tax,'C'+(rG+5),15,{f:tl});cell(tax,'A'+(rG+6),'VAT amount',{b:true});cell(tax,'C'+(rG+6),{formula:`ROUND(C${rG+4}*C${rG+5}/100,2)`},{n:'#,##0.00'});
+  cell(tax,'A'+(rG+7),'Grand Total with VAT',{b:true});cell(tax,'C'+(rG+7),{formula:`C${rG+4}+C${rG+6}`},{b:true,n:'#,##0.00'});
+  /* the cover page */
+  cov.columns=[34,4,4,4,26].map(w=>({width:w}));cell(cov,'A8','SAMPLE CLIENT',{b:true});cell(cov,'A9','Finance Department');
+  [['B11','Date:','E11',{formula:`${q('TAX INVOICE')}!B17`}],['B12','Ref:','E12',null],['B18','Contract No:','E18',{formula:`${q('TAX INVOICE')}!B22`}],['B19','Contract Name:','E19',{formula:`${q('TAX INVOICE')}!B23`}],
+    ['B20','Invoice No:','E20',{formula:`${q('TAX INVOICE')}!B19`}],['B21','Invoice Type:','E21','Progress'],['B22','Duration From:','E22',{formula:`${q('TAX INVOICE')}!C21`}],['B23','To:','E23',{formula:`${q('TAX INVOICE')}!B21`}]]
+    .forEach(([a,l,b,v])=>{cell(cov,a,l,{b:true});cell(cov,b,v,{n:/E1[1]|E2[23]/.test(b)?'dd/mm/yyyy':undefined,f:v?undefined:tl})});
+  [['A25','Contract Value:',`${q('INVOICE SUMMARY')}!D${rTot}`],['A28','Total Amount Invoiced To Date:',`${q('INVOICE SUMMARY')}!M${rTot}`],['A29','Total Amount Invoiced Previously:',`${q('INVOICE SUMMARY')}!I${rTot}`],
+    ['A30','Remaining Contract Amount after this invoice:','E25-E28'],['A31','Gross Amount for this invoice:','E28-E29'],['A32','Retention and advance recovery:',`${q('TAX INVOICE')}!C${rG+1}-${q('TAX INVOICE')}!C${rG+2}+${q('TAX INVOICE')}!C${rG+3}`],
+    ['A33','Net Payable for this invoice:',`${q('TAX INVOICE')}!C${rG+4}`],['A34','Value Added Tax:',`${q('TAX INVOICE')}!C${rG+6}`],['A35','Total Amount for this invoice including VAT:',`${q('TAX INVOICE')}!C${rG+7}`]]
+    .forEach(([a,l,f])=>{cell(cov,a,l,{b:true});cell(cov,'E'+a.slice(1),{formula:f},{n:'#,##0.00'})});
+  cell(cov,'A38',"Contractor's Authorized Representative (SAMPLE)");
+  /* the forecast of invoices */
+  const fc=wb.addWorksheet('FORECAST');fc.columns=[10,18,22,10,14,18,14,14,16].map(w=>({width:w}));cell(fc,'A1','CLIENT: SAMPLE CLIENT',{b:true});cell(fc,'A9','FORECASTING OF INVOICES',{b:true});
+  [['A','Invoice No.'],['B','Invoice Ref. #'],['C','Invoice Short Description'],['E','Invoice Date'],['F','Gross Amount (G)'],['I','Status of Payment']].forEach(([c,t])=>cell(fc,c+'11',t,{b:true,f:hd,box:true}));
+  for(let k=1;k<=24;k++){const r=11+k;cell(fc,'A'+r,k,{box:true});cell(fc,'B'+r,`Invoice No. ${pad(k)}`,{box:true});cell(fc,'C'+r,'Progress invoice',{box:true});cell(fc,'F'+r,0,{box:true,n:'#,##0.00',f:tl});cell(fc,'I'+r,'Forecast',{box:true})}
+  cell(fc,'E37','Total',{b:true});cell(fc,'F37',{formula:'SUM(F12:F35)'},{b:true,n:'#,##0.00'});
+  wb.views=[{activeTab:0}];const out=await wb.xlsx.writeBuffer();return new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+/* ----- the Invoice formats tab ----- */
+const CIBF_ACT=[['fill','Fill'],['keep','Keep as it is'],['drop','Take out']],CIBF_MODE=[['rebuild','Rows from the Schedule-C'],['match','Matching rows only'],['off','Leave as it is']];
+const cibClients=()=>[...new Set((DB.projects||[]).map(p=>String(p.client||'').trim()).concat((DB.customers||[]).map(c=>String(c.name||'').trim())).filter(Boolean))].sort();
+function cibFmtHTML(pid,s){const ed=can('cib.setup'),L=cibFmts(),fx=s.fx&&s.fx.pid===pid?s.fx:null,p=projById(pid);
+  return `${CLOUD_ME&&DB.cibFmtMissing?'<div class="warn-box"><b>Invoice formats need the v53 database update.</b> Run schema-update-v53.sql (STAGE-47-SETUP).</div>':''}
+  <section class="panel"><h3 style="margin-top:0">Client invoice formats</h3>
+    <p class="small muted" style="margin:0 0 8px">A client's own invoice workbook (tax invoice, cover page, summary, a breakdown sheet per price component, forecast). ProTrack fills it from the invoice and keeps everything else as the client made it: logos, layout, formulas, hidden sheets and links. When a project's price schedule differs, the item rows of each breakdown sheet are rebuilt from its Schedule-C, and the format's own totals are checked against ProTrack's.</p>
+    ${L.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Format</th><th>Client</th><th>Workbook</th><th class="n">Sheets filled</th><th class="n">Breakdown tables</th><th class="n">Header cells</th><th>Updated</th><th></th></tr></thead><tbody>
+      ${L.map(F=>{const m=F.map||{};return `<tr><td>${esc(F.name)}${F.sample?'<span class="t2">SAMPLE layout, made by ProTrack</span>':''}</td><td>${esc(F.client||'Any client')}</td><td class="small">${esc(F.file||'')}${F.size?` · ${fmt(F.size/1024)} KB`:''}</td>
+        <td class="n">${m.sheets?m.sheets.filter(x=>x.act==='fill').length:'—'}</td><td class="n">${m.tables?m.tables.filter(t=>t.mode!=='off').length:'—'}</td><td class="n">${m.fields?m.fields.filter(f=>f.field!=='skip').length:'—'}</td><td class="small">${esc(F.upd_by||F.by||'')} · ${fmtDY(String(F.upd||F.at||'').slice(0,10))}</td>
+        <td class="n"><button class="btn sm" type="button" data-cibfdl="${F.id}">Download</button>${ed?` <button class="btn sm" type="button" data-cibfedit="${F.id}">Check the map</button> <button class="btn sm" type="button" data-cibfdel="${F.id}">Delete</button>`:''}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="muted">No client format yet: invoices are exported in the ProTrackAI layout.</p>'}
+    ${ed&&!fx?`<h4>Upload a client's invoice workbook</h4><p class="small muted" style="margin:0 0 6px">Use a certified invoice of the client as the sample (.xlsx, up to 25 MB). Its figures are not used: every figure comes from the invoice being exported.</p><input type="file" accept=".xlsx" data-cibfup> <span class="small muted">Read against ${esc(p?p.short:'')}'s Schedule-C.</span>`:''}<p class="err" id="cibFErr"></p></section>
+  ${fx?cibFmtEdit(fx):''}`}
+function cibFmtEdit(fx){const m=fx.map,cl=cibClients(),comp=[['*','All items'],...CIB_COMP],tbs=m.tables,sel=(k,opts,v)=>`<select data-cibfx="${k}">${opts.map(([a,b])=>`<option value="${esc(a)}" ${a===v?'selected':''}>${esc(b)}</option>`).join('')}</select>`;
+  const ck=m.checks||{};
+  return `<section class="panel"><h3 style="margin-top:0">${fx.id?'Check the map':'New format'}: ${esc(fx.file)}</h3>
+    <div class="fields"><label class="field">Name<input data-cibfx="name" maxlength="80" value="${esc(fx.name)}"></label><label class="field">Client<select data-cibfx="client"><option value="">Any client</option>${cl.map(c=>`<option ${c===fx.client?'selected':''}>${esc(c)}</option>`).join('')}</select></label></div>
+    ${ck.links||ck.charts?`<p class="small muted">${ck.links?`${cibPl(ck.links,'link','links')} to other workbooks: kept as they are; Excel asks to update them when the file opens. `:''}${ck.charts?`${cibPl(ck.charts,'chart','charts')}: kept.`:''}</p>`:''}
+    <h4>Sheets</h4><div class="scroll"><table class="tbl"><thead><tr><th>Sheet</th><th>Shown</th><th>Found</th><th>ProTrack</th></tr></thead><tbody>${m.sheets.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${x.state==='visible'?'Yes':'Hidden'}</td><td class="small">${esc({table:'Breakdown table',header:'Invoice header cells',forecast:'Forecast of invoices',other:'—'}[x.kind]||'—')}</td><td>${sel(`sheet|${i}|act`,CIBF_ACT,x.act)}</td></tr>`).join('')}</tbody></table></div>
+    <h4>Breakdown tables</h4>${tbs.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Sheet</th><th>Rows</th><th>Component</th><th>Rows filled</th><th>Columns ProTrack types</th></tr></thead><tbody>${tbs.map((t,i)=>`<tr><td>${esc(t.sheet)}</td><td class="small">${t.first}–${t.last}, ${cibPl(t.n,'item row','item rows')}</td>
+      <td>${sel(`table|${i}|comp`,comp,t.comp)}</td><td>${sel(`table|${i}|mode`,CIBF_MODE,t.mode)}</td>
+      <td class="small">${t.cols.filter(c=>!c.f).map(c=>`<b>${xlColS(c.c)}</b> ${esc(CIBF_RN[c.role]||c.role)}`).join(' · ')}<span class="t2">${cibPl(t.cols.filter(c=>c.f).length,'column is a formula','columns are formulas')} of the format, kept</span></td></tr>`).join('')}</tbody></table></div>`:'<p class="small muted">None found.</p>'}
+    <h4>Invoice header cells</h4>${m.fields.length?`<div class="scroll"><table class="tbl"><thead><tr><th>Cell</th><th>Label in the format</th><th>ProTrack fills</th></tr></thead><tbody>${m.fields.map((f,i)=>`<tr><td class="small">${esc(f.sheet)}!${esc(f.addr)}</td><td class="small">${esc(f.label)}</td><td>${sel(`field|${i}`,[...CIBF_FIELDS,['skip','Nothing']],f.field)}</td></tr>`).join('')}</tbody></table></div>`:'<p class="small muted">None found.</p>'}
+    ${m.ms.length||m.tnum.length||m.fc||(m.calc||[]).length?`<p class="small">${m.ms.length?`TCC and FAC: ${esc([...new Set(m.ms.map(x=>x.sheet+'!'+x.addr))].slice(0,8).join(', '))}. `:''}${m.tnum.length?`Invoice number inside a title: ${esc(m.tnum.map(x=>x.sheet+'!'+x.addr).join(', '))}. `:''}${m.fc?`Forecast: ${esc(m.fc.sheet)}, ${m.fc.rows.length} invoices. `:''}${(m.calc||[]).length?`Checked against ProTrack: ${esc(m.calc.map(x=>`${x.sheet}!${x.addr} (${CIBF_FIELDS.find(f=>f[0]===x.field)[1].toLowerCase()})`).join(', '))}.`:''}</p>`:''}
+    <div class="actions"><button class="btn primary" type="button" data-cibfsave>Save the format</button><button class="btn" type="button" data-cibfcancel>Cancel</button></div><p class="err" id="cibFxErr"></p></section>`}
+/* the export: the format offered on the invoice, and what the last export found */
+function cibXlsPick(pid,I,s){const L=cibFmtsFor(pid);if(!L.length)return `<button class="btn sm" type="button" data-cibxls="${I.id}">Excel invoice</button>`;const v=(s.xf||{})[pid]||L[0].id;
+  return `<select data-cibxf aria-label="Invoice format"><option value="std" ${v==='std'?'selected':''}>ProTrackAI layout</option>${L.map(F=>`<option value="${F.id}" ${F.id===v?'selected':''}>${esc(F.name)}</option>`).join('')}</select><button class="btn sm" type="button" data-cibxls="${I.id}">Excel invoice</button>`}
+function cibXRepHTML(s,I){const x=s.xrep;if(!x||x.inv!==I.id)return '';const R=x.rep,D=R.checks.filter(c=>c.sev==='diff'),W=R.checks.filter(c=>c.sev==='warn');
+  return `<div class="${D.length?'warn-box':'note'}"><b>Exported in “${esc(x.name)}”</b>${cibPl(R.rows,'item row','item rows')} filled, ${cibPl(R.fields,'header cell','header cells')}${R.rebuilt.length?`; rows rebuilt from the Schedule-C on ${esc(R.rebuilt.map(r=>`${r.sheet.trim()} (${r.from} → ${r.to})`).join(', '))}`:''}${R.dropped.length?`; ${esc(R.dropped.join(', '))} taken out`:''}. ${R.calc?`${fmt(R.calc.n)} formulas of the format worked out${R.calc.u?`, ${fmt(R.calc.u)} left for Excel`:''}.`:''}
+    ${D.length?`<ul class="small">${D.map(c=>`<li>${esc(c.msg)}</li>`).join('')}</ul>`:'<span class="t2">The format’s own totals agree with ProTrack’s.</span>'}${W.length?`<ul class="small">${W.map(c=>`<li>${esc(c.msg)}</li>`).join('')}</ul>`:''}</div>`}
+document.addEventListener('click',async e=>{const t=e.target.closest&&e.target.closest('[data-cibfdl],[data-cibfedit],[data-cibfdel],[data-cibfsave],[data-cibfcancel]');if(!t||!$('#view .cib'))return;
+  const s=cibUiOf(),pid=cibPid(),d=t.dataset,F=id=>cibFmts().find(f=>f.id===id);
+  if(d.cibfdl){const f=F(d.cibfdl);try{saveFile(f.sample?'SAMPLE client invoice format.xlsx':f.file,await cibFmtBlob(f))}catch(x){cibErr('cibFErr',x)}return}
+  if(d.cibfedit){const f=F(d.cibfedit);try{let map=f.map;if(!map||!map.tables){const buf=await (await cibFmtBlob(f)).arrayBuffer();map=cibfMapClean(cibfScan(await xlOpen(buf),cibAppr(pid)))}
+    s.fx={pid,id:f.id,file:f.file||f.name,name:f.name,client:f.client||'',map:JSON.parse(JSON.stringify(map))};render()}catch(x){cibErr('cibFErr',x)}return}
+  if(d.cibfdel){const f=F(d.cibfdel);if(!confirm(`Delete the format “${f.name}”? Invoices already exported keep their files.`))return;try{await cibFmtAct('fmt_del',{id:f.id});if(CLOUD_ME&&f.path)await SB.storage.from('cib-formats').remove([f.path]);toast('Format deleted');render()}catch(x){cibErr('cibFErr',x)}return}
+  if(d.cibfcancel!=null){s.fx=null;render();return}
+  if(d.cibfsave!=null){t.disabled=true;try{await cibFmtSave(s.fx);toast(s.fx.id?'Format saved':'Format kept');s.fx=null;render()}catch(x){t.disabled=false;cibErr('cibFxErr',x)}return}});
+document.addEventListener('change',async e=>{const t=e.target;if(!t.matches||!$('#view .cib'))return;const s=cibUiOf(),pid=cibPid();
+  if(t.matches('[data-cibfup]')){const f=t.files[0];t.value='';if(!f)return;try{toast('Reading the workbook…');s.fx=Object.assign({pid},await cibFmtRead(f,pid));render()}catch(x){cibErr('cibFErr',x)}return}
+  if(t.matches('[data-cibxf]')){s.xf=s.xf||{};s.xf[pid]=t.value;return}
+  if(t.matches('[data-cibfx]')&&s.fx){const k=t.dataset.cibfx.split('|'),m=s.fx.map;
+    if(k[0]==='name')s.fx.name=t.value;else if(k[0]==='client')s.fx.client=t.value;
+    else if(k[0]==='sheet')m.sheets[+k[1]].act=t.value;else if(k[0]==='table')m.tables[+k[1]][k[2]]=t.value;else if(k[0]==='field')m.fields[+k[1]].field=t.value;
+    if(k[0]!=='name')render()}});
+/* the Excel invoice in the chosen format (the ProTrackAI layout otherwise) */
+async function cibXls(pid,I){const s=cibUiOf(),L=cibFmtsFor(pid),v=L.length?((s.xf||{})[pid]||L[0].id):'std';
+  if(v==='std'){await cibExcel(pid,I);return}
+  const rep=await cibExportFmt(pid,I,v);s.xrep={inv:I.id,name:(cibFmts().find(f=>f.id===v)||{}).name||'',rep}}
+
+/* ----- demo: the SAMPLE format, kept for any client (its workbook is made the first time it is used) ----- */
+function seedV350(){if(CLOUD||DB.v350Seeded)return;DB.v350Seeded=true;const L=cibFmts();if(L.some(f=>f.sample))return;
+  L.push({id:'CF-SAMPLE-1',name:'Utility client layout (SAMPLE)',client:null,file:'SAMPLE client invoice format.xlsx',size:0,hash:null,map:null,sample:true,by:'ProTrackAI',at:addDays(ASOF,-20)+'T09:00:00',upd:addDays(ASOF,-20)+'T09:00:00',upd_by:'ProTrackAI',hist:[]})}
 
 /* ---------- milestones, EOT and OHTL key activities ---------- */
 const MTYPES=['Start','Intermediate','TCC','PAC','FAC'];
@@ -21642,7 +22162,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBcm336();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();seedV341();seedV345();seedV346();seedV348();seedV349();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBcm336();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();seedV341();seedV345();seedV346();seedV348();seedV349();seedV350();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=homeView();showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

@@ -48,6 +48,7 @@ The invoice is derived, never typed:
 | Review | Rules-based "Review invoice" | Built |
 | Language-model review | Server LLM | Planned: on hold for alfanar IT |
 | Output | Excel workbook: cover, summary, breakdown per component, retention, advance, forecast, SAP upload, exceptions, audit | Built |
+| Client formats (v3.50) | The client's own invoice workbook kept as a format and filled cell by cell; rows rebuilt from the Schedule-C; the format's own totals checked against ProTrack's | Built |
 | Cash flow | Issued invoices in the invoice register and cash pages; billing and collection forecast | Built |
 | Dashboards | Client invoice, Schedule-C health, invoice readiness, waiting for you, portfolio | Built |
 | Audit | Every change with who, when, before and after; append-only on the server | Built |
@@ -596,7 +597,7 @@ Re-run with the builder in place: `cash_inflow_demo.js` 28/28, `cashflow_dashboa
 1. **Language-model review** on the server, once approved, as a narrative beside the rules review.
 2. **Reading PDF invoices**: tables from certified invoice PDFs, with a side-by-side confirmation.
 3. **Variation orders and claims**: approved change orders become Schedule-C items or revisions automatically from the change order log; the change-order value goes on the cover.
-4. **Client-specific layouts**: a template library per client (SEC, NG, Saudi Energy) for cover, tax invoice (bilingual) and attachment checklist, chosen per project like client report formats.
+4. **Client-specific layouts**: built in v3.50 (section 19). Still to come: a format that also fills the attachment checklist and the SAP upload sheet of the client's workbook.
 5. **SAP integration**: post the SAP upload sheet through the approved interface; reconcile against SAP billing.
 6. **Quantity-based items**: items billed by measured quantity (EA, km) from the BOQ Engine or daily reports, beside lump-sum progress.
 7. **Earned-value cross-check**: compare invoice progress with internal progress and the cost report's EAC each month.
@@ -605,3 +606,31 @@ Re-run with the builder in place: `cash_inflow_demo.js` 28/28, `cashflow_dashboa
 10. **Portfolio analytics**: billing lag, rejection rate and certification cuts by client; days sales outstanding.
 11. **Mobile approvals**: review and approve on the phone layout with the review summary.
 12. **Per-project data loading** for very large portfolios (R2).
+
+---
+
+## 19. Client invoice formats (v3.50)
+
+**Purpose.** Each client wants its own invoice workbook: tax invoice (often bilingual), cover page, invoice summary, a breakdown sheet per price component, forecast, and hidden sheets of its own. A format is that workbook, kept once per client, and every invoice is exported into it.
+
+**Keeping a format** (Client Invoice Builder → Invoice formats, right `cib.setup`):
+1. Upload a certified invoice workbook of the client (.xlsx, at most 25 MB; .xlsm refused). Its figures are never used.
+2. ProTrack reads its layout (`cibfScan`):
+   - **breakdown tables**: the column holding item numbers (A.SS.3.1.1, X.1 …) and, for each column, its heading path (for example CERTIFIED PROGRESS › PREVIOUSLY › %) giving its role: progress or payment, previously / this period / to date, % / quantity / amount; contract unit, quantity, rate, amount, description. Columns that are formulas stay formulas. A table may run across page blocks (a signature block repeated per printed page).
+   - **component** of each table: from the items of the project's Schedule-C, else the sheet's name (GENERAL, ENGINEERING, MATERIAL, CONSTRUCTION, INSTALLATION, TESTING …);
+   - **header cells**: a label (Invoice No, Date of Invoice, Due Date, From / To, Contract No, Project Name, Contract Value, Type of Invoice, Contractor:, Client:, Retention, Advance recovery, VAT %) and its cell to the right or below; a formula there is the format's own figure and is not written; net payable, VAT and total with VAT as formulas are recorded to check;
+   - **TCC and FAC lines** under previously / this period headings; the **invoice number inside a title** (PAYMENT CERTIFICATE # 01); the **forecast list** (Invoice No. 01, 02 … with a gross amount and status).
+   - Hidden sheets and price lists are kept as they are unless chosen.
+3. The keeper checks the map: each sheet (fill, keep, take out), each table's component and rows (rebuilt from the Schedule-C, matching rows only, or left), each header cell's field. Saved with name and client (or any client).
+
+**Exporting** (an invoice → format → Excel invoice). `cibfFill` edits the workbook's XML directly (JSZip):
+- only the cells of the map change; logos, drawings, comments, links to other workbooks, styles, print settings, hidden sheets and every formula stay;
+- a table's item rows become the Schedule-C items of its component, in order: rows are inserted at the last item row (inside every total's range) or taken out from the end, as Excel does, with every reference in the workbook moved (formulas on any sheet, merged cells, print areas and names, conditional formats, drawings and comments); a reference into a removed row becomes #REF! and is counted;
+- progress % previously and this period, payment % or amounts where the format types them; TCC and FAC parts apart where the format has those lines;
+- then every formula is worked out (`xlCalc`: arithmetic, comparisons, ranges, SUM, ROUND, IF, IFERROR, MIN, MAX …) and its figure written, so the file shows the figures before Excel recalculates it (Excel recalculates on opening);
+- **checks**: each table's payment this period, the TCC and FAC amounts, and the format's own net payable, VAT and total against ProTrack's invoice. A difference (for example a format paying 80% on progress where the approved rules say 90%) is named; so are items missing from the format and rows set to zero.
+- The export is noted in the audit trail (`inv_export`).
+
+**Server** (schema-update-v53.sql): `cib_formats` (name, client, file path, size, hash, map, history), the private bucket `cib-formats` (fmt/<id>.xlsx, .xlsx only, 25 MB), `cib_fmt_act` (fmt_add after the file is stored, fmt_map, fmt_del; then the file may be removed), read by those who see billing figures. The browser fills the workbook; the server never runs it.
+
+**Verified** against a real client workbook of 21 sheets (structure only): the evaluator gives Excel's own figure for all 3,463 formulas; rows inserted and removed on MATERIAL and CONSTRUCTION keep the summary's links and leave no new error in Excel (the same 80 error cells as the client's file, from its external links); the format's material total equals ProTrack's.

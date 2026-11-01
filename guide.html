@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.49, November 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.50, November 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -316,7 +316,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.49</b>
+<div class="note" id="whatsnew"><b>New in version 3.50</b>
+    <b>Client invoices in the client's own format.</b> In <b>Client Invoice Builder → Invoice formats</b>, upload a certified invoice workbook of the client once. ProTrack reads its tax invoice, cover page, summary and breakdown sheets; check what it found and save it for that client. On an invoice, choose the format beside <b>Excel invoice</b>: ProTrack fills the client's workbook and keeps its logos, layout and formulas. When the project's price schedule has other items, the rows of each breakdown sheet are rebuilt from its Schedule-C. ProTrack then checks the workbook's own totals against the invoice and tells you about any difference.
+  </div>
+  <div class="note"><b>New in version 3.49</b>
     <b>Client invoices from the WBS and the Schedule C Invoicing weight.</b> The Client Invoice Builder reads the price schedule item number from the WBS field <b>Schedule C</b>: every activity takes it from its WBS or the nearest WBS above it (an activity code <b>Schedule C</b> still wins where used). Where activities carry the P6 resource <b>Schedule C Invoicing</b>, only those activities count for the item, each by its budgeted units: for a material, the inspection after delivery, not the PR, PO or manufacturing. Open an item in the mapping audit to see which activities count.
   </div>
   <div class="note"><b>New in version 3.48</b>
