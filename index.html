@@ -947,6 +947,24 @@ tr.boqsub td{background:rgba(127,127,127,.06)}
 @media (prefers-reduced-motion:reduce){.rk *,.rk *::before,.rk *::after,.rk-hero::after{animation:none!important;transition:none!important}}
 @media (max-width:760px){.rk-hero{grid-template-columns:1fr;padding:20px 16px}.rk-hero-r{order:-1}.rk-orb{width:150px;height:150px}.rk-orb img{width:100px;height:100px}.rk-askbar{flex-wrap:wrap}.rk-askbar select{max-width:none;flex:1}.rk-tabs{position:static}}
 .rk .t2{display:block;font-size:12px;color:var(--ink-2)}.rk-feed .t2{margin-top:1px}
+/* v3.48: Client Invoice Builder */
+.cib .ptab .rk-badge{margin-inline-start:4px}
+.cib-st{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);margin-inline-start:6px;white-space:nowrap}
+.cib-st-submitted,.cib-st-reviewed,.cib-st-milestone{background:var(--accent-soft);color:var(--accent)}.cib-st-approved,.cib-st-issued{background:var(--amber-soft);color:var(--amber)}
+.cib-st-certified,.cib-st-paid,.cib-st-mapped{background:var(--green-soft);color:var(--green)}.cib-st-cancelled,.cib-st-missing{background:var(--red-soft);color:var(--red)}.cib-st-superseded{opacity:.7}
+.cib-ready{display:flex;align-items:baseline;gap:8px;margin:4px 0 8px}.cib-ready b{font:600 34px/1 var(--cond)}.cib-ready span{color:var(--ink-2)}
+.cib-check,.cib-exc,.cib-ai{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.cib-check .ok{color:var(--green)}.cib-check .no{color:var(--ink-2)}
+.cib-exc li,.cib-ai li{padding:6px 10px;border-radius:6px;background:var(--surface-2)}.cib-exc li.block{background:var(--red-soft)}.cib-exc li.block b{color:var(--red)}.cib-exc li.warn b{color:var(--amber)}
+.cib-ai li>span{display:inline-block;min-width:62px;font-size:12px;font-weight:700}
+.cib-ai li.high>span{color:var(--red)}.cib-ai li.med>span{color:var(--amber)}.cib-ai li.ok>span{color:var(--green)}.cib-ai li.low>span,.cib-ai li.info>span{color:var(--ink-2)}
+.cib-steps-bar{display:flex;flex-wrap:wrap;gap:4px;list-style:none;padding:0;margin:8px 0}.cib-steps-bar li{font-size:12.5px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2)}
+.cib-steps-bar li.done{background:var(--green-soft);color:var(--green);border-color:transparent}.cib-steps-bar li.on{background:var(--accent);color:var(--surface);border-color:var(--accent);font-weight:600}
+.cib-edit,.cib-prev{border:1px solid var(--line);border-radius:8px;padding:12px;margin:8px 0;background:var(--surface-2)}
+.cib-steps>div{margin:6px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px}
+.cib-items tr.cib-head td{font-weight:600;background:var(--surface-2)}.cib tr.cib-flag td{background:var(--amber-soft)}
+.cib-tot{max-width:560px;margin-top:12px}.cib .grid2{margin-bottom:14px}.cib>section,.cib>.g{margin-bottom:14px}
+@media (max-width:760px){.cib .grid2{grid-template-columns:1fr}.cib-tot{max-width:none}}
 </style>
 </head>
 <body>
@@ -1539,7 +1557,7 @@ async function cloudLoadAll(quiet){
     const n=stashLocal(before);
     await cloudLoadActs();applyMaster();
     await Promise.all([cloudLoadDprs(),cloudLoadMatrix(),cloudLoadQtyJust()]);
-    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadCostPlans();await cloudLoadBrand();await cloudLoadMedia();await cloudLoadCrf();await cloudLoadRasa();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
+    await cloudLoadV22();await cloudLoadInvoices();await cloudLoadUpdates();await cloudLoadLifecycle();await cloudLoadRegister();await cloudLoadReleases();await cloudLoadRelSetup();await cloudLoadV23();await cloudLoadSched();await cloudLoadIssues();await cloudLoadDelays();await cloudLoadCashout();await cloudLoadRs();await cloudLoadKms();await cloudLoadBoq();await cloudLoadBcm();await cloudLoadWf();await cloudLoadDocs();await cloudLoadDocText();await cloudLoadGolive();await cloudLoadCfRates();await cloudLoadCostPlans();await cloudLoadBrand();await cloudLoadMedia();await cloudLoadCrf();await cloudLoadRasa();await cloudLoadCib();await cloudLoadRights();await cloudLoadMat();await cloudLoadXr();await cloudLoadMail();
     applyMaster();save();
     CLOUD_LOAD={ok:true,at:new Date(),err:null};
     if(n&&!quiet)toast(`${n} item${n>1?'s':''} entered in this browser before the server move ${n>1?'are':'is'} kept aside. ${state.role==='sa'?'Move them in Settings, System.':'Ask the super admin to move them.'}`);
@@ -5997,6 +6015,7 @@ async function schedGo(btn){
   const rows=schedRowsFor(S).map(({phase,...x})=>x);
   const r=await schedCommit({project_id:S.pid,data_date:S.dd,weightage:S.wt,file_name:S.file,file_hash:S.hash,weight_basis:S.wres==='__lab'?'Planned labour units':S.wres==='__dur'?'Planned duration':S.wres,rows,bl_src:(S.parsed||{}).blSrc||null});
   if(!r){btn.disabled=false;return err('Not saved: '+schedCommit.err)}
+  if(!r.duplicate)cibAfterSched(S.pid,S.parsed,S.file);
   state.sched=null;toast((r.duplicate?'This file was already loaded; nothing changed':`Updated schedule saved, data date ${fmtDY(r.data_date)}`)+mtAutoMsg(mr));if(!r.duplicate)epLateNotify(S.pid);render();
 }
 document.addEventListener('change',e=>{const t=e.target;if(!t.matches)return;
@@ -7007,14 +7026,20 @@ const RIGHTS=[
   ['rasa.teach','RASA: teach RASA: submit corrections, business rules and knowledge for unanswered questions','RASA',['exec','rm','pf','plan','costing','pm']],
   ['rasa.sync','RASA: refresh the knowledge RASA reads from the modules (of their projects)','RASA',['plan','costing']],
   ['rasa.review','RASA: review, approve, publish and roll back knowledge of their projects (knowledge reviewer; never their own)','RASA',[]],
-  ['rasa.company','RASA: approve company-wide knowledge and business rules (designated approver)','RASA',[]]];
+  ['rasa.company','RASA: approve company-wide knowledge and business rules (designated approver)','RASA',[]],
+  ['cib.setup','Client invoices: upload the Schedule-C, keep its header and invoicing rules, load the invoice history of a running project','Client invoices',['costing','plan']],
+  ['cib.map','Client invoices: keep the mapping of P6 activities to Schedule-C items and record the review of unmapped items','Client invoices',['plan']],
+  ['cib.prepare','Client invoices: prepare, recalculate and submit client invoices, keep their documents and issue approved ones','Client invoices',['costing','plan']],
+  ['cib.review','Client invoices: review submitted client invoices (never their own)','Client invoices',['pm']],
+  ['cib.approve','Client invoices: approve client invoices and Schedule-C revisions (commercial or division manager; never their own)','Client invoices',['rm']],
+  ['cib.certify','Client invoices: record the client\'s certificate and payment (finance)','Client invoices',['costing']]];
 /* what comes with a position, shown beside the right in the tables */
-const RIGHT_POS={'wf.record':'costing coordinator','rasa.review':'Head of Planning and Cost Control','rasa.company':'Head of Planning and Cost Control','bcm.review':'Head of Planning and Cost Control','bcm.master':'Head of Planning and Cost Control','bcm.approve':'Head of Planning and Cost Control','bcm.budget.approve':'Head of Planning and Cost Control','boq.review':'Head of Planning and Cost Control','boq.approve':'Head of Planning and Cost Control','cashout.keep':'Head of Planning and Cost Control; costing coordinator','visual.keep':'Head of Planning and Cost Control','delay.keep':'Head of Planning and Cost Control','materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
+const RIGHT_POS={'cib.approve':'Head of Planning and Cost Control','wf.record':'costing coordinator','rasa.review':'Head of Planning and Cost Control','rasa.company':'Head of Planning and Cost Control','bcm.review':'Head of Planning and Cost Control','bcm.master':'Head of Planning and Cost Control','bcm.approve':'Head of Planning and Cost Control','bcm.budget.approve':'Head of Planning and Cost Control','boq.review':'Head of Planning and Cost Control','boq.approve':'Head of Planning and Cost Control','cashout.keep':'Head of Planning and Cost Control; costing coordinator','visual.keep':'Head of Planning and Cost Control','delay.keep':'Head of Planning and Cost Control','materials.keep':'Head of Planning and Cost Control','report.internal.approve':'Head of Planning and Cost Control; regional report approver (their region)','report.cost.prepare':'costing coordinator',
   'report.cost.approve':'Head of Planning and Cost Control','logs.upload':'costing coordinator','issues.keep':'Head of Planning and Cost Control',
   'issues.review':'Head of Planning and Cost Control','docs.contract':'Head of Planning and Cost Control','docs.planning':'Head of Planning and Cost Control',
   'docs.cost':'Head of Planning and Cost Control','tender.register':'Head of Planning and Cost Control; costing coordinator','tender.noa':'costing coordinator'};
 const RIGHT_N=Object.fromEntries(RIGHTS.map(r=>[r[0],r[1]]));
-const SCREENS=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','cplan','mer','boq','rep','deck','perf','rasa'];
+const SCREENS=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cib','cfd','cash','cout','cplan','mer','boq','rep','deck','perf','rasa'];
 const RIGHT_ROLES=['exec','rm','pf','plan','costing','pm','sm','eng','foreman','ro'];
 const rightsDB=()=>DB.rights||(DB.rights={roles:[],role:{},user:{},screen:{},audit:[]});
 const appRoles=()=>rightsDB().roles||[];
@@ -7117,7 +7142,7 @@ function rightNoEx(k,u){if(u.role==='sa')return true;if(k==='money.view'&&u.role
   const ro=((rightsDB().role||{})[roleKeyOf(u)]||{})[k];if(ro!==undefined)return !!ro;return rightRoleDef(u.role,k)}
 /* the positions a person holds, for a right (used for "As the role" in the form) */
 function rightPosOf(k,u){const hd=isHead(u),co=isCoord(u),reg=(DB.relApprovers||[]).some(a=>a.user_id===u.id);
-  return {'report.internal.approve':hd||reg,'report.cost.prepare':co,'report.cost.approve':hd,'logs.upload':co,'issues.keep':hd,'issues.review':hd,'docs.contract':hd,'docs.planning':hd,'docs.cost':hd,'tender.register':hd||co,'tender.noa':co,'materials.keep':hd,'visual.keep':hd,'delay.keep':hd,'cashout.keep':hd||co}[k]||false}
+  return {'cib.approve':hd,'report.internal.approve':hd||reg,'report.cost.prepare':co,'report.cost.approve':hd,'logs.upload':co,'issues.keep':hd,'issues.review':hd,'docs.contract':hd,'docs.planning':hd,'docs.cost':hd,'tender.register':hd||co,'tender.noa':co,'materials.keep':hd,'visual.keep':hd,'delay.keep':hd,'cashout.keep':hd||co}[k]||false}
 document.addEventListener('change',async e=>{const t=e.target;if(!t.matches)return;
   if(t.matches('[data-rr]')){const [rk,k]=t.dataset.rr.split('|'),base=appRole(rk)?appRole(rk).base_role:rk,d=rightRoleDef(base,k);
     const r=await rightsSave({action:'role_right',role_key:rk,right_key:k,allow:t.checked===d&&!appRole(rk)?null:t.checked});if(r)toast('Saved');render();return}
@@ -8739,8 +8764,8 @@ const stamp=()=>{const d=new Date();return `${TODAY} ${pad(d.getHours())}:${pad(
 
 const ROLES={sa:'Super Admin',exec:'Executive Manager',rm:'Regional Manager',pf:'Portfolio Manager',plan:'Planning Engineer',costing:'Costing Engineer',pm:'Project Manager',sm:'Site Manager',eng:'Site Engineer',foreman:'Foreman',ro:'Read-only'};
 const T={
-  en:{rasa:'RASA Intelligence',cplan:'Cost plan',mer:'MER – Monthly Executive Report',wfr:'Budget & change requests',bcm:'Budget & Cost Management',boq:'BOQ Engine',rs:'Reporting status',cout:'Cash-out forecast',cfd:'Cashflow Dashboard',dly:'Delay events register',pv:'Project Visual',mmcs:'Master Manpower Costing Sheet',po:'Subcontract purchase orders',inv:'Invoice register',cash:'Cash-inflow forecast',mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'E&P progress',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
-  ar:{rasa:'ذكاء راسا',cplan:'خطة التكاليف',mer:'التقرير التنفيذي الشهري',wfr:'طلبات الميزانية والتغيير',bcm:'إدارة الميزانية والتكاليف',boq:'محرك جداول الكميات',rs:'حالة إصدار التقارير',cout:'توقعات التدفقات النقدية الصادرة',cfd:'لوحة التدفقات النقدية',dly:'سجل أحداث التأخير',pv:'العرض المرئي للمشروع',mmcs:'ورقة تكلفة القوى العاملة الرئيسية',po:'أوامر شراء المقاولين من الباطن',inv:'سجل الفواتير',cash:'توقعات التدفقات النقدية الواردة',mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'تقدم الهندسة والمشتريات',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
+  en:{cib:'Client Invoice Builder',rasa:'RASA Intelligence',cplan:'Cost plan',mer:'MER – Monthly Executive Report',wfr:'Budget & change requests',bcm:'Budget & Cost Management',boq:'BOQ Engine',rs:'Reporting status',cout:'Cash-out forecast',cfd:'Cashflow Dashboard',dly:'Delay events register',pv:'Project Visual',mmcs:'Master Manpower Costing Sheet',po:'Subcontract purchase orders',inv:'Invoice register',cash:'Cash-inflow forecast',mat:'Material tracking',docs:'Project document rack',iss:'Issue register',xr:'Executive report',rel:'Releases',logs:'Change orders and claims',tender:'Tender register',act:'Actions',pdash:'Planning dashboard',cdash:'Cost dashboard',imp:'Import centre',proj:'Project overview',dash:'Dashboard',dpr:'Daily reports',new:'New report',eva:'Earned value',perf:'Performance',ai:'RASA',exec:'Executive summary',upd:'E&P progress',base:'Baselines',deck:'Presentation',rep:'Reports',admin:'Settings',all:'Whole portfolio',mine:'All my projects',roles:ROLES},
+  ar:{cib:'منشئ فواتير العميل',rasa:'ذكاء راسا',cplan:'خطة التكاليف',mer:'التقرير التنفيذي الشهري',wfr:'طلبات الميزانية والتغيير',bcm:'إدارة الميزانية والتكاليف',boq:'محرك جداول الكميات',rs:'حالة إصدار التقارير',cout:'توقعات التدفقات النقدية الصادرة',cfd:'لوحة التدفقات النقدية',dly:'سجل أحداث التأخير',pv:'العرض المرئي للمشروع',mmcs:'ورقة تكلفة القوى العاملة الرئيسية',po:'أوامر شراء المقاولين من الباطن',inv:'سجل الفواتير',cash:'توقعات التدفقات النقدية الواردة',mat:'تتبع المواد',docs:'رف مستندات المشروع',iss:'سجل المشكلات',xr:'التقرير التنفيذي',rel:'الإصدارات',logs:'أوامر التغيير والمطالبات',tender:'سجل المناقصات',act:'الإجراءات والموافقات',pdash:'لوحة التخطيط',cdash:'لوحة التحكم في التكاليف',imp:'مركز الاستيراد',proj:'نظرة عامة على المشروع',dash:'لوحة المعلومات',dpr:'التقارير اليومية',new:'تقرير جديد',eva:'القيمة المكتسبة',perf:'الأداء',ai:'RASA',exec:'الملخص التنفيذي',upd:'تقدم الهندسة والمشتريات',base:'خطوط الأساس',deck:'عرض تقديمي',rep:'التقارير',admin:'الإعدادات',all:'كامل المحفظة',mine:'جميع مشاريعي',roles:{sa:'مدير النظام',exec:'المدير التنفيذي',rm:'المدير الإقليمي',pf:'مدير المحفظة',plan:'مهندس التخطيط',costing:'مهندس التكاليف',pm:'مدير المشروع',eng:'مهندس الموقع',foreman:'رئيس العمال',ro:'عرض فقط'}}
 };
 const ICONS={menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',bcm:'<path d="M4 4h6v5H4zM14 4h6v5h-6zM14 15h6v5h-6z"/><path d="M7 9v8.5h7M17 9v6"/>',
   xr:'<path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 4-5"/>',rel:'<path d="M12 3l8 4v6c0 4-3.5 7-8 8-4.5-1-8-4-8-8V7z"/><path d="M9 12l2 2 4-4"/>',logs:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>',
@@ -8777,7 +8802,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.47';
+const APP_VERSION='3.48';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -8805,7 +8830,7 @@ const DOMAINS=[
     {v:'dly',label:'Delay events register'},{v:'proj',sec:'actions',label:'Extension of time'},{v:'logs',sec:'vo',label:'Change order and claim log'}]},
   {k:'invoices',label:'Invoices & Cash Flow',ic:'cash',items:[
     {v:'rep',rep:'invoice',label:'Invoiceable value'},{v:'rep',rep:'cash',label:'Invoicing and collection'},
-    {v:'inv',label:'Invoice register'},{v:'cfd',label:'Cashflow Dashboard'},{v:'cash',label:'Cash-inflow forecast'},{v:'cout',label:'Cash-out forecast'}]},
+    {v:'inv',label:'Invoice register'},{v:'cfd',label:'Cashflow Dashboard'},{v:'cib',tab:'dash',label:'Client Invoice Builder'},{v:'cib',tab:'map',label:'Schedule-C mapping audit'},{v:'cib',tab:'inv',label:'Client invoices'},{v:'cash',label:'Cash-inflow forecast'},{v:'cout',label:'Cash-out forecast'}]},
   {k:'boq',label:'BOQ Engine',ic:'boq',items:[['dash','BOQ Engine Dashboard'],['setup','Project & WBS Setup'],['reg','Drawing Register'],['upload','Drawing Upload & Classification'],['measure','Drawing Review & Measurement'],
     ['qty','Quantity Calculation Register'],['boq','Estimated BOQ'],['spec','Specifications & Assumptions'],['rev','Revision Comparison'],['appr','Review & Approval Workflow'],['rep','Reports & Excel Export'],['cfg','Settings & Audit History']].map(([sec,label])=>({v:'boq',sec,label}))},
   {k:'reports',label:'Reports & Dashboards',ic:'rep',items:[
@@ -8832,11 +8857,12 @@ function navItemOk(it,views){
 function navActiveKey(views){
   const live=[];DOMAINS.forEach(d=>d.items.forEach((it,i)=>{if(!it.plan&&it.v&&navItemOk(it,views))live.push({key:`${d.k}:${i}`,it})}));
   const here=live.filter(x=>x.it.v===state.view);if(!here.length)return null;
-  const kept=state.view!=='boq'&&state.view!=='bcm'&&here.find(x=>x.key===state.navKey);if(kept)return kept.key;
+  const kept=state.view!=='boq'&&state.view!=='bcm'&&state.view!=='cib'&&here.find(x=>x.key===state.navKey);if(kept)return kept.key;
   if(state.view==='rep'){const r=here.find(x=>x.it.rep&&x.it.rep===state.report)||here.find(x=>!x.it.rep);if(r)return r.key}
   if(state.view==='boq'){const r=here.find(x=>x.it.sec===((state.boqUi||{}).sec||'dash'));if(r)return r.key}
   if(state.view==='bcm'){const r=here.find(x=>x.it.sec===((state.bcmUi||{}).sec||'ov'));if(r)return r.key}
   if(state.view==='rasa'){const r=here.find(x=>x.it.tab===(state.rkTab||(state.rk||{}).tab||'ov'));if(r)return r.key}
+  if(state.view==='cib'){const r=here.find(x=>x.it.tab===((state.cib||{}).tab||'dash'));if(r)return r.key}
   return (here.find(x=>!x.it.sec&&!x.it.rep&&!x.it.tab)||here[0]).key;
 }
 function navHTML(views){
@@ -8869,7 +8895,7 @@ document.addEventListener('click',e=>{
   if(g){const k=g.dataset.navgrp;state.navOpen=state.navOpen||{};state.navOpen[k]=g.getAttribute('aria-expanded')!=='true';
     g.setAttribute('aria-expanded',state.navOpen[k]);const sub=g.nextElementSibling;if(sub)sub.hidden=!state.navOpen[k];e.stopPropagation();return}
   const t=e.target.closest('#nav [data-navkey]');
-  if(t){state.navKey=t.dataset.navkey;if(t.dataset.navrep)state.report=t.dataset.navrep;if(t.dataset.navtab){if(t.dataset.go==='rasa')state.rkTab=t.dataset.navtab;else state.adminTab=t.dataset.navtab}state.navSec=t.dataset.navsec||null;
+  if(t){state.navKey=t.dataset.navkey;if(t.dataset.navrep)state.report=t.dataset.navrep;if(t.dataset.navtab){if(t.dataset.go==='rasa')state.rkTab=t.dataset.navtab;else if(t.dataset.go==='cib'){state.cib=state.cib||{};state.cib.tab=t.dataset.navtab;state.cib.inv=null}else state.adminTab=t.dataset.navtab}state.navSec=t.dataset.navsec||null;
     if(t.dataset.go===state.view&&t.dataset.go!=='pv'&&t.dataset.go!=='boq'&&t.dataset.go!=='bcm'&&!t.dataset.navrep&&!t.dataset.navtab&&state.navSec){const s=state.navSec;state.navSec=null;e.stopPropagation();renderNav();navScroll(s)}}
 },true);
 
@@ -9080,16 +9106,16 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- shell ---------- */
-const NAV_ALL=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cfd','cash','cout','cplan','mer','boq','rep','deck','perf','rasa','admin'];
+const NAV_ALL=['xr','rs','exec','pv','proj','tender','iss','docs','act','rel','logs','dly','mat','po','dash','dpr','new','pdash','base','imp','cdash','eva','mmcs','bcm','wfr','inv','cib','cfd','cash','cout','cplan','mer','boq','rep','deck','perf','rasa','admin'];
 let NAV_VIEWS=[];
 /* the screens a person sees under today's rules (v3.6), for their role and rights */
-function navDefault(v){if(v==='rasa')return true;if(v==='mat'&&!ROLE_VIEWS[state.role])return canMatView();return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='boq'||PLAN_ROLES.includes(state.role))&&(v!=='bcm'||can('money.view'))&&(v!=='wfr'||can('money.view'))&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='po'||canCost())&&(v!=='mmcs'||canCost()||canBaseline())&&(v!=='pv'||canPvView())&&(v!=='inv'||canCost()||canBaseline())&&(v!=='cash'||canCashView())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())&&(v!=='dly'||canDlyView())&&(v!=='cout'||canCoView())&&(v!=='cfd'||canCfdView())&&(v!=='rs'||canRsView())&&(v!=='cplan'||canCpView())&&(v!=='mer'||canCpView())}
+function navDefault(v){if(v==='rasa')return true;if(v==='cib')return can('money.view')&&state.role!=='foreman'&&!ROLE_VIEWS[state.role];if(v==='mat'&&!ROLE_VIEWS[state.role])return canMatView();return ROLE_VIEWS[state.role]?ROLE_VIEWS[state.role].includes(v)&&(v!=='new'||canCreate()):(v!=='new'||canCreate())&&(v!=='admin'||state.role==='sa')&&(v!=='boq'||PLAN_ROLES.includes(state.role))&&(v!=='bcm'||can('money.view'))&&(v!=='wfr'||can('money.view'))&&(v!=='rep'||state.role!=='foreman')&&(v!=='deck'||!['foreman','ro'].includes(state.role))&&(v!=='upd'||canUpdate())&&(v!=='base'||canBaseline()||canCost())&&(v!=='po'||canCost())&&(v!=='mmcs'||canCost()||canBaseline())&&(v!=='pv'||canPvView())&&(v!=='inv'||canCost()||canBaseline())&&(v!=='cash'||canCashView())&&(v!=='exec'||canExec())&&(v!=='imp'||canImpView())&&(v!=='pdash'||canPlanDash())&&(v!=='cdash'||canCostDash())&&(v!=='act'||state.role!=='ro')&&(v!=='tender'||canTenderView())&&(v!=='iss'||canIssView())&&(v!=='docs'||canDocsView())&&(v!=='xr'||canXr())&&(v!=='rel'||canRelView())&&(v!=='logs'||canLogsView())&&(v!=='dly'||canDlyView())&&(v!=='cout'||canCoView())&&(v!=='cfd'||canCfdView())&&(v!=='rs'||canRsView())&&(v!=='cplan'||canCpView())&&(v!=='mer'||canCpView())}
 /* v3.7: the super admin may show or hide a screen for a role; Administration stays with super admins */
 function navOn(v){if(v==='admin')return state.role==='sa';const o=screenOv(v);return (o!==undefined?o:navDefault(v))&&(v!=='new'||canCreate())}
 function renderNav(){
   const L=T[state.lang];const views=NAV_ALL.filter(navOn);NAV_VIEWS=views;
   const b=v=>`<button type="button" data-go="${v}" ${state.view===v?'aria-current="page"':''}>${icon(v)}<span>${L[v]}</span></button>`;
-  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=`<button type="button" data-mnav aria-label="Open the full menu">${icon('menu')}<span>Menu</span></button>`+views.filter(v=>!['wfr','bcm','boq','pv','mat','po','inv','mmcs','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','dly','cout','cfd','rs','xr','rasa'].includes(v)).map(b).join('');
+  $('#nav').innerHTML=navHTML(views);{const sv=$('#sideVer');if(sv)sv.innerHTML=`<i></i>ProTrackAI v${APP_VERSION} · ${DATE_MODE==='live'?'live date':'demo date '+fmtDY(TODAY)}`}$('#bottom').innerHTML=`<button type="button" data-mnav aria-label="Open the full menu">${icon('menu')}<span>Menu</span></button>`+views.filter(v=>!['wfr','bcm','boq','pv','mat','po','inv','mmcs','proj','tender','iss','docs','imp','pdash','cdash','act','rel','logs','dly','cout','cfd','rs','xr','rasa','cib'].includes(v)).map(b).join('');
   $('#pageTitle').textContent=state.view==='logs'&&(state.navSec==='supp'||(!state.navSec&&state.logTab==='supp'))?'Budget supplements':L[state.view];
   const acc=new Set(accessIds()),regs=DB.master.regions.filter(r=>PROJECTS.some(p=>p.region===r.id&&acc.has(p.id))),multi=regs.length>1;
   $('#scope').innerHTML=`<option value="ALL">${multi?L.all:L.mine}</option>`+regs.map(r=>{const ps=PROJECTS.filter(p=>p.region===r.id&&acc.has(p.id)),rm=userById(r.manager);return `<optgroup label="${esc(r.name)} Region${rm?', '+esc(rm.name):''}">${multi?`<option value="R:${r.id}">All ${esc(r.name)} projects</option>`:''}${ps.map(p=>`<option value="${p.id}">${esc(p.short)}</option>`).join('')}</optgroup>`}).join('');
@@ -9117,7 +9143,7 @@ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 function render(){
   killCharts();SCOPE=scopeIds();renderNav();if(state.view==='ai')state.view='dash';
   if(screenOv(state.view)===false){state.view=NAV_VIEWS.find(v=>v!==state.view)||'dash';renderNav()}   /* v3.7: a hidden screen sends the person to an allowed one */
-  ({wfr:renderWfr,bcm:renderBcm,boq:renderBoq,rs:renderRs,cout:renderCout,cfd:renderCfd,cplan:renderCplan,mer:renderMer,rasa:renderRasa,dly:renderDly,pv:renderPv,mmcs:renderMmcs,po:renderPo,inv:renderInv,cash:renderCash,mat:renderMat,xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpdMoved,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
+  ({cib:renderCib,wfr:renderWfr,bcm:renderBcm,boq:renderBoq,rs:renderRs,cout:renderCout,cfd:renderCfd,cplan:renderCplan,mer:renderMer,rasa:renderRasa,dly:renderDly,pv:renderPv,mmcs:renderMmcs,po:renderPo,inv:renderInv,cash:renderCash,mat:renderMat,xr:renderXr,rel:renderRel,logs:renderLogs,tender:renderTender,iss:renderIss,docs:renderDocs,act:renderAct,pdash:renderPdash,cdash:renderCdash,imp:renderImp,exec:renderExec,proj:renderProj,dash:renderDash,dpr:renderDpr,new:renderForm,upd:renderUpdMoved,base:renderBaseline,deck:renderDeck,eva:renderEva,rep:renderReports,perf:renderPerf,admin:renderAdmin})[state.view]();
   const cb=cloudBanner();if(cb)$('#view').insertAdjacentHTML('afterbegin',cb);
   if(!$('#aiPanel').hidden)renderChat();
   if(/^#dpr=/.test(location.hash||'')&&$('#auth').hidden)setTimeout(checkDeepLink,0);
@@ -11690,6 +11716,716 @@ async function cloudLoadRasa(){if(!CLOUD_ME)return;try{await rpc('rasa_features'
     DB.rk=R;DB.rkMissing=false}catch(e){DB.rkMissing=srvMsg(e);DB.rk=DB.rk&&!CLOUD_ME?DB.rk:{}}}
 ICONS.rasa=ICONS.rasa||ICONS.ai;
 
+/* ---------- v3.48: Client Invoice Builder (Invoices & Cash Flow → Client Invoice Builder) ----------
+   Builds the monthly client invoice of a lump-sum EPC project from the approved contractual price schedule (Schedule-C),
+   the progress of the latest updated P6 schedule and the contract's invoicing rules, with the previous certified
+   invoice (or the latest client invoice loaded for a running project) as the starting point.
+   - Schedule-C: uploaded as XLSX, XLS or CSV; each revision is approved before invoices use it. Items keep their number,
+     parent, component (General, Engineering, Equipment & materials, Construction, Installation, Testing & commissioning,
+     Close-out), quantity, rate, value, invoice limit and rule. "Not applicable" and "Included in item …" rows carry no value.
+   - Mapping: the P6 activity code "Schedule C" holds the item number of each activity; it is read from the XER when an
+     updated schedule is loaded, or here. An item with value and no activity is Missing until it is mapped or its
+     review is recorded; no invoice is submitted while one is Missing.
+   - Rules: 1 percentage of progress (cap, release at TCC and FAC), 2 split (a share on progress, the balance at FAC),
+     3 payable at TCC, 4 payable at FAC, 5 engineering phase billing (steps with their own % and P6 activity).
+     Defaults come from the project's payment terms (Settings → Projects and terms), never from a sample file.
+   - Progress: the weighted % complete of the mapped activities in the updated schedule (activity weight = the
+     schedule's client weight), never a typed percentage; a typed % is allowed only for a reviewed, unmapped item, with
+     its reason, and is shown as such everywhere.
+   - Invoice: previous, this period and cumulative per item; retention, its release at TCC and FAC, advance recovery,
+     VAT; exceptions; a rules-based review ("Review invoice"); Draft → Submitted → Reviewed → Approved → Issued →
+     Certified → Paid (Returned to Draft, Cancelled). Nobody reviews or approves an invoice they prepared.
+   - An issued invoice joins the invoice register as a progress invoice (submitted, certified, collected), so the cash
+     pages, the cost report and the client report use it.
+   The server (schema-update-v51.sql: cib_act, pt_cib_prog, pt_cib_pay) keeps the same records and checks every write
+   again: the right and the project, the revision, the mapping, the progress from the updated schedule's rows, the
+   rules, the previous certified figures, the arithmetic and every state change. */
+const CIB_COMP=[['GEN','General'],['ENG','Engineering & design'],['MAT','Equipment & materials'],['CON','Construction'],['INS','Installation'],['TC','Testing & commissioning'],['CLO','Close-out'],['OTH','Other items']];
+const CIB_CN=Object.fromEntries(CIB_COMP);
+const CIB_RULES=[['pct','1. Percentage of progress'],['split','2. Split: on progress, balance at FAC'],['tcc','3. Payable at TCC'],['fac','4. Payable at FAC'],['phase','5. Engineering phase billing']];
+const CIB_RN=Object.fromEntries(CIB_RULES);
+const CIB_OPEN=['Submitted','Reviewed','Approved','Issued'];
+const CIB_DONE=['Certified','Paid'];
+const CIB_DOCS=[['appr','Payment approval, summary and forecast',1],['sum','Invoice summary and Schedule-C breakdown',1],['mat','Material supporting documents (delivery and inspection certificates)',0],['prog','Approved progress reports',1],
+  ['spare','Spare parts and special tools handover',0],['train','Training certificates',0],['cont','Contractor documents and certificates (Zakat, VAT, GOSI, salary)',1],['ins','Valid project insurance',1],['cert','Completion certificates (TCC, PAC, FAC, time extension)',0]];
+const CIB_TABS=[['dash','Dashboard'],['sch','Schedule-C'],['map','Mapping audit'],['inv','Client invoices'],['fc','Forecast'],['aud','Audit trail']];
+const cibR2=x=>Math.round((+x||0)*100)/100;
+const cibNo=s=>String(s??'').replace(/\s+/g,'').replace(/[‐-―]/g,'-').toUpperCase();
+const cibNow=()=>new Date().toISOString();
+const cibPl=(n,a,b)=>`${fmt(n)} ${n===1?a:b}`;
+const cibMonL=m=>new Date(Date.UTC(+m.slice(0,4),+m.slice(5,7)-1,1)).toLocaleDateString('en-GB',{month:'long',year:'numeric',timeZone:'UTC'});
+const cibUiOf=()=>state.cib||(state.cib={tab:'dash'});
+function cibDB(){if(CLOUD_ME&&DB.cibSrv)return DB.cibSrv;const C=DB.cib||(DB.cib={});['sch','inv','audit'].forEach(k=>{if(!Array.isArray(C[k]))C[k]=[]});['map','rev'].forEach(k=>{if(!C[k]||typeof C[k]!=='object')C[k]={}});return C}
+const cibCan=(k,pid)=>can(k)&&(!pid||accessIds().includes(pid));
+const cibSees=pid=>accessIds().includes(pid)&&can('money.view')&&state.role!=='foreman';
+const cibProjects=()=>PROJECTS.filter(p=>cibSees(p.id));
+const cibSchOf=pid=>cibDB().sch.filter(s=>s.pid===pid).sort((a,b)=>b.rev-a.rev);
+const cibAppr=pid=>cibSchOf(pid).find(s=>s.st==='Approved')||null;
+const cibCur=pid=>cibSchOf(pid).find(s=>s.st!=='Superseded')||null;
+const cibInvOf=pid=>cibDB().inv.filter(x=>x.pid===pid).sort((a,b)=>b.seq-a.seq);
+const cibLastCert=(pid,seq)=>cibInvOf(pid).find(x=>CIB_DONE.includes(x.st)&&(seq==null||x.seq<seq))||null;
+const cibMapOf=pid=>cibDB().map[pid]||{};
+const cibRevOf=pid=>cibDB().rev[pid]||{};
+const cibBill=S=>(S&&S.items||[]).filter(i=>i.leaf&&i.st==='Active'&&+i.value>0);
+function cibLog(pid,act,ref,before,after,note){const C=cibDB();C.audit.unshift({id:'CA'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),pid,at:cibNow(),by:me().name,by_id:me().id,act,ref:ref||null,before:before??null,after:after??null,note:note||null});if(C.audit.length>3000)C.audit.length=3000}
+
+/* ----- the rules: defaults from the project's payment terms; a component's rule, an item's own rule ----- */
+function cibDefRules(p){const B=billOf(p),ph=k=>{const c=fixPhase(B.phases[k]),r={t:'pct',cap:+c.cap||0,tcc:0,fac:0};
+    [[c.rel1,c.pct1],[c.rel2,c.pct2]].forEach(([m,q])=>{if(m&&+q>0){if(m==='FAC')r.fac+=+q;else r.tcc+=+q}});return r};
+  return {GEN:ph('CON'),ENG:ph('ENG'),MAT:ph('PRC'),CON:ph('CON'),INS:ph('CON'),TC:ph('TC'),CLO:ph('CON'),OTH:ph('CON')}}
+const cibRule=(S,i)=>Object.assign({t:'pct',cap:100,tcc:0,fac:0},(S.rules||{})[i.comp]||{},i.rule||{});
+function cibRuleErr(r){const n=k=>+r[k]||0;if(!CIB_RN[r.t])return 'Unknown rule';
+  if(['pct','phase'].includes(r.t)){if([n('cap'),n('tcc'),n('fac')].some(x=>x<0||x>100))return 'Percentages are between 0 and 100';if(Math.abs(n('cap')+n('tcc')+n('fac')-100)>0.001)return `On progress, at TCC and at FAC must add up to 100% (now ${r2(n('cap')+n('tcc')+n('fac'))}%)`}
+  if(r.t==='split'&&(n('first')<=0||n('first')>=100))return 'The share on progress is more than 0% and less than 100%';
+  if(r.t==='phase'){const st=r.steps||[];if(!st.length)return 'Add the phase steps';if(st.some(s=>!String(s.n||'').trim()||!String(s.act||'').trim()))return 'Each step needs a name and its P6 activity';
+    const s=st.reduce((t,x)=>t+(+x.pct||0),0);if(Math.abs(s-100)>0.001)return `The steps must add up to 100% (now ${r2(s)}%)`}
+  return null}
+const cibRuleTxt=r=>r.t==='pct'?`${r.cap}% on progress${+r.tcc?`, ${r.tcc}% at TCC`:''}${+r.fac?`, ${r.fac}% at FAC`:''}`:r.t==='split'?`${r.first}% on progress, ${r2(100-(+r.first||0))}% at FAC`:r.t==='tcc'?'100% at TCC':r.t==='fac'?'100% at FAC'
+  :`Phases: ${(r.steps||[]).map(s=>`${s.n} ${s.pct}%`).join(', ')}; ${r.cap}% on progress${+r.tcc?`, ${r.tcc}% at TCC`:''}${+r.fac?`, ${r.fac}% at FAC`:''}`;
+/* the cumulative amount payable of an item worth v at progress p (0..1), TCC and FAC achieved or not; the server's pt_cib_pay is the same */
+function cibPay(r,v,p,tcc,fac){v=+v||0;p=clamp(+p||0,0,1);
+  if(r.t==='tcc')return tcc?v:0;if(r.t==='fac')return fac?v:0;
+  if(r.t==='split'){const f=(+r.first||0)/100;return v*p*f+(fac?v*(1-f):0)}
+  return v*p*(+r.cap||0)/100+(tcc?v*(+r.tcc||0)/100:0)+(fac?v*(+r.fac||0)/100:0)}
+const cibMs=(p,to)=>{const t=msDone(p,'TCC'),f=msDone(p,'FAC');return {tcc:!!(t&&t<=to),fac:!!(f&&f<=to),tccD:t||null,facD:f||null}};
+
+/* ----- progress: the updated schedule in force at the period's end, and the activities mapped to each item ----- */
+const cibSU=(pid,to)=>schedUps(pid).find(u=>u.data_date<=to)||null;
+function cibCtx(pid,su,to){const U=su?(DB.schedUpdates||[]).find(u=>u.id===su):cibSU(pid,to),rows=U?(DB.schedRows||{})[U.id]||[]:[],M=cibMapOf(pid),byItem={},byId={};
+  rows.forEach(r=>{byId[r.id]=r;const m=M[r.id];if(m&&m.item)(byItem[m.item]=byItem[m.item]||[]).push(r)});
+  return {U,rows,byItem,byId,to,M}}
+function cibProg(pid,S,i,X){const r=cibRule(S,i),rv=cibRevOf(pid)[i.no];
+  if(r.t==='tcc'||r.t==='fac')return {p:0,src:'ms',n:0};
+  if(r.t==='phase'){let p=0,n=0;(r.steps||[]).forEach(s=>{const a=X.byId[String(s.act).trim()];if(a&&(+a.pct>=100||(a.af&&a.af<=X.to))){p+=(+s.pct||0)/100;n++}});return {p:clamp(p,0,1),src:'steps',n}}
+  const A=X.byItem[i.no]||[];
+  if(A.length){let w=0,s=0;A.forEach(a=>{const x=+a.w>0?+a.w:0;w+=x;s+=x*(+a.pct||0)});return {p:clamp(w>0?s/w/100:A.reduce((t,a)=>t+(+a.pct||0),0)/A.length/100,0,1),src:'p6',n:A.length}}
+  if(rv&&rv.d==='manual')return {p:clamp((+rv.pct||0)/100,0,1),src:'manual',n:0,note:rv.note};
+  if(rv&&rv.d==='zero')return {p:0,src:'zero',n:0,note:rv.note};
+  return {p:0,src:'none',n:0}}
+/* the mapping audit of a revision: every billable item and its state */
+function cibAudit(pid,S,X){S=S||cibCur(pid);if(!S)return null;X=X||cibCtx(pid,null,ASOF);const rv=cibRevOf(pid),items=cibBill(S),known=new Set((S.items||[]).map(i=>i.no));
+  const rows=items.map(i=>{const r=cibRule(S,i),A=X.byItem[i.no]||[];let st;
+    if(r.t==='tcc'||r.t==='fac')st='Milestone';else if(r.t==='phase')st=(r.steps||[]).every(s=>X.byId[String(s.act).trim()])?'Mapped':'Missing';else if(A.length)st='Mapped';else if(rv[i.no])st='Reviewed';else st='Missing';
+    return {i,st,n:A.length,rule:r}});
+  const unknown=X.rows.filter(r=>X.M[r.id]&&X.M[r.id].item&&!known.has(X.M[r.id].item)),gone=Object.keys(X.M).filter(a=>X.M[a].item&&!X.byId[a]);
+  const unmappedActs=X.rows.filter(r=>!r.ms&&+r.w>0&&!(X.M[r.id]&&X.M[r.id].item));
+  const val=k=>rows.filter(x=>k(x)).reduce((t,x)=>t+(+x.i.value||0),0),tot=val(()=>true),miss=rows.filter(x=>x.st==='Missing'),missV=val(x=>x.st==='Missing'),manV=val(x=>x.st==='Reviewed'&&(rv[x.i.no]||{}).d==='manual');
+  const wAll=X.rows.reduce((t,r)=>t+(+r.w>0?+r.w:0),0),wUn=unmappedActs.reduce((t,r)=>t+(+r.w||0),0),stale=!X.U||daysBetween(X.U.data_date,ASOF)>35;
+  const risk=Math.round(clamp((tot?missV/tot:1)*60+(wAll?wUn/wAll:0)*15+(tot?manV/tot:0)*10+(unknown.length?5:0)+(stale?10:0),0,100));
+  return {rows,tot,miss,missV,missPct:tot?missV/tot:0,mapped:rows.filter(x=>x.st!=='Missing').length,cov:tot?1-missV/tot:0,unknown,gone,unmappedActs,wUnPct:wAll?wUn/wAll:0,risk,stale,U:X.U}}
+const daysBetween=(a,b)=>Math.round((D(b)-D(a))/864e5);
+
+/* ----- the engine: one invoice from the approved revision, the updated schedule and the previous certified invoice ----- */
+function cibCompute(pid,o){const p=projById(pid),S=o.sch?cibDB().sch.find(s=>s.id===o.sch):cibAppr(pid);if(!S)throw new Error('Approve a Schedule-C revision first');
+  const X=cibCtx(pid,o.su||null,o.to),ms=cibMs(p,o.to),H=S.head,prev=o.prev!==undefined?o.prev:cibLastCert(pid,o.seq),PL={};
+  const PP={};(prev&&prev.lines||[]).forEach(l=>{PL[l.no]=+(l.cert_cum??l.cum_pay)||0;PP[l.no]=l.prog});const PT=prev&&prev.tot||{};
+  const lines=cibBill(S).map(i=>{const r=cibRule(S,i),g=cibProg(pid,S,i,X),lim=(+i.value)*((i.limit??100)/100),raw=cibPay(r,i.value,g.p,ms.tcc,ms.fac);
+    let cum=cibR2(Math.min(raw,lim));const pv=cibR2(PL[i.no]||0),rev=cum<pv-0.5;if(rev)cum=pv;
+    return {no:i.no,desc:i.desc,comp:i.comp,unit:i.unit||'',qty:+i.qty||0,rate:+i.rate||0,value:+i.value,rule:r.t,prog:Math.round(g.p*1e6)/1e6,src:g.src,acts:g.n,cum_pay:cum,prev_pay:pv,this_pay:cibR2(cum-pv),over:raw>lim+0.5,rev,prev_pct:i.value?pv/i.value:0,prev_prog:PP[i.no]??null}});
+  const extra=Object.keys(PL).filter(n=>!lines.some(l=>l.no===n));
+  const sum=k=>cibR2(lines.reduce((t,l)=>t+(+l[k]||0),0)),gThis=sum('this_pay'),gPrev=sum('prev_pay'),gCum=cibR2(gPrev+gThis),v=+H.value||0;
+  const retCapAmt=v*(H.ret_cap==null||H.ret_cap===''?100:+H.ret_cap)/100,retPrev=+PT.ret_cum||0,retThis=cibR2(Math.min(gThis*(+H.ret_pct||0)/100,Math.max(0,retCapAmt-retPrev))),retHeld=retPrev+retThis;
+  const relTcc=ms.tcc&&!PT.rel_tcc&&+H.ret_tcc>0,relFac=ms.fac&&!PT.rel_fac&&+H.ret_fac>0,relThis=cibR2((relTcc?retHeld*(+H.ret_tcc)/100:0)+(relFac?retHeld*(+H.ret_fac)/100:0));
+  const advAmt=v*(+H.adv_pct||0)/100,advPrev=+PT.adv_cum||0,advThis=cibR2(Math.min(gThis*(+H.adv_rec||0)/100,Math.max(0,advAmt-advPrev)));
+  const net=cibR2(gThis-retThis+relThis-advThis),vat=cibR2(net*(+H.vat||0)/100);
+  const tot={cv:v,gross_prev:gPrev,gross_this:gThis,gross_cum:gCum,ret_this:retThis,ret_cum:cibR2(retHeld),rel_this:relThis,rel_cum:cibR2((+PT.rel_cum||0)+relThis),rel_tcc:!!(PT.rel_tcc||relTcc),rel_fac:!!(PT.rel_fac||relFac),
+    adv_amt:cibR2(advAmt),adv_this:advThis,adv_cum:cibR2(advPrev+advThis),net,vat,total:cibR2(net+vat),balance:cibR2(v-gCum),vat_pct:+H.vat||0};
+  return {S,X,ms,prev,lines,tot,extra}}
+/* exceptions: what stops an invoice and what needs a look */
+function cibExc(pid,inv,C){const E=[],add=(k,sev,msg,items)=>E.push({k,sev,msg,items:items||null}),S=C.S,A=cibAudit(pid,S,C.X),H=S.head;
+  if(S.st!=='Approved')add('approval','block',`Schedule-C revision ${S.rev} is not approved`);
+  if(A.miss.length)add('unmapped','block',`${A.miss.length} price schedule item${A.miss.length===1?'':'s'} not mapped: ${sar(A.missV)} (${pct(A.missPct)} of the price). Map them or record their review in the mapping audit.`,A.miss.map(x=>x.i.no));
+  if(!C.X.U)add('p6','block','No updated P6 schedule with a data date on or before the period end');
+  else{if(C.X.U.data_date<inv.from)add('p6','block',`The latest updated schedule (data date ${fmtDY(C.X.U.data_date)}) is older than the period start ${fmtDY(inv.from)}: load this period's update first`);
+    else if(daysBetween(C.X.U.data_date,inv.to)>35)add('p6','warn',`The updated schedule is ${daysBetween(C.X.U.data_date,inv.to)} days older than the period end`)}
+  const ov=C.lines.filter(l=>l.over);if(ov.length)add('over','warn',`${ov.length} item${ov.length===1?' reaches':'s reach'} the invoice limit; the claim is held at the limit`,ov.map(l=>l.no));
+  const rv=C.lines.filter(l=>l.rev);if(rv.length)add('reversal','warn',`Schedule reversal: ${rv.length} item${rv.length===1?'':'s'} earn less than already certified; nothing is claimed for ${rv.length===1?'it':'them'} this period`,rv.map(l=>l.no));
+  if(C.tot.gross_cum>C.tot.cv+0.5)add('cv','block',`Certified to date ${sar(C.tot.gross_cum)} exceeds the contract value ${sar(C.tot.cv)}`);
+  if(Math.abs(C.tot.cv-cibBill(S).reduce((t,i)=>t+(+i.value||0),0))>Math.max(1,C.tot.cv*0.005))add('cv','warn','The items do not add up to the approved contract value');
+  const open=cibInvOf(pid).filter(x=>x.id!==inv.id&&x.st!=='Cancelled'&&!CIB_DONE.includes(x.st)&&x.seq<inv.seq);if(open.length)add('dup','block',`Invoice ${open.map(x=>'#'+x.seq).join(', ')} is not yet certified: claim again only after its certificate`);
+  const ovl=cibInvOf(pid).filter(x=>x.id!==inv.id&&x.st!=='Cancelled'&&x.kind!=='Migrated'&&x.from&&x.to&&x.from<=inv.to&&x.to>=inv.from);if(ovl.length)add('dup','block',`Duplicate claim: the period overlaps invoice ${ovl.map(x=>'#'+x.seq).join(', ')}`);
+  if(C.extra.length)add('items','warn',`${C.extra.length} item${C.extra.length===1?' was':'s were'} certified before but ${C.extra.length===1?'is':'are'} not in this revision: ${C.extra.slice(0,6).join(', ')}`);
+  if(A.unknown.length)add('codes','warn',`${A.unknown.length} activit${A.unknown.length===1?'y carries a':'ies carry'} Schedule C code not in the price schedule`,A.unknown.map(r=>r.id));
+  const man=C.lines.filter(l=>l.src==='manual'&&l.this_pay>0);if(man.length)add('manual','warn',`${man.length} item${man.length===1?' is':'s are'} billed on a typed %, not P6 progress`,man.map(l=>l.no));
+  if(!(+H.vat>=0))add('vat','block','The VAT % is not set');
+  if(C.tot.gross_this<=0&&!C.tot.rel_this)add('zero','warn','Nothing to claim this period');
+  const rel=relRows().find(r=>r.project_id===pid&&r.kind==='planning'&&r.period_type==='month'&&String(r.period)===inv.to.slice(0,7));
+  if(!rel||!['Released','Superseded'].includes(rel.status))add('release','warn',`The internal progress report of ${fmtMon(inv.to.slice(0,7))} is not released yet`);
+  return E}
+const cibBlocks=E=>E.filter(e=>e.sev==='block');
+
+/* ----- every write: cib_act on the server (schema-update-v51.sql), the same checks in this browser ----- */
+async function cibAct(op,p){if(CLOUD_ME){if(DB.cibMissing)throw new Error('The Client Invoice Builder needs the v51 database update (STAGE-45-SETUP)');const r=await rpc('cib_act',{p:Object.assign({op},p)});await cloudLoadCib();save();return r}
+  const r=cibActLocal(op,p);save();return r}
+function cibActLocal(op,p){const fail=t=>{throw new Error(t)},C=cibDB(),pid=p.pid,u=me(),P=projById(pid);
+  if(!P||!accessIds().includes(pid))fail('You do not have access to this project');if(!can('money.view')||u.role==='foreman')fail('Billing figures are not open to you');
+  const need=k=>{if(!can(k))fail({'cib.setup':'Only those who keep the Schedule-C do this','cib.map':'Only those who keep the Schedule-C mapping do this','cib.prepare':'Only those who prepare client invoices do this','cib.review':'Only a reviewer of client invoices does this','cib.approve':'Only an approver of client invoices does this','cib.certify':'Only those who record client certificates and payments do this'}[k])};
+  if(op==='sch_save'){need('cib.setup');const H=cibHeadClean(p.head),items=p.items||[];if(!items.length)fail('The price schedule has no items');if(items.length>6000)fail('The price schedule has more than 6,000 items');
+    const seen=new Set();items.forEach(i=>{const n=cibNo(i.no);if(!n||n.length>60)fail('Every item needs a number of up to 60 characters');if(seen.has(n))fail(`Item ${n} appears twice`);seen.add(n);if(!(+i.value>=0))fail(`Item ${n}: the value must be a number, not negative`)});
+    if(cibSchOf(pid).some(s=>s.st==='Draft'))fail('A draft revision is already waiting for approval: approve or replace it first');
+    const rev=(cibSchOf(pid)[0]||{rev:0}).rev+1,rules=p.rules||(cibAppr(pid)||{}).rules||cibDefRules(P);Object.entries(rules).forEach(([k,r])=>{const e=cibRuleErr(r);if(e)fail(`${CIB_CN[k]||k}: ${e}`)});
+    const S={id:'CS-'+pid+'-'+rev,pid,rev,st:'Draft',head:H,rules,items:items.map(i=>({...i,no:cibNo(i.no),parent:i.parent?cibNo(i.parent):null})),file:p.file||null,hash:p.hash||null,by:u.name,by_id:u.id,at:cibNow(),appr_by:null,appr_at:null};
+    C.sch.push(S);cibLog(pid,'Schedule-C uploaded',`Revision ${rev}`,null,{file:S.file,items:items.length,value:H.value},p.note);return S}
+  const S=p.sch?C.sch.find(s=>s.id===p.sch&&s.pid===pid):null;
+  if(op==='sch_head'||op==='sch_rules'||op==='sch_item'){need('cib.setup');if(!S)fail('Unknown revision');if(S.st!=='Draft')fail('Only a draft revision changes; upload a new revision to change an approved one');
+    if(op==='sch_head'){const b=S.head;S.head=cibHeadClean(p.head);cibLog(pid,'Schedule-C header changed',`Revision ${S.rev}`,b,S.head)}
+    if(op==='sch_rules'){Object.entries(p.rules||{}).forEach(([k,r])=>{if(!CIB_CN[k])fail('Unknown component '+k);const e=cibRuleErr(r);if(e)fail(`${CIB_CN[k]}: ${e}`)});const b=S.rules;S.rules=p.rules;cibLog(pid,'Invoicing rules changed',`Revision ${S.rev}`,b,S.rules)}
+    if(op==='sch_item'){const i=S.items.find(x=>x.no===cibNo(p.no));if(!i)fail('Unknown item');const b={rule:i.rule||null,limit:i.limit??100,comp:i.comp};
+      if(p.rule){const e=cibRuleErr(Object.assign({},S.rules[i.comp]||{},p.rule));if(e)fail(e)}const lim=p.limit==null||p.limit===''?100:+p.limit;if(!(lim>0&&lim<=100))fail('The invoice limit is more than 0% and at most 100%');
+      if(p.comp&&!CIB_CN[p.comp])fail('Unknown component');i.rule=p.rule||null;i.limit=lim;if(p.comp)i.comp=p.comp;cibLog(pid,'Item rule changed',i.no,b,{rule:i.rule,limit:i.limit,comp:i.comp},p.note)}
+    return S}
+  if(op==='sch_approve'){need('cib.approve');if(!S||S.st!=='Draft')fail('Only a draft revision is approved');if(S.by_id===u.id&&u.role!=='sa')fail('Nobody approves a revision they uploaded');
+    const tot=cibBill(S).reduce((t,i)=>t+(+i.value||0),0);if(Math.abs(tot-(+S.head.value||0))>Math.max(1,(+S.head.value||0)*0.005)&&!String(p.note||'').trim())fail(`The items add up to ${sar(tot)}, not the approved value ${sar(+S.head.value||0)}: give the reason to approve it`);
+    Object.entries(S.rules||{}).forEach(([k,r])=>{const e=cibRuleErr(r);if(e)fail(`${CIB_CN[k]||k}: ${e}`)});
+    C.sch.filter(s=>s.pid===pid&&s.st==='Approved').forEach(s=>{s.st='Superseded'});S.st='Approved';S.appr_by=u.name;S.appr_at=cibNow();cibLog(pid,'Schedule-C approved',`Revision ${S.rev}`,null,{value:S.head.value},p.note);return S}
+  if(op==='sch_discard'){need('cib.setup');if(!S||S.st!=='Draft')fail('Only a draft revision is discarded');C.sch.splice(C.sch.indexOf(S),1);cibLog(pid,'Draft revision discarded',`Revision ${S.rev}`);return {ok:true}}
+  if(op==='map_save'){need('cib.map');const M=C.map[pid]||(C.map[pid]={}),before={},after={},cur=cibCur(pid),known=new Set((cur&&cur.items||[]).map(i=>i.no));let n=0;
+    (p.rows||[]).forEach(x=>{const a=String(x.act||'').trim();if(!a||a.length>60)fail('Every activity needs an ID');const it=x.item?cibNo(x.item):null;
+      if(it&&x.src==='manual'&&!known.has(it))fail(`Item ${it} is not in the price schedule`);const o=M[a];if((o&&o.item||null)===it&&(!it||o.src===(x.src||'p6')))return;
+      before[a]=o?o.item:null;after[a]=it;n++;if(it)M[a]={item:it,name:String(x.name||'').slice(0,300),src:x.src==='manual'?'manual':'p6',by:u.name,at:cibNow()};else delete M[a]});
+    if(p.replace_p6){const keep=new Set((p.rows||[]).map(x=>String(x.act).trim()));Object.keys(M).forEach(a=>{if(M[a].src==='p6'&&!keep.has(a)){before[a]=M[a].item;after[a]=null;delete M[a];n++}})}
+    if(n)cibLog(pid,p.replace_p6?'Mapping read from P6':'Mapping changed',p.file||null,before,after,p.note);return {changed:n}}
+  if(op==='map_review'){need('cib.map');const R=C.rev[pid]||(C.rev[pid]={}),no=cibNo(p.item),b=R[no]||null;if(!cur0(pid).items.some(i=>i.no===no))fail('Unknown item');
+    if(!p.d){delete R[no];cibLog(pid,'Mapping review removed',no,b,null);return {ok:true}}
+    if(!['manual','zero'].includes(p.d))fail('Unknown review');const note=String(p.note||'').trim();if(note.length<5)fail('Give the reason (at least 5 characters)');
+    if(p.d==='manual'&&!(+p.pct>=0&&+p.pct<=100))fail('The progress is between 0% and 100%');
+    R[no]={d:p.d,pct:p.d==='manual'?r2(+p.pct):0,note:note.slice(0,500),by:u.name,at:cibNow()};cibLog(pid,'Mapping reviewed',no,b,R[no]);return R[no]}
+  const I=p.id?C.inv.find(x=>x.id===p.id&&x.pid===pid):null;
+  if(op==='inv_save'){need('cib.prepare');if(I&&I.st!=='Draft')fail('Only a draft invoice changes');const A=cibAppr(pid);if(!A)fail('Approve a Schedule-C revision first');
+    const all=cibInvOf(pid).filter(x=>x.st!=='Cancelled'),seq=I?I.seq:(all[0]?all[0].seq:0)+1;
+    if(!I&&all.some(x=>x.st==='Draft'))fail('A draft invoice is already open: finish or cancel it first');
+    if(!isoOk(p.to||''))fail('The period end is not a valid date');if(p.to>TODAY)fail('The period end is in the future');
+    const last=all.find(x=>x.seq<seq),from=p.from||(last&&last.to?addDays(last.to,1):P.start||p.to);if(!isoOk(from)||from>p.to)fail('The period starts after it ends');
+    const ref=String(p.ref||'').trim().slice(0,60)||`${pcode(P)}-INV-${pad(seq)}`;
+    const Cc=cibCompute(pid,{to:p.to,seq,sch:A.id,su:p.su||null}),X=I||{id:'CI-'+pid+'-'+seq+'-'+Date.now().toString(36),pid,seq,kind:'Progress',st:'Draft',hist:[],docs:{},by:u.name,by_id:u.id,at:cibNow()};
+    const before=I?{gross_this:I.tot.gross_this,to:I.to}:null;
+    Object.assign(X,{sch:A.id,rev:A.rev,ref,from,to:p.to,su:Cc.X.U?Cc.X.U.id:null,dd:Cc.X.U?Cc.X.U.data_date:null,lines:Cc.lines,tot:Cc.tot,upd:cibNow(),ai:I&&I.ai?Object.assign({},I.ai,{stale:true}):null});
+    X.exc=cibExc(pid,X,Cc);if(!I){X.hist.push({st:'Draft',by:u.name,by_id:u.id,at:cibNow(),note:'Prepared from P6 progress'});C.inv.push(X)}
+    cibLog(pid,I?'Invoice recalculated':'Invoice prepared',`#${seq} ${ref}`,before,{gross_this:X.tot.gross_this,to:X.to,blocks:cibBlocks(X.exc).length});return X}
+  if(op==='inv_migrate'){need('cib.setup');const A=cibAppr(pid);if(!A)fail('Approve a Schedule-C revision first');if(cibInvOf(pid).some(x=>x.kind!=='Migrated'&&x.st!=='Cancelled'))fail('Invoices are already prepared here: the history is loaded before the first invoice');
+    const seq=parseInt(p.seq,10);if(!(seq>=1&&seq<=999))fail('The invoice number is a whole number from 1 to 999');if(cibInvOf(pid).some(x=>x.seq>=seq&&x.st!=='Cancelled'))fail(`Invoice #${seq} or a later one is already recorded`);
+    if(!isoOk(p.to||'')||p.to>TODAY)fail('The certified-to date is not valid');const known=new Set(cibBill(A).map(i=>i.no)),L=[];
+    (p.lines||[]).forEach(l=>{const n=cibNo(l.no);if(!known.has(n))fail(`Item ${n} is not a billable item of the approved revision`);const i=A.items.find(x=>x.no===n),v=+l.cum||0;if(v<0)fail(`Item ${n}: negative amount`);if(v>(+i.value)+0.5)fail(`Item ${n}: certified to date is more than its value`);
+      L.push({no:n,desc:i.desc,comp:i.comp,unit:i.unit||'',qty:+i.qty||0,rate:+i.rate||0,value:+i.value,rule:cibRule(A,i).t,prog:null,src:'history',acts:0,cum_pay:cibR2(v),prev_pay:0,this_pay:cibR2(v),cert_cum:cibR2(v)})});
+    if(!L.length)fail('No certified amounts to load');const g=cibR2(L.reduce((t,l)=>t+l.cum_pay,0)),v=+A.head.value||0;if(g>v+0.5)fail('Certified to date is more than the contract value');
+    const n=k=>{const x=+p[k]||0;if(x<0)fail('Amounts are not negative');return cibR2(x)};
+    const tot={cv:v,gross_prev:0,gross_this:g,gross_cum:g,ret_this:n('ret_cum'),ret_cum:n('ret_cum'),rel_this:0,rel_cum:n('rel_cum'),rel_tcc:!!p.rel_tcc,rel_fac:!!p.rel_fac,adv_amt:cibR2(v*(+A.head.adv_pct||0)/100),adv_this:n('adv_cum'),adv_cum:n('adv_cum'),net:0,vat:0,total:0,balance:cibR2(v-g),vat_pct:+A.head.vat||0};
+    if(tot.adv_cum>tot.adv_amt+0.5)fail('The advance recovered is more than the advance');
+    const X={id:'CI-'+pid+'-'+seq+'-H',pid,seq,kind:'Migrated',st:'Certified',sch:A.id,rev:A.rev,ref:String(p.ref||`Invoice #${pad(seq)}`).slice(0,60),from:p.from||null,to:p.to,su:null,dd:null,lines:L,tot,exc:[],docs:{},ai:null,
+      cert:{amt:g,date:p.to,ref:String(p.ref||'').slice(0,60),by:u.name,at:cibNow(),changed:false},hist:[{st:'Certified',by:u.name,at:cibNow(),note:`Loaded from ${p.file||'the latest client invoice'}`}],file:p.file||null,by:u.name,by_id:u.id,at:cibNow(),upd:cibNow()};
+    C.inv.push(X);cibLog(pid,'Invoice history loaded',`#${seq}`,null,{file:p.file,items:L.length,certified:g,ret_cum:tot.ret_cum,adv_cum:tot.adv_cum});return X}
+  if(!I)fail('Unknown invoice');
+  if(op==='inv_ai'){if(!(can('cib.prepare')||can('cib.review')||can('cib.approve')))fail('Only those who prepare, review or approve client invoices run the review');I.ai={at:cibNow(),by:u.name,score:+p.score||0,find:(p.find||[]).slice(0,80)};cibLog(pid,'Invoice reviewed (rules)',`#${I.seq}`,null,{score:I.ai.score,findings:I.ai.find.length});return I}
+  if(op==='inv_docs'){if(!(can('cib.prepare')||can('cib.approve')))fail('Only those who prepare or approve client invoices keep its documents');if(['Certified','Paid','Cancelled'].includes(I.st))fail('This invoice is closed');
+    const k=p.k,v=p.v;if(!CIB_DOCS.some(d=>d[0]===k))fail('Unknown document');if(!['yes','na',''].includes(v))fail('Attached, not applicable or missing');const b=I.docs[k]||'';I.docs[k]=v;cibLog(pid,'Invoice document',`#${I.seq} ${k}`,b,v);return I}
+  const st=I.st,note=String(p.note||'').trim(),hist=(s,n)=>{I.hist.push({st:s,by:u.name,by_id:u.id,at:cibNow(),note:n||null});const b=I.st;I.st=s;cibLog(pid,s==='Draft'?'Invoice returned':'Invoice '+s.toLowerCase(),`#${I.seq} ${I.ref}`,{st:b},{st:s},n)};
+  const rvH=I.hist.filter(h=>h.st==='Reviewed').pop()||{},preparer=I.by_id===u.id,reviewer=rvH.by_id?rvH.by_id===u.id:rvH.by===u.name;
+  if(op==='inv_submit'){need('cib.prepare');if(st!=='Draft')fail('Only a draft is submitted');const Cc=cibCompute(pid,{to:I.to,seq:I.seq,sch:I.sch,su:I.su});I.exc=cibExc(pid,I,Cc);
+    if(Math.abs(Cc.tot.gross_this-I.tot.gross_this)>0.5)fail('Progress, mapping or rules changed since this draft was calculated: recalculate it first');
+    if(cibBlocks(I.exc).length)fail(`Not submitted: ${cibBlocks(I.exc).map(e=>e.msg).join(' · ')}`);if(!I.ai||I.ai.stale||I.ai.at<I.upd)fail('Run "Review invoice" on the current figures first');hist('Submitted',note);notify(`Client invoice #${I.seq} of ${P.short} submitted for review by ${u.name}`);return I}
+  if(op==='inv_review'){need('cib.review');if(st!=='Submitted')fail('Only a submitted invoice is reviewed');if(preparer&&u.role!=='sa')fail('Nobody reviews an invoice they prepared');hist('Reviewed',note);notify(`Client invoice #${I.seq} of ${P.short} reviewed by ${u.name}, waiting for approval`);return I}
+  if(op==='inv_approve'){need('cib.approve');if(st!=='Reviewed')fail('Only a reviewed invoice is approved');if((preparer||reviewer)&&u.role!=='sa')fail('Nobody approves an invoice they prepared or reviewed');
+    const miss=CIB_DOCS.filter(d=>!I.docs[d[0]]);if(miss.length)fail(`Mark every supporting document attached or not applicable first: ${miss.map(d=>d[1]).join('; ')}`);hist('Approved',note);notify(`Client invoice #${I.seq} of ${P.short} approved by ${u.name}`);return I}
+  if(op==='inv_return'){if(!(can('cib.review')||can('cib.approve')))fail('Only a reviewer or approver returns an invoice');if(!['Submitted','Reviewed','Approved'].includes(st))fail('Only an invoice under review or approved is returned');if(note.length<5)fail('Say why it is returned');hist('Draft',`Returned: ${note}`);I.ai=I.ai?Object.assign(I.ai,{stale:true}):null;notify(`Client invoice #${I.seq} of ${P.short} returned: ${note}`,true);return I}
+  if(op==='inv_issue'){if(!(can('cib.prepare')||can('cib.approve')))fail('Only those who prepare or approve client invoices issue them');if(st!=='Approved')fail('Only an approved invoice is issued');
+    if(!isoOk(p.date||'')||p.date>TODAY)fail('The issue date is not valid');if(p.date<I.to)fail('An invoice is issued after its period ends');I.issued={date:p.date,ref:String(p.ref||I.ref).slice(0,60),by:u.name};if(p.ref)I.ref=String(p.ref).slice(0,60);hist('Issued',`Issued to the client on ${fmtDY(p.date)}`);return I}
+  if(op==='inv_certify'){need('cib.certify');if(st!=='Issued')fail('Only an issued invoice is certified');if(!isoOk(p.date||'')||p.date>TODAY)fail('The certificate date is not valid');if(p.date<(I.issued||{}).date)fail('Certified before it was issued');
+    const ch=p.lines||null;let changed=false;I.lines.forEach(l=>{let c=l.this_pay;if(ch&&ch[l.no]!=null&&ch[l.no]!==''){c=+ch[l.no];if(!(c>=0))fail(`Item ${l.no}: certified amount is a number, not negative`);if(c>l.this_pay+0.5)fail(`Item ${l.no}: certified more than claimed`);if(Math.abs(c-l.this_pay)>0.005)changed=true}
+      l.cert_this=cibR2(c);l.cert_cum=cibR2(l.prev_pay+c)});
+    const g=cibR2(I.lines.reduce((t,l)=>t+l.cert_this,0));if(changed){const Cc=cibCompute(pid,{to:I.to,seq:I.seq,sch:I.sch,su:I.su});const H=cibDB().sch.find(s=>s.id===I.sch).head,PT=(Cc.prev&&Cc.prev.tot)||{},v=+H.value||0;
+      const retThis=cibR2(Math.min(g*(+H.ret_pct||0)/100,Math.max(0,v*(H.ret_cap==null||H.ret_cap===''?100:+H.ret_cap)/100-(+PT.ret_cum||0)))),advThis=cibR2(Math.min(g*(+H.adv_rec||0)/100,Math.max(0,I.tot.adv_amt-(+PT.adv_cum||0))));
+      Object.assign(I.tot,{gross_this:g,gross_cum:cibR2(I.tot.gross_prev+g),ret_this:retThis,ret_cum:cibR2((+PT.ret_cum||0)+retThis),adv_this:advThis,adv_cum:cibR2((+PT.adv_cum||0)+advThis)});I.tot.net=cibR2(g-retThis+I.tot.rel_this-advThis);I.tot.vat=cibR2(I.tot.net*I.tot.vat_pct/100);I.tot.total=cibR2(I.tot.net+I.tot.vat);I.tot.balance=cibR2(I.tot.cv-I.tot.gross_cum)}
+    I.cert={amt:g,date:p.date,ref:String(p.ref||'').slice(0,60),by:u.name,at:cibNow(),changed};hist('Certified',changed?`Certified with changes: ${sar(g)} of ${sar(I.lines.reduce((t,l)=>t+l.this_pay,0))} claimed`:'Certified as claimed');return I}
+  if(op==='inv_pay'){need('cib.certify');if(st!=='Certified')fail('Only a certified invoice is marked paid');if(!isoOk(p.date||'')||p.date>TODAY)fail('The payment date is not valid');if(p.date<I.cert.date)fail('Paid before it was certified');
+    const a=+p.amt;if(!(a>0))fail('The amount paid is more than 0');if(a>I.tot.total+0.5)fail('Paid more than the invoice total with VAT');I.paid={amt:cibR2(a),date:p.date,ref:String(p.ref||'').slice(0,60),by:u.name};hist('Paid',`${sar(a)} received on ${fmtDY(p.date)}`);return I}
+  if(op==='inv_cancel'){if(st==='Draft'){if(!(can('cib.prepare')))fail('Only those who prepare client invoices cancel a draft')}else{need('cib.approve');if(!['Submitted','Reviewed','Approved'].includes(st))fail('An issued invoice is not cancelled: the client certifies it or rejects it with a credit note')}
+    if(note.length<5)fail('Say why it is cancelled');hist('Cancelled',note);return I}
+  fail('Unknown action')}
+const cur0=pid=>cibCur(pid)||{items:[]};
+function cibHeadClean(h){h=h||{};const n=(k,lo,hi,d)=>{const v=h[k]===''||h[k]==null?d:+h[k];if(v==null)return null;if(!isFinite(v)||v<lo||v>hi)throw new Error(`${{value:'The approved contract value',ret_pct:'Retention',ret_cap:'The retention cap',ret_tcc:'The retention released at TCC',ret_fac:'The retention released at FAC',adv_pct:'The advance',adv_rec:'The advance recovery',vat:'VAT',pay_days:'The payment period'}[k]} must be between ${lo} and ${fmt(hi)}`);return v};
+  const o={contract_no:String(h.contract_no||'').trim().slice(0,60),title:String(h.title||'').trim().slice(0,300),client:String(h.client||'').trim().slice(0,200),issue_date:isoOk(h.issue_date||'')?h.issue_date:null,currency:String(h.currency||'SAR').trim().toUpperCase().slice(0,3)||'SAR',
+    value:n('value',0.01,1e12,null),ret_pct:n('ret_pct',0,30,0),ret_cap:n('ret_cap',0,100,null),ret_tcc:n('ret_tcc',0,100,0),ret_fac:n('ret_fac',0,100,0),adv_pct:n('adv_pct',0,50,0),adv_rec:n('adv_rec',0,100,0),vat:n('vat',0,30,15),pay_days:n('pay_days',0,365,60)};
+  if(o.value==null)throw new Error('Enter the approved contract value');if(o.ret_tcc+o.ret_fac>100.001)throw new Error('Retention released at TCC and FAC add up to more than 100%');if(o.adv_pct>0&&!(o.adv_rec>0))throw new Error('Say what % of each invoice recovers the advance');
+  if(o.currency!=='SAR')throw new Error('Client invoices are kept in SAR');return o}
+
+/* ----- reading a contractual price schedule (XLSX, XLS or CSV) ----- */
+const CIB_ITEMRE=/^(?:[A-Z]{1,4}\.){0,3}\d+(?:\.\d+)*$|^[A-Z]{1,4}(?:\.[A-Z]{1,4}){0,2}\.\d+(?:\.\d+)*$/;
+const CIB_H={no:/item\s*(no|number|#|code)?\b|^s\.?\s*no|^no\.?$/i,type:/line\s*type|^type$/i,short:/short\s*desc/i,desc:/long\s*desc|^desc|description|item\s*desc|price\s*component/i,qty:/^q(ty|uantity)\b|quantity/i,unit:/^unit$|^uom$|unit\s*of\s*meas|^u\/?m$/i,rate:/unit\s*(price|rate)|^rate$/i,value:/total|amount|value/i};
+const cibCompOf=d=>{d=String(d||'');return /general|preparation/i.test(d)?'GEN':/engineer|design/i.test(d)?'ENG':/equipment|material|supply/i.test(d)?'MAT':/construct|civil/i.test(d)?'CON':/install|erection/i.test(d)?'INS':/test|commission|energi/i.test(d)?'TC':/close|training|spare|tool/i.test(d)?'CLO':null};
+function cibParseRows(aoa){const hi=aoa.findIndex((r,i)=>i<60&&r.some(c=>CIB_H.no.test(String(c||'').trim()))&&r.some(c=>CIB_H.value.test(String(c||''))));
+  if(hi<0)throw new Error('No header row with an Item number and a Total or Amount column was found');
+  const head=aoa[hi].map(c=>String(c||'').replace(/\s+/g,' ').trim()),col={};
+  {const i=head.findIndex(h=>/^item|items*(no|number|#|code)/i.test(h));if(i>=0)col.no=i}
+  ['no','type','short','rate','qty','unit','desc','value'].forEach(k=>{if(col[k]!=null)return;const i=head.findIndex((h,j)=>h&&CIB_H[k].test(h)&&!Object.values(col).includes(j));if(i>=0)col[k]=i});
+  if(col.value==null)throw new Error('No Total or Amount column');
+  const num=v=>{if(typeof v==='number')return v;const s=String(v??'').replace(/[, ]/g,'').replace(/^SAR|SR$/i,'');return /^-?\d+(\.\d+)?$/.test(s)?+s:null};
+  const out=[],warn=[];aoa.slice(hi+1).forEach((r,k)=>{const raw=String(r[col.no]??'').trim();const no=cibNo(raw);if(!no||/PART/i.test(no)||!CIB_ITEMRE.test(no))return;
+    const ln=hi+2+k,vt=r[col.value],v=num(vt),txt=String(vt??'').trim(),ty=col.type!=null?String(r[col.type]||'').trim():'';
+    const q=col.qty!=null?num(r[col.qty]):null,rt=col.rate!=null?num(r[col.rate]):null,desc=[col.short!=null?String(r[col.short]||'').trim():'',col.desc!=null?String(r[col.desc]||'').trim():''].filter(Boolean);
+    let st='Active',incl=null,value=v;if(value==null&&q!=null&&rt!=null)value=q*rt;
+    if(/not\s*applicable|^n\/?a$/i.test(txt)){st='Not applicable';value=0}else{const m=txt.match(/included\s*in\b.*?([A-Z]{1,4}(?:\.[A-Z0-9]+)+|\d+(?:\.\d+)+)/i);if(m){st='Included';incl=cibNo(m[1]);value=0}}
+    if(value==null)value=0;if(value<0){warn.push(`Row ${ln}: item ${no} has a negative value; read as 0`);value=0}
+    out.push({no,ln,type:/^desc/i.test(ty)?'D':/^break/i.test(ty)?'B':'',desc:(desc.length>1&&desc[0]!==desc[1]?desc.join(' — '):desc[desc.length-1]||'').slice(0,400),unit:col.unit!=null?String(r[col.unit]||'').trim().slice(0,12):'',qty:q||0,rate:rt||0,value:cibR2(value),st,incl})});
+  if(!out.length)throw new Error('No item rows under the header');
+  const seen={};out.forEach(o=>{seen[o.no]=(seen[o.no]||0)+1});const dup=Object.keys(seen).filter(k=>seen[k]>1);
+  const items=[];const by={};out.forEach(o=>{if(by[o.no]){warn.push(`Row ${o.ln}: item ${o.no} appears again; the first row is kept`);return}by[o.no]=o;items.push(o)});
+  const nos=new Set(items.map(i=>i.no));items.forEach(i=>{const s=i.no.split('.');i.parent=null;for(let k=s.length-1;k>0;k--){const p=s.slice(0,k).join('.');if(nos.has(p)){i.parent=p;break}}i.lvl=i.parent?(by[i.parent].lvl||0)+1:0});
+  items.sort((a,b)=>a.ln-b.ln).forEach(i=>{if(i.parent)i.lvl=by[i.parent].lvl+1});
+  const kids={};items.forEach(i=>{if(i.parent)(kids[i.parent]=kids[i.parent]||[]).push(i)});
+  const hasVal=i=>i.value>0||(kids[i.no]||[]).some(hasVal);
+  items.forEach(i=>{i.leaf=i.type==='D'?false:!(kids[i.no]||[]).some(hasVal);if(!i.leaf&&i.value>0&&(kids[i.no]||[]).some(hasVal))warn.push(`Item ${i.no} carries a value and has priced items under it; only the items under it are billed`)});
+  const compOfNo={};items.forEach(i=>{const c=cibCompOf(i.desc);if(c&&(i.lvl<=1||!i.parent))compOfNo[i.no]=c});
+  items.forEach(i=>{let x=i,c=null;while(x&&!c){c=compOfNo[x.no]||null;x=x.parent?by[x.parent]:null}i.comp=c||cibCompOf(i.desc)||'OTH'});
+  items.forEach(i=>{if(i.st==='Included'&&!nos.has(i.incl))warn.push(`Item ${i.no} is "included in" ${i.incl}, which is not in the schedule`)});
+  return {items:items.map(({ln,type,...i})=>({...i,line:type==='D'?'Description':type==='B'?'Breakdown':(i.leaf?'Breakdown':'Description'),limit:100,rule:null})),warn,dup,cols:Object.keys(col)}}
+async function cibReadSchedule(file){await loadLib(LIBS.xlsx);const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});let best=null,err=null;
+  for(const n of wb.SheetNames){try{const R=cibParseRows(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,blankrows:false,defval:''}));R.sheet=n;R.billable=R.items.filter(i=>i.leaf&&i.st==='Active'&&i.value>0);if(!best||R.billable.length>best.billable.length)best=R}catch(e){err=err||e}}
+  if(!best)throw err||new Error('No price schedule found in this file');best.total=cibR2(best.billable.reduce((t,i)=>t+i.value,0));best.hash=await sha256Hex(await file.arrayBuffer());return best}
+
+/* ----- the "Schedule C" activity code of a P6 file; also read when an updated schedule is loaded ----- */
+const cibCodeType=types=>(types||[]).find(t=>/schedule\s*[-_ ]?c\b|sched(ule)?\s*[-_ ]?c\b|price\s*schedule|schedule\s*"?c"?$/i.test(t))||null;
+function cibMapRows(parsed,ctype){return parsed.rows.map(r=>({act:r.id,name:r.name,item:cibNo((r.codes||{})[ctype]||'')||null})).filter(x=>x.item)}
+async function cibAfterSched(pid,parsed,file){try{if(!parsed||!can('cib.map')||!cibCur(pid))return;const ct=cibCodeType(parsed.codeTypes);if(!ct)return;
+  const rows=cibMapRows(parsed,ct);if(!rows.length)return;const r=await cibAct('map_save',{pid,rows:rows.map(x=>({...x,src:'p6'})),replace_p6:true,file,note:`Read from the activity code "${ct}" of the updated schedule`});
+  const A=cibAudit(pid);if(A&&A.miss.length)notify(`${projById(pid).short}: ${A.miss.length} price schedule item${A.miss.length===1?' is':'s are'} not mapped to P6 (${sar(A.missV)}). Client invoices wait until the mapping is reviewed.`,true);
+  return r}catch(e){}}
+
+/* ----- the latest client invoice of a running project (Excel workbook; a PDF is kept as the evidence) ----- */
+function cibInvSheetCols(aoa,merges){const hi=aoa.findIndex((r,i)=>i<40&&r.some(c=>/item\s*(no|#)|sap\s*no/i.test(String(c||''))));if(hi<0)return null;
+  const width=Math.max(...aoa.slice(hi,hi+5).map(r=>r.length)),lab=Array.from({length:width},()=>[]);
+  for(let r=hi;r<Math.min(aoa.length,hi+5);r++){if(aoa[r].some(c=>CIB_ITEMRE.test(cibNo(c))))break;let carry='';for(let c=0;c<width;c++){let v=String(aoa[r][c]??'').replace(/\s+/g,' ').trim();
+      const m=(merges||[]).find(m=>m.s.r===r&&m.s.c<c&&m.e.c>=c);if(!v&&m)v=String(aoa[r][m.s.c]??'').replace(/\s+/g,' ').trim();if(v)lab[c].push(v);carry=v||carry}}
+  return {hi,labels:lab.map((l,i)=>({i,l:l.join(' › ')}))}}
+async function cibReadHistory(file){await loadLib(LIBS.xlsx);const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});const found=[],hdr={};
+  wb.SheetNames.forEach(n=>{const ws=wb.Sheets[n],aoa=XLSX.utils.sheet_to_json(ws,{header:1,blankrows:true,defval:''});
+    aoa.slice(0,20).forEach(r=>r.forEach((c,j)=>{const s=String(c||'');let m=s.match(/(?:payment\s*certificate|invoice)\s*(?:no\.?|number)?\s*#?\s*(\d{1,3})\b/i);if(m&&!hdr.seq)hdr.seq=+m[1];
+      if(/^\s*invoice\s*no/i.test(s)&&!hdr.seq){const v=r.slice(j+1).find(x=>String(x).trim());if(/^\d{1,3}$/.test(String(v).trim()))hdr.seq=+v}
+      if(/^\s*to\s*:?$/i.test(s)||/period.*to/i.test(s)){const v=r.slice(j+1).find(x=>x instanceof Date);if(v&&!hdr.to)hdr.to=iso(v)}}));
+    const L=cibInvSheetCols(aoa,ws['!merges']);if(!L)return;const isNo=v=>{const n=cibNo(v);return n.includes('.')&&CIB_ITEMRE.test(n)};const rows=aoa.slice(L.hi+1).map((r,k)=>({r,ln:L.hi+2+k})).filter(x=>isNo(x.r[0])||isNo(x.r[1]));
+    if(rows.length)found.push({sheet:n,labels:L.labels,rows:rows.map(x=>({no:cibNo(isNo(x.r[0])?x.r[0]:x.r[1]),cells:x.r,ln:x.ln}))})});
+  if(!found.length)throw new Error('No breakdown sheet with item numbers was found. Load the invoice workbook (Excel), or type the certified amounts per component.');
+  const pick=labels=>{const sc=l=>{l=l.toLowerCase();return (/payment\s*certified|certified\s*amount|net\s*amount\s*payable/.test(l)?4:/certified/.test(l)?2:0)+(/cumul|to\s*date/.test(l)?4:0)+(/amount/.test(l)?2:0)-(/%|ratio|qty|previous|new\s*period|this\s*period/.test(l)?6:0)};
+    return labels.map(x=>({...x,s:sc(x.l)})).sort((a,b)=>b.s-a.s)[0]};
+  found.forEach(sh=>{const b=pick(sh.labels);sh.col=b&&b.s>=6?b.i:null});
+  return {sheets:found,hdr,pick,hash:await sha256Hex(await file.arrayBuffer())}}
+/* match an item number of the invoice to the schedule: the same, or the schedule's item ending with it */
+function cibMatchNo(S,no){const B=cibBill(S);return B.find(i=>i.no===no)||B.find(i=>i.no.endsWith('.'+no))||null}
+
+/* ----- "Review invoice": a rules-based review in this browser. A language model on ProTrack's server stays on hold
+   until alfanar IT and Cybersecurity approve it (STAGE-44-SETUP); this review needs none. ----- */
+function cibReview(pid,I){const F=[],add=(sev,k,msg)=>F.push({sev,k,msg}),S=cibDB().sch.find(s=>s.id===I.sch),C=cibCompute(pid,{to:I.to,seq:I.seq,sch:I.sch,su:I.su}),T=I.tot;
+  /* mathematical accuracy: every line and total worked out again */
+  const bad=I.lines.filter(l=>{const c=C.lines.find(x=>x.no===l.no);return !c||Math.abs(c.cum_pay-l.cum_pay)>0.5||Math.abs(l.this_pay-(l.cum_pay-l.prev_pay))>0.5});
+  if(bad.length)add('high','math',`${bad.length} line${bad.length===1?' does':'s do'} not match a fresh calculation (${bad.slice(0,5).map(l=>l.no).join(', ')}): recalculate the draft`);else add('ok','math','Every line agrees with a fresh calculation from P6 progress, the rules and the previous certificate');
+  const sum=I.lines.reduce((t,l)=>t+l.this_pay,0);if(Math.abs(sum-T.gross_this)>0.5)add('high','math',`The lines add up to ${sar(sum)}, the total says ${sar(T.gross_this)}`);
+  if(Math.abs(T.net-(T.gross_this-T.ret_this+T.rel_this-T.adv_this))>0.5||Math.abs(T.vat-T.net*T.vat_pct/100)>0.5)add('high','math','Net payable or VAT does not follow from the gross amount');
+  /* contract compliance */
+  const H=S.head;if(T.ret_this>0&&+H.ret_pct===0)add('high','contract','Retention is deducted although the contract sets none');
+  if(T.adv_cum>T.adv_amt+0.5)add('high','contract','The advance recovered exceeds the advance paid');
+  if(T.adv_amt>0&&T.adv_cum<T.adv_amt-0.5&&T.balance<T.adv_amt-T.adv_cum)add('med','contract',`Only ${sar(T.balance)} remains to bill but ${sar(T.adv_amt-T.adv_cum)} of the advance is not yet recovered`);
+  const capd=I.lines.filter(l=>l.over);if(capd.length)add('med','contract',`${capd.length} item${capd.length===1?' is':'s are'} held at the invoice limit`);
+  const msl=I.lines.filter(l=>(l.rule==='tcc'||l.rule==='fac')&&l.this_pay>0);if(msl.length)add('info','contract',`${msl.length} milestone item${msl.length===1?' is':'s are'} claimed: attach the ${[...new Set(msl.map(l=>l.rule.toUpperCase()))].join(' and ')} certificate`);
+  /* missing schedule items and unmapped activities */
+  const A=cibAudit(pid,S,C.X);if(A.miss.length)add('high','mapping',`${cibPl(A.miss.length,'item','items')} (${sar(A.missV)}) ${A.miss.length===1?'has':'have'} no P6 activity`);else add('ok','mapping',`All ${A.rows.length} billable items are mapped or reviewed`);
+  if(A.unmappedActs.length)add(A.wUnPct>0.05?'med':'low','mapping',`${cibPl(A.unmappedActs.length,'weighted P6 activity','weighted P6 activities')} (${pct(A.wUnPct)} of the schedule weight) ${A.unmappedActs.length===1?'carries':'carry'} no Schedule C code`);
+  if(A.unknown.length)add('med','mapping',`${cibPl(A.unknown.length,'activity carries','activities carry')} a Schedule C code that is not in the price schedule`);
+  if(A.gone.length)add('low','mapping',`${cibPl(A.gone.length,'mapped activity is','mapped activities are')} no longer in the updated schedule`);
+  /* abnormal progress and over-billing */
+  const prevInv=cibLastCert(pid,I.seq),months=prevInv&&prevInv.to?Math.max(1,Math.round(daysBetween(prevInv.to,I.to)/30.4)):1;
+  const jump=I.lines.filter(l=>l.value>0&&l.src==='p6'&&(l.prog-(l.prev_prog??l.prev_pct))>0.35*months);if(jump.length)add('med','progress',`Progress jumps more than ${35*months} points this period on ${jump.length} item${jump.length===1?'':'s'}: ${jump.slice(0,5).map(l=>l.no).join(', ')}`);
+  const rev=I.lines.filter(l=>l.rev);if(rev.length)add('high','progress',`${rev.length} item${rev.length===1?' has':'s have'} less progress than already certified (schedule reversal)`);
+  const man=I.lines.filter(l=>l.src==='manual'&&l.this_pay>0);if(man.length)add('med','progress',`${man.length} item${man.length===1?' is':'s are'} billed on a typed % (${sar(man.reduce((t,l)=>t+l.this_pay,0))}): check the evidence`);
+  const ob=I.lines.filter(l=>l.value>0&&l.src==='p6'&&l.cum_pay/l.value>l.prog+0.0005&&l.rule==='pct');if(ob.length)add('high','overbilling',`${ob.length} item${ob.length===1?' is':'s are'} claimed beyond their physical progress`);
+  const p=projById(pid),phys=C.X.rows.reduce((t,r)=>t+(+r.w>0?+r.w:0)*(+r.pct||0),0)/Math.max(1,C.X.rows.reduce((t,r)=>t+(+r.w>0?+r.w:0),0))/100;
+  if(T.cv&&T.gross_cum/T.cv>phys+0.05)add('high','overbilling',`Billed to date ${pct(T.gross_cum/T.cv)} is ahead of the schedule's progress ${pct(phys)}`);
+  /* high-value lines and the forecast */
+  const big=I.lines.filter(l=>T.gross_this>0&&l.this_pay>T.gross_this*0.15).sort((a,b)=>b.this_pay-a.this_pay);if(big.length)add('info','variance',`${big.length} line${big.length===1?' makes':'s make'} up more than 15% of this claim: ${big.slice(0,4).map(l=>`${l.no} ${sar(l.this_pay)}`).join(', ')}`);
+  const fc=cibForecast(pid,{from:I.from}),fm=fc&&fc.rows.find(r=>r.m===I.to.slice(0,7));if(fm&&fm.gross>0){const d=(T.gross_this-fm.gross)/fm.gross;if(Math.abs(d)>0.25)add('med','forecast',`This claim is ${pct(Math.abs(d),0)} ${d>0?'above':'below'} the forecast for ${cibMonL(fm.m)} (${sar(fm.gross)})`)}
+  if(fc&&fc.rows.length){const last=fc.rows[fc.rows.length-1];add('info','forecast',`After this invoice ${sar(T.balance)} remains to bill; at the current forecast the last of it is billed in ${cibMonL(last.m)}${p&&p.finish&&last.m>p.finish.slice(0,7)?`, after the contract finish ${fmtDY(p.finish)} (the FAC release comes last)`:''}`)}
+  const w={high:25,med:8,low:3,info:0,ok:0},score=Math.max(0,100-F.reduce((t,f)=>t+w[f.sev],0));
+  return {score,find:F}}
+
+/* ----- forecast: remaining progress of each mapped activity spread evenly to its forecast finish; TCC and FAC at their forecast dates ----- */
+function cibForecast(pid,o={}){const S=cibAppr(pid);if(!S)return null;const p=projById(pid),X=cibCtx(pid,null,TODAY),U=X.U;if(!U)return null;const H=S.head,start=U.data_date;
+  const msF=t=>{const m=msOf(p).find(x=>(x.t||'')===t);return m?(m.act||m.fc||m.plan||null):null},tccD=msF('TCC'),facD=msF('FAC');
+  const lastC=cibInvOf(pid).find(x=>x.st!=='Cancelled'&&x.st!=='Draft')||null,PT=(lastC&&lastC.tot)||{},PL={};(lastC&&lastC.lines||[]).forEach(l=>{PL[l.no]=+(l.cert_cum??l.cum_pay)||0});
+  const fin=[p.finish,facD,tccD,...X.rows.map(r=>r.ef||r.bf)].filter(Boolean).sort().pop()||addDays(start,365);const months=[];let m=start.slice(0,7);while(m<=fin.slice(0,7)&&months.length<72){months.push(m);m=iso(new Date(Date.UTC(+m.slice(0,4),+m.slice(5,7),1))).slice(0,7)}
+  const pAt=(r,d)=>{const pc=+r.pct||0;if(pc>=100)return 100;const s=r.as||r.es||r.bs||start,f=r.ef||r.bf;if(!f||d>=f)return 100;const from=s>start?s:start;if(d<=from)return pc;return pc+(100-pc)*daysBetween(from,d)/Math.max(1,daysBetween(from,f))};
+  let prevCum=Object.values(PL).reduce((t,v)=>t+v,0),retC=+PT.ret_cum||0,advC=+PT.adv_cum||0,relT=!!PT.rel_tcc,relF=!!PT.rel_fac;const v=+H.value||0,advAmt=v*(+H.adv_pct||0)/100,retCapAmt=v*(H.ret_cap==null||H.ret_cap===''?100:+H.ret_cap)/100;
+  const rows=[];months.forEach(mm=>{const d=monthEndOf(mm);if(d<(o.from||start))return;const rowsAt=X.rows.map(r=>Object.assign({},r,{pct:pAt(r,d),af:pAt(r,d)>=100?(r.af||d):null}));
+    const Y=Object.assign({},X,{rows:rowsAt,byId:Object.fromEntries(rowsAt.map(r=>[r.id,r])),byItem:{},to:d});rowsAt.forEach(r=>{const mp=X.M[r.id];if(mp&&mp.item)(Y.byItem[mp.item]=Y.byItem[mp.item]||[]).push(r)});
+    const tcc=!!(tccD&&tccD<=d),fac=!!(facD&&facD<=d);let cum=0;cibBill(S).forEach(i=>{const g=cibProg(pid,S,i,Y);cum+=Math.max(PL[i.no]||0,Math.min(cibPay(cibRule(S,i),i.value,g.p,tcc,fac),(+i.value)*((i.limit??100)/100)))});
+    const gross=Math.max(0,cum-prevCum);prevCum=Math.max(prevCum,cum);const ret=Math.min(gross*(+H.ret_pct||0)/100,Math.max(0,retCapAmt-retC));retC+=ret;
+    let rel=0;if(tcc&&!relT&&+H.ret_tcc>0){rel+=retC*(+H.ret_tcc)/100;relT=true}if(fac&&!relF&&+H.ret_fac>0){rel+=retC*(+H.ret_fac)/100;relF=true}
+    const adv=Math.min(gross*(+H.adv_rec||0)/100,Math.max(0,advAmt-advC));advC+=adv;const net=gross-ret+rel-adv,vat=net*(+H.vat||0)/100;
+    if(gross>0.5||rel>0.5)rows.push({m:mm,gross:cibR2(gross),ret:cibR2(ret),rel:cibR2(rel),adv:cibR2(adv),net:cibR2(net),vat:cibR2(vat),total:cibR2(net+vat),coll:addDays(d,+H.pay_days||0).slice(0,7),cum:cibR2(prevCum)})});
+  return {rows,U,tccD,facD,v,retHeld:cibR2(retC),basis:lastC?`after invoice #${lastC.seq} (${lastC.st.toLowerCase()})`:'from the start'}}
+
+/* ----- the invoice register: issued builder invoices count as progress invoices (the uploaded register keeps its own rows) ----- */
+function cibRegRows(pid){if(!DB.cib&&!DB.cibSrv)return [];return cibInvOf(pid).filter(x=>x.kind!=='Migrated'&&['Issued','Certified','Paid'].includes(x.st)).map(x=>({no:x.ref,date:(x.issued||{}).date||x.to,type:'Progress',phase:null,
+  amount:x.tot.gross_this,sub:x.tot.gross_this,appr:x.cert?x.cert.amt:0,coll:x.paid&&x.cert?cibR2(x.cert.amt*Math.min(1,x.paid.amt/Math.max(0.01,x.tot.total))):0,sub_date:(x.issued||{}).date||null,appr_date:x.cert?x.cert.date:null,coll_date:x.paid?x.paid.date:null,note:`Client Invoice Builder #${x.seq}`,cib:true}))}
+
+/* ----- the invoice workbook: cover, summary, one breakdown sheet per price component, retention, advance recovery,
+   forecast, SAP upload summary, exceptions and review, audit; in the client format's layout ----- */
+async function cibExcel(pid,I){await loadLib(LIBS.exceljs);const p=projById(pid),S=cibDB().sch.find(s=>s.id===I.sch),H=S.head,T=I.tot,wb=new ExcelJS.Workbook();wb.creator='ProTrackAI';wb.created=new Date();
+  const NF='#,##0.00;[Red]-#,##0.00',PF='0.00%',thin={style:'thin',color:{argb:'FF9AA5B1'}},B={top:thin,left:thin,bottom:thin,right:thin},HEAD={type:'pattern',pattern:'solid',fgColor:{argb:'FF1F3A5F'}},SUB={type:'pattern',pattern:'solid',fgColor:{argb:'FFE8EEF5'}};
+  const title=(ws,t,cols)=>{ws.mergeCells(1,1,1,cols);const c=ws.getCell(1,1);c.value=t;c.font={bold:true,size:14};
+    [[`Contract No: ${H.contract_no||'—'}`,`Contract title: ${H.title||p.name}`],[`Client: ${H.client||p.client||'—'}`,`Project: ${pcode(p)} ${p.short}`],[`Payment certificate # ${pad(I.seq)} (${I.ref})`,`Invoice period: ${fmtDY(I.from)} to ${fmtDY(I.to)}`]]
+      .forEach((r,k)=>{ws.getCell(2+k,1).value=r[0];ws.getCell(2+k,Math.max(2,Math.ceil(cols/2))).value=r[1]});
+    if(I.st==='Draft'||I.st==='Submitted'||I.st==='Reviewed'){ws.getCell(5,1).value=`${I.st.toUpperCase()}: not approved for issue`;ws.getCell(5,1).font={bold:true,color:{argb:'FFC0392B'}}}return 7};
+  const hdr=(ws,r,vals,fill)=>{vals.forEach((v,i)=>{const c=ws.getCell(r,i+1);c.value=v;c.font={bold:true,color:{argb:fill===HEAD?'FFFFFFFF':'FF1F2933'}};c.fill=fill||HEAD;c.border=B;c.alignment={wrapText:true,vertical:'middle',horizontal:'center'}})};
+  const row=(ws,r,vals,fmts,bold)=>{vals.forEach((v,i)=>{const c=ws.getCell(r,i+1);c.value=v;c.border=B;if(fmts&&fmts[i])c.numFmt=fmts[i];if(bold)c.font={bold:true}})};
+  /* cover */
+  let ws=wb.addWorksheet('Cover',{pageSetup:{paperSize:9,orientation:'portrait',fitToPage:true}});let r=title(ws,'CLIENT INVOICE — COVER PAGE',4);ws.columns=[{width:52},{width:22},{width:6},{width:22}];
+  const cv=[['Contract value',T.cv],['Change order value',null],['New contract value',T.cv],['Total amount invoiced to date',T.gross_cum],['Total amount invoiced previously',T.gross_prev],['Remaining contract amount after this invoice',T.balance],
+    ['Gross amount for this invoice',T.gross_this],[`Retention (${+H.ret_pct||0}%) on this invoice`,-T.ret_this],['Retention released on this invoice',T.rel_this],[`Advance deduction (${+H.adv_rec||0}%) on this invoice`,-T.adv_this],['Net payable for this invoice',T.net],[`Value added tax (${T.vat_pct}%)`,T.vat],['Total amount for this invoice including VAT',T.total]];
+  cv.forEach(([l,v])=>{row(ws,r,[l,v==null?'—':v],[null,NF],/^Net|^Total amount for/.test(l));r++});
+  r+=1;ws.getCell(r,1).value=`Invoice type: Progress · Prepared by ${I.by} · ${I.st}${I.cert?` · certified ${fmtDY(I.cert.date)}`:''}`;r+=2;
+  [['Contractor\'s authorised representative','Client approval'],['Name, position, signature, date','Name, position, signature, date']].forEach(x=>{ws.getCell(r,1).value=x[0];ws.getCell(r,4).value=x[1];r++});
+  /* summary */
+  ws=wb.addWorksheet('Invoice summary',{pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true}});r=title(ws,'INVOICE SUMMARY',12);ws.columns=[{width:8},{width:34},{width:9},{width:18},{width:30},{width:9},{width:18},{width:9},{width:18},{width:9},{width:18},{width:18}];
+  hdr(ws,r,['Item','Price component','% of price','Contract price per Schedule "C" (SAR)','Payment rule','Previously %','Previously certified (SAR)','This period %','This period (SAR)','To date %','Certified to date (SAR)','Balance (SAR)']);r++;
+  const comps=CIB_COMP.map(([k,n])=>({k,n,L:I.lines.filter(l=>l.comp===k)})).filter(c=>c.L.length);const rn=['I','II','III','IV','V','VI','VII','VIII'];
+  comps.forEach((c,k)=>{const v=c.L.reduce((t,l)=>t+l.value,0),a=c.L.reduce((t,l)=>t+l.prev_pay,0),b=c.L.reduce((t,l)=>t+l.this_pay,0),rs=[...new Set(c.L.map(l=>cibRuleTxt(cibRule(S,S.items.find(i=>i.no===l.no)))))];
+    row(ws,r,[rn[k],c.n,T.cv?v/T.cv:0,v,rs.length===1?rs[0]:'Per item',v?a/v:0,a,v?b/v:0,b,v?(a+b)/v:0,a+b,v-a-b],[null,null,PF,NF,null,PF,NF,PF,NF,PF,NF,NF]);ws.getCell(r,5).alignment={wrapText:true};r++});
+  row(ws,r,['','TOTAL LUMP SUM CONTRACT PRICE',1,T.cv,'',T.cv?T.gross_prev/T.cv:0,T.gross_prev,T.cv?T.gross_this/T.cv:0,T.gross_this,T.cv?T.gross_cum/T.cv:0,T.gross_cum,T.balance],[null,null,PF,NF,null,PF,NF,PF,NF,PF,NF,NF],true);r+=2;
+  [['Less retention this period',-T.ret_this],['Retention released this period',T.rel_this],['Less advance recovery this period',-T.adv_this],['Net payable',T.net],[`VAT ${T.vat_pct}%`,T.vat],['Total including VAT',T.total]].forEach(([l,v])=>{row(ws,r,['',l,'','','','','','',v],[null,null,null,null,null,null,null,null,NF],/Net|Total/.test(l));r++});
+  /* breakdown per component */
+  const SHEET={GEN:'General',ENG:'Engineering',MAT:'Material',CON:'Construction',INS:'Installation',TC:'Testing & Commissioning',CLO:'Close-out',OTH:'Other items'};
+  comps.forEach(c=>{const ws2=wb.addWorksheet(SHEET[c.k],{pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true}});let q=title(ws2,`${c.n.toUpperCase()} PRICE COMPONENT`,20);
+    ws2.columns=[{width:16},{width:44},{width:7},{width:8},{width:14},{width:16},{width:12},{width:9},{width:15},{width:9},{width:15},{width:9},{width:15},{width:9},{width:15},{width:9},{width:15},{width:9},{width:15},{width:10}];
+    ws2.mergeCells(q,1,q,7);ws2.getCell(q,1).value='CONTRACTUAL';ws2.mergeCells(q,8,q,13);ws2.getCell(q,8).value='CERTIFIED PROGRESS';ws2.mergeCells(q,14,q,19);ws2.getCell(q,14).value='PAYMENT CERTIFIED';ws2.getCell(q,20).value='SAP ENTRY';[1,8,14,20].forEach(k=>{const x=ws2.getCell(q,k);x.font={bold:true};x.fill=SUB;x.alignment={horizontal:'center'}});q++;
+    hdr(ws2,q,['Item no.','Item description','Unit','Qty','Unit price (SAR)','Total amount (SAR)','Progress source','Prev. %','Prev. amount','New %','New amount','Cum. %','Cum. amount','Prev. %','Prev. amount','New %','New amount','Cum. %','Cum. amount','Ratio']);q++;
+    c.L.forEach(l=>{const v=l.value||1,pp=l.prev_pay/v,tp=l.this_pay/v,src={p6:`P6, ${l.acts} activit${l.acts===1?'y':'ies'}`,steps:'Phase steps',ms:'Milestone',manual:'Typed % (reviewed)',zero:'Reviewed: no work',history:'History',none:'Not mapped'}[l.src]||l.src;
+      const prog1=l.prog??(l.value?l.cum_pay/l.value:0),prog0=l.prev_prog??l.prev_pct;row(ws2,q,[l.no,l.desc,l.unit,l.qty||'',l.rate||'',l.value,src,prog0,l.value*prog0,Math.max(0,prog1-prog0),l.value*Math.max(0,prog1-prog0),prog1,l.value*prog1,pp,l.prev_pay,tp,l.this_pay,pp+tp,l.cum_pay,pp+tp],
+        [null,null,null,null,NF,NF,null,PF,NF,PF,NF,PF,NF,PF,NF,PF,NF,PF,NF,'0.0000']);ws2.getCell(q,2).alignment={wrapText:true};q++});
+    const sv=k=>c.L.reduce((t,l)=>t+(+l[k]||0),0),V=sv('value');row(ws2,q,['','SUB TOTAL','','','',V,'','','','','','','',V?sv('prev_pay')/V:0,sv('prev_pay'),V?sv('this_pay')/V:0,sv('this_pay'),V?sv('cum_pay')/V:0,sv('cum_pay'),''],[null,null,null,null,null,NF,null,null,null,null,null,null,null,PF,NF,PF,NF,PF,NF],true);
+    ws2.views=[{state:'frozen',ySplit:q-c.L.length,xSplit:2}]});
+  /* retention, advance */
+  ws=wb.addWorksheet('Retention');r=title(ws,'RETENTION SUMMARY',4);ws.columns=[{width:46},{width:20},{width:20},{width:20}];hdr(ws,r,['','Previously','This period','To date']);r++;
+  [['Retention held',T.ret_cum-T.ret_this,T.ret_this,T.ret_cum],['Retention released',T.rel_cum-T.rel_this,T.rel_this,T.rel_cum],['Retention balance',T.ret_cum-T.ret_this-(T.rel_cum-T.rel_this),T.ret_this-T.rel_this,T.ret_cum-T.rel_cum]].forEach(x=>{row(ws,r,x,[null,NF,NF,NF]);r++});
+  r++;ws.getCell(r,1).value=`Terms: ${+H.ret_pct||0}% of each invoice${H.ret_cap!=null?`, up to ${H.ret_cap}% of the contract value`:''}; ${+H.ret_tcc||0}% released at TCC${I.lines&&cibMs(p,I.to).tcc?' (achieved)':''}, ${+H.ret_fac||0}% at FAC.`;
+  ws=wb.addWorksheet('Advance recovery');r=title(ws,'ADVANCE RECOVERY SUMMARY',4);ws.columns=[{width:46},{width:20},{width:20},{width:20}];hdr(ws,r,['','Previously','This period','To date']);r++;
+  row(ws,r,['Advance payment',T.adv_amt,'',T.adv_amt],[null,NF,null,NF]);r++;row(ws,r,['Advance recovered',T.adv_cum-T.adv_this,T.adv_this,T.adv_cum],[null,NF,NF,NF]);r++;row(ws,r,['Advance balance to recover',T.adv_amt-(T.adv_cum-T.adv_this),'',T.adv_amt-T.adv_cum],[null,NF,null,NF],true);r+=2;
+  ws.getCell(r,1).value=`Terms: advance ${+H.adv_pct||0}% of the contract value, recovered at ${+H.adv_rec||0}% of each invoice until repaid.`;
+  /* forecast */
+  const fc=cibForecast(pid,{from:addDays(I.to,1)});ws=wb.addWorksheet('Forecast');r=title(ws,'STATEMENT OF PREVIOUS, PRESENT AND FORECAST INVOICES',9);ws.columns=[{width:16},{width:22},{width:16},{width:16},{width:16},{width:16},{width:16},{width:18},{width:18}];
+  hdr(ws,r,['Invoice','Month','Gross (SAR)','Retention','Advance deduction','Net payable','VAT','Status','Expected collection']);r++;
+  cibInvOf(pid).filter(x=>x.st!=='Cancelled'&&x.kind!=='Migrated').slice().reverse().forEach(x=>{row(ws,r,[`#${pad(x.seq)}`,fmtMon(x.to.slice(0,7)),x.tot.gross_this,x.tot.ret_this,x.tot.adv_this,x.tot.net,x.tot.vat,x.st,fmtMon(addDays(x.to,+H.pay_days||0).slice(0,7))],[null,null,NF,NF,NF,NF,NF]);r++});
+  let k=I.seq;(fc&&fc.rows||[]).forEach(f=>{k++;row(ws,r,[`#${pad(k)} (forecast)`,fmtMon(f.m),f.gross,f.ret-f.rel,f.adv,f.net,f.vat,'Forecast',fmtMon(f.coll)],[null,null,NF,NF,NF,NF,NF]);r++});
+  r++;ws.getCell(r,1).value=`Forecast: the remaining progress of each mapped activity spread evenly to its forecast finish in the updated schedule of ${fc&&fc.U?fmtDY(fc.U.data_date):'—'}; TCC ${fc&&fc.tccD?fmtDY(fc.tccD):'not dated'}, FAC ${fc&&fc.facD?fmtDY(fc.facD):'not dated'}; collection after ${+H.pay_days||0} days.`;
+  /* SAP upload summary */
+  ws=wb.addWorksheet('SAP upload');r=title(ws,'SAP UPLOAD SUMMARY',7);ws.columns=[{width:16},{width:18},{width:44},{width:16},{width:12},{width:18},{width:18}];hdr(ws,r,['Item no.','Price component','Description','Contract value','SAP ratio','This period (SAR)','Cumulative (SAR)']);r++;
+  I.lines.filter(l=>l.this_pay||l.cum_pay).forEach(l=>{row(ws,r,[l.no,CIB_CN[l.comp],l.desc,l.value,l.value?l.cum_pay/l.value:0,l.this_pay,l.cum_pay],[null,null,null,NF,'0.0000',NF,NF]);r++});
+  row(ws,r,['','','Total','','',T.gross_this,T.gross_cum],[null,null,null,null,null,NF,NF],true);
+  /* exceptions, review, audit */
+  ws=wb.addWorksheet('Exceptions & review');r=title(ws,'EXCEPTIONS AND REVIEW',3);ws.columns=[{width:14},{width:16},{width:110}];hdr(ws,r,['Kind','Severity','Finding']);r++;
+  (I.exc||[]).forEach(e=>{row(ws,r,['Exception',e.sev==='block'?'Blocks':'Check',e.msg]);r++});(I.ai&&I.ai.find||[]).forEach(f=>{row(ws,r,['Review',f.sev,f.msg]);r++});
+  if(I.ai){r++;ws.getCell(r,1).value=`Review score ${I.ai.score}/100 by ${I.ai.by}, ${tStamp(I.ai.at)} (rules-based)`}
+  ws=wb.addWorksheet('Audit');r=title(ws,'AUDIT TRAIL',4);ws.columns=[{width:20},{width:24},{width:30},{width:80}];hdr(ws,r,['When','Who','What','Detail']);r++;
+  (I.hist||[]).forEach(h=>{row(ws,r,[tStamp(h.at),h.by,h.st,h.note||'']);r++});
+  const buf=await wb.xlsx.writeBuffer();await saveFile(`ProTrack_client_invoice_${pcode(p)}_${pad(I.seq)}_${I.to}.xlsx`,new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  if(!I.docs.sum&&(can('cib.prepare')||can('cib.approve'))&&!['Certified','Paid','Cancelled'].includes(I.st)){try{await cibAct('inv_docs',{pid,id:I.id,k:'sum',v:'yes'})}catch(e){}}
+  cibLog(pid,'Invoice workbook exported',`#${I.seq}`);save()}
+/* the Schedule-C template: the column layout the upload reads (no amounts) */
+async function cibTemplate(){await loadLib(LIBS.xlsx);const ws=XLSX.utils.aoa_to_sheet([['Contractual price schedule (Schedule "C"): template'],['One row per item. Line type: Description for a heading, Breakdown for a priced item. Write "Not Applicable" or "Included in Item …" in Total Cost where the contract says so.'],[],
+    ['Item Number','Line Type','Short Description','Long Description','Qty','Unit','Unit Price','Total Cost'],['X.1','Description','General','','','','',''],['X.1.1','Breakdown','General','Site office','1','LT','',''],['X.2','Description','Engineering & Design','','','','',''],['X.2.1','Breakdown','Main substation','Phase I','1','LT','','']]);
+  ws['!cols']=[{wch:16},{wch:14},{wch:28},{wch:44},{wch:8},{wch:8},{wch:14},{wch:16}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Price Schedule');
+  await saveFile('ProTrack_schedule_C_template.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}))}
+
+/* ----- the screen ----- */
+const cibStChip=s=>`<span class="cib-st cib-st-${String(s).toLowerCase().replace(/\s+/g,'')}">${esc(s)}</span>`;
+const cibSarF=v=>'SAR '+fmt(v,2);
+function cibPid(){const s=cibUiOf(),L=cibProjects();if(!s.pid||!L.some(p=>p.id===s.pid))s.pid=(L.find(p=>cibCur(p.id))||L[0]||{}).id||null;return s.pid}
+function renderCib(){const s=cibUiOf(),L=cibProjects(),pid=cibPid();
+  if(!L.length){$('#view').innerHTML='<section class="panel"><h2>Client Invoice Builder</h2><p class="muted">Client invoices are open to those who see billing figures of their projects.</p></section>';return}
+  const todo=cibTodo().length;
+  $('#view').innerHTML=`<div class="cib">${CLOUD_ME&&DB.cibMissing?'<div class="warn-box"><b>The Client Invoice Builder needs the v51 database update.</b> Run schema-update-v51.sql (STAGE-45-SETUP). Until then nothing is kept on the server.</div>':''}
+    <div class="card-head" style="flex-wrap:wrap;gap:10px"><h2 style="margin:0">Client Invoice Builder</h2><label class="field" style="margin:0;min-width:260px">Project<select data-cibpid>${L.map(p=>`<option value="${esc(p.id)}" ${p.id===pid?'selected':''}>${esc(p.short)} · ${esc(p.name)}</option>`).join('')}</select></label></div>
+    <div class="ptabs" role="tablist" aria-label="Client Invoice Builder">${CIB_TABS.map(([k,l])=>`<button type="button" role="tab" class="ptab ${s.tab===k?'on':''}" aria-selected="${s.tab===k}" data-cibtab="${k}">${esc(l)}${k==='dash'&&todo?` <span class="rk-badge">${todo}</span>`:''}</button>`).join('')}</div>
+    ${(({dash:cibDashHTML,sch:cibSchHTML,map:cibMapHTML,inv:cibInvHTML,fc:cibFcHTML,aud:cibAudHTML})[s.tab]||cibDashHTML)(pid,s)}</div>`}
+/* what waits for me: drafts to submit, invoices to review, approve, issue, certify */
+function cibTodo(){const u=me(),out=[];cibProjects().forEach(p=>cibInvOf(p.id).forEach(I=>{const mine=I.by_id===u.id,rh=I.hist.filter(h=>h.st==='Reviewed').pop()||{},rv=rh.by_id?rh.by_id===u.id:rh.by===u.name;
+  if(I.st==='Submitted'&&can('cib.review')&&(!mine||u.role==='sa'))out.push([p,I,'Review']);
+  else if(I.st==='Reviewed'&&can('cib.approve')&&((!mine&&!rv)||u.role==='sa'))out.push([p,I,'Approve']);
+  else if(I.st==='Approved'&&(can('cib.prepare')||can('cib.approve')))out.push([p,I,'Issue to the client']);
+  else if(I.st==='Issued'&&can('cib.certify'))out.push([p,I,'Record the client certificate']);
+  else if(I.st==='Draft'&&mine)out.push([p,I,'Finish and submit'])}));
+  cibProjects().forEach(p=>{const S=cibSchOf(p.id).find(x=>x.st==='Draft');if(S&&can('cib.approve')&&(S.by_id!==u.id||u.role==='sa'))out.push([p,null,`Approve Schedule-C revision ${S.rev}`])});return out}
+function cibReady(pid,I){const A=cibAudit(pid,I?cibDB().sch.find(s=>s.id===I.sch):cibAppr(pid)),X=I?cibCtx(pid,I.su,I.to):cibCtx(pid,null,ASOF),docs=I?CIB_DOCS.filter(d=>I.docs[d[0]]).length:0;
+  const it=[['Approved Schedule-C',!!cibAppr(pid)],['Progress updated (P6 schedule within the period)',!!(X.U&&(!I||X.U.data_date>=I.from))],['Every item mapped or reviewed',!!A&&!A.miss.length],['Supporting documents',I?docs===CIB_DOCS.length:false,I?`${docs} of ${CIB_DOCS.length}`:'with the invoice'],
+    ['Review run on the current figures',!!(I&&I.ai&&!I.ai.stale&&I.ai.at>=I.upd)],['No blocking exception',!!(I&&!cibBlocks(I.exc||[]).length)]];
+  return {it,pct:it.filter(x=>x[1]).length/it.length}}
+function cibDashHTML(pid){const p=projById(pid),S=cibAppr(pid),A=cibAudit(pid),inv=cibInvOf(pid).filter(x=>x.st!=='Cancelled'),last=inv.find(x=>CIB_DONE.includes(x.st)||x.st==='Issued'),open=inv.find(x=>x.st!=='Cancelled'&&!CIB_DONE.includes(x.st)),fc=cibForecast(pid);
+  const T=(last||{}).tot||{},cv=S?+S.head.value:0,next3=fc?fc.rows.slice(0,3).reduce((t,r)=>t+r.gross,0):0,lastD=last?((last.issued||{}).date||(last.cert||{}).date||last.to):null,R=cibReady(pid,open&&open.st==='Draft'?open:null);
+  const todo=cibTodo();
+  return `${A&&A.miss.length?`<div class="warn-box"><b>⚠ ${A.miss.length} price schedule item${A.miss.length===1?'':'s'} not mapped</b>Total unmapped value ${cibSarF(A.missV)} (${pct(A.missPct)}). Invoices cannot be finalized until the mappings are reviewed. <button class="btn sm" type="button" data-cibtab="map">Open the mapping audit</button></div>`:''}
+    ${!cibCur(pid)?`<div class="note"><b>Start here</b>Upload the approved contractual price schedule (Schedule-C) of ${esc(p.short)}, then have it approved. For a running project, load the latest certified client invoice after that. <button class="btn sm primary" type="button" data-cibtab="sch">Upload Schedule-C</button></div>`:''}
+    <h3>Client invoice dashboard · ${esc(p.short)}</h3>
+    <div class="g g-kpi">${kpi('Contract value',cv?sar(cv):'—',S?`Schedule-C revision ${S.rev}`:'no approved revision')}${kpi('Certified to date',T.gross_cum!=null?sar(T.gross_cum):'—',T.gross_cum!=null&&cv?pct(T.gross_cum/cv)+' of the price':'no certified invoice')}
+      ${kpi('Current claim',open?sar(open.tot.gross_this):'—',open?`#${open.seq} ${open.st}`:'no open invoice')}${kpi('Retention held',T.ret_cum!=null?sar((T.ret_cum||0)-(T.rel_cum||0)):'—','after releases')}
+      ${kpi('Balance to bill',T.balance!=null?sar(T.balance):cv?sar(cv):'—','contract value less certified')}${kpi('Forecast, next 3 months',fc?sar(next3):'—',fc?'gross, from P6':'no forecast yet')}
+      ${kpi('Days since last invoice',lastD?fmt(daysBetween(lastD,TODAY)):'—',lastD?fmtDY(lastD):'none issued')}${kpi('Outstanding',inv.length?sar(inv.filter(x=>x.cert).reduce((t,x)=>t+x.tot.total-((x.paid||{}).amt||0),0)):'—','certified, not yet paid (with VAT)')}</div>
+    <div class="grid2" style="margin-top:14px">
+      <section class="panel"><h3 style="margin-top:0">Schedule-C health</h3>${A?`<div class="g g-kpi">${kpi('Items mapped',pct(A.rows.length?A.mapped/A.rows.length:0,0),`${A.mapped} of ${A.rows.length}`)}${kpi('Unmapped',pct(A.missPct),cibSarF(A.missV),A.miss.length?'r':'')}
+        ${kpi('Value coverage',pct(A.cov),'price with progress or a reviewed basis')}${kpi('Risk score',`${A.risk}/100`,A.risk>=50?'high':A.risk>=20?'medium':'low',A.risk>=50?'r':A.risk>=20?'a':'g')}</div>
+        <p class="small muted" style="margin:6px 0 0">Risk: 60 × unmapped value share + 15 × unmapped schedule weight + 10 × value on typed % + 5 for unknown codes + 10 when the latest P6 update is older than 35 days.</p>`:'<p class="muted">No Schedule-C yet.</p>'}</section>
+      <section class="panel"><h3 style="margin-top:0">Invoice readiness ${open&&open.st==='Draft'?`· #${open.seq}`:''}</h3><div class="cib-ready"><b>${pct(R.pct,0)}</b><span>ready</span></div>
+        <ul class="cib-check">${R.it.map(([l,ok,x])=>`<li class="${ok?'ok':'no'}">${ok?'✓':'✗'} ${esc(l)}${x?` <span class="muted">(${esc(x)})</span>`:''}</li>`).join('')}</ul></section></div>
+    <section class="panel" style="margin-top:14px"><h3 style="margin-top:0">Waiting for you</h3>${todo.length?`<table class="tbl"><tbody>${todo.map(([pp,I,w])=>`<tr><td><b>${esc(pp.short)}</b></td><td>${I?`#${I.seq} ${esc(I.ref)} · ${cibStChip(I.st)}`:'Schedule-C'}</td><td>${esc(w)}</td><td class="n"><button class="btn sm" type="button" data-cibgo="${esc(pp.id)}|${I?I.id:''}">Open</button></td></tr>`).join('')}</tbody></table>`:'<p class="muted small">Nothing waits for you.</p>'}</section>
+    <section class="panel" style="margin-top:14px"><h3 style="margin-top:0">Portfolio</h3><div class="scroll"><table class="tbl"><thead><tr><th>Project</th><th>Schedule-C</th><th class="n">Coverage</th><th class="n">Risk</th><th>Last invoice</th><th class="n">Certified to date</th><th>Open invoice</th></tr></thead><tbody>
+      ${cibProjects().map(pp=>{const c=cibCur(pp.id),a=c?cibAudit(pp.id,c):null,l=cibInvOf(pp.id).find(x=>CIB_DONE.includes(x.st)),o=cibInvOf(pp.id).find(x=>x.st!=='Cancelled'&&!CIB_DONE.includes(x.st));
+        return `<tr><td><button class="link" type="button" data-cibgo="${esc(pp.id)}|">${esc(pp.short)}</button></td><td>${c?`Rev ${c.rev} ${cibStChip(c.st)}`:'<span class="muted">not loaded</span>'}</td><td class="n">${a?pct(a.cov,0):'—'}</td><td class="n">${a?a.risk:'—'}</td><td>${l?`#${l.seq} ${fmtDY(l.to)}`:'—'}</td><td class="n">${l?sar(l.tot.gross_cum):'—'}</td><td>${o?`#${o.seq} ${cibStChip(o.st)}`:'—'}</td></tr>`}).join('')}</tbody></table></div></section>`}
+
+/* Schedule-C: upload, header, rules, items */
+function cibRuleEd(key,r,dis){const n=(k,v,a='')=>`<input type="number" step="0.01" min="0" max="100" data-cibr="${key}|${k}" value="${esc(v??'')}" ${dis} ${a} style="width:74px">`;
+  return `<select data-cibr="${key}|t" ${dis}>${opt(CIB_RULES,r.t)}</select> ${['pct','phase'].includes(r.t)?`<span class="small">on progress ${n('cap',r.cap)}% · TCC ${n('tcc',r.tcc)}% · FAC ${n('fac',r.fac)}%</span>`:r.t==='split'?`<span class="small">on progress ${n('first',r.first??90)}% · balance at FAC</span>`:''}
+    ${r.t==='phase'?`<div class="cib-steps">${(r.steps||[]).map((st,k)=>`<div><input data-cibst="${key}|${k}|n" value="${esc(st.n)}" placeholder="Phase I" ${dis} style="width:120px"> <input type="number" step="0.01" data-cibst="${key}|${k}|pct" value="${esc(st.pct)}" ${dis} style="width:70px">% when P6 activity <input data-cibst="${key}|${k}|act" value="${esc(st.act)}" placeholder="Activity ID" ${dis} style="width:130px"> is complete ${dis?'':`<button class="btn sm" type="button" data-cibstdel="${key}|${k}">Remove</button>`}</div>`).join('')}${dis?'':`<button class="btn sm" type="button" data-cibstadd="${key}">Add a phase step</button>`}</div>`:''}`}
+function cibSchHTML(pid,s){const p=projById(pid),revs=cibSchOf(pid),S=s.schRev?revs.find(x=>x.id===s.schRev)||revs[0]:revs[0],U=s.up&&s.up.pid===pid?s.up:null,ed=S&&S.st==='Draft'&&can('cib.setup');
+  const H=U?U.head:S?S.head:null;const up=can('cib.setup')?`<section class="panel"><div class="card-head"><h3 style="margin:0">Upload a contractual price schedule</h3><button class="btn sm" type="button" data-cibtpl>Template</button></div>
+    <p class="small muted" style="margin:0 0 8px">XLSX, XLS or CSV with Item Number, (Line Type), Description, Qty, Unit, Unit Price and Total Cost. The sheet with the most priced items is read. Each upload becomes a draft revision; it is used once approved. ${revs.some(x=>x.st==='Draft')?'<b>A draft revision is waiting: approve or discard it before uploading another.</b>':''}</p>
+    <input type="file" accept=".xlsx,.xls,.csv" data-cibschfile ${revs.some(x=>x.st==='Draft')?'disabled':''}><div id="cibUpErr" class="err"></div></section>`:'';
+  const prev=U?`<section class="panel cib-prev"><h3 style="margin-top:0">${esc(U.file)} · sheet “${esc(U.sheet)}”</h3>
+    <p class="small">${U.items.length} items read, ${U.billable.length} priced items to bill, ${U.items.filter(i=>i.st==='Not applicable').length} not applicable, ${U.items.filter(i=>i.st==='Included').length} included in another item. Priced total <b>${cibSarF(U.total)}</b>.</p>
+    <table class="tbl"><thead><tr><th>Component</th><th class="n">Items</th><th class="n">Value</th></tr></thead><tbody>${CIB_COMP.map(([k,n])=>{const L=U.billable.filter(i=>i.comp===k);return L.length?`<tr><td>${esc(n)}</td><td class="n">${L.length}</td><td class="n">${cibSarF(L.reduce((t,i)=>t+i.value,0))}</td></tr>`:''}).join('')}</tbody></table>
+    ${U.warn.length?`<div class="warn-box"><b>${U.warn.length} note${U.warn.length===1?'':'s'}</b><ul class="small">${U.warn.slice(0,12).map(w=>`<li>${esc(w)}</li>`).join('')}</ul></div>`:''}
+    ${cibHeadForm(H,'')}<label class="field">Note for the audit trail<input data-cibuph="note" maxlength="300"></label>
+    <div class="actions"><button class="btn primary" type="button" data-cibschsave>Save as revision ${(revs[0]||{rev:0}).rev+1} (draft)</button><button class="btn" type="button" data-cibupcancel>Cancel</button></div><p class="err" id="cibSchErr"></p></section>`:'';
+  if(!S)return up+prev+(U?'':'<p class="muted">No Schedule-C loaded for this project yet.</p>');
+  const comp=s.schComp||'',q=(s.schQ||'').toLowerCase(),items=S.items.filter(i=>(!comp||i.comp===comp)&&(!q||(i.no+' '+i.desc).toLowerCase().includes(q)));
+  return up+prev+`<section class="panel"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">Revision ${S.rev} ${cibStChip(S.st)}</h3><div class="actions" style="margin:0">
+      ${revs.length>1?`<select data-cibschrev>${revs.map(x=>`<option value="${x.id}" ${x.id===S.id?'selected':''}>Revision ${x.rev} · ${x.st}</option>`).join('')}</select>`:''}
+      ${S.st==='Draft'&&can('cib.approve')?`<button class="btn sm primary" type="button" data-cibschappr="${S.id}">Approve revision ${S.rev}</button>`:''}${S.st==='Draft'&&can('cib.setup')?`<button class="btn sm danger" type="button" data-cibschdisc="${S.id}">Discard draft</button>`:''}</div></div>
+    <p class="small muted" style="margin:0 0 8px">${esc(S.file||'')} · uploaded by ${esc(S.by)} ${tStamp(S.at)}${S.appr_by?` · approved by ${esc(S.appr_by)} ${tStamp(S.appr_at)}`:''}. ${cibBill(S).length} priced items, ${cibSarF(cibBill(S).reduce((t,i)=>t+(+i.value||0),0))}.</p>
+    ${cibHeadForm(S.head,ed?'':'disabled')}${ed?`<div class="actions"><button class="btn sm" type="button" data-cibheadsave="${S.id}">Save header</button></div>`:''}<p class="err" id="cibHeadErr"></p></section>
+    <section class="panel"><h3 style="margin-top:0">Invoicing rules by price component</h3><p class="small muted" style="margin:0 0 8px">Rule types: 1 percentage of progress (with releases at TCC and FAC), 2 split (a share on progress, the balance at FAC, e.g. material delivery), 3 payable at TCC, 4 payable at FAC, 5 engineering phase billing. Defaults come from this project's payment terms; set them to the contract's Schedule-C. ${ed?'':'Rules change only on a draft revision.'}</p>
+    <table class="tbl"><tbody>${CIB_COMP.filter(([k])=>S.items.some(i=>i.comp===k)).map(([k,n])=>`<tr><td style="width:190px"><b>${esc(n)}</b><span class="t2">${cibRuleTxt(Object.assign({t:'pct'},(s.rules&&s.rules.sid===S.id?s.rules.r:S.rules)[k]||{}))}</span></td><td>${cibRuleEd('c:'+k,Object.assign({t:'pct',cap:100,tcc:0,fac:0},(s.rules&&s.rules.sid===S.id?s.rules.r:S.rules)[k]||{}),ed?'':'disabled')}</td></tr>`).join('')}</tbody></table>
+    ${ed?`<div class="actions"><button class="btn sm primary" type="button" data-cibrulesave="${S.id}">Save rules</button></div>`:''}<p class="err" id="cibRuleErr"></p></section>
+    <section class="panel"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">Items</h3><div class="actions" style="margin:0"><select data-cibf="schComp"><option value="">All components</option>${opt(CIB_COMP,comp)}</select><input type="search" placeholder="Item or description" data-cibf="schQ" value="${esc(s.schQ||'')}"></div></div>
+    <div class="scroll" style="max-height:560px"><table class="tbl cib-items"><thead><tr><th>Item</th><th>Description</th><th>Component</th><th>Unit</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Value (SAR)</th><th>Status</th><th>Rule</th><th class="n">Limit</th></tr></thead><tbody>
+    ${items.slice(0,800).map(i=>{const r=cibRule(S,i);return `<tr class="${i.leaf?'':'cib-head'}"><td style="padding-left:${6+Math.min(i.lvl||0,7)*12}px">${esc(i.no)}</td><td>${esc(i.desc)}</td><td>${esc(CIB_CN[i.comp])}</td><td>${esc(i.unit)}</td><td class="n">${i.qty?fmt(i.qty,2):''}</td><td class="n">${i.rate?fmt(i.rate,2):''}</td><td class="n">${i.value?fmt(i.value,2):''}</td>
+      <td>${i.st==='Active'?(i.leaf?'':'<span class="muted">heading</span>'):esc(i.st+(i.incl?' in '+i.incl:''))}</td><td>${i.leaf&&i.st==='Active'?`${i.rule?'<b>Own:</b> ':''}${esc(cibRuleTxt(r))}${ed?` <button class="btn sm" type="button" data-cibitem="${esc(i.no)}">Change</button>`:''}`:''}</td><td class="n">${i.leaf&&i.st==='Active'?(i.limit??100)+'%':''}</td></tr>
+      ${s.itemEd===i.no&&ed?`<tr><td colspan="10"><div class="cib-edit"><b>${esc(i.no)}: own rule</b> <label class="small"><input type="checkbox" data-cibiown ${i.rule?'checked':''}> differs from the component's rule</label>
+        <div>${cibRuleEd('i:'+i.no,Object.assign({},r,(s.itemRule&&s.itemRule.no===i.no?s.itemRule.r:{})),'')}</div><label class="field" style="max-width:220px">Invoice limit (% of the item)<input type="number" min="1" max="100" step="0.01" data-cibilim value="${i.limit??100}"></label>
+        <label class="field" style="max-width:260px">Component<select data-cibicomp>${opt(CIB_COMP,i.comp)}</select></label><label class="field">Reason<input data-cibinote maxlength="300"></label>
+        <div class="actions"><button class="btn sm primary" type="button" data-cibitemsave="${esc(i.no)}">Save item</button><button class="btn sm" type="button" data-cibitem="">Close</button></div><p class="err" id="cibItemErr"></p></div></td></tr>`:''}`}).join('')}
+    </tbody></table></div>${items.length>800?`<p class="small muted">First 800 of ${items.length}: filter to see the rest.</p>`:''}</section>`}
+function cibHeadForm(H,dis){H=H||{};const f=(k,l,a='')=>F(l,`<input data-cibh="${k}" value="${esc(H[k]??'')}" ${dis} ${a}>`);
+  return `<div class="fields">${f('contract_no','Contract number','maxlength="60"')}${f('title','Contract title','maxlength="300"')}${f('client','Client','maxlength="200"')}${f('issue_date','Schedule-C issue date','type="date"')}
+    ${f('value','Approved contract value (SAR)','type="number" min="0" step="0.01"')}${F('Currency',`<input value="SAR" disabled>`)}${f('vat','VAT %','type="number" min="0" max="30" step="0.01"')}${f('pay_days','Payment period (days)','type="number" min="0" max="365"')}
+    ${f('ret_pct','Retention on each invoice %','type="number" min="0" max="30" step="0.01"')}${f('ret_cap','Retention cap (% of contract value, blank = none)','type="number" min="0" max="100" step="0.01"')}${f('ret_tcc','Retention released at TCC %','type="number" min="0" max="100" step="0.01"')}${f('ret_fac','Retention released at FAC %','type="number" min="0" max="100" step="0.01"')}
+    ${f('adv_pct','Advance payment (% of contract value)','type="number" min="0" max="50" step="0.01"')}${f('adv_rec','Advance recovery (% of each invoice)','type="number" min="0" max="100" step="0.01"')}</div>`}
+const cibHeadRead=box=>{const o={};(box||document).querySelectorAll('[data-cibh]').forEach(x=>{o[x.dataset.cibh]=x.value});return o};
+function cibDefHead(p,total){const B=billOf(p);return {contract_no:'',title:p.name,client:p.client||'',issue_date:'',currency:'SAR',value:total,ret_pct:+B.ret.pct||0,ret_cap:B.ret.cap??'',ret_tcc:+B.ret.tcc||0,ret_fac:+B.ret.fac||0,adv_pct:+B.adv.pct||0,adv_rec:+B.adv.recover||0,vat:15,pay_days:payDaysOf(p)}}
+
+/* Mapping audit */
+function cibMapHTML(pid,s){const S=cibCur(pid);if(!S)return '<p class="muted">Upload the Schedule-C first.</p>';const X=cibCtx(pid,null,ASOF),A=cibAudit(pid,S,X),rv=cibRevOf(pid),ed=can('cib.map'),f=s.mapSt||'',Q=(s.mapQ||'').toLowerCase(),PX=s.px&&s.px.pid===pid?s.px:null;
+  const rows=A.rows.filter(x=>(!f||x.st===f)&&(!Q||(x.i.no+' '+x.i.desc).toLowerCase().includes(Q)));
+  return `${A.miss.length?`<div class="warn-box"><b>⚠ ${A.miss.length} price schedule item${A.miss.length===1?'':'s'} not mapped</b>Total unmapped value ${cibSarF(A.missV)} (${pct(A.missPct)} of the price). Invoice cannot be finalized until mappings are reviewed.</div>`:`<div class="note"><b>Every priced item is mapped or reviewed</b>${A.rows.length} items, ${cibSarF(A.tot)}.</div>`}
+    <div class="g g-kpi">${kpi('Priced items',fmt(A.rows.length),cibSarF(A.tot))}${kpi('Mapped or reviewed',fmt(A.mapped),pct(A.rows.length?A.mapped/A.rows.length:0,0))}${kpi('Missing',fmt(A.miss.length),cibSarF(A.missV),A.miss.length?'r':'')}${kpi('Missing %',pct(A.missPct),'of the contract value',A.miss.length?'r':'')}${kpi('Invoice risk score',`${A.risk}/100`,A.risk>=50?'high':A.risk>=20?'medium':'low',A.risk>=50?'r':A.risk>=20?'a':'g')}</div>
+    <p class="small muted">Progress from ${A.U?`the updated schedule ${esc(A.U.file_name||'')} (data date ${fmtDY(A.U.data_date)})`:'no updated schedule yet'}. ${A.unmappedActs.length?`${cibPl(A.unmappedActs.length,'weighted activity','weighted activities')} (${pct(A.wUnPct)} of the schedule weight) ${A.unmappedActs.length===1?'carries':'carry'} no Schedule C code.`:''} ${A.unknown.length?`${cibPl(A.unknown.length,'activity carries','activities carry')} a code not in the price schedule.`:''} ${A.gone.length?`${cibPl(A.gone.length,'mapped activity is','mapped activities are')} not in the latest update.`:''}</p>
+    ${ed?`<section class="panel"><h3 style="margin-top:0">Read the Schedule C activity code from P6</h3><p class="small muted" style="margin:0 0 8px">The activity code “Schedule C” holds the item number of each activity. It is read automatically when an updated schedule is loaded in Planning; or load an XER here. Mappings read from P6 replace earlier P6 mappings; mappings added by hand stay.</p>
+      <input type="file" accept=".xer" data-cibxer> ${PX?`<div class="cib-prev"><p class="small"><b>${esc(PX.file)}</b>: ${PX.parsed.rows.length} activities. Activity code <select data-cibxtype>${PX.parsed.codeTypes.map(c=>`<option ${c===PX.ct?'selected':''}>${esc(c)}</option>`).join('')}</select></p>
+        ${(()=>{const m=cibMapRows(PX.parsed,PX.ct),known=new Set(S.items.map(i=>i.no)),unk=m.filter(x=>!known.has(x.item));return `<p class="small">${m.length} activities carry a value, ${new Set(m.map(x=>x.item)).size} items; ${unk.length?`<span class="a-c">${unk.length} with a code not in the price schedule (${esc([...new Set(unk.map(x=>x.item))].slice(0,6).join(', '))})</span>`:'all codes are in the price schedule'}.</p>`})()}
+        <div class="actions"><button class="btn sm primary" type="button" data-cibxsave>Save the mapping</button><button class="btn sm" type="button" data-cibxcancel>Cancel</button></div></div>`:''}<p class="err" id="cibXErr"></p></section>`:''}
+    <section class="panel"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">Schedule mapping audit</h3><div class="actions" style="margin:0"><select data-cibf="mapSt"><option value="">All states</option>${opt(['Mapped','Missing','Reviewed','Milestone'],f)}</select><input type="search" placeholder="Item or description" data-cibf="mapQ" value="${esc(s.mapQ||'')}"></div></div>
+    <div class="scroll" style="max-height:620px"><table class="tbl"><thead><tr><th>Item</th><th>Description</th><th class="n">Contract value</th><th>Rule</th><th class="n">Activities</th><th>Status</th><th></th></tr></thead><tbody>
+    ${rows.slice(0,600).map(x=>{const i=x.i,o=s.mapOpen===i.no,R=rv[i.no],acts=X.byItem[i.no]||[];return `<tr><td>${esc(i.no)}</td><td>${esc(i.desc)}</td><td class="n">${fmt(i.value,2)}</td><td class="small">${esc(CIB_RN[x.rule.t])}</td><td class="n">${x.n||''}</td>
+      <td>${cibStChip(x.st)}${R?`<span class="t2">${R.d==='manual'?`typed ${R.pct}%`:'no work yet'}: ${esc(R.note)} (${esc(R.by)})</span>`:''}</td><td class="n"><button class="btn sm" type="button" data-cibmapopen="${esc(o?'':i.no)}">${o?'Close':'Open'}</button></td></tr>
+      ${o?`<tr><td colspan="7"><div class="cib-edit">${acts.length?`<table class="tbl"><thead><tr><th>Activity</th><th>Name</th><th class="n">Weight</th><th class="n">% complete</th><th>Source</th><th></th></tr></thead><tbody>${acts.map(a=>`<tr><td>${esc(a.id)}</td><td>${esc(a.name)}</td><td class="n">${fmt(+a.w||0)}</td><td class="n">${fmt(+a.pct||0,1)}%</td><td>${esc((X.M[a.id]||{}).src==='manual'?'by hand':'P6 code')}</td><td class="n">${ed?`<button class="btn sm" type="button" data-cibunmap="${esc(a.id)}">Remove</button>`:''}</td></tr>`).join('')}</tbody></table>`:'<p class="small muted">No activity of the updated schedule is mapped to this item.</p>'}
+        ${ed?`<div class="fields"><label class="field">Add an activity of the updated schedule<input list="cibActs" data-cibaddact placeholder="Activity ID or name"></label></div><datalist id="cibActs">${X.rows.filter(r=>!r.ms&&!(X.M[r.id]&&X.M[r.id].item)).slice(0,1500).map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</datalist>
+          <div class="actions"><button class="btn sm" type="button" data-cibmapadd="${esc(i.no)}">Map the activity</button></div>
+          ${!acts.length&&(x.rule.t==='pct'||x.rule.t==='split')?`<h4>Or record the review of this unmapped item</h4><div class="fields"><label class="field">Review<select data-cibrvd><option value="zero" ${R&&R.d==='zero'?'selected':''}>No work yet: bill nothing until mapped</option><option value="manual" ${R&&R.d==='manual'?'selected':''}>Bill on a stated % (with evidence)</option></select></label>
+            <label class="field">Progress % (for a stated %)<input type="number" min="0" max="100" step="0.1" data-cibrvpct value="${R&&R.d==='manual'?R.pct:''}"></label><label class="field" style="grid-column:1/-1">Reason and evidence<input data-cibrvnote maxlength="500" value="${esc(R?R.note:'')}"></label></div>
+            <div class="actions"><button class="btn sm primary" type="button" data-cibrvsave="${esc(i.no)}">Record the review</button>${R?`<button class="btn sm" type="button" data-cibrvdel="${esc(i.no)}">Remove the review</button>`:''}</div>`:''}<p class="err" id="cibMapErr"></p>`:''}</div></td></tr>`:''}`}).join('')}</tbody></table></div></section>
+    ${A.unknown.length?`<section class="panel"><h3 style="margin-top:0">Activities with a code not in the price schedule</h3><table class="tbl"><tbody>${A.unknown.slice(0,60).map(r=>`<tr><td>${esc(r.id)}</td><td>${esc(r.name)}</td><td>${esc(X.M[r.id].item)}</td></tr>`).join('')}</tbody></table></section>`:''}`}
+
+/* Client invoices: the list, one invoice, the history of a running project */
+function cibInvHTML(pid,s){const S=cibAppr(pid),L=cibInvOf(pid);if(s.inv){const I=L.find(x=>x.id===s.inv);if(I)return cibInvOne(pid,I,s);s.inv=null}
+  const draft=L.find(x=>x.st==='Draft'),next=(L.find(x=>x.st!=='Cancelled')||{seq:0}).seq+1,su=schedUps(pid)[0],H=s.mig&&s.mig.pid===pid?s.mig:null;
+  return `${!S?'<div class="note"><b>No approved Schedule-C</b>Invoices are prepared from an approved revision.</div>':''}
+    ${S&&can('cib.prepare')&&!draft?`<section class="panel"><h3 style="margin-top:0">Prepare invoice #${pad(next)}</h3><div class="fields"><label class="field">Period ends<input type="date" data-cibnto value="${esc(su&&su.data_date<=TODAY?su.data_date:ASOF)}" max="${TODAY}"></label><label class="field">Client reference<input data-cibnref maxlength="60" placeholder="${esc(pcode(projById(pid)))}-INV-${pad(next)}"></label></div>
+      <p class="small muted" style="margin:6px 0">The period starts the day after the previous invoice. Progress comes from the updated schedule in force at the period end${su?` (latest: ${fmtDY(su.data_date)})`:''}.</p><div class="actions"><button class="btn primary" type="button" data-cibnew>Prepare from P6 progress</button></div><p class="err" id="cibNewErr"></p></section>`:''}
+    ${S&&can('cib.setup')&&!L.some(x=>x.kind!=='Migrated'&&x.st!=='Cancelled')?cibMigHTML(pid,S,H):''}
+    <section class="panel"><h3 style="margin-top:0">Client invoices</h3>${L.length?`<div class="scroll"><table class="tbl"><thead><tr><th>#</th><th>Reference</th><th>Period</th><th>Status</th><th class="n">This period (gross)</th><th class="n">Net payable</th><th class="n">With VAT</th><th class="n">Certified to date</th><th class="n">Paid</th><th></th></tr></thead><tbody>
+      ${L.map(I=>`<tr><td>${pad(I.seq)}</td><td>${esc(I.ref)}${I.kind==='Migrated'?'<span class="t2">loaded history</span>':''}</td><td>${I.from?fmtDY(I.from)+' – ':''}${fmtDY(I.to)}</td><td>${cibStChip(I.st)}${cibBlocks(I.exc||[]).length&&I.st==='Draft'?`<span class="t2 r-c">${cibBlocks(I.exc).length} blocking</span>`:''}</td>
+        <td class="n">${I.kind==='Migrated'?'—':fmt(I.tot.gross_this,2)}</td><td class="n">${I.kind==='Migrated'?'—':fmt(I.tot.net,2)}</td><td class="n">${I.kind==='Migrated'?'—':fmt(I.tot.total,2)}</td><td class="n">${fmt(I.tot.gross_cum,2)}</td><td class="n">${I.paid?fmt(I.paid.amt,2):'—'}</td><td class="n"><button class="btn sm" type="button" data-cibopen="${I.id}">Open</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="muted">No client invoice yet.</p>'}</section>`}
+function cibMigHTML(pid,S,H){return `<section class="panel"><h3 style="margin-top:0">Running project: load the latest certified client invoice</h3>
+    <p class="small muted" style="margin:0 0 8px">Load the last approved client invoice workbook (Excel). Its breakdown sheets give the certified-to-date amount of every item; the next invoice continues from it. A PDF cannot be read reliably: keep it as the evidence in the document rack and load the Excel workbook, or type the certified amounts per component below.</p>
+    <input type="file" accept=".xlsx,.xls,.xlsm" data-cibmigfile> <button class="btn sm" type="button" data-cibmigman>Type amounts per component</button><p class="err" id="cibMigErr"></p>
+    ${H?`<div class="cib-prev">${H.sheets?`<p class="small"><b>${esc(H.file)}</b>: ${H.sheets.length} breakdown sheet${H.sheets.length===1?'':'s'} with item numbers. Check the column that holds each sheet's certified-to-date amount (payment certified, cumulative):</p>
+      <table class="tbl"><tbody>${H.sheets.map((sh,k)=>`<tr><td>${esc(sh.sheet)}</td><td class="n">${sh.rows.length} rows</td><td><select data-cibmigcol="${k}"><option value="">Skip this sheet</option>${sh.labels.filter(x=>x.l).map(x=>`<option value="${x.i}" ${x.i===sh.col?'selected':''}>${esc(x.l.slice(0,90))}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>
+      ${(()=>{const M=cibMigLines(S,H);return `<p class="small">${M.ok.length} items matched, ${cibSarF(M.ok.reduce((t,l)=>t+l.cum,0))} certified to date${M.bad.length?`; <span class="a-c">${M.bad.length} rows not matched (${esc(M.bad.slice(0,6).join(', '))})</span>`:''}${M.dup.length?`; <span class="a-c">${M.dup.length} items also on another sheet, the first sheet kept (${esc(M.dup.slice(0,4).join('; '))})</span>`:''}.</p>`})()}`
+      :`<table class="tbl"><tbody>${CIB_COMP.filter(([k])=>cibBill(S).some(i=>i.comp===k)).map(([k,n])=>{const v=cibBill(S).filter(i=>i.comp===k).reduce((t,i)=>t+i.value,0);return `<tr><td>${esc(n)}</td><td class="n">${cibSarF(v)}</td><td><input type="number" min="0" step="0.01" data-cibmigc="${k}" value="${esc((H.comp||{})[k]??'')}" placeholder="certified to date"></td></tr>`}).join('')}</tbody></table><p class="small muted">Each component's amount is spread over its items in proportion to their value.</p>`}
+      <div class="fields"><label class="field">Invoice number certified<input type="number" min="1" max="999" data-cibmig="seq" value="${esc(H.seq??'')}"></label><label class="field">Period certified to<input type="date" data-cibmig="to" value="${esc(H.to||'')}" max="${TODAY}"></label><label class="field">Client reference<input data-cibmig="ref" value="${esc(H.ref||'')}" maxlength="60"></label>
+        <label class="field">Retention held to date (SAR)<input type="number" min="0" step="0.01" data-cibmig="ret_cum" value="${esc(H.ret_cum??'')}"></label><label class="field">Retention released to date (SAR)<input type="number" min="0" step="0.01" data-cibmig="rel_cum" value="${esc(H.rel_cum??'')}"></label><label class="field">Advance recovered to date (SAR)<input type="number" min="0" step="0.01" data-cibmig="adv_cum" value="${esc(H.adv_cum??'')}"></label></div>
+      <label class="small"><input type="checkbox" data-cibmigchk="rel_tcc" ${H.rel_tcc?'checked':''}> Retention due at TCC already released</label> <label class="small"><input type="checkbox" data-cibmigchk="rel_fac" ${H.rel_fac?'checked':''}> Retention due at FAC already released</label>
+      <div class="actions"><button class="btn primary" type="button" data-cibmigsave>Load as certified invoice history</button><button class="btn" type="button" data-cibmigcancel>Cancel</button></div></div>`:''}</section>`}
+function cibMigLines(S,H){const ok=[],bad=[],seen={},dup=[],from={};if(H.sheets){H.sheets.forEach(sh=>{if(sh.col==null)return;sh.rows.forEach(r=>{const i=cibMatchNo(S,r.no),v=r.cells[sh.col];const n=typeof v==='number'?v:parseFloat(String(v||'').replace(/[, ]/g,''));if(!i){if(isFinite(n)&&n)bad.push(r.no);return}if(!isFinite(n))return;
+    if(from[i.no]&&from[i.no]!==sh.sheet){dup.push(`${i.no} (${from[i.no]}, ${sh.sheet})`);return}from[i.no]=sh.sheet;seen[i.no]=(seen[i.no]||0)+n})})}
+  else Object.entries(H.comp||{}).forEach(([k,v])=>{const L=cibBill(S).filter(i=>i.comp===k),tv=L.reduce((t,i)=>t+i.value,0),x=+v||0;if(!x||!tv)return;let left=cibR2(x);L.forEach((i,j)=>{const a=j===L.length-1?left:cibR2(x*i.value/tv);left=cibR2(left-a);seen[i.no]=(seen[i.no]||0)+a})});
+  Object.entries(seen).forEach(([no,cum])=>ok.push({no,cum:cibR2(cum)}));return {ok,bad,dup}}
+function cibInvOne(pid,I,s){const p=projById(pid),S=cibDB().sch.find(x=>x.id===I.sch),T=I.tot,u=me(),st=I.st,dr=st==='Draft'&&can('cib.prepare'),R=cibReady(pid,I),comp=s.invComp||'',mine=I.by_id===u.id;
+  const steps=['Draft','Submitted','Reviewed','Approved','Issued','Certified','Paid'];const ai=I.ai;
+  const act=[];if(dr){act.push(`<button class="btn sm" type="button" data-cibrecalc="${I.id}">Recalculate from P6</button>`,`<button class="btn sm" type="button" data-cibai="${I.id}">Review invoice</button>`,`<button class="btn sm primary" type="button" data-cibdo="inv_submit|${I.id}">Submit for review</button>`)}
+  if(st==='Submitted'&&can('cib.review')&&(!mine||u.role==='sa'))act.push(`<button class="btn sm" type="button" data-cibai="${I.id}">Review invoice</button>`,`<button class="btn sm primary" type="button" data-cibdo="inv_review|${I.id}">Mark reviewed</button>`);
+  if(st==='Reviewed'&&can('cib.approve'))act.push(`<button class="btn sm primary" type="button" data-cibdo="inv_approve|${I.id}">Approve</button>`);
+  if(['Submitted','Reviewed','Approved'].includes(st)&&(can('cib.review')||can('cib.approve')))act.push(`<button class="btn sm" type="button" data-cibdo="inv_return|${I.id}">Return to draft</button>`);
+  if(st==='Approved'&&(can('cib.prepare')||can('cib.approve')))act.push(`<button class="btn sm primary" type="button" data-cibform="issue|${I.id}">Issue to the client</button>`);
+  if(st==='Issued'&&can('cib.certify'))act.push(`<button class="btn sm primary" type="button" data-cibform="certify|${I.id}">Record the client certificate</button>`);
+  if(st==='Certified'&&can('cib.certify'))act.push(`<button class="btn sm primary" type="button" data-cibform="pay|${I.id}">Record the payment</button>`);
+  if((st==='Draft'&&can('cib.prepare'))||(['Submitted','Reviewed','Approved'].includes(st)&&can('cib.approve')))act.push(`<button class="btn sm danger" type="button" data-cibdo="inv_cancel|${I.id}">Cancel</button>`);
+  if(I.kind!=='Migrated')act.push(`<button class="btn sm" type="button" data-cibxls="${I.id}">Excel invoice</button>`);
+  const FM=s.form&&s.form.id===I.id?s.form:null;const comps=CIB_COMP.map(([k,n])=>({k,n,L:I.lines.filter(l=>l.comp===k)})).filter(c=>c.L.length);
+  const lines=I.lines.filter(l=>!comp||l.comp===comp);
+  return `<button class="link back" type="button" data-cibopen="">← All client invoices</button>
+    <section class="panel"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">Invoice #${pad(I.seq)} · ${esc(I.ref)} ${cibStChip(st)}</h3><div class="actions" style="margin:0;flex-wrap:wrap">${act.join('')}</div></div>
+      <p class="small muted" style="margin:0 0 6px">${esc(p.short)} · period ${I.from?fmtDY(I.from):'—'} to ${fmtDY(I.to)} · Schedule-C revision ${I.rev} · ${I.kind==='Migrated'?`loaded from ${esc(I.file||'the latest client invoice')}`:`progress from ${I.dd?`the updated schedule of ${fmtDY(I.dd)}`:'no updated schedule'}`} · prepared by ${esc(I.by)}</p>
+      ${I.kind!=='Migrated'&&st!=='Cancelled'?`<ol class="cib-steps-bar">${steps.map(x=>`<li class="${steps.indexOf(x)<steps.indexOf(st)?'done':x===st?'on':''}">${x}</li>`).join('')}</ol>`:''}<p class="err" id="cibInvErr"></p>
+      ${FM?cibFormHTML(I,FM):''}</section>
+    ${I.kind!=='Migrated'?`<div class="grid2"><section class="panel"><h3 style="margin-top:0">Exceptions</h3>${(I.exc||[]).length?`<ul class="cib-exc">${I.exc.map(e=>`<li class="${e.sev}"><b>${e.sev==='block'?'Blocks':'Check'}</b> ${esc(e.msg)}</li>`).join('')}</ul>`:'<p class="small g-c">No exception.</p>'}</section>
+      <section class="panel"><h3 style="margin-top:0">Readiness · ${pct(R.pct,0)}</h3><ul class="cib-check">${R.it.map(([l,ok,x])=>`<li class="${ok?'ok':'no'}">${ok?'✓':'✗'} ${esc(l)}${x?` <span class="muted">(${esc(x)})</span>`:''}</li>`).join('')}</ul></section></div>
+    <section class="panel"><div class="card-head"><h3 style="margin:0">Invoice review ${ai?`· score ${ai.score}/100`:''}</h3>${ai?`<span class="small muted">${esc(ai.by)}, ${tStamp(ai.at)}${ai.stale||ai.at<I.upd?' · <b class="a-c">figures changed since: run it again</b>':''}</span>`:''}</div>
+      ${ai?`<ul class="cib-ai">${ai.find.map(f=>`<li class="${f.sev}"><span>${esc({high:'High',med:'Medium',low:'Low',info:'Note',ok:'OK'}[f.sev])}</span> <b>${esc({math:'Mathematical accuracy',contract:'Contract compliance',mapping:'Schedule-C and mapping',progress:'Progress',overbilling:'Over-billing risk',variance:'High-value lines',forecast:'Forecast impact'}[f.k]||f.k)}</b> ${esc(f.msg)}</li>`).join('')}</ul>`:'<p class="small muted">“Review invoice” checks contract compliance, the arithmetic, missing Schedule-C items, unmapped activities, abnormal progress, over-billing risk, high-value lines and the forecast impact.</p>'}
+      <p class="small muted" style="margin:6px 0 0">A rules-based review in ProTrackAI. A language model on ProTrack's server stays on hold until alfanar IT and Cybersecurity approve it.</p></section>`:''}
+    <section class="panel"><h3 style="margin-top:0">Invoice summary</h3><div class="scroll"><table class="tbl"><thead><tr><th>Price component</th><th class="n">Contract price</th><th class="n">Previously certified</th><th class="n">This period</th><th class="n">Certified to date</th><th class="n">%</th><th class="n">Balance</th></tr></thead><tbody>
+      ${comps.map(c=>{const v=c.L.reduce((t,l)=>t+l.value,0),a=c.L.reduce((t,l)=>t+l.prev_pay,0),b=c.L.reduce((t,l)=>t+l.this_pay,0);return `<tr><td>${esc(c.n)}</td><td class="n">${fmt(v,2)}</td><td class="n">${fmt(a,2)}</td><td class="n">${fmt(b,2)}</td><td class="n">${fmt(a+b,2)}</td><td class="n">${pct(v?(a+b)/v:0)}</td><td class="n">${fmt(v-a-b,2)}</td></tr>`}).join('')}
+      <tr class="rdtot"><td><b>Total</b></td><td class="n"><b>${fmt(T.cv,2)}</b></td><td class="n"><b>${fmt(T.gross_prev,2)}</b></td><td class="n"><b>${fmt(T.gross_this,2)}</b></td><td class="n"><b>${fmt(T.gross_cum,2)}</b></td><td class="n"><b>${pct(T.cv?T.gross_cum/T.cv:0)}</b></td><td class="n"><b>${fmt(T.balance,2)}</b></td></tr></tbody></table></div>
+      ${I.kind!=='Migrated'?`<table class="tbl cib-tot"><tbody><tr><td>Gross this period</td><td class="n">${cibSarF(T.gross_this)}</td></tr><tr><td>Less retention (${+S.head.ret_pct||0}%)</td><td class="n">−${fmt(T.ret_this,2)}</td></tr>${T.rel_this?`<tr><td>Retention released</td><td class="n">${fmt(T.rel_this,2)}</td></tr>`:''}<tr><td>Less advance recovery (${+S.head.adv_rec||0}%)</td><td class="n">−${fmt(T.adv_this,2)}</td></tr>
+        <tr class="rdtot"><td><b>Net payable</b></td><td class="n"><b>${cibSarF(T.net)}</b></td></tr><tr><td>VAT ${T.vat_pct}%</td><td class="n">${fmt(T.vat,2)}</td></tr><tr class="rdtot"><td><b>Total including VAT</b></td><td class="n"><b>${cibSarF(T.total)}</b></td></tr>
+        <tr><td class="muted">Retention held to date / advance recovered to date</td><td class="n muted">${fmt(T.ret_cum-T.rel_cum,2)} / ${fmt(T.adv_cum,2)} of ${fmt(T.adv_amt,2)}</td></tr>${I.cert?`<tr><td>Certified by the client ${fmtDY(I.cert.date)}${I.cert.ref?' · '+esc(I.cert.ref):''}</td><td class="n">${cibSarF(I.cert.amt)}${I.cert.changed?' <span class="a-c">changed</span>':''}</td></tr>`:''}${I.paid?`<tr><td>Paid ${fmtDY(I.paid.date)}</td><td class="n">${cibSarF(I.paid.amt)}</td></tr>`:''}</tbody></table>`:''}</section>
+    <section class="panel"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">Schedule-C breakdown</h3><select data-cibf="invComp"><option value="">All components</option>${opt(comps.map(c=>[c.k,c.n]),comp)}</select></div>
+      <div class="scroll" style="max-height:620px"><table class="tbl"><thead><tr><th>Item</th><th>Description</th><th class="n">Value</th><th>Rule</th><th>Progress</th><th class="n">Prev. certified</th><th class="n">This period</th><th class="n">Cumulative</th><th class="n">%</th></tr></thead><tbody>
+      ${lines.map(l=>`<tr class="${l.rev||l.over?'cib-flag':''}"><td>${esc(l.no)}</td><td>${esc(l.desc)}</td><td class="n">${fmt(l.value,2)}</td><td class="small">${esc((CIB_RN[l.rule]||'').replace(/^\d\. /,''))}</td><td class="small">${l.prog!=null?pct(l.prog):''} ${esc({p6:`P6 · ${l.acts}`,steps:`steps · ${l.acts}`,ms:'milestone',manual:'typed %',zero:'no work yet',history:'history',none:'not mapped'}[l.src]||'')}${l.rev?' · reversal':''}${l.over?' · at limit':''}</td>
+        <td class="n">${fmt(l.prev_pay,2)}</td><td class="n">${fmt(l.this_pay,2)}${l.cert_this!=null&&Math.abs(l.cert_this-l.this_pay)>0.005?`<span class="t2 a-c">certified ${fmt(l.cert_this,2)}</span>`:''}</td><td class="n">${fmt(l.cum_pay,2)}</td><td class="n">${pct(l.value?l.cum_pay/l.value:0)}</td></tr>`).join('')}</tbody></table></div></section>
+    ${I.kind!=='Migrated'?`<section class="panel"><h3 style="margin-top:0">Supporting documents</h3><table class="tbl"><tbody>${CIB_DOCS.map(([k,l,req])=>{const v=I.docs[k]||'',ed=!['Certified','Paid','Cancelled'].includes(st)&&(can('cib.prepare')||can('cib.approve'));
+        return `<tr><td>${esc(l)}${req?'':' <span class="muted small">(if applicable)</span>'}</td><td>${ed?`<select data-cibdoc="${I.id}|${k}">${opt([['','Missing'],['yes','Attached'],['na','Not applicable']],v)}</select>`:esc({yes:'Attached',na:'Not applicable'}[v]||'Missing')}</td></tr>`}).join('')}</tbody></table>
+      <p class="small muted" style="margin:6px 0 0">Keep the files in the project's document rack (Contract & Commercial); exporting the Excel invoice marks the summary and breakdown attached.</p></section>`:''}
+    <section class="panel"><h3 style="margin-top:0">History</h3><table class="tbl"><tbody>${I.hist.slice().reverse().map(h=>`<tr><td>${tStamp(h.at)}</td><td>${esc(h.by)}</td><td>${cibStChip(h.st)}</td><td>${esc(h.note||'')}</td></tr>`).join('')}</tbody></table></section>`}
+function cibFormHTML(I,FM){const k=FM.k;if(k==='issue')return `<div class="cib-edit"><div class="fields"><label class="field">Issue date<input type="date" data-cibfm="date" value="${TODAY}" max="${TODAY}"></label><label class="field">Client reference<input data-cibfm="ref" value="${esc(I.ref)}" maxlength="60"></label></div><div class="actions"><button class="btn sm primary" type="button" data-cibfmgo="inv_issue|${I.id}">Issue</button><button class="btn sm" type="button" data-cibform="">Cancel</button></div></div>`;
+  if(k==='certify')return `<div class="cib-edit"><div class="fields"><label class="field">Certificate date<input type="date" data-cibfm="date" value="${TODAY}" max="${TODAY}"></label><label class="field">Certificate reference<input data-cibfm="ref" maxlength="60"></label></div>
+    <label class="small"><input type="checkbox" data-cibfmch ${FM.ch?'checked':''}> The client certified different amounts</label>${FM.ch?`<div class="scroll" style="max-height:320px"><table class="tbl"><thead><tr><th>Item</th><th class="n">Claimed</th><th class="n">Certified</th></tr></thead><tbody>${I.lines.filter(l=>l.this_pay>0).map(l=>`<tr><td>${esc(l.no)} ${esc(l.desc)}</td><td class="n">${fmt(l.this_pay,2)}</td><td class="n"><input type="number" min="0" step="0.01" data-cibcl="${esc(l.no)}" value="${l.this_pay}" style="width:130px"></td></tr>`).join('')}</tbody></table></div>`:''}
+    <div class="actions"><button class="btn sm primary" type="button" data-cibfmgo="inv_certify|${I.id}">Record the certificate</button><button class="btn sm" type="button" data-cibform="">Cancel</button></div></div>`;
+  if(k==='pay')return `<div class="cib-edit"><div class="fields"><label class="field">Payment date<input type="date" data-cibfm="date" value="${TODAY}" max="${TODAY}"></label><label class="field">Amount received (SAR, with VAT)<input type="number" min="0" step="0.01" data-cibfm="amt" value="${I.tot.total}"></label><label class="field">Payment reference<input data-cibfm="ref" maxlength="60"></label></div><div class="actions"><button class="btn sm primary" type="button" data-cibfmgo="inv_pay|${I.id}">Record the payment</button><button class="btn sm" type="button" data-cibform="">Cancel</button></div></div>`;
+  return ''}
+function cibFcHTML(pid){const fc=cibForecast(pid);if(!fc)return '<p class="muted">The forecast needs an approved Schedule-C and an updated P6 schedule.</p>';const t=k=>fc.rows.reduce((s,r)=>s+r[k],0);
+  return `<section class="panel"><h3 style="margin-top:0">Billing and collection forecast · ${esc(projById(pid).short)}</h3><p class="small muted" style="margin:0 0 8px">From the updated schedule of ${fmtDY(fc.U.data_date)}, ${esc(fc.basis)}: the remaining progress of each mapped activity is spread evenly to its forecast finish; the contract rules, TCC (${fc.tccD?fmtDY(fc.tccD):'not dated'}) and FAC (${fc.facD?fmtDY(fc.facD):'not dated'}), retention, advance recovery and VAT apply; collection follows after the payment period. Issued invoices are in the invoice register and the Cash-inflow forecast.</p>
+    <div class="scroll"><table class="tbl"><thead><tr><th>Month</th><th class="n">Expected billing (gross)</th><th class="n">Retention</th><th class="n">Retention released</th><th class="n">Advance recovery</th><th class="n">Net</th><th class="n">VAT</th><th class="n">With VAT</th><th>Expected collection</th><th class="n">Billed, cumulative</th></tr></thead><tbody>
+    ${fc.rows.map(r=>`<tr><td>${fmtMon(r.m)}</td><td class="n">${fmt(r.gross,2)}</td><td class="n">${fmt(r.ret,2)}</td><td class="n">${fmt(r.rel,2)}</td><td class="n">${fmt(r.adv,2)}</td><td class="n">${fmt(r.net,2)}</td><td class="n">${fmt(r.vat,2)}</td><td class="n">${fmt(r.total,2)}</td><td>${fmtMon(r.coll)}</td><td class="n">${fmt(r.cum,2)}</td></tr>`).join('')||'<tr><td colspan="10" class="muted">Nothing left to bill.</td></tr>'}
+    <tr class="rdtot"><td><b>Total</b></td><td class="n"><b>${fmt(t('gross'),2)}</b></td><td class="n">${fmt(t('ret'),2)}</td><td class="n">${fmt(t('rel'),2)}</td><td class="n">${fmt(t('adv'),2)}</td><td class="n"><b>${fmt(t('net'),2)}</b></td><td class="n">${fmt(t('vat'),2)}</td><td class="n"><b>${fmt(t('total'),2)}</b></td><td></td><td></td></tr></tbody></table></div>
+    <p class="small muted">Retention balance after the last forecast month: ${cibSarF(fc.retHeld)}.</p></section>`}
+function cibAudHTML(pid,s){const L=cibDB().audit.filter(a=>a.pid===pid),q=(s.audQ||'').toLowerCase(),R=L.filter(a=>!q||[a.act,a.ref,a.by,a.note].join(' ').toLowerCase().includes(q));const j=v=>v==null?'':esc(JSON.stringify(v).slice(0,220));
+  return `<section class="panel"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">Audit trail · ${esc(projById(pid).short)}</h3><input type="search" placeholder="Search" data-cibf="audQ" value="${esc(s.audQ||'')}"></div>
+    <p class="small muted" style="margin:0 0 8px">Who uploaded the Schedule-C, changed the mapping or a rule, prepared, reviewed, approved, issued and certified each invoice, with the values before and after. Append-only on the server.</p>
+    <div class="scroll" style="max-height:640px"><table class="tbl"><thead><tr><th>When</th><th>Who</th><th>What</th><th>Reference</th><th>Before</th><th>After</th><th>Note</th></tr></thead><tbody>${R.slice(0,500).map(a=>`<tr><td>${tStamp(a.at)}</td><td>${esc(a.by)}</td><td>${esc(a.act)}</td><td>${esc(a.ref||'')}</td><td class="small">${j(a.before)}</td><td class="small">${j(a.after)}</td><td class="small">${esc(a.note||'')}</td></tr>`).join('')||'<tr><td colspan="7" class="muted">Nothing recorded yet.</td></tr>'}</tbody></table></div></section>`}
+
+/* ----- events ----- */
+const cibErr=(id,e)=>{const el=$('#'+id);const m=e&&e.message||String(e);if(el)el.textContent=m;else toast(m)};
+function cibWork(S){const s=cibUiOf();if(!s.rules||s.rules.sid!==S.id)s.rules={sid:S.id,r:JSON.parse(JSON.stringify(S.rules||{}))};return s.rules.r}
+function cibRuleSlot(key){const s=cibUiOf(),S=cibSchOf(cibPid()).find(x=>x.id===(s.schRev||((cibSchOf(cibPid())[0]||{}).id)))||cibSchOf(cibPid())[0];if(!S)return null;
+  if(key.startsWith('c:')){const W=cibWork(S),k=key.slice(2);return W[k]||(W[k]={t:'pct',cap:100,tcc:0,fac:0})}
+  const no=key.slice(2),i=S.items.find(x=>x.no===no);if(!s.itemRule||s.itemRule.no!==no)s.itemRule={no,r:JSON.parse(JSON.stringify(cibRule(S,i)))};return s.itemRule.r}
+document.addEventListener('change',async e=>{const t=e.target;if(!t.closest||!t.closest('.cib'))return;const s=cibUiOf(),d=t.dataset,pid=cibPid();
+  try{
+  if(d.cibpid!=null){s.pid=t.value;s.inv=null;s.up=null;s.px=null;s.mig=null;s.rules=null;s.itemEd=null;s.mapOpen=null;s.form=null;render();return}
+  if(d.cibf){s[d.cibf]=t.value;render();return}
+  if(d.cibschrev!=null){s.schRev=t.value;s.rules=null;render();return}
+  if(d.cibr){const [k,f]=d.cibr.split(/\|(?=[^|]*$)/),R=cibRuleSlot(k);if(!R)return;R[f]=f==='t'?t.value:t.value===''?'':+t.value;if(f==='t'){if(t.value==='phase'&&!Array.isArray(R.steps))R.steps=[];if(t.value==='split'&&R.first==null)R.first=90;render()}return}
+  if(d.cibst){const [k,j,f]=d.cibst.split('|'),R=cibRuleSlot(k);if(!R||!R.steps||!R.steps[+j])return;R.steps[+j][f]=f==='pct'?+t.value:t.value;return}
+  if(d.cibschfile!=null){const f=t.files[0];if(!f)return;$('#cibUpErr').textContent='Reading…';try{const R=await cibReadSchedule(f),p=projById(pid);s.up=Object.assign(R,{pid,file:f.name,head:cibDefHead(p,R.total)});render()}catch(x){cibErr('cibUpErr',x)}return}
+  if(d.cibxer!=null){const f=t.files[0];if(!f)return;try{const parsed=parseSchedXER(await f.text());if(!parsed.codeTypes.length)throw new Error('This XER has no activity codes');s.px={pid,file:f.name,parsed,ct:cibCodeType(parsed.codeTypes)||parsed.codeTypes[0]};render()}catch(x){cibErr('cibXErr',x)}return}
+  if(d.cibxtype!=null){s.px.ct=t.value;render();return}
+  if(d.cibmigfile!=null){const f=t.files[0];if(!f)return;if(/\.pdf$/i.test(f.name)){cibErr('cibMigErr','A PDF cannot be read reliably: keep it in the document rack and load the Excel workbook, or type the amounts per component');return}
+    try{const H=await cibReadHistory(f);s.mig={pid,file:f.name,sheets:H.sheets,seq:H.hdr.seq||'',to:H.hdr.to||'',ref:H.hdr.seq?`Invoice #${pad(H.hdr.seq)}`:'',hash:H.hash};render()}catch(x){cibErr('cibMigErr',x)}return}
+  if(d.cibmigcol!=null){s.mig.sheets[+d.cibmigcol].col=t.value===''?null:+t.value;render();return}
+  if(d.cibmig){s.mig[d.cibmig]=t.value;return}if(d.cibmigchk){s.mig[d.cibmigchk]=t.checked;return}if(d.cibmigc){(s.mig.comp=s.mig.comp||{})[d.cibmigc]=t.value;return}
+  if(d.cibdoc){const [id,k]=d.cibdoc.split('|');await cibAct('inv_docs',{pid,id,k,v:t.value});render();return}
+  if(d.cibfmch!=null){s.form.ch=t.checked;render();return}
+  }catch(x){toast(x.message||String(x))}});
+document.addEventListener('click',async e=>{const t=e.target.closest&&e.target.closest('[data-cibtab],[data-cibgo],[data-cibtpl],[data-cibupcancel],[data-cibschsave],[data-cibschappr],[data-cibschdisc],[data-cibheadsave],[data-cibrulesave],[data-cibitem],[data-cibitemsave],[data-cibstadd],[data-cibstdel],[data-cibxsave],[data-cibxcancel],[data-cibmapopen],[data-cibunmap],[data-cibmapadd],[data-cibrvsave],[data-cibrvdel],[data-cibnew],[data-cibopen],[data-cibrecalc],[data-cibai],[data-cibdo],[data-cibform],[data-cibfmgo],[data-cibxls],[data-cibmigman],[data-cibmigsave],[data-cibmigcancel]');
+  if(!t||!t.closest('.cib'))return;const s=cibUiOf(),d=t.dataset,pid=cibPid(),C=cibDB(),I=id=>C.inv.find(x=>x.id===id);
+  const busy=async(f,err)=>{t.disabled=true;try{await f()}catch(x){cibErr(err||'cibInvErr',x);t.disabled=false;return}render()};
+  if(d.cibtab){s.tab=d.cibtab;if(d.cibtab!=='inv')s.inv=null;render();window.scrollTo(0,0);return}
+  if(d.cibgo!=null){const [p,i]=d.cibgo.split('|');s.pid=p;s.up=null;s.px=null;s.mig=null;s.rules=null;if(i){s.tab='inv';s.inv=i}else if(cibSchOf(p).some(x=>x.st==='Draft')&&!cibAppr(p))s.tab='sch';else s.tab='dash';render();window.scrollTo(0,0);return}
+  if(d.cibtpl!=null){cibTemplate().catch(x=>toast(x.message));return}
+  if(d.cibupcancel!=null){s.up=null;render();return}
+  if(d.cibschsave!=null){const box=t.closest('.cib-prev'),note=(box.querySelector('[data-cibuph="note"]')||{}).value||'';
+    return busy(async()=>{const S=await cibAct('sch_save',{pid,head:cibHeadRead(box),items:s.up.items,file:s.up.file,hash:s.up.hash,note});s.up=null;s.schRev=null;s.rules=null;toast(`Schedule-C revision ${S.rev||''} saved as a draft: it is used once approved`)},'cibSchErr')}
+  if(d.cibschappr){let note='';const S=C.sch.find(x=>x.id===d.cibschappr),tot=cibBill(S).reduce((a,i)=>a+(+i.value||0),0);
+    if(Math.abs(tot-(+S.head.value||0))>Math.max(1,(+S.head.value||0)*0.005)){note=prompt(`The items add up to ${cibSarF(tot)}, the approved contract value is ${cibSarF(+S.head.value||0)}. Give the reason to approve it anyway:`);if(!note)return}
+    else if(!await confirmBox(`Approve Schedule-C revision ${S.rev} of ${projById(pid).short}?\nInvoices are prepared from it from now on; the earlier revision is superseded.`,'Approve'))return;
+    return busy(async()=>{await cibAct('sch_approve',{pid,sch:S.id,note});toast(`Revision ${S.rev} approved`)},'cibHeadErr')}
+  if(d.cibschdisc){if(!await confirmBox('Discard this draft revision?\nIts items and rules are removed; approved revisions stay.','Discard'))return;return busy(async()=>{await cibAct('sch_discard',{pid,sch:d.cibschdisc});s.schRev=null;s.rules=null},'cibHeadErr')}
+  if(d.cibheadsave){return busy(async()=>{await cibAct('sch_head',{pid,sch:d.cibheadsave,head:cibHeadRead(t.closest('.panel'))});toast('Header saved')},'cibHeadErr')}
+  if(d.cibrulesave){const S=C.sch.find(x=>x.id===d.cibrulesave);return busy(async()=>{await cibAct('sch_rules',{pid,sch:S.id,rules:cibWork(S)});s.rules=null;toast('Rules saved')},'cibRuleErr')}
+  if(d.cibitem!=null){s.itemEd=d.cibitem||null;s.itemRule=null;render();return}
+  if(d.cibitemsave){const S=cibSchOf(pid).find(x=>x.id===(s.schRev||cibSchOf(pid)[0].id)),box=t.closest('.cib-edit'),own=box.querySelector('[data-cibiown]').checked,R=cibRuleSlot('i:'+d.cibitemsave);
+    return busy(async()=>{await cibAct('sch_item',{pid,sch:S.id,no:d.cibitemsave,rule:own?R:null,limit:box.querySelector('[data-cibilim]').value,comp:box.querySelector('[data-cibicomp]').value,note:box.querySelector('[data-cibinote]').value});s.itemEd=null;s.itemRule=null;toast('Item saved')},'cibItemErr')}
+  if(d.cibstadd){const R=cibRuleSlot(d.cibstadd);R.steps=R.steps||[];R.steps.push({n:`Phase ${['I','II','III','IV','V','VI','VII','VIII'][R.steps.length]||R.steps.length+1}`,pct:'',act:''});render();return}
+  if(d.cibstdel){const k=d.cibstdel.slice(0,d.cibstdel.lastIndexOf('|')),j=+d.cibstdel.slice(d.cibstdel.lastIndexOf('|')+1),R=cibRuleSlot(k);R.steps.splice(j,1);render();return}
+  if(d.cibxcancel!=null){s.px=null;render();return}
+  if(d.cibxsave!=null){const PX=s.px,rows=cibMapRows(PX.parsed,PX.ct);return busy(async()=>{const r=await cibAct('map_save',{pid,rows:rows.map(x=>({...x,src:'p6'})),replace_p6:true,file:PX.file,note:`Read from the activity code "${PX.ct}"`});s.px=null;toast(`${r.changed} mapping change${r.changed===1?'':'s'} saved`)},'cibXErr')}
+  if(d.cibmapopen!=null){s.mapOpen=d.cibmapopen||null;render();return}
+  if(d.cibunmap){return busy(async()=>{await cibAct('map_save',{pid,rows:[{act:d.cibunmap,item:null}]})},'cibMapErr')}
+  if(d.cibmapadd){const v=(t.closest('.cib-edit').querySelector('[data-cibaddact]').value||'').trim(),X=cibCtx(pid,null,ASOF),r=X.byId[v]||X.rows.find(x=>x.name.toLowerCase()===v.toLowerCase());if(!r){cibErr('cibMapErr','Choose an activity of the updated schedule');return}
+    return busy(async()=>{await cibAct('map_save',{pid,rows:[{act:r.id,name:r.name,item:d.cibmapadd,src:'manual'}],note:'Mapped by hand'})},'cibMapErr')}
+  if(d.cibrvsave){const b=t.closest('.cib-edit');return busy(async()=>{await cibAct('map_review',{pid,item:d.cibrvsave,d:b.querySelector('[data-cibrvd]').value,pct:b.querySelector('[data-cibrvpct]').value,note:b.querySelector('[data-cibrvnote]').value});toast('Review recorded')},'cibMapErr')}
+  if(d.cibrvdel){return busy(async()=>{await cibAct('map_review',{pid,item:d.cibrvdel,d:null})},'cibMapErr')}
+  if(d.cibnew!=null){const to=($('[data-cibnto]')||{}).value,ref=($('[data-cibnref]')||{}).value;return busy(async()=>{const X=await cibAct('inv_save',{pid,to,ref});s.inv=X.id||(cibInvOf(pid).find(x=>x.st==='Draft')||{}).id;toast(`Invoice #${pad(X.seq)} prepared: ${cibSarF(X.tot.gross_this)} this period`)},'cibNewErr')}
+  if(d.cibopen!=null){s.inv=d.cibopen||null;s.form=null;render();window.scrollTo(0,0);return}
+  if(d.cibrecalc){const x=I(d.cibrecalc);return busy(async()=>{await cibAct('inv_save',{pid,id:x.id,to:x.to,from:x.from,ref:x.ref});toast('Recalculated from the latest P6 progress')})}
+  if(d.cibai){const x=I(d.cibai);return busy(async()=>{const r=cibReview(pid,x);await cibAct('inv_ai',{pid,id:x.id,score:r.score,find:r.find});toast(`Review: ${r.score}/100, ${r.find.filter(f=>f.sev==='high').length} high`)})}
+  if(d.cibdo){const [op,id]=d.cibdo.split('|');let note='';if(op==='inv_return'||op==='inv_cancel'){note=prompt(op==='inv_return'?'Why is it returned to the preparer?':'Why is it cancelled?');if(!note)return}
+    else if(op==='inv_approve'&&!await confirmBox(`Approve invoice #${pad(I(id).seq)} for ${cibSarF(I(id).tot.total)} with VAT?\nIt can then be issued to the client.`,'Approve'))return;
+    return busy(async()=>{await cibAct(op,{pid,id,note});toast({inv_submit:'Submitted for review',inv_review:'Marked reviewed',inv_approve:'Approved',inv_return:'Returned to draft',inv_cancel:'Cancelled'}[op])})}
+  if(d.cibform!=null){const [k,id]=d.cibform.split('|');s.form=k?{k,id,ch:false}:null;render();return}
+  if(d.cibfmgo){const [op,id]=d.cibfmgo.split('|'),b=t.closest('.cib-edit'),o={pid,id};b.querySelectorAll('[data-cibfm]').forEach(x=>{o[x.dataset.cibfm]=x.value});
+    if(s.form&&s.form.ch){o.lines={};b.querySelectorAll('[data-cibcl]').forEach(x=>{o.lines[x.dataset.cibcl]=x.value})}
+    return busy(async()=>{await cibAct(op,o);s.form=null;toast({inv_issue:'Issued: it is now in the invoice register',inv_certify:'Certificate recorded',inv_pay:'Payment recorded'}[op])})}
+  if(d.cibxls){const x=I(d.cibxls);t.disabled=true;try{await cibExcel(pid,x)}catch(err){toast('Could not build the workbook: '+(err.message||''))}t.disabled=false;render();return}
+  if(d.cibmigman!=null){s.mig={pid,comp:{},seq:'',to:'',ref:''};render();return}
+  if(d.cibmigcancel!=null){s.mig=null;render();return}
+  if(d.cibmigsave!=null){const S=cibAppr(pid),M=cibMigLines(S,s.mig);return busy(async()=>{await cibAct('inv_migrate',Object.assign({pid,file:s.mig.file||'typed per component',lines:M.ok},s.mig,{pid}));s.mig=null;toast('History loaded: the next invoice continues from it')},'cibMigErr')}
+});
+
+/* ----- the server's records (schema-update-v51.sql) ----- */
+async function cloudLoadCib(){if(!CLOUD_ME)return;try{await rpc('cib_features');const [S,It,M,R,V,A]=await Promise.all([selAll('cib_schedules','*',null,['project_id','rev']),selAll('cib_items','*',null,['schedule_id','seq']),selAll('cib_maps','*',null,['project_id','act_id']),
+    selAll('cib_map_reviews','*',null,['project_id','item_no']),selAll('cib_invoices','*',null,['project_id','seq']),selAll('cib_audit','*',null,['at_time'])]);
+  const items={};It.forEach(x=>{(items[x.schedule_id]=items[x.schedule_id]||[]).push(Object.assign({no:x.item_no},x.data||{}))});
+  const map={},rev={};M.forEach(x=>{(map[x.project_id]=map[x.project_id]||{})[x.act_id]={item:x.item_no,name:x.act_name,src:x.src,by:x.by_name,at:x.at_time}});
+  R.forEach(x=>{(rev[x.project_id]=rev[x.project_id]||{})[x.item_no]={d:x.decision,pct:+x.pct||0,note:x.note,by:x.by_name,at:x.at_time}});
+  DB.cibSrv={sch:S.map(x=>({id:x.id,pid:x.project_id,rev:x.rev,st:x.status,head:x.head||{},rules:x.rules||{},items:items[x.id]||[],file:x.file_name,hash:x.file_hash,by:x.created_name,by_id:x.created_by,at:x.created_at,appr_by:x.approved_name,appr_at:x.approved_at})),
+    inv:V.map(x=>Object.assign({},x.data||{},{id:x.id,pid:x.project_id,seq:x.seq,st:x.status,kind:x.kind,sch:x.schedule_id,from:x.period_from,to:x.period_to,by:x.prepared_name,by_id:x.prepared_by,at:x.created_at,upd:x.updated_at,hist:x.hist||[]})),
+    map,rev,audit:A.reverse().map(x=>({id:x.id,pid:x.project_id,at:x.at_time,by:x.by_name,by_id:x.by_user,act:x.action,ref:x.ref,before:x.before_v,after:x.after_v,note:x.note}))};DB.cibMissing=false}
+  catch(e){DB.cibSrv={sch:[],inv:[],map:{},rev:{},audit:[]};DB.cibMissing=srvMsg(e)}}
+
+/* ----- demo: a SAMPLE Schedule-C for QOT, made from the demo schedule (not from any contract), its mapping and a loaded history ----- */
+function seedV348(){if(CLOUD||DB.v348Seeded)return;const pid='QOT',p=projById(pid),U=schedUps(pid)[0];if(!p||!U||!(DB.schedRows||{})[U.id]){DB.v348Seeded=true;return}
+  const C=cibDB(),rows=DB.schedRows[U.id].filter(r=>!r.ms&&+r.w>0),value=Math.round((+p.value||100)*1e6),tcV=Math.round(value*0.02),tw=rows.reduce((t,r)=>t+(+r.w||0),0)||1;
+  const K=[['GEN','1','General (project preparation)','GEN'],['DES','2','Engineering & Design','ENG'],['MAT','3','Equipment & Materials','MAT'],['CON','4','Construction','CON'],['INS','5','Installation','INS'],['TC','6','Testing, Commissioning & Energization','TC'],['CLO','7','Project Close-Out','CLO']];
+  const items=[],leafs=[],D0=(no,desc,comp)=>items.push({no,parent:null,lvl:0,desc,comp,unit:'',qty:0,rate:0,value:0,st:'Active',incl:null,leaf:false,line:'Description',limit:100,rule:null});
+  const L0=(no,par,desc,comp,G,extra)=>{items.push(Object.assign({no,parent:par,lvl:1,desc,comp,unit:'LT',qty:1,rate:0,value:0,st:'Active',incl:null,leaf:true,line:'Breakdown',limit:100,rule:null},extra||{}));if(G)leafs.push({no,G,w:G.reduce((t,r)=>t+(+r.w||0),0)})};
+  K.forEach(([ph,n,desc,comp])=>{const g=rows.filter(r=>r.phase===ph);D0(`S.${n}`,desc,comp);
+    if(ph==='DES'&&g.length)L0(`S.${n}.1`,`S.${n}`,'Engineering & design, Phases I and II',comp,g,{rule:{t:'phase',cap:90,tcc:10,fac:0,steps:g.slice(0,2).map((r,k)=>({n:`Phase ${k?'II':'I'}`,pct:g.length>1?50:100,act:r.id}))}});
+    else if(ph==='TC')L0(`S.${n}.1`,`S.${n}`,'Pre-commissioning and final commissioning',comp,null,{rule:{t:'tcc'}});
+    else g.forEach((r,k)=>L0(`S.${n}.${k+1}`,`S.${n}`,r.name.slice(0,80),comp,[r]));
+    if(ph==='MAT')L0(`S.${n}.9`,`S.${n}`,'Operational spare parts',comp,null,{st:'Not applicable'});
+    if(ph==='CON')L0(`S.${n}.8`,`S.${n}`,'Site development',comp,null,{st:'Included',incl:`S.${n}.1`})});
+  let left=value-tcV;leafs.forEach((L,j)=>{const it=items.find(i=>i.no===L.no),v=j===leafs.length-1?left:Math.round((value-tcV)*L.w/tw);it.value=v;it.rate=v;left-=v});const tc=items.find(i=>i.no==='S.6.1');tc.value=tcV;tc.rate=tcV;
+  const head=Object.assign(cibDefHead(p,value),{contract_no:'SAMPLE-0001',title:`${p.name} (SAMPLE price schedule for the demo)`,issue_date:p.start||null,adv_pct:10,adv_rec:10});
+  const S={id:'CS-QOT-1',pid,rev:1,st:'Approved',head,rules:cibDefRules(p),items,file:'SAMPLE_schedule_C_QOT.xlsx (demo data, not a contract)',hash:'demo-cib-qot',
+    by:(teamOf(pid,'costing')[0]||{}).name||'Costing engineer',by_id:(teamOf(pid,'costing')[0]||{}).id||null,at:addDays(ASOF,-90)+'T10:00:00',appr_by:(teamOf(pid,'pm')[0]||{}).name||'Project manager',appr_at:addDays(ASOF,-88)+'T09:00:00'};
+  S.rules.MAT={t:'split',first:90};C.sch.push(S);
+  const lastOf=n=>leafs.filter(l=>l.no.startsWith(`S.${n}.`)).pop(),skip=new Set([lastOf(4),lastOf(5)].filter(Boolean).map(l=>l.no));
+  const M=C.map[pid]={};leafs.forEach(L=>{if(skip.has(L.no))return;L.G.forEach(r=>{M[r.id]={item:L.no,name:r.name,src:'p6',by:S.by,at:S.at}})});
+  const oddL=leafs.find(l=>skip.has(l.no)),odd=oddL&&oddL.G[0];if(odd)M[odd.id]={item:'S.4.99',name:odd.name,src:'p6',by:S.by,at:S.at};
+  const to=monthEndOf(addDays(ASOF,-62).slice(0,7)),Cc=cibCompute(pid,{to:U.data_date,seq:4,sch:S.id,prev:null}),L=Cc.lines.filter(l=>l.cum_pay>0).map(l=>{const v=cibR2(l.cum_pay*0.7);return {...l,prog:null,src:'history',acts:0,cum_pay:v,prev_pay:0,this_pay:v,cert_cum:v}});
+  const g=cibR2(L.reduce((t,l)=>t+l.cum_pay,0)),adv=cibR2(Math.min(g*head.adv_rec/100,value*head.adv_pct/100));
+  C.inv.push({id:'CI-QOT-3-H',pid,seq:3,kind:'Migrated',st:'Certified',sch:S.id,rev:1,ref:'SAMPLE invoice #03',from:null,to,su:null,dd:null,lines:L,tot:{cv:value,gross_prev:0,gross_this:g,gross_cum:g,ret_this:0,ret_cum:0,rel_this:0,rel_cum:0,rel_tcc:false,rel_fac:false,adv_amt:cibR2(value*head.adv_pct/100),adv_this:adv,adv_cum:adv,net:0,vat:0,total:0,balance:cibR2(value-g),vat_pct:+head.vat||0},
+    exc:[],docs:{},ai:null,cert:{amt:g,date:to,ref:'SAMPLE',by:S.by,at:S.at,changed:false},hist:[{st:'Certified',by:S.by,at:addDays(ASOF,-60)+'T11:00:00',note:'Loaded from SAMPLE_client_invoice_03.xlsx (demo data)'}],file:'SAMPLE_client_invoice_03.xlsx (demo data)',by:S.by,by_id:S.by_id,at:addDays(ASOF,-60)+'T11:00:00',upd:addDays(ASOF,-60)+'T11:00:00'});
+  [['Schedule-C uploaded','Revision 1',{file:S.file,items:items.length,value}],['Schedule-C approved','Revision 1',{value}],['Mapping read from P6',S.file,{activities:Object.keys(M).length}],['Invoice history loaded','#3',{certified:g}]].forEach(([a,r,x],k)=>C.audit.unshift({id:'CA-demo-'+k,pid,at:addDays(ASOF,-90+k*10)+'T10:00:00',by:S.by,by_id:S.by_id,act:a,ref:r,before:null,after:x,note:'Sample demo data'}));
+  DB.v348Seeded=true;save()}
+
 /* ---------- milestones, EOT and OHTL key activities ---------- */
 const MTYPES=['Start','Intermediate','TCC','PAC','FAC'];
 const EOTS=['Not applicable','Not submitted','Submitted','Under review','Approved','Rejected'];
@@ -12472,7 +13208,8 @@ const IHEAD={no:/invoice ?(no|number|#)|^inv/i,date:/invoice ?date|^date$/i,sub_
   amount:/invoice ?amount|amount|value/i,sub:/submit/i,appr:/approv|certif/i,coll:/collect|receiv|paid/i,note:/remark|note/i,
   proj:/^project\b|project ?(no|code|number|id)|^job/i,cur:/^curr|currency/i};
 const INVTYPES=['Progress','Advance','Retention release','Variation','Other'];
-const invOf=pid=>((DB.invoices||{})[pid])||[];
+/* v3.48: issued client invoices of the Client Invoice Builder join the uploaded register (a register row with the same number wins) */
+const invOf=pid=>{const R=((DB.invoices||{})[pid])||[];if(typeof cibRegRows!=='function')return R;const nos=new Set(R.map(r=>String(r.no).toLowerCase()));return R.concat(cibRegRows(pid).filter(x=>!nos.has(String(x.no).toLowerCase())))};
 function invTotals(pid,t){
   const rows=invOf(pid),on=(r,...k)=>{if(!t)return true;const d=k.map(x=>r[x]).find(Boolean);return !d||d<=t};
   const sum=(f,...k)=>rows.filter(r=>on(r,...k)).reduce((x,r)=>x+f(r),0);
@@ -20869,7 +21606,7 @@ function seedPcc(){                            // demo: designations and Tender 
   DB.pccSeeded=true;save();
 }
 async function boot(){
-  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBcm336();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();seedV341();seedV345();seedV346();await ensureHashes();
+  seedTopUp();seedMatrix();seedPcc();seedLifecycle();lcUpgrade28();seedReleases();seedV31();seedV33();seedV34();seedV35();seedV36();seedV37();seedV38();seedV39();seedV311();seedV314();seedV315();seedV317();seedV319();dlyUpgrade3191();seedV3192();seedV320();seedV321();seedV322();seedV323();seedBcm335();seedBcm336();seedBoq325();seedV3281();seedV3282();seedV329();seedSuppVer331();seedV332();seedV341();seedV345();seedV346();seedV348();await ensureHashes();
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=homeView();showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');

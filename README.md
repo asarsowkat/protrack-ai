@@ -168,6 +168,17 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.48
+
+- **Client Invoice Builder** (Invoices & Cash Flow). The monthly client invoice, built from the approved contractual price schedule (Schedule-C), the progress of the updated P6 schedule and the previous certified invoice:
+  - **Schedule-C**: upload (XLSX, XLS, CSV), header, revisions approved by someone other than the uploader, five invoicing rules (percentage with TCC and FAC releases, split such as 90/10, at TCC, at FAC, engineering phases) and an invoice limit per item.
+  - **P6 mapping**: the activity code "Schedule C" read when an updated schedule is loaded; a mapping audit with Missing items, their value and %, and the review of unmapped items. No invoice is submitted while an item is unmapped.
+  - **The invoice**: weighted P6 progress per item; previous, this period and cumulative; retention, its releases, advance recovery and VAT; exceptions; Review invoice (rules-based); Draft → Submitted → Reviewed → Approved → Issued → Certified → Paid with separation of duties; the Excel workbook in the client layout (cover, summary, breakdown per component, retention, advance, forecast, SAP upload).
+  - **Running projects**: load the latest certified client invoice; the next one continues from it.
+  - Issued invoices join the invoice register and the cash pages; a billing and collection forecast; dashboards; an audit trail.
+
+  Six new rights: `cib.setup`, `cib.map`, `cib.prepare`, `cib.review`, `cib.approve`, `cib.certify`. The reference files were used for their structure only; the demo's price schedule is SAMPLE. Server: `schema-update-v51.sql` (STAGE-45-SETUP). Design: CLIENT-INVOICE-BUILDER-SPEC.md. `tests/client_invoice_builder_demo.js` (27 checks), `supabase/tests/test_v51.cjs` (85). See RELEASE-NOTES-v3.48.md.
+
 ## Version 3.47
 
 - **RASA Intelligence, the central knowledge and learning hub.** A new menu group with eight tabs:
