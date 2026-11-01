@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.48, November 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.49, November 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -316,7 +316,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.48</b>
+<div class="note" id="whatsnew"><b>New in version 3.49</b>
+    <b>Client invoices from the WBS and the Schedule C Invoicing weight.</b> The Client Invoice Builder reads the price schedule item number from the WBS field <b>Schedule C</b>: every activity takes it from its WBS or the nearest WBS above it (an activity code <b>Schedule C</b> still wins where used). Where activities carry the P6 resource <b>Schedule C Invoicing</b>, only those activities count for the item, each by its budgeted units: for a material, the inspection after delivery, not the PR, PO or manufacturing. Open an item in the mapping audit to see which activities count.
+  </div>
+  <div class="note"><b>New in version 3.48</b>
     <b>Client Invoice Builder.</b> Invoices &amp; Cash Flow → <b>Client Invoice Builder</b> prepares the monthly client invoice from the approved contractual price schedule (Schedule-C), the progress of the updated P6 schedule and the client's previous certificate. The P6 activity code <b>Schedule C</b> links each activity to its item and is read when the updated schedule is loaded; the mapping audit shows any item without an activity, and no invoice is submitted until it is mapped or reviewed. The contract's rules (a share on progress with releases at TCC and FAC, a 90/10 split, payable at TCC or FAC, engineering phases) give each item's amount; retention, advance recovery and VAT follow. <b>Review invoice</b> checks the arithmetic, the contract terms, missing items, abnormal progress and over-billing before an invoice is submitted, reviewed by the project manager and approved. The Excel invoice follows the client layout; issued invoices join the invoice register and the cash pages. For a running project, load the last certified client invoice and the next one continues from it.
   </div>
   <div class="note"><b>New in version 3.47</b>
