@@ -1,0 +1,142 @@
+{
+ "run": "2026-11-01T11:55:16.315Z",
+ "pass": 27,
+ "total": 27,
+ "results": [
+  {
+   "check": "Install: v52 runs a second time without errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: cib_features reports version 52 with the invoicing weight",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: cib_maps has the invoicing weight and where the item came from",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Setup: the SAMPLE Schedule-C is uploaded",
+   "pass": true,
+   "detail": "{\"id\":\"CS-P1-1\",\"st\":\"Draft\",\"rev\":1}"
+  },
+  {
+   "check": "Setup: and approved",
+   "pass": true,
+   "detail": "{\"id\":\"CS-P1-1\",\"ok\":true}"
+  },
+  {
+   "check": "Mapping: read from the WBS field and the activity code, with the invoicing weight",
+   "pass": true,
+   "detail": "{\"changed\":5}"
+  },
+  {
+   "check": "Mapping: the weight and the source are stored (inspection 10,000 from the WBS; PR without a weight; C1 from the code)",
+   "pass": true,
+   "detail": "{\"M-PR\":{\"act_id\":\"M-PR\",\"item_no\":\"X.3\",\"src\":\"p6\",\"w\":null,\"via\":\"wbs\"},\"M-MFG\":{\"act_id\":\"M-MFG\",\"item_no\":\"X.3\",\"src\":\"p6\",\"w\":null,\"via\":\"wbs\"},\"M-INSP\":{\"act_id\":\"M-INSP\",\"item_no\":\"X.3\",\"src\":\"p6\",\"w\":\"10000\",\"via\":\"wbs\"},\"C1\":{\"act_id\":\"C1\",\"item_no\":\"X.4\",\"src\":\"p6\",\"w\":null,\"via\":\"code\"},\""
+  },
+  {
+   "check": "Mapping: reading the same file again changes nothing",
+   "pass": true,
+   "detail": "{\"changed\":0}"
+  },
+  {
+   "check": "Invoice: #1 to 31 Aug 2026 is prepared",
+   "pass": true,
+   "detail": "{\"id\":\"CI-P1-1-20261101115516265\",\"exc\":[{\"k\":\"weight\",\"msg\":\"1 mapped item(s) have no activity with the Schedule C Invoicing weight; their progress uses the schedule weight: X.4\",\"sev\":\"warn\"}],\"seq\":1,\"tot\":{\"cv\":14000,\"net\":5040,\"vat\":756,\"total\":5796,\"adv_amt\":0,\"adv_cum\":0,\"balance\":8960,\"rel_c"
+  },
+  {
+   "check": "Invoice: X.3 earns on the inspection only: 40% (not the 88% of PR, PO and manufacturing by schedule weight); 40% × 90% of 10,000 = 3,600",
+   "pass": true,
+   "detail": "{\"iw\":true,\"no\":\"X.3\",\"qty\":1,\"rev\":false,\"src\":\"p6\",\"acts\":1,\"comp\":\"MAT\",\"desc\":\"Item X.3\",\"over\":false,\"prog\":0.4,\"rate\":10000,\"rule\":\"split\",\"unit\":\"LT\",\"value\":10000,\"cum_pay\":3600,\"prev_pay\":0,\"prev_pct\":0,\"this_pay\":3600,\"prev_prog\":null}"
+  },
+  {
+   "check": "Invoice: X.4 has no invoicing weight: all its activities by schedule weight, 45% × 80% of 4,000 = 1,440, not marked invoicing-weighted",
+   "pass": true,
+   "detail": "{\"iw\":false,\"no\":\"X.4\",\"qty\":1,\"rev\":false,\"src\":\"p6\",\"acts\":2,\"comp\":\"CON\",\"desc\":\"Item X.4\",\"over\":false,\"prog\":0.45,\"rate\":4000,\"rule\":\"pct\",\"unit\":\"LT\",\"value\":4000,\"cum_pay\":1440,\"prev_pay\":0,\"prev_pct\":0,\"this_pay\":1440,\"prev_prog\":null}"
+  },
+  {
+   "check": "Invoice: a warning names the mapped item without the invoicing weight",
+   "pass": true,
+   "detail": "[{\"k\":\"weight\",\"msg\":\"1 mapped item(s) have no activity with the Schedule C Invoicing weight; their progress uses the schedule weight: X.4\",\"sev\":\"warn\"}]"
+  },
+  {
+   "check": "Mapping: a second weighted activity is read",
+   "pass": true,
+   "detail": "{\"changed\":1}"
+  },
+  {
+   "check": "Invoice: recalculated",
+   "pass": true,
+   "detail": "{\"id\":\"CI-P1-1-20261101115516265\",\"exc\":[{\"k\":\"weight\",\"msg\":\"1 mapped item(s) have no activity with the Schedule C Invoicing weight; their progress uses the schedule weight: X.4\",\"sev\":\"warn\"}],\"seq\":1,\"tot\":{\"cv\":14000,\"net\":7740,\"vat\":1161,\"total\":8901,\"adv_amt\":0,\"adv_cum\":0,\"balance\":6260,\"rel_"
+  },
+  {
+   "check": "Invoice: X.3 = (10,000 × 40 + 30,000 × 80) / 40,000 = 70%; 70% × 90% of 10,000 = 6,300",
+   "pass": true,
+   "detail": "{\"iw\":true,\"no\":\"X.3\",\"qty\":1,\"rev\":false,\"src\":\"p6\",\"acts\":2,\"comp\":\"MAT\",\"desc\":\"Item X.3\",\"over\":false,\"prog\":0.7,\"rate\":10000,\"rule\":\"split\",\"unit\":\"LT\",\"value\":10000,\"cum_pay\":6300,\"prev_pay\":0,\"prev_pct\":0,\"this_pay\":6300,\"prev_prog\":null}"
+  },
+  {
+   "check": "Mapping: a changed weight is a change",
+   "pass": true,
+   "detail": "{\"changed\":1}"
+  },
+  {
+   "check": "Mapping: the new weight is stored",
+   "pass": true,
+   "detail": "{\"act_id\":\"M-INSP\",\"item_no\":\"X.3\",\"src\":\"p6\",\"w\":\"30000\",\"via\":\"wbs\"}"
+  },
+  {
+   "check": "Mapping: a weight of zero, below zero or not a number is stored as none",
+   "pass": true,
+   "detail": "{\"changed\":0}"
+  },
+  {
+   "check": "Mapping: no weight on C1, C2 and the PR",
+   "pass": true,
+   "detail": "{\"M-PR\":{\"act_id\":\"M-PR\",\"item_no\":\"X.3\",\"src\":\"p6\",\"w\":null,\"via\":\"wbs\"},\"M-MFG\":{\"act_id\":\"M-MFG\",\"item_no\":\"X.3\",\"src\":\"p6\",\"w\":null,\"via\":\"wbs\"},\"M-INSP\":{\"act_id\":\"M-INSP\",\"item_no\":\"X.3\",\"src\":\"p6\",\"w\":\"30000\",\"via\":\"wbs\"},\"M-INSP2\":{\"act_id\":\"M-INSP2\",\"item_no\":\"X.3\",\"src\":\"p6\",\"w\":\"30000\",\"v"
+  },
+  {
+   "check": "Mapping: an activity mapped by hand",
+   "pass": true,
+   "detail": "{\"changed\":1}"
+  },
+  {
+   "check": "Mapping: by hand carries no invoicing weight and no P6 source",
+   "pass": true,
+   "detail": "{\"act_id\":\"C2\",\"item_no\":\"X.3\",\"src\":\"manual\",\"w\":null,\"via\":null}"
+  },
+  {
+   "check": "Audit: the mapping changes are in the audit trail",
+   "pass": true,
+   "detail": "[\"Schedule-C uploaded\",\"Schedule-C approved\",\"Mapping read from P6\",\"Invoice prepared\",\"Mapping read from P6\",\"Invoice recalculated\",\"Mapping read from P6\",\"Mapping changed\"]"
+  },
+  {
+   "check": "Rollback: schema-rollback-v52.sql runs",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: version 51 again and the two columns are gone",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: the invoice still recalculates",
+   "pass": true,
+   "detail": "{\"id\":\"CI-P1-1-20261101115516265\",\"exc\":[],\"seq\":1,\"tot\":{\"cv\":14000,\"net\":8737.14,\"vat\":1310.57,\"total\":10047.71,\"adv_amt\":0,\"adv_cum\":0,\"balance\":5262.86,\"rel_cum\":0,\"rel_fac\":false,\"rel_tcc\":false,\"ret_cum\":0,\"vat_pct\":15,\"adv_this\":0,\"rel_this\":0,\"ret_this\":0,\"gross_cum\":8737.14,\"gross_prev\":0,\""
+  },
+  {
+   "check": "Rollback: X.3 earns on the schedule weight of all its activities again",
+   "pass": true,
+   "detail": "{\"no\":\"X.3\",\"qty\":1,\"rev\":false,\"src\":\"p6\",\"acts\":5,\"comp\":\"MAT\",\"desc\":\"Item X.3\",\"over\":false,\"prog\":0.828571,\"rate\":10000,\"rule\":\"split\",\"unit\":\"LT\",\"value\":10000,\"cum_pay\":7457.14,\"prev_pay\":0,\"prev_pct\":0,\"this_pay\":7457.14,\"prev_prog\":null}"
+  },
+  {
+   "check": "Rollback: v52 installs again afterwards",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

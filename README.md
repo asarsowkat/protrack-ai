@@ -168,6 +168,15 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.49
+
+- **Client Invoice Builder: the Schedule-C item from the WBS and the "Schedule C Invoicing" weight.**
+  - The item number is read from the WBS field "Schedule C". Each activity takes it from its own WBS or the nearest WBS above it; an activity code "Schedule C" still wins where present, and its value (not its description) is used.
+  - Where activities of an item carry the P6 resource "Schedule C Invoicing", only those activities count, each by its budgeted units, for example the inspection after a material's delivery, not its PR, PO or manufacturing.
+  - The mapping audit shows the invoicing weight of each activity and the ones not invoiced on; a warning names a mapped item without the weight.
+
+  Demo: SAMPLE item S.3.2 on QOT. Server: `schema-update-v52.sql` (STAGE-46-SETUP). `tests/cib_wbs_weight_demo.js` (14 checks), `supabase/tests/test_v52.cjs` (27). See RELEASE-NOTES-v3.49.md.
+
 ## Version 3.48
 
 - **Client Invoice Builder** (Invoices & Cash Flow). The monthly client invoice, built from the approved contractual price schedule (Schedule-C), the progress of the updated P6 schedule and the previous certified invoice:

@@ -123,7 +123,7 @@ cib_schedules  (id PK, project_id FK projects, rev, status Draft|Approved|Supers
 cib_items      (schedule_id FK, project_id, item_no, seq,
                 data jsonb {parent,lvl,line,desc,comp,unit,qty,rate,value,st Active|Not applicable|Included,incl,leaf,limit,rule})
                 PK(schedule_id,item_no); index(project_id)
-cib_maps       (project_id, act_id, item_no, act_name, src p6|manual, by, at)        PK(project_id,act_id); index(project_id,item_no)
+cib_maps       (project_id, act_id, item_no, act_name, src p6|manual, w, via wbs|code, by, at)  PK(project_id,act_id); index(project_id,item_no)
 cib_map_reviews(project_id, item_no, decision manual|zero, pct, note (5..500), by, at)  PK(project_id,item_no)
 cib_invoices   (id PK, project_id, seq, status Draft|Submitted|Reviewed|Approved|Issued|Certified|Paid|Cancelled, kind Progress|Migrated,
                 schedule_id FK, period_from, period_to,
@@ -257,22 +257,32 @@ flowchart LR
 
 ## 7. P6 integration logic
 
-1. **The code**: P6 activity code type **Schedule C**; each activity's value is the item number. ProTrackAI accepts type names such as "Schedule C", "Schedule-C", "Sched C" and "Price Schedule"; another type can be chosen in the mapping audit.
+1. **The item number** (v3.49):
+   - **On the WBS**: the WBS user field **Schedule C** (XER tables UDFTYPE with table PROJWBS, UDFVALUE, UDFCODE). Every activity takes the value of its WBS or of the nearest WBS above it (PROJWBS parent chain); a child WBS with its own value keeps it.
+   - **On the activity**: the activity code type **Schedule C**, its value (ACTVCODE.short_name) rather than its description. Where an activity has both, the activity code wins.
+   - ProTrackAI accepts names such as "Schedule C", "Schedule-C", "Sched C" and "Price Schedule"; another field or code type can be chosen in the mapping audit.
+   - Each mapping keeps where it came from (`via`: `wbs` or `code`).
 2. **When read**:
    - automatically after an updated schedule is saved (`cibAfterSched`, on every project with a Schedule-C, for someone with `cib.map`);
    - or from an XER in the mapping audit.
 
-   The XER is read by the same parser as Planning (`parseSchedXER`: TASK, ACTVTYPE, ACTVCODE, TASKACTV).
+   The XER is read by the same parser as Planning (`parseSchedXER`: TASK, PROJWBS, ACTVTYPE, ACTVCODE, TASKACTV, UDFTYPE, UDFVALUE, UDFCODE, RSRC, TASKRSRC).
 3. **Replace rule**: mappings read from P6 replace the previous P6 mappings. Activities no longer coded are unmapped; mappings made by hand are kept.
 4. **Progress source**: the server's `schedule_update_rows` of the update in force at the period end (the latest with data date ≤ the period end). It holds % complete (P6 duration, units or physical % by the activity's type) and the activity weight (the schedule's client weighting resource). The browser uses the same rows.
-5. **Weighted progress**: P(item) = Σ(wᵢ · pctᵢ) / Σwᵢ over its mapped activities. Activities with no weight count equally. Example: activities at 40, 60, 30 and 20% weighted 300, 400, 200 and 100 give 44%.
-6. **Phase steps** (rule 5): a step counts when its activity is 100% complete or has an actual finish on or before the period end.
-7. **Milestones** (rules 1–4 releases): TCC and FAC come from the project's milestones (type TCC or FAC) with an actual date on or before the period end. The forecast uses the actual date, else the forecast, else the planned date.
-8. **Audit of the mapping**:
+5. **The invoicing weight** (v3.49): the budgeted units (TASKRSRC.target_qty) of the resource **Schedule C Invoicing** (found by "Schedule C" or "invoicing" in its name or ID) on each activity, kept on the mapping as `w`. It is assigned only to the activities the contract invoices on, for example the inspection after delivery of a material.
+6. **Weighted progress**:
+   - Where any mapped activity of the item carries the invoicing weight: P(item) = Σ(invoicing wᵢ · pctᵢ) / Σ invoicing wᵢ over those activities only; the item's other activities are not invoiced on. Example: nine activities, PR to shipment at 100%, delivery at 26% carrying the weight: P = 26%.
+   - Otherwise: P(item) = Σ(wᵢ · pctᵢ) / Σwᵢ over its mapped activities with the schedule weight. Activities with no weight count equally. Example: activities at 40, 60, 30 and 20% weighted 300, 400, 200 and 100 give 44%.
+   - In a project that uses the invoicing weight, a mapped item (rules 1 and 2) with no weighted activity is listed in the audit and warned on the invoice (`weight`, not blocking).
+7. **Phase steps** (rule 5): a step counts when its activity is 100% complete or has an actual finish on or before the period end.
+8. **Milestones** (rules 1–4 releases): TCC and FAC come from the project's milestones (type TCC or FAC) with an actual date on or before the period end. The forecast uses the actual date, else the forecast, else the planned date.
+9. **Audit of the mapping**:
    - an item with value and no activity is **Missing**;
    - a code not in the price schedule is listed;
    - a weighted activity with no code is counted;
-   - a mapped activity missing from the latest update is listed.
+   - a mapped activity missing from the latest update is listed;
+   - a mapped item without the invoicing weight in a project that uses it is listed;
+   - in the XER preview, an activity carrying the invoicing weight but no item is listed.
 
 ---
 
@@ -448,7 +458,7 @@ The review is stored with the invoice, and submission requires a review newer th
   - the append-only audit trail.
 - **Data flow**:
   1. P6 XER → Planning upload → `schedule_update_rows`;
-  2. the "Schedule C" code → `cib_maps`;
+  2. the "Schedule C" WBS field or code, with the invoicing weight → `cib_maps` (v52: `w`, `via`);
   3. `pt_cib_compute` → `cib_invoices`;
   4. issued invoices → invoice register view → cash pages.
 - **Scale (more than 1,000 projects)**:
