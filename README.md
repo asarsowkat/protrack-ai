@@ -168,6 +168,15 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.50
+
+- **Client invoice formats.** Client Invoice Builder → **Invoice formats**: upload a client's own invoice workbook once (tax invoice, cover page, summary, breakdown sheets per component, forecast). ProTrack reads its breakdown tables, header cells, TCC and FAC lines and forecast; the planner checks the map. Each invoice is then exported in that format:
+  - only the cells of the map change; logos, layout, formulas, hidden sheets and links stay as the client made them;
+  - when a project's price schedule differs, each breakdown sheet's item rows are rebuilt from its Schedule-C, with every total and reference moved as Excel does;
+  - the format's own totals (payment per component, net payable, VAT, total) are checked against ProTrack's invoice and any difference is named.
+
+  A SAMPLE format in a utility client's layout comes with the demo. **Fix:** reading stored files on the server failed for everyone once v47 was installed (the report-media read rule called a function signed-in people may not run); v53 corrects it. Server: `schema-update-v53.sql` (STAGE-47-SETUP). `tests/client_invoice_formats_demo.js` (21 checks), `supabase/tests/test_v53.cjs` (43). See RELEASE-NOTES-v3.50.md.
+
 ## Version 3.49
 
 - **Client Invoice Builder: the Schedule-C item from the WBS and the "Schedule C Invoicing" weight.**

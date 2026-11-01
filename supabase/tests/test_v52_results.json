@@ -1,5 +1,5 @@
 {
- "run": "2026-11-01T11:55:16.315Z",
+ "run": "2026-11-01T13:18:33.946Z",
  "pass": 27,
  "total": 27,
  "results": [
@@ -46,7 +46,7 @@
   {
    "check": "Invoice: #1 to 31 Aug 2026 is prepared",
    "pass": true,
-   "detail": "{\"id\":\"CI-P1-1-20261101115516265\",\"exc\":[{\"k\":\"weight\",\"msg\":\"1 mapped item(s) have no activity with the Schedule C Invoicing weight; their progress uses the schedule weight: X.4\",\"sev\":\"warn\"}],\"seq\":1,\"tot\":{\"cv\":14000,\"net\":5040,\"vat\":756,\"total\":5796,\"adv_amt\":0,\"adv_cum\":0,\"balance\":8960,\"rel_c"
+   "detail": "{\"id\":\"CI-P1-1-20261101131833863\",\"exc\":[{\"k\":\"weight\",\"msg\":\"1 mapped item(s) have no activity with the Schedule C Invoicing weight; their progress uses the schedule weight: X.4\",\"sev\":\"warn\"}],\"seq\":1,\"tot\":{\"cv\":14000,\"net\":5040,\"vat\":756,\"total\":5796,\"adv_amt\":0,\"adv_cum\":0,\"balance\":8960,\"rel_c"
   },
   {
    "check": "Invoice: X.3 earns on the inspection only: 40% (not the 88% of PR, PO and manufacturing by schedule weight); 40% × 90% of 10,000 = 3,600",
@@ -71,7 +71,7 @@
   {
    "check": "Invoice: recalculated",
    "pass": true,
-   "detail": "{\"id\":\"CI-P1-1-20261101115516265\",\"exc\":[{\"k\":\"weight\",\"msg\":\"1 mapped item(s) have no activity with the Schedule C Invoicing weight; their progress uses the schedule weight: X.4\",\"sev\":\"warn\"}],\"seq\":1,\"tot\":{\"cv\":14000,\"net\":7740,\"vat\":1161,\"total\":8901,\"adv_amt\":0,\"adv_cum\":0,\"balance\":6260,\"rel_"
+   "detail": "{\"id\":\"CI-P1-1-20261101131833863\",\"exc\":[{\"k\":\"weight\",\"msg\":\"1 mapped item(s) have no activity with the Schedule C Invoicing weight; their progress uses the schedule weight: X.4\",\"sev\":\"warn\"}],\"seq\":1,\"tot\":{\"cv\":14000,\"net\":7740,\"vat\":1161,\"total\":8901,\"adv_amt\":0,\"adv_cum\":0,\"balance\":6260,\"rel_"
   },
   {
    "check": "Invoice: X.3 = (10,000 × 40 + 30,000 × 80) / 40,000 = 70%; 70% × 90% of 10,000 = 6,300",
@@ -126,7 +126,7 @@
   {
    "check": "Rollback: the invoice still recalculates",
    "pass": true,
-   "detail": "{\"id\":\"CI-P1-1-20261101115516265\",\"exc\":[],\"seq\":1,\"tot\":{\"cv\":14000,\"net\":8737.14,\"vat\":1310.57,\"total\":10047.71,\"adv_amt\":0,\"adv_cum\":0,\"balance\":5262.86,\"rel_cum\":0,\"rel_fac\":false,\"rel_tcc\":false,\"ret_cum\":0,\"vat_pct\":15,\"adv_this\":0,\"rel_this\":0,\"ret_this\":0,\"gross_cum\":8737.14,\"gross_prev\":0,\""
+   "detail": "{\"id\":\"CI-P1-1-20261101131833863\",\"exc\":[],\"seq\":1,\"tot\":{\"cv\":14000,\"net\":8737.14,\"vat\":1310.57,\"total\":10047.71,\"adv_amt\":0,\"adv_cum\":0,\"balance\":5262.86,\"rel_cum\":0,\"rel_fac\":false,\"rel_tcc\":false,\"ret_cum\":0,\"vat_pct\":15,\"adv_this\":0,\"rel_this\":0,\"ret_this\":0,\"gross_cum\":8737.14,\"gross_prev\":0,\""
   },
   {
    "check": "Rollback: X.3 earns on the schedule weight of all its activities again",
