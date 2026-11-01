@@ -1,0 +1,427 @@
+[
+ {
+  "check": "Install: v51 runs a second time without errors",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Install: cib_features reports version 51 and no language-model review",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Install: the six rights and the screen are listed",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Install: defaults: costing and planning set up and prepare; planning maps; the project manager reviews; the regional manager approves; costing certifies; foremen nothing",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Install: the Head of Planning and Cost Control approves through the position",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Rules: percentage with TCC and FAC, split 90/10, at TCC, at FAC",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Rules: the checks refuse percentages that do not add up and phase steps without their activity",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Schedule-C: a foreman never sees billing",
+  "pass": true,
+  "detail": "Billing figures are not open to you"
+ },
+ {
+  "check": "Schedule-C: a project manager does not upload it",
+  "pass": true,
+  "detail": "You do not have the right cib.setup for this project"
+ },
+ {
+  "check": "Schedule-C: someone outside the project does not upload it",
+  "pass": true,
+  "detail": "You do not have access to this project"
+ },
+ {
+  "check": "Schedule-C: an item twice is refused",
+  "pass": true,
+  "detail": "Item X.1 appears twice"
+ },
+ {
+  "check": "Schedule-C: a rule that does not add up is refused",
+  "pass": true,
+  "detail": "On progress, at TCC and at FAC must add up to 100%"
+ },
+ {
+  "check": "Schedule-C: the costing engineer uploads revision 1 as a draft",
+  "pass": true,
+  "detail": "{\"id\":\"CS-P1-1\",\"st\":\"Draft\",\"rev\":1}"
+ },
+ {
+  "check": "Schedule-C: one draft at a time",
+  "pass": true,
+  "detail": "A draft revision is already waiting for approval: approve or replace it first"
+ },
+ {
+  "check": "Schedule-C: nobody approves a revision they uploaded",
+  "pass": true,
+  "detail": "Nobody approves a revision they uploaded"
+ },
+ {
+  "check": "Schedule-C: a project manager does not approve it",
+  "pass": true,
+  "detail": "You do not have the right cib.approve for this project"
+ },
+ {
+  "check": "Schedule-C: the regional manager approves it",
+  "pass": true,
+  "detail": "{\"id\":\"CS-P1-1\",\"ok\":true}"
+ },
+ {
+  "check": "Schedule-C: an approved revision does not change",
+  "pass": true,
+  "detail": "Only a draft revision changes; upload a new revision to change an approved one"
+ },
+ {
+  "check": "Schedule-C: items stored with the number cleaned, 7 items, approved by name",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Mapping: costing does not keep the mapping",
+  "pass": true,
+  "detail": "You do not have the right cib.map for this project"
+ },
+ {
+  "check": "Mapping: by hand only to an item of the price schedule",
+  "pass": true,
+  "detail": "Item X.99 is not in the price schedule"
+ },
+ {
+  "check": "Mapping: read from the P6 \"Schedule C\" code (one code not in the schedule is kept as read)",
+  "pass": true,
+  "detail": "{\"changed\":7}"
+ },
+ {
+  "check": "Mapping: reading the same file again changes nothing",
+  "pass": true,
+  "detail": "{\"changed\":0}"
+ },
+ {
+  "check": "Invoice: the costing engineer prepares #1 to 31 Aug 2026",
+  "pass": true,
+  "detail": "{\"id\":\"CI-P1-1-20261101100706198\",\"exc\":[{\"k\":\"unmapped\",\"msg\":\"1 price schedule item(s) not mapped: SAR 2,000.00. Map them or record their review in the mapping audit.\",\"sev\":\"block\"}],\"seq\":1,\"tot\":{\"cv\":19500,\"net\":10319,\"vat\":1547.85,\"total\":11866.85,\"adv_amt\":1950,\"adv_cum\":1214,\"balance\":7360,"
+ },
+ {
+  "check": "Invoice: X.6 has no activity: the invoice is blocked",
+  "pass": true,
+  "detail": "[{\"k\":\"unmapped\",\"msg\":\"1 price schedule item(s) not mapped: SAR 2,000.00. Map them or record their review in the mapping audit.\",\"sev\":\"block\"}]"
+ },
+ {
+  "check": "Invoice: progress is the weighted % complete (X.4: (300×40 + 100×60) / 400 = 45%) and 45% × 80% of 4,000 = 1,440",
+  "pass": true,
+  "detail": "{\"no\":\"X.4\",\"qty\":1,\"rev\":false,\"src\":\"p6\",\"acts\":2,\"comp\":\"CON\",\"desc\":\"Item X.4\",\"over\":false,\"prog\":0.45,\"rate\":4000,\"rule\":\"pct\",\"unit\":\"LT\",\"value\":4000,\"cum_pay\":1440,\"prev_pay\":0,\"prev_pct\":0,\"this_pay\":1440,\"prev_prog\":null}"
+ },
+ {
+  "check": "Invoice: phase steps (Phase I done): 50% × 90% of 2,000 = 900; split 90% of 10,000 = 9,000; TCC not achieved: X.5 nothing",
+  "pass": true,
+  "detail": "[[\"X.1\",800],[\"X.2\",900],[\"X.3\",9000],[\"X.4\",1440],[\"X.5\",0],[\"X.6\",0]]"
+ },
+ {
+  "check": "Invoice: a not-applicable item is not billed",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "check": "Invoice: a second draft is refused",
+  "pass": true,
+  "detail": "A draft invoice is already open: finish or cancel it first"
+ },
+ {
+  "check": "Mapping review: a reason is needed",
+  "pass": true,
+  "detail": "Give the reason (at least 5 characters)"
+ },
+ {
+  "check": "Mapping review: X.6 billed on a stated 25% with its evidence",
+  "pass": true,
+  "detail": "{\"ok\":true}"
+ },
+ {
+  "check": "Invoice: recalculated",
+  "pass": true,
+  "detail": "{\"id\":\"CI-P1-1-20261101100706198\",\"exc\":[{\"k\":\"manual\",\"msg\":\"1 item(s) are billed on a typed %, not P6 progress\",\"sev\":\"warn\"}],\"seq\":1,\"tot\":{\"cv\":19500,\"net\":10659,\"vat\":1598.85,\"total\":12257.85,\"adv_amt\":1950,\"adv_cum\":1254,\"balance\":6960,\"rel_cum\":0,\"rel_fac\":false,\"rel_tcc\":false,\"ret_cum\":627"
+ },
+ {
+  "check": "Invoice: the block is gone; X.6 = 25% × 80% of 2,000 = 400, flagged as a typed %",
+  "pass": true,
+  "detail": "[{\"k\":\"manual\",\"msg\":\"1 item(s) are billed on a typed %, not P6 progress\",\"sev\":\"warn\"}]"
+ },
+ {
+  "check": "Invoice: gross 12,540; retention 5%; advance recovery 10%; net; VAT 15%",
+  "pass": true,
+  "detail": "{\"cv\":19500,\"net\":10659,\"vat\":1598.85,\"total\":12257.85,\"adv_amt\":1950,\"adv_cum\":1254,\"balance\":6960,\"rel_cum\":0,\"rel_fac\":false,\"rel_tcc\":false,\"ret_cum\":627,\"vat_pct\":15,\"adv_this\":1254,\"rel_this\":0,\"ret_this\":627,\"gross_cum\":12540,\"gross_prev\":0,\"gross_this\":12540}"
+ },
+ {
+  "check": "Workflow: not submitted before the review",
+  "pass": true,
+  "detail": "Run \"Review invoice\" on the current figures first"
+ },
+ {
+  "check": "Workflow: the review is recorded",
+  "pass": true,
+  "detail": "{\"ok\":true}"
+ },
+ {
+  "check": "Workflow: submitted",
+  "pass": true,
+  "detail": "{\"ok\":true,\"st\":\"Submitted\"}"
+ },
+ {
+  "check": "Workflow: a draft only changes as a draft",
+  "pass": true,
+  "detail": "Only a draft invoice changes"
+ },
+ {
+  "check": "Workflow: nobody reviews an invoice they prepared",
+  "pass": true,
+  "detail": "Nobody reviews an invoice they prepared"
+ },
+ {
+  "check": "Workflow: the project manager reviews it",
+  "pass": true,
+  "detail": "{\"ok\":true,\"st\":\"Reviewed\"}"
+ },
+ {
+  "check": "Workflow: approval needs every supporting document marked",
+  "pass": true,
+  "detail": "Mark every supporting document attached or not applicable first"
+ },
+ {
+  "check": "Workflow: a return needs its reason",
+  "pass": true,
+  "detail": "Say why it is returned"
+ },
+ {
+  "check": "Workflow: the regional manager approves it",
+  "pass": true,
+  "detail": "{\"ok\":true,\"st\":\"Approved\"}"
+ },
+ {
+  "check": "Workflow: issued only on a valid date",
+  "pass": true,
+  "detail": "The issue date is not valid"
+ },
+ {
+  "check": "Workflow: issued",
+  "pass": true,
+  "detail": "{\"ok\":true,\"st\":\"Issued\"}"
+ },
+ {
+  "check": "Workflow: a planning engineer does not record the certificate",
+  "pass": true,
+  "detail": "You do not have the right cib.certify for this project"
+ },
+ {
+  "check": "Certificate: never more than claimed",
+  "pass": true,
+  "detail": "A certified amount is negative or more than claimed"
+ },
+ {
+  "check": "Certificate: the client certified X.3 at 4,500 instead of 9,000",
+  "pass": true,
+  "detail": "{\"ok\":true,\"st\":\"Certified\"}"
+ },
+ {
+  "check": "Certificate: certified 8,040; retention, advance, net and VAT on the certified amount; X.3 certified to date 4,500",
+  "pass": true,
+  "detail": "{\"c1\":{\"at\":\"2026-11-01T10:07:06.305+00:00\",\"by\":\"Cody Costing\",\"amt\":8040,\"ref\":\"CERT-1\",\"date\":\"2026-09-20\",\"changed\":true},\"Tc\":{\"cv\":19500,\"net\":6834,\"vat\":1025.1,\"total\":7859.1,\"adv_amt\":1950,\"adv_cum\":804,\"balance\":11460,\"rel_cum\":0,\"rel_fac\":false,\"rel_tcc\":false,\"ret_cum\":402,\"vat_pct\":15,\"a"
+ },
+ {
+  "check": "Payment: not more than the total with VAT",
+  "pass": true,
+  "detail": "Unknown action"
+ },
+ {
+  "check": "Payment: not more than the total with VAT",
+  "pass": true,
+  "detail": "Paid more than the invoice total with VAT"
+ },
+ {
+  "check": "Payment: recorded",
+  "pass": true,
+  "detail": "{\"ok\":true,\"st\":\"Paid\"}"
+ },
+ {
+  "check": "Next invoice: #2 to 30 Sep 2026",
+  "pass": true,
+  "detail": "{\"id\":\"CI-P1-2-20261101100706327\",\"exc\":[{\"k\":\"reversal\",\"msg\":\"Schedule reversal: 1 item(s) earn less than already certified; nothing is claimed for them this period\",\"sev\":\"warn\"},{\"k\":\"manual\",\"msg\":\"1 item(s) are billed on a typed %, not P6 progress\",\"sev\":\"warn\"}],\"seq\":2,\"tot\":{\"cv\":19500,\"net"
+ },
+ {
+  "check": "Next invoice: starts the day after #1 and from its certified figures (X.3 previous 4,500, not the 9,000 claimed)",
+  "pass": true,
+  "detail": "{\"from\":\"2026-09-01T00:00:00.000Z\",\"prev\":4500}"
+ },
+ {
+  "check": "Next invoice: TCC achieved: X.5 billed in full, X.4 at 75% (80% on progress) plus its 10% TCC share, half the retention released",
+  "pass": true,
+  "detail": "{\"X5\":{\"no\":\"X.5\",\"qty\":1,\"rev\":false,\"src\":\"ms\",\"acts\":0,\"comp\":\"TC\",\"desc\":\"Item X.5\",\"over\":false,\"prog\":0,\"rate\":500,\"rule\":\"tcc\",\"unit\":\"LT\",\"value\":500,\"cum_pay\":500,\"prev_pay\":0,\"prev_pct\":0,\"this_pay\":500,\"prev_prog\":0},\"X4\":2800,\"T2\":{\"cv\":19500,\"net\":6903.5,\"vat\":1035.53,\"total\":7939.03,\"a"
+ },
+ {
+  "check": "Next invoice: X.1 progress fell to 50% (400 + 100 at TCC = 500 < 800 certified): schedule reversal, nothing claimed, the certified amount kept",
+  "pass": true,
+  "detail": "{\"no\":\"X.1\",\"qty\":1,\"rev\":true,\"src\":\"p6\",\"acts\":1,\"comp\":\"GEN\",\"desc\":\"Item X.1\",\"over\":false,\"prog\":0.5,\"rate\":1000,\"rule\":\"pct\",\"unit\":\"LT\",\"value\":1000,\"cum_pay\":800,\"prev_pay\":800,\"prev_pct\":0.8,\"this_pay\":0,\"prev_prog\":1}"
+ },
+ {
+  "check": "Next invoice: Phase II complete: X.2 at 90% plus the 10% TCC share",
+  "pass": true,
+  "detail": "{\"no\":\"X.2\",\"qty\":1,\"rev\":false,\"src\":\"steps\",\"acts\":2,\"comp\":\"ENG\",\"desc\":\"Item X.2\",\"over\":false,\"prog\":1,\"rate\":2000,\"rule\":\"phase\",\"unit\":\"LT\",\"value\":2000,\"cum_pay\":2000,\"prev_pay\":900,\"prev_pct\":0.45,\"this_pay\":1100,\"prev_prog\":0.5}"
+ },
+ {
+  "check": "Next invoice: a draft is cancelled only with a reason",
+  "pass": true,
+  "detail": "Say why it is cancelled"
+ },
+ {
+  "check": "Next invoice: cancelled",
+  "pass": true,
+  "detail": "{\"ok\":true,\"st\":\"Cancelled\"}"
+ },
+ {
+  "check": "Next invoice: prepared again as #2",
+  "pass": true,
+  "detail": "{\"id\":\"CI-P1-2-20261101100706342\",\"exc\":[{\"k\":\"reversal\",\"msg\":\"Schedule reversal: 1 item(s) earn less than already certified; nothing is claimed for them this period\",\"sev\":\"warn\"},{\"k\":\"manual\",\"msg\":\"1 item(s) are billed on a typed %, not P6 progress\",\"sev\":\"warn\"}],\"seq\":2,\"tot\":{\"cv\":19500,\"net"
+ },
+ {
+  "check": "History: loaded only before the first invoice",
+  "pass": true,
+  "detail": "Invoices are already prepared here: the history is loaded before the first invoice"
+ },
+ {
+  "check": "Progress source: a manual mapping overrides the P6 one",
+  "pass": true,
+  "detail": "{\"changed\":1}"
+ },
+ {
+  "check": "Next invoice: recalculated: X.6 now from its activity (20%)",
+  "pass": true,
+  "detail": "{\"id\":\"CI-P1-2-20261101100706342\",\"exc\":[{\"k\":\"reversal\",\"msg\":\"Schedule reversal: 1 item(s) earn less than already certified; nothing is claimed for them this period\",\"sev\":\"warn\"}],\"seq\":2,\"tot\":{\"cv\":19500,\"net\":6833.5,\"vat\":1025.03,\"total\":7858.53,\"adv_amt\":1950,\"adv_cum\":1562,\"balance\":3880,\"re"
+ },
+ {
+  "check": "Next invoice: X.6 now from P6 at 20% (not the typed 25%): 20% × 80% of 2,000 plus its TCC share = 520",
+  "pass": true,
+  "detail": "{\"no\":\"X.6\",\"qty\":1,\"rev\":false,\"src\":\"p6\",\"acts\":1,\"comp\":\"CON\",\"desc\":\"Item X.6\",\"over\":false,\"prog\":0.2,\"rate\":2000,\"rule\":\"pct\",\"unit\":\"LT\",\"value\":2000,\"cum_pay\":520,\"prev_pay\":400,\"prev_pct\":0.2,\"this_pay\":120,\"prev_prog\":0.25}"
+ },
+ {
+  "check": "Submit: an invoice whose figures changed since it was calculated is refused",
+  "pass": true,
+  "detail": "Progress, mapping or rules changed since this draft was calculated: recalculate it first"
+ },
+ {
+  "check": "History: a Schedule-C for P2",
+  "pass": true,
+  "detail": "{\"id\":\"CS-P2-1\",\"st\":\"Draft\",\"rev\":1}"
+ },
+ {
+  "check": "History: an amount above an item value is refused",
+  "pass": true,
+  "detail": "Item Y.1: certified to date is more than its value"
+ },
+ {
+  "check": "History: invoice #8 loaded as certified",
+  "pass": true,
+  "detail": "{\"id\":\"CI-P2-8-H\",\"seq\":8}"
+ },
+ {
+  "check": "History: the next invoice is #9 and continues from it",
+  "pass": true,
+  "detail": "{\"id\":\"CI-P2-9-20261101100706385\",\"exc\":[{\"k\":\"unmapped\",\"msg\":\"2 price schedule item(s) not mapped: SAR 3,000.00. Map them or record their review in the mapping audit.\",\"sev\":\"block\"},{\"k\":\"p6\",\"msg\":\"No updated P6 schedule with a data date on or before the period end\",\"sev\":\"block\"},{\"k\":\"reversal"
+ },
+ {
+  "check": "History: #9 previous certified 1,000; blocked: no updated schedule for P2",
+  "pass": true,
+  "detail": "[{\"k\":\"unmapped\",\"msg\":\"2 price schedule item(s) not mapped: SAR 3,000.00. Map them or record their review in the mapping audit.\",\"sev\":\"block\"},{\"k\":\"p6\",\"msg\":\"No updated P6 schedule with a data date on or before the period end\",\"sev\":\"block\"},{\"k\":\"reversal\",\"msg\":\"Schedule reversal: 2 item(s) ea"
+ },
+ {
+  "check": "Load: a planning engineer reads cib_schedules",
+  "pass": true,
+  "detail": "[{\"n\":1}]"
+ },
+ {
+  "check": "Load: a planning engineer reads cib_items",
+  "pass": true,
+  "detail": "[{\"n\":7}]"
+ },
+ {
+  "check": "Load: a planning engineer reads cib_maps",
+  "pass": true,
+  "detail": "[{\"n\":7}]"
+ },
+ {
+  "check": "Load: a planning engineer reads cib_map_reviews",
+  "pass": true,
+  "detail": "[{\"n\":1}]"
+ },
+ {
+  "check": "Load: a planning engineer reads cib_invoices",
+  "pass": true,
+  "detail": "[{\"n\":3}]"
+ },
+ {
+  "check": "Load: a planning engineer reads cib_audit",
+  "pass": true,
+  "detail": "[{\"n\":28}]"
+ },
+ {
+  "check": "Load: a foreman of P1 sees no client invoice",
+  "pass": true,
+  "detail": "[{\"n\":0}]"
+ },
+ {
+  "check": "Load: someone outside P1 sees none of its invoices",
+  "pass": true,
+  "detail": "[{\"n\":0}]"
+ },
+ {
+  "check": "Load: read-only people see them",
+  "pass": true,
+  "detail": "[{\"n\":3}]"
+ },
+ {
+  "check": "Writes: nobody writes the tables directly",
+  "pass": true,
+  "detail": "permission denied for table cib_maps"
+ },
+ {
+  "check": "Writes: the engine is not callable directly",
+  "pass": true,
+  "detail": "permission denied for function pt_cib_compute"
+ },
+ {
+  "check": "Audit: upload, approval, mapping, review, prepare, recalculate, submit, review, approve, issue, certify, pay and cancel are recorded with who and before/after",
+  "pass": true,
+  "detail": "[\"Invoice approved\",\"Invoice cancelled\",\"Invoice certified\",\"Invoice document\",\"Invoice issued\",\"Invoice paid\",\"Invoice prepared\",\"Invoice recalculated\",\"Invoice reviewed\",\"Invoice reviewed (rules)\",\"Invoice submitted\",\"Mapping changed\",\"Mapping read from P6\",\"Mapping reviewed\",\"Schedule-C approved\""
+ },
+ {
+  "check": "Audit: append-only (update, delete and truncate refused)",
+  "pass": true,
+  "detail": "3"
+ },
+ {
+  "check": "Rollback: tables, screen and rights removed",
+  "pass": true,
+  "detail": "{\"t\":null,\"s\":false,\"k\":false}"
+ },
+ {
+  "check": "Rollback: v51 installs again afterwards",
+  "pass": true,
+  "detail": ""
+ }
+]
