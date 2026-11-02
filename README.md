@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.52
+
+- **The app in day and night mode**, in the sign-in page's world. Day: white menu, pale-blue page, white cards, deep navy text, ProTrack blue for actions and selection, one orange mark beside the page title. Night: deep navy from the ProTrack logo plate. Every text and state colour reaches 4.5:1 in both modes; no screen or behaviour changes. `tests/app_theme_demo.js` (13 checks, every menu screen in both modes). See RELEASE-NOTES-v3.52.md.
+
 ## Version 3.51
 
 - **New sign-in page** in the approved desktop and mobile designs: the ProTrack and alfanar Projects logos, the headline, four capabilities (Initiation & Setup, Scheduling & Progress, Costing & EAC, Cash Flow), RASA with its speech bubble, the sign-in card and the Project Controls Workflow from Initiation & Setup to Reports & Executive Dashboard. A short opening sequence plays once per page load: the ProTrack logo appears, its compass needle spins and settles and the tagline fades in (about 3 s); reduce motion switches it off. Signing in, demo accounts, server sign-in, reset and sessions are unchanged. The official alfanar Projects logo sits beside the ProTrack logo (`ALFANAR_LOGO`). `tests/login_page_demo.js` (29 checks). See RELEASE-NOTES-v3.51.md.
