@@ -901,7 +901,18 @@ tr.boqsub td{background:rgba(127,127,127,.06)}
 .rmgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}.rmcard{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
 .rmthumb{all:unset;cursor:pointer;position:relative;display:block;aspect-ratio:4/3;background:var(--surface-2)}.rmthumb img{width:100%;height:100%;object-fit:cover;display:block}.rmthumb:focus-visible{outline:2px solid var(--accent)}.rmph{display:grid;place-items:center;height:100%;color:var(--ink-2);font-weight:600}
 .rmplay{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600}.rmcard figcaption{padding:8px;display:flex;flex-direction:column;gap:5px;font-size:13px}.rmcard input{width:100%;font-size:13px;padding:5px 7px}.rmrow{display:flex;gap:6px;align-items:center}.rmrow input{flex:1}
-.rmview{position:fixed;inset:0;z-index:60;background:rgba(8,12,16,.86);display:grid;place-items:center;padding:16px}.rmbox{position:relative;max-width:min(1200px,96vw);max-height:92vh;display:flex;flex-direction:column;align-items:center;gap:8px}.rmbox img,.rmbox video{max-width:100%;max-height:82vh;border-radius:6px;background:#000}.rmbox p{color:#fff;margin:0;font-size:14px}.rmbox .iconbtn{position:absolute;top:-6px;right:-6px}
+.rmview{position:fixed;inset:0;z-index:60;background:rgba(8,12,16,.9);display:grid;place-items:center;padding:16px;touch-action:pan-y}.rmbox{position:relative;max-width:min(1200px,96vw);max-height:92vh;display:flex;flex-direction:column;align-items:center;gap:8px}.rmbox img,.rmbox video{max-width:100%;max-height:78vh;border-radius:6px;background:#000;user-select:none}.rmbox p{color:#fff;margin:0;font-size:14px;text-align:center}.rmbox .t2{color:#C9D3E0;font-size:12.5px}.rmbox .iconbtn{position:absolute;top:-6px;right:-6px}
+/* v3.53: the photo viewer steps through a set, and the daily, weekly and monthly reports share photos */
+.pvn{position:fixed;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:24px;line-height:1;cursor:pointer;display:grid;place-items:center}.pvn:hover{background:rgba(255,255,255,.26)}.pvn:focus-visible{outline:2px solid #fff;outline-offset:2px}.pvn.prev{left:14px}.pvn.next{right:14px}
+.pvc{color:#C9D3E0;font-size:12.5px;font-variant-numeric:tabular-nums}.pvload{color:#C9D3E0;min-height:120px;display:grid;place-items:center}
+@media(max-width:767px){.pvn{top:auto;bottom:18px;transform:none}.rmbox img,.rmbox video{max-height:70vh}}
+.phbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.phcam{display:none!important}@media(pointer:coarse){.phcam{display:inline-block!important}}
+.phgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.phcard{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column}
+@media(max-width:520px){.phgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.phcard .rmrow{flex-wrap:wrap}}
+.phcard figcaption{padding:6px 8px 8px;display:flex;flex-direction:column;gap:5px;font-size:12.5px;min-width:0}.phcard figcaption b{font-weight:600;overflow-wrap:anywhere}.phcard input[type=text]{width:100%;font-size:13px;padding:5px 7px}.phcard .new{color:var(--accent);font-weight:600}
+.phpick{position:relative}.phpick.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}.phpick.done{opacity:.62}.phchk{position:absolute;top:6px;left:6px;z-index:1;display:grid;place-items:center;width:30px;height:30px;border-radius:7px;background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer}.phchk input{width:18px;height:18px;margin:0;accent-color:var(--accent);cursor:pointer}
+.phtag{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.66);color:#fff;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:600}
+.phsrc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px;background:var(--surface-2)}.phsrc>summary{cursor:pointer;font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.phsrc h4{margin:12px 0 8px;font-size:13.5px}.phsrc .phbar{margin:10px 0 0}
 /* v3.45: client report formats */
 .crpgs{display:flex;flex-direction:column;gap:8px}.crpg{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface)}.crpg.bad{border-color:var(--amber)}.crpg summary{cursor:pointer;display:flex;gap:10px;align-items:center;flex-wrap:wrap;list-style:none}.crpg summary::-webkit-details-marker{display:none}
 .crpg summary .t2{flex:1;min-width:160px}.crn{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:6px;background:var(--surface-2);font-weight:600;font-size:12px}.crpg textarea{width:100%;margin-top:6px}.crpgf{display:flex;gap:18px;flex-wrap:wrap;margin-top:6px}
@@ -1834,9 +1845,14 @@ async function cloudSaveDpr(f,cleanLines,mode,err){
   const payload={id:state.editing||null,project_id:f.p,report_date:f.date,foreman:f.foreman,foreman_id:fu?fu.id:null,
     remarks:f.remarks||'',photos:f.attachments||[],lines:linesToDb(cleanLines),submit:mode==='submit',secs};
   busyBtns('[data-save]',true);err.textContent='Saving to the server…';
+  /* v3.53: photos go with a draft (the server lets the one who prepares a draft add them), so a report with new photos is saved
+     as a draft first, its photos stored, then submitted */
+  const ph=dpfDirty(),two=ph&&mode==='submit'&&(!state.editing||f.status==='Draft');
   let r;
-  try{r=await rpc('dpr_save',{p:payload})}
+  try{r=await rpc('dpr_save',{p:two?Object.assign({},payload,{submit:false}):payload})}
   catch(e){busyBtns('[data-save]',false);err.textContent='The server did not save this report: '+srvMsg(e);return}
+  if(ph){err.textContent='Saving the photos…';const bad=await dpApply({id:r.id,p:f.p,date:f.date});if(bad)toast(`${bad} photo change${bad===1?' was':'s were'} not saved`);
+    if(two){try{r=await rpc('dpr_save',{p:Object.assign({},payload,{id:r.id,secs:0})})}catch(e){busyBtns('[data-save]',false);state.editing=r.id;err.textContent='The report and its photos are saved as a draft, but it was not submitted: '+srvMsg(e);return}}}
   if(TIMER.kind==='create')timerStop(true);
   try{await cloudLoadDpr(r.id)}catch(e){toast('Saved, but the list could not refresh: '+srvMsg(e))}
   save();const p=projById(f.p),d=DB.dprs.find(x=>x.id===r.id);
@@ -5925,6 +5941,7 @@ function openPlanRelease(pid,t,per){
         <tr><td>Reviewed by</td><td>${esc(u(r&&r.reviewed_by))}${r&&r.reviewed_at?`<span class="t2">${esc(tStamp(r.reviewed_at))}</span>`:''}${r&&r.review_note?`<span class="t2">${esc(r.review_note)}</span>`:''}</td></tr>
         <tr><td>Approved by</td><td>${esc(u(r&&r.approved_by))}${r&&r.approved_at?`<span class="t2">${esc(tStamp(r.approved_at))}</span>`:''}</td></tr>
         <tr><td>Approver for this project</td><td>${esc(relApproverText(pid,'planning'))}</td></tr>
+        <tr><td>Photos and videos</td><td>${rmApprRow(pid,'planning',t,per)}</td></tr>
         <tr><td>Workflow</td><td class="small">Planning engineer submits → ${relSettings().pm_review?'project manager reviews → ':''}regional planning section manager approves (or rejects with a comment)</td></tr></tbody></table></div>
       <div class="rdcard"><h3>History</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.action)}</b> (rev ${a.rev}) by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}</li>`).join('')||'<li class="muted">Not prepared yet.</li>'}</ul></div></div>
     </section>
@@ -6614,28 +6631,78 @@ async function rmAct(a,id,d){const m=rmRows().find(x=>x.id===id);if(!m){toast('U
   if(a==='delete'){rmRows().splice(rmRows().indexOf(m),1);try{await DOCIDB.del('rm:'+id)}catch(x){}}else Object.assign(m,{caption:d.caption!=null?String(d.caption).trim():m.caption,taken_on:d.taken_on!==undefined?d.taken_on||null:m.taken_on});
   save();return true}
 /* the client report takes the internal report's photos and videos of the same period (copies, so each report keeps its own) */
-async function rmCopyInternal(pid,t,per){const ctx={pid,kind:'client',t,per},src=rmOf(pid,'planning',t,per),have=new Set(rmOf(pid,'client',t,per).map(m=>m.from).filter(Boolean));let n=0;
-  if(!rmCanEdit(pid,'client',t,per)){toast('The client report is approved: its photos and videos are locked');return 0}
-  for(const m of src){if(have.has(m.id))continue;if(rmOf(pid,'client',t,per).length>=RM_MAX_N){toast(`At most ${RM_MAX_N} photos and videos in a report`);break}
-    try{const id=rmUuid(),path=m.path.replace(/\/planning\//,'/client/').replace(/[^/]+$/,id+'.'+m.path.split('.').pop()),d={id,project_id:pid,kind:'client',period_type:t,period:per,path,name:m.name,mime:m.mime,size:m.size,thumb:m.thumb,duration:m.duration??null,taken_on:m.taken_on,caption:m.caption,sort:rmOf(pid,'client',t,per).length+1,from:m.id};
+const rmCopyInternal=(pid,t,per)=>rmCopyFrom({pid,kind:'client',t,per},rmOf(pid,'planning',t,per));
+/* v3.53: copies photos and videos into a report period: the internal report's into the client report, or the daily reports'
+   and weekly reports' photos into a weekly or monthly internal report. What is already there (the same photo, or a copy of
+   it) is skipped, so each report keeps its own copy and nothing is added twice. */
+async function rmCopyFrom(ctx,src){const {pid,kind,t,per}=ctx,have=rmHave(pid,kind,t,per);let n=0;
+  if(!rmCanEdit(pid,kind,t,per)){toast(`The ${kind==='client'?'client':'internal'} report is approved: its photos and videos are locked`);return 0}
+  for(const m of src){if(have.has(m.id)||(m.from&&have.has(m.from)))continue;if(rmOf(pid,kind,t,per).length>=RM_MAX_N){toast(`At most ${RM_MAX_N} photos and videos in a report`);break}
+    try{const id=rmUuid(),path=`${pid}/${kind}/${t}-${per}/${id}.${m.path.split('.').pop()}`,d={id,project_id:pid,kind,period_type:t,period:per,path,name:m.name,mime:m.mime,size:m.size,thumb:m.thumb,duration:m.duration??null,taken_on:m.taken_on,caption:m.caption,sort:rmOf(pid,kind,t,per).length+1,from:m.id};
       if(CLOUD_ME){const {error}=await SB.storage.from('report-media').copy(m.path,path);if(error)throw new Error(srvMsg(error));try{await rpc('report_media_act',{p:Object.assign({action:'add'},d)})}catch(err){await SB.storage.from('report-media').remove([path]);throw err}}
-      else{await DOCIDB.put('rm:'+id,await rmBlob(m));rmRows().push(Object.assign(d,{by:me().id,by_name:me().name,at:new Date().toISOString()}))}n++}catch(err){toast(err.message||srvMsg(err))}}
+      else{await DOCIDB.put('rm:'+id,await rmBlob(m));rmRows().push(Object.assign(d,{by:me().id,by_name:me().name,at:new Date().toISOString()}))}
+      have.add(m.id);if(m.from)have.add(m.from);n++}catch(err){toast(err.message||srvMsg(err))}}
   if(CLOUD_ME)await cloudLoadMedia();else if(n)save();return n}
-async function cloudLoadMedia(){if(!CLOUD_ME)return;try{DB.rmSrv=(await selAll('report_media','*',null,['project_id','period'])).map(x=>({id:x.id,project_id:x.project_id,kind:x.kind,period_type:x.period_type,period:x.period,path:x.path,name:x.name,mime:x.mime,size:+x.size_bytes,thumb:x.thumb,duration:x.duration_s,taken_on:x.taken_on,caption:x.caption||'',sort:x.sort,from:x.copied_from,by_name:x.uploaded_name,at:x.uploaded_at}));DB.rmMissing=false}
-  catch(e){DB.rmSrv=[];DB.rmMissing=srvMsg(e)}}
+/* the photos a report period already has, and what they were copied from */
+const rmHave=(pid,kind,t,per)=>new Set(rmOf(pid,kind,t,per).flatMap(m=>[m.id,m.from]).filter(Boolean));
+/* the photos a weekly or monthly internal report can pick from: the daily reports of the period (submitted, reviewed or
+   approved; not drafts or rejected reports) and, for a month, the weekly reports of the weeks in it. A daily photo already
+   copied into one of those weekly reports is shown once, with the weekly report. */
+function rmCands(pid,t,per){const a=t==='month'?per+'-01':isoWeekMonday(per),b=periodEnd(per,t);
+  const ds=DB.dprs.filter(d=>d.p===pid&&d.date>=a&&d.date<=b&&!['Draft','Rejected'].includes(d.status)).sort((x,y)=>x.date.localeCompare(y.date)||x.id.localeCompare(y.id));
+  let weekly=[];if(t==='month'){const W=new Set();for(let x=a;x<=b;x=addDays(x,1))W.add(isoWeekOf(x));weekly=[...W].flatMap(w=>rmOf(pid,'planning','week',w).map(m=>({m,tag:'Week '+(+w.slice(6))})))}
+  const inWk=new Set(weekly.map(x=>x.m.from).filter(Boolean)),daily=ds.flatMap(d=>rmOf(pid,'dpr','dpr',d.id).map(m=>({m,d,tag:d.status==='Approved'?'':d.status})));
+  return {weekly,daily:daily.filter(x=>!inWk.has(x.m.id)),shown:daily.length-daily.filter(x=>!inWk.has(x.m.id)).length}}
+const RMSEL=new Set();
+async function cloudLoadMedia(){if(!CLOUD_ME)return;try{DB.rmSrv=(await selAll('report_media','*',null,['project_id','period'])).map(x=>({id:x.id,project_id:x.project_id,kind:x.kind,period_type:x.period_type,period:x.period,path:x.path,name:x.name,mime:x.mime,size:+x.size_bytes,thumb:x.thumb,duration:x.duration_s,taken_on:x.taken_on,caption:x.caption||'',sort:x.sort,from:x.copied_from,by_name:x.uploaded_name,at:x.uploaded_at}));DB.rmMissing=false;
+    try{const f=await rpc('media_features',{});DB.dpV54=!!(f&&f.dpr_media)}catch(e){DB.dpV54=false}}
+  catch(e){DB.rmSrv=[];DB.rmMissing=srvMsg(e);DB.dpV54=false}}
 const rmSize=b=>b>=1048576?fmt(b/1048576,1)+' MB':fmt(Math.max(1,Math.round(b/1024)))+' KB';
-function rmTabHTML(pid,kind,t,per){const L=rmOf(pid,kind,t,per),ed=rmCanEdit(pid,kind,t,per),ctx=`${pid}|${kind}|${t}|${per}`,inn=kind==='client'?rmOf(pid,'planning',t,per):[];
+function rmTabHTML(pid,kind,t,per){const L=rmOf(pid,kind,t,per),ed=rmCanEdit(pid,kind,t,per),st=(relOpen(pid,kind,t,per)||{}).status,
+    lock=st==='Submitted'?'Locked while the report is with the reviewer or approver; if it is returned, they can be changed again. ':!st&&relReleased(pid,kind,t,per)?'Locked: the report is approved (a new revision can change them). ':'Only those who prepare the report add or change its photos and videos. ',ctx=`${pid}|${kind}|${t}|${per}`,inn=kind==='client'?rmOf(pid,'planning',t,per):[];
   return `<div class="rdcard" id="rmPanel" data-rmctx="${esc(ctx)}"><div class="card-head" style="flex-wrap:wrap"><h3 style="margin:0">Progress photos and videos <span class="muted small">${L.length} of ${RM_MAX_N}</span></h3>
-      ${ed?`<div class="actions" style="margin:0"><label class="btn sm" for="rmFile">Add photos or videos</label><input id="rmFile" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" data-rmctx="${esc(ctx)}" hidden>
-        ${kind==='client'&&inn.length?`<button class="btn sm" type="button" data-rmcopy="${esc(ctx)}">Copy from the internal report (${inn.length})</button>`:''}</div>`:''}</div>
+      <div class="actions phbar" style="margin:0">${L.length?`<button class="btn sm" type="button" data-pvall="rmSet">Preview${L.length>1?' all':''}</button>`:''}${ed?`<label class="btn sm" for="rmFile">Add photos or videos</label><input id="rmFile" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" data-rmctx="${esc(ctx)}" hidden>
+        <label class="btn sm phcam" for="rmCam">Take a photo</label><input id="rmCam" type="file" accept="image/*" capture="environment" data-rmctx="${esc(ctx)}" hidden>
+        ${kind==='client'&&inn.length?`<button class="btn sm" type="button" data-rmcopy="${esc(ctx)}">Copy from the internal report (${inn.length})</button>`:''}`:''}</div></div>
     ${CLOUD_ME&&DB.rmMissing?'<div class="warn-box" style="margin:6px 0"><b>Photos and videos need the v47 database update.</b> Run schema-update-v47.sql (STAGE-41-SETUP).</div>':''}
-    <p class="small muted" style="margin:4px 0 8px">${ed?'Photos are resized to 1920 pixels; videos up to 100 MB. Give each a caption: it is printed with the photo. ':'Locked: the report is approved (a new revision can change them). '}${kind==='client'?'They go to the client with the report; Print or save as PDF prints the photos and lists the videos.':'They stay with the internal report; the client report can copy them.'}</p>
-    ${L.length?`<div class="rmgrid">${L.map(m=>`<figure class="rmcard"><button class="rmthumb" type="button" data-rmopen="${esc(m.id)}" aria-label="Open ${esc(m.name)}">${m.thumb?`<img src="${esc(m.thumb)}" alt="">`:`<span class="rmph">${rmIsVid(m)?'Video':'Photo'}</span>`}${rmIsVid(m)?`<span class="rmplay">▶${m.duration?' '+Math.floor(m.duration/60)+':'+String(m.duration%60).padStart(2,'0'):''}</span>`:''}</button>
+    <p class="small muted" style="margin:4px 0 8px">${ed?`Photos are resized to 1920 pixels; videos up to 100 MB. Give each a caption: it is printed with the photo. ${kind==='planning'?`Pick from the ${t==='month'?'weekly and daily':'daily'} reports below, or add your own from this computer or phone. `:''}`:lock}${kind==='client'?'They go to the client with the report; Print or save as PDF prints the photos and lists the videos.':'They stay with the internal report; the client report can copy them.'}</p>
+    ${L.length?`<div class="rmgrid" data-pvset id="rmSet">${L.map(m=>`<figure class="rmcard"><button class="rmthumb" type="button" data-rmopen="${esc(m.id)}" aria-label="Open ${esc(m.name)}">${m.thumb?`<img src="${esc(m.thumb)}" alt="">`:`<span class="rmph">${rmIsVid(m)?'Video':'Photo'}</span>`}${rmIsVid(m)?`<span class="rmplay">▶${m.duration?' '+Math.floor(m.duration/60)+':'+String(m.duration%60).padStart(2,'0'):''}</span>`:''}</button>
         <figcaption>${ed?`<input data-rmcap="${esc(m.id)}" maxlength="300" placeholder="Caption, for example: Cable pulling, Zone A" value="${esc(m.caption||'')}"><span class="rmrow"><input type="date" data-rmdate="${esc(m.id)}" value="${esc(m.taken_on||'')}" aria-label="Date taken"><button class="btn sm danger" type="button" data-rmdel="${esc(m.id)}">Delete</button></span>`
-          :`<b>${esc(m.caption||m.name)}</b>`}<span class="t2">${esc(m.taken_on?fmtDY(m.taken_on):'')} · ${esc(rmSize(m.size||0))}${m.by_name?' · '+esc(m.by_name):''}</span></figcaption></figure>`).join('')}</div>`:`<p class="muted small">No photo or video yet.</p>`}</div>`}
-async function rmOpen(id){const m=rmRows().find(x=>x.id===id);if(!m)return;let u;try{u=await rmUrl(m)}catch(e){toast(e.message);return}
-  const o=document.createElement('div');o.className='rmview';o.innerHTML=`<div class="rmbox">${rmIsVid(m)?`<video src="${u}" controls autoplay></video>`:`<img src="${u}" alt="${esc(m.caption||m.name)}">`}<p>${esc(m.caption||m.name)}${m.taken_on?' · '+esc(fmtDY(m.taken_on)):''}</p><button class="iconbtn" type="button" aria-label="Close">✕</button></div>`;
-  const close=()=>{o.remove();document.removeEventListener('keydown',k)},k=e=>{if(e.key==='Escape')close()};o.addEventListener('click',e=>{if(e.target===o||e.target.closest('.iconbtn'))close()});document.addEventListener('keydown',k);document.body.appendChild(o)}
+          :`<b>${esc(m.caption||m.name)}</b>`}<span class="t2">${esc(m.taken_on?fmtDY(m.taken_on):'')} · ${esc(rmSize(m.size||0))}${m.by_name?' · '+esc(m.by_name):''}</span></figcaption></figure>`).join('')}</div>`:`<p class="muted small">No photo or video yet.</p>`}
+    ${kind==='planning'&&ed?rmPickHTML(pid,t,per):''}</div>`}
+/* v3.53: the gallery a weekly or monthly internal report picks from (rmCands); ticked photos are copied in with rmCopyFrom */
+function rmPickHTML(pid,t,per){const C=rmCands(pid,t,per),have=rmHave(pid,'planning',t,per),all=[...C.weekly,...C.daily],isIn=m=>have.has(m.id)||(!!m.from&&have.has(m.from));
+  const head=t==='month'?'Pick from the weekly and daily reports of this month':'Pick from the daily reports of this week';
+  if(!all.length)return `<div class="phsrc" style="margin-top:12px"><b>${head}</b><p class="small muted" style="margin:6px 0 0">No photo yet in the ${t==='month'?'weekly or daily reports':'daily reports'} of this period that are submitted, reviewed or approved. Add your own photos above.</p></div>`;
+  const free=all.filter(x=>!isIn(x.m));for(const id of [...RMSEL])if(!free.some(x=>x.m.id===id))RMSEL.delete(id);
+  const card=x=>{const done=isIn(x.m),on=!done&&RMSEL.has(x.m.id),cap=x.m.caption||x.m.name;
+    return `<figure class="phcard phpick${on?' on':''}${done?' done':''}">${done?'':`<label class="phchk"><input type="checkbox" data-rmsel="${esc(x.m.id)}" ${on?'checked':''} aria-label="Select ${esc(cap)}"></label>`}
+      <button class="rmthumb" type="button" data-rmopen="${esc(x.m.id)}" data-pvsub="${esc(x.d?`${x.d.id}, ${x.d.status}`:`${x.tag} report`)}" aria-label="Preview ${esc(cap)}">${x.m.thumb?`<img src="${esc(x.m.thumb)}" alt="" loading="lazy">`:`<span class="rmph">${rmIsVid(x.m)?'Video':'Photo'}</span>`}${rmIsVid(x.m)?'<span class="rmplay">▶</span>':''}${done?'<span class="phtag">In this report</span>':x.tag?`<span class="phtag">${esc(x.tag)}</span>`:''}</button>
+      <figcaption><b>${esc(cap)}</b><span class="t2">${x.d?`${esc(x.d.id)} · ${esc(fmtD(x.d.date))}`:`${esc(x.tag)} report${x.m.taken_on?' · '+esc(fmtD(x.m.taken_on)):''}`}</span></figcaption></figure>`};
+  const grp=(h,L,id)=>L.length?`<h4>${h} <span class="muted small">${L.length}</span></h4><div class="phgrid" data-pvset id="${id}">${L.map(card).join('')}</div>`:'';
+  return `<details class="phsrc" open style="margin-top:12px"><summary>${head} <span class="muted small">${free.length} to pick from${all.length>free.length?`, ${all.length-free.length} already in this report`:''}</span></summary>
+    ${grp('Weekly reports',C.weekly,'rmPkW')}${grp('Daily reports',C.daily,'rmPkD')}
+    ${C.shown?`<p class="small muted" style="margin:8px 0 0">${C.shown} daily photo${C.shown===1?' is':'s are'} shown once, with the weekly report ${C.shown===1?'it was':'they were'} added to.</p>`:''}
+    <div class="phbar"><button class="btn sm primary" type="button" data-rmadd ${RMSEL.size?'':'disabled'}>Add selected to this report (<span id="rmSelN">${RMSEL.size}</span>)</button><button class="btn sm" type="button" data-rmall ${free.length?'':'disabled'}>Select all</button><button class="btn sm" type="button" data-rmnone>Clear</button></div></details>`}
+/* v3.53: the photo viewer. The set is every photo or video inside the same [data-pvset] (a report's photos, a gallery to pick
+   from, a daily report's photos); the arrows, the ← and → keys or a swipe step through it, Escape closes it. A daily report's
+   photos not saved yet ([data-pvtmp]) are shown from this browser. */
+function pvItem(el){if(el.dataset.pvtmp){const x=DPF.add.find(a=>a.tmp===el.dataset.pvtmp);return x?{thumb:x.thumb,url:()=>x.url||(x.url=URL.createObjectURL(x.blob)),cap:x.caption||x.name,sub:'Not saved yet',vid:false}:null}
+  const m=rmRows().find(x=>x.id===el.dataset.rmopen);return m?{thumb:m.thumb,url:()=>rmUrl(m),cap:m.caption||m.name,sub:[m.taken_on?fmtDY(m.taken_on):'',el.dataset.pvsub||''].filter(Boolean).join(' · '),vid:rmIsVid(m)}:null}
+function rmOpen(start){const set=start.closest('[data-pvset]'),L=set?[...set.querySelectorAll('[data-rmopen],[data-pvtmp]')]:[start];let i=Math.max(0,L.indexOf(start)),tok=0,x0=null;
+  const back=document.activeElement,o=document.createElement('div');o.className='rmview';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label','Photo preview');
+  o.innerHTML=`<div class="rmbox"><div id="pvBody" class="pvload">Opening…</div><p id="pvCap"></p><span class="pvc" id="pvCnt" aria-live="polite"></span><button class="iconbtn" type="button" data-pvx aria-label="Close">✕</button></div>${L.length>1?'<button class="pvn prev" type="button" data-pvs="-1" aria-label="Previous photo">‹</button><button class="pvn next" type="button" data-pvs="1" aria-label="Next photo">›</button>':''}`;
+  const body=o.querySelector('#pvBody'),show=async()=>{const k=++tok,it=pvItem(L[i]);if(!it)return;
+    o.querySelector('#pvCap').innerHTML=`${esc(it.cap)}${it.sub?`<br><span class="t2">${esc(it.sub)}</span>`:''}`;o.querySelector('#pvCnt').textContent=L.length>1?`${i+1} of ${L.length}`:'';
+    body.className=it.thumb&&!it.vid?'':'pvload';body.innerHTML=it.thumb&&!it.vid?`<img src="${esc(it.thumb)}" alt="${esc(it.cap)}">`:'Opening…';
+    let u;try{u=await it.url()}catch(e){if(k===tok&&!it.thumb)body.textContent=e.message;return}if(k!==tok)return;
+    body.className='';body.innerHTML=it.vid?`<video src="${u}" controls autoplay playsinline></video>`:`<img src="${u}" alt="${esc(it.cap)}">`};
+  const step=n=>{if(L.length<2)return;i=(i+n+L.length)%L.length;show()};
+  const close=()=>{tok++;o.remove();document.removeEventListener('keydown',key,true);if(back&&back.focus)back.focus()};
+  const key=e=>{if(e.key==='Escape'){e.stopPropagation();close()}else if(e.key==='ArrowRight')step(1);else if(e.key==='ArrowLeft')step(-1)};
+  o.addEventListener('click',e=>{const b=e.target.closest('[data-pvs]');if(b){step(+b.dataset.pvs);return}if(e.target===o||e.target.closest('[data-pvx]'))close()});
+  o.addEventListener('pointerdown',e=>{x0=e.clientX});o.addEventListener('pointerup',e=>{if(x0==null)return;const dx=e.clientX-x0;x0=null;if(Math.abs(dx)>50)step(dx<0?1:-1)});
+  document.addEventListener('keydown',key,true);document.body.appendChild(o);o.querySelector('[data-pvx]').focus();show()}
 /* the photos for a printed report: full photos (object URLs), the videos listed with their preview */
 async function rmPrintHTML(pid,kind,t,per){const L=rmOf(pid,kind,t,per);if(!L.length)return '';const out=[];for(const m of L){let u=null;if(!rmIsVid(m)){try{u=await rmUrl(m)}catch(e){u=m.thumb}}out.push({m,u})}
   const ph=out.filter(x=>!rmIsVid(x.m)),vd=out.filter(x=>rmIsVid(x.m));
@@ -6644,13 +6711,24 @@ async function rmPrintHTML(pid,kind,t,per){const L=rmOf(pid,kind,t,per);if(!L.le
 /* only the panel is drawn again, so what is typed in the report is kept */
 const rmRedraw=()=>{const el=$('#rmPanel');if(!el)return;const [pid,kind,t,per]=el.dataset.rmctx.split('|'),w=document.createElement('div');w.innerHTML=rmTabHTML(pid,kind,t,per);el.replaceWith(w.firstElementChild)};
 document.addEventListener('change',async e=>{const t=e.target;if(!t)return;
-  if(t.id==='rmFile'&&t.files&&t.files.length){const [pid,kind,tp,per]=t.dataset.rmctx.split('|'),files=[...t.files];t.value='';toast(`Adding ${files.length} file${files.length===1?'':'s'}…`);const n=await rmAdd(files,{pid,kind,t:tp,per});if(n)toast(`${n} photo${n===1?'':'s'} or video${n===1?'':'s'} added`);rmRedraw();return}
+  if((t.id==='rmFile'||t.id==='rmCam')&&t.files&&t.files.length){const [pid,kind,tp,per]=t.dataset.rmctx.split('|'),files=[...t.files];t.value='';toast(`Adding ${files.length} file${files.length===1?'':'s'}…`);const n=await rmAdd(files,{pid,kind,t:tp,per});if(n)toast(`${n} photo${n===1?'':'s'} or video${n===1?'':'s'} added`);rmRedraw();return}
+  if(t.dataset&&t.dataset.rmsel){if(t.checked)RMSEL.add(t.dataset.rmsel);else RMSEL.delete(t.dataset.rmsel);t.closest('.phpick').classList.toggle('on',t.checked);
+    const n=$('#rmSelN');if(n){n.textContent=RMSEL.size;n.parentElement.disabled=!RMSEL.size}return}
   if(t.dataset&&t.dataset.rmcap){await rmAct('update',t.dataset.rmcap,{caption:t.value});return}
   if(t.dataset&&t.dataset.rmdate){await rmAct('update',t.dataset.rmdate,{taken_on:t.value||null});return}});
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-rmopen],[data-rmdel],[data-rmcopy]');if(!t)return;const d=t.dataset;
-  if(d.rmopen){rmOpen(d.rmopen);return}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-rmopen],[data-pvtmp],[data-pvall],[data-rmdel],[data-rmcopy],[data-rmadd],[data-rmall],[data-rmnone]');if(!t)return;const d=t.dataset;
+  if('rmopen' in d||'pvtmp' in d){rmOpen(t);return}
+  if(d.pvall){const f=document.querySelector(`#${d.pvall} [data-rmopen],#${d.pvall} [data-pvtmp]`);if(f)rmOpen(f);return}
   if(d.rmdel){const m=rmRows().find(x=>x.id===d.rmdel);if(!m||!await confirmBox(`Delete ${rmIsVid(m)?'the video':'the photo'} "${m.caption||m.name}"?`,'Delete'))return;if(await rmAct('delete',d.rmdel)){toast('Deleted');rmRedraw()}return}
-  if(d.rmcopy){const [pid,,tp,per]=d.rmcopy.split('|');t.disabled=true;const n=await rmCopyInternal(pid,tp,per);toast(n?`${n} copied from the internal report`:'Nothing new to copy');rmRedraw()}});
+  if(d.rmcopy){const [pid,,tp,per]=d.rmcopy.split('|');t.disabled=true;const n=await rmCopyInternal(pid,tp,per);toast(n?`${n} copied from the internal report`:'Nothing new to copy');rmRedraw();return}
+  const el=$('#rmPanel');if(!el)return;const [pid,kind,tp,per]=el.dataset.rmctx.split('|');
+  if('rmall' in d){rmPickFree(pid,tp,per).forEach(m=>RMSEL.add(m.id));rmRedraw();return}
+  if('rmnone' in d){RMSEL.clear();rmRedraw();return}
+  if('rmadd' in d){const src=rmPickFree(pid,tp,per).filter(m=>RMSEL.has(m.id));if(!src.length)return;t.disabled=true;toast(`Adding ${src.length} photo${src.length===1?'':'s'}…`);
+    const n=await rmCopyFrom({pid,kind,t:tp,per},src);RMSEL.clear();if(n)toast(`${n} added to the ${perLabel(tp,per)} report`);rmRedraw()}});
+/* the Approval tab: how many photos and videos the report has, and a preview of them for the one who reviews or approves */
+const rmApprRow=(pid,kind,t,per)=>{const L=rmOf(pid,kind,t,per),v=L.filter(rmIsVid).length;return L.length?`${L.length-v} photo${L.length-v===1?'':'s'}${v?`, ${v} video${v===1?'':'s'}`:''} <button class="btn sm" type="button" data-pvall="rmSet" style="margin-inline-start:8px">Preview</button>`:'<span class="muted">None</span>'};
+const rmPickFree=(pid,t,per)=>{const C=rmCands(pid,t,per),have=rmHave(pid,'planning',t,per);return [...C.weekly,...C.daily].map(x=>x.m).filter(m=>!(have.has(m.id)||(m.from&&have.has(m.from))))};
 
 /* ---------- v3.45: client report formats, and the client report exported to PowerPoint, Word and PDF ----------
    Each customer can have its own client report format (Settings → Client report formats): the pages in their order, the
@@ -7160,7 +7238,8 @@ function openClientRelease(pid,t,per){
       <div class="rdcard"><h3>Approval</h3><table class="tbl kv"><tbody><tr><td>Current revision</td><td>${r?'rev '+r.rev:'New'}</td></tr><tr><td>Reason for revision</td><td>${esc(r&&r.revise_reason||'—')}</td></tr>
         <tr><td>Prepared and submitted by</td><td>${esc(u(r&&r.submitted_by))}${r&&r.submitted_at?`<span class="t2">${esc(tStamp(r.submitted_at))}</span>`:''}</td></tr>
         <tr><td>Approved for issue by</td><td>${esc(u(r&&r.approved_by))}${r&&r.approved_at?`<span class="t2">${esc(tStamp(r.approved_at))}</span>`:''}</td></tr>
-        <tr><td>Approver for this project</td><td>${esc(relApproverText(pid,'client'))}</td></tr></tbody></table></div>
+        <tr><td>Approver for this project</td><td>${esc(relApproverText(pid,'client'))}</td></tr>
+        <tr><td>Photos and videos</td><td>${rmApprRow(pid,'client',t,per)}</td></tr></tbody></table></div>
       <div class="rdcard"><h3>History</h3><ul class="audit">${H.map(a=>`<li><b>${esc(a.action)}</b> (rev ${a.rev}) by ${esc(a.by_name||'')} <span class="muted small">${esc(tStamp(a.at_time))}</span>${a.note?`<span class="note">${esc(a.note)}</span>`:''}</li>`).join('')||'<li class="muted">Not prepared yet.</li>'}</ul></div></div></section>
     <div class="rdfoot">
       ${canDecide||relCanReturn(open)?`<label class="field" style="flex:1;min-width:220px">Comment (needed to reject)<input id="relNote" maxlength="500"></label>`:''}
@@ -9064,7 +9143,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.52';
+const APP_VERSION='3.53';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -9412,7 +9491,7 @@ function render(){
   if(state.navSec){const sec=state.navSec;state.navSec=null;setTimeout(()=>navScroll(sec),60)}
   renderBell();
 }
-function go(v){if(v!=='new'){state.form=null;state.editing=null}state.view=v;render();window.scrollTo(0,0)}
+function go(v){if(v!=='new'){state.form=null;state.editing=null;dpfReset()}state.view=v;render();window.scrollTo(0,0)}
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>el.classList.remove('on'),2600)}
 function crumb(){
   const ids=[...SCOPE];if(!ids.length)return '<div class="crumb">No projects match this scope yet. Change the scope, or ask the planning manager for access.</div>';
@@ -9567,7 +9646,7 @@ function renderDpr(){
     ${canCreate()?'<button class="btn primary" type="button" data-go="new">Start new report</button>':''}</div>
     <p class="small muted" style="margin:10px 0 0">${hint}</p></div>
   <div class="panel"><div class="scroll"><table class="tbl"><thead><tr><th>Report</th><th>Activities</th><th>Foreman</th><th class="n">Crew</th><th class="n">Manhours</th><th class="n">Earned mh</th><th class="n">Index</th><th>Status</th></tr></thead><tbody>
-    ${list.slice(0,state.showN).map(d=>{const g=repAgg(d),a=actById(d.lines[0].act),more=d.lines.length-1;return `<tr class="click" data-open="${d.id}" tabindex="0"><td><b>${d.id}</b><span class="t2">${fmtD(d.date)}, ${projById(d.p).short}</span></td><td>${esc(a.name)}<span class="t2">${esc(a.area)}, ${esc(discOf(a))}</span>${more?` <span class="tag" style="background:var(--accent-soft);color:var(--accent)">+${more}</span>`:''}<span class="t2">${d.lines.length} activit${d.lines.length>1?'ies':'y'}</span></td><td>${esc(d.foreman)}</td><td class="n">${g.heads}</td><td class="n">${fmt(g.mh)}</td><td class="n">${fmt(g.earned)}</td><td class="n">${g.mh?tl(g.pi):'—'}</td><td><span class="st ${d.status}">${d.status}</span>${d.returned&&d.status==='Draft'?'<span class="t2">Returned</span>':''}${(d.status==='Submitted'||d.status==='Reviewed')&&qtyOverOf(d).length?'<span class="t2 a-c">Beyond scope</span>':''}</td></tr>`}).join('')||'<tr><td colspan="8" class="muted">No reports with this status. Choose another filter.</td></tr>'}
+    ${list.slice(0,state.showN).map(d=>{const g=repAgg(d),a=actById(d.lines[0].act),more=d.lines.length-1;return `<tr class="click" data-open="${d.id}" tabindex="0"><td><b>${d.id}</b><span class="t2">${fmtD(d.date)}, ${projById(d.p).short}</span></td><td>${esc(a.name)}<span class="t2">${esc(a.area)}, ${esc(discOf(a))}</span>${more?` <span class="tag" style="background:var(--accent-soft);color:var(--accent)">+${more}</span>`:''}<span class="t2">${d.lines.length} activit${d.lines.length>1?'ies':'y'}${(n=>n?`, ${n} photo${n>1?'s':''}`:'')(dprPhotos(d).length)}</span></td><td>${esc(d.foreman)}</td><td class="n">${g.heads}</td><td class="n">${fmt(g.mh)}</td><td class="n">${fmt(g.earned)}</td><td class="n">${g.mh?tl(g.pi):'—'}</td><td><span class="st ${d.status}">${d.status}</span>${d.returned&&d.status==='Draft'?'<span class="t2">Returned</span>':''}${(d.status==='Submitted'||d.status==='Reviewed')&&qtyOverOf(d).length?'<span class="t2 a-c">Beyond scope</span>':''}</td></tr>`}).join('')||'<tr><td colspan="8" class="muted">No reports with this status. Choose another filter.</td></tr>'}
   </tbody></table></div>${list.length>state.showN?`<div style="text-align:center;margin-top:12px"><button class="btn" type="button" data-more>Show ${Math.min(40,list.length-state.showN)} more</button></div>`:''}</div>`;
 }
 function actionsFor(d){
@@ -9614,7 +9693,8 @@ function openDpr(id){
     <div><div class="l">Report index</div><div class="v ${light(g.pi)}-c">${pct(g.pi)}</div></div>
   </div>
   <div class="dprlines">${d.lines.map((l,i)=>lineHTML(l,i,d.lines.length,d)).join('')}</div>
-  ${d.attachments.length?`<h3>Attachments</h3><p class="small">${d.attachments.map(esc).join(', ')}</p>`:''}
+  ${dprPhViewHTML(d)}
+  ${d.attachments.length?`<h3>Attached documents</h3><p class="small">${d.attachments.map(esc).join(', ')}</p>`:''}
   ${d.remarks?`<h3>Remarks</h3><p class="small">${esc(d.remarks)}</p>`:''}
   <h3>Audit trail</h3><ul class="audit">${d.audit.map(x=>`<li><b>${esc(x.action)}</b> by ${esc(x.who)} <span class="muted small">${esc(x.t)}</span>${x.note?`<span class="note">${esc(x.note)}</span>`:''}</li>`).join('')}</ul>
   ${acts.length?`<div class="dpract"><h3>Your action as ${ROLES[state.role]}</h3>${acts.some(k=>k==='reject'||k==='return')?'<textarea id="cmt" rows="2" placeholder="Comment for the site team (required to reject or return)"></textarea>':''}
@@ -9644,7 +9724,7 @@ function notifyOver(d){const O=qtyOverOf(d);if(O.length)notify(`${d.id}: ${O.map
 function notifyLow(d){d.lines.filter(l=>lpi(l)<0.9).forEach(l=>notify(`Productivity below target: ${actById(l.act).name} reported at ${pct(lpi(l))} in ${d.id}.`,true))}
 function doAction(k){
   const d=DB.dprs.find(x=>x.id===state.open);if(!d)return;const p=projById(d.p);
-  if(k==='edit'){closeDrawer();state.editing=d.id;state.form=JSON.parse(JSON.stringify(d));go2form();return}
+  if(k==='edit'){closeDrawer();state.editing=d.id;state.form=JSON.parse(JSON.stringify(d));dpfReset();go2form();return}
   const note=($('#cmt')?.value||'').trim();
   if((k==='reject'||k==='return')&&!note){$('#actErr').textContent='Add a comment so the site team knows what to fix.';return}
   const qg=k==='review'||k==='approve'?qtyGate(d,k):{ok:true};if(!qg.ok){$('#actErr').textContent=qg.msg;return}
@@ -9690,6 +9770,69 @@ function logTime(d,kind,secs){
   const o=d.timing[kind]||(d.timing[kind]={secs:0,by:null,sessions:0});
   o.secs+=secs;o.by=me().name;o.role=state.role;o.sessions++;o.at=stamp();
 }
+
+/* ---------- v3.53: site photos on the daily report ----------
+   A daily report keeps up to 20 site photos (JPG, PNG or WEBP, resized to 1920 pixels), each with a caption, in the same store
+   as the report photos (report_media, kind 'dpr', period = the report's id). They are chosen in the form, from this computer or
+   the phone's camera, and stored only when the report is saved (DPF holds them until then); those who review and approve see
+   them in the report, and the weekly and monthly internal reports pick from them (rmCands). Drawings and other documents are
+   still listed by name only. */
+const DPR_PH_MAX=20;
+let DPF={add:[],del:new Set(),cap:{}};
+function dpfReset(){DPF.add.forEach(x=>x.url&&URL.revokeObjectURL(x.url));DPF={add:[],del:new Set(),cap:{}}}
+const dpfDirty=()=>DPF.add.length>0||DPF.del.size>0||Object.keys(DPF.cap).length>0;
+const dprPhotos=d=>d&&d.id?rmOf(d.p,'dpr','dpr',d.id):[];
+function dpFormHTML(f){const cur=state.editing?dprPhotos({id:state.editing,p:f.p}).filter(m=>!DPF.del.has(m.id)):[],n=cur.length+DPF.add.length;
+  const card=(id,thumb,cap,tmp)=>`<figure class="phcard"><button class="rmthumb" type="button" ${tmp?`data-pvtmp="${esc(tmp)}"`:`data-rmopen="${esc(id)}"`} aria-label="Preview ${esc(cap||'photo')}">${thumb?`<img src="${esc(thumb)}" alt="">`:'<span class="rmph">Photo</span>'}</button>
+    <figcaption><input type="text" maxlength="300" ${tmp?`data-dpcapt="${esc(tmp)}"`:`data-dpcap="${esc(id)}"`} value="${esc(cap||'')}" placeholder="Caption, for example: Zone B columns" aria-label="Caption"><span class="rmrow">${tmp?'<span class="new small">Not saved yet</span>':''}<button class="btn sm danger" type="button" ${tmp?`data-dpdelt="${esc(tmp)}"`:`data-dpdel="${esc(id)}"`} style="margin-inline-start:auto">Remove</button></span></figcaption></figure>`;
+  if(CLOUD_ME&&!DB.dpV54)return `<div id="dpPhotos"><h3 style="margin:0 0 6px">Site photos</h3><div class="warn-box"><b>Site photos need the v54 database update.</b> Run schema-update-v54.sql (STAGE-48-SETUP).</div></div>`;
+  return `<div id="dpPhotos"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3 style="margin:0">Site photos <span class="muted small">${n} of ${DPR_PH_MAX}</span></h3>
+    <div class="phbar">${n?`<button class="btn sm" type="button" data-pvall="dpSet">Preview${n>1?' all':''}</button>`:''}${n<DPR_PH_MAX?`<label class="btn sm" for="dpPick">Add photos</label><input id="dpPick" type="file" multiple accept="image/jpeg,image/png,image/webp" hidden><label class="btn sm phcam" for="dpCam">Take a photo</label><input id="dpCam" type="file" accept="image/*" capture="environment" hidden>`:''}</div></div>
+    <p class="small muted" style="margin:4px 0 8px">Add them from this computer or take them with your phone's camera. Photos are resized to 1920 pixels and kept when you save the report; the weekly and monthly reports can pick from them.</p>
+    ${n?`<div class="phgrid" data-pvset id="dpSet">${cur.map(m=>card(m.id,m.thumb,DPF.cap[m.id]??m.caption)).join('')}${DPF.add.map(x=>card(null,x.thumb,x.caption,x.tmp)).join('')}</div>`:'<p class="muted small" style="margin:0">No photo yet.</p>'}</div>`}
+const dpRedraw=()=>{const el=$('#dpPhotos');if(!el||!state.form)return;const w=document.createElement('div');w.innerHTML=dpFormHTML(state.form);el.replaceWith(w.firstElementChild)};
+async function dpAddFiles(files){const f=state.form;if(!f)return;let room=DPR_PH_MAX-(state.editing?dprPhotos({id:state.editing,p:f.p}).filter(m=>!DPF.del.has(m.id)).length:0)-DPF.add.length,n=0;
+  for(const file of files){if(room<=0){toast(`At most ${DPR_PH_MAX} photos in a daily report`);break}
+    if(!RM_IMG.test(file.type||'')){toast(`${file.name}: use JPG, PNG or WEBP photos`);continue}
+    try{const x=await rmPrepare(file);DPF.add.push({tmp:rmUuid(),blob:x.blob,mime:x.mime,name:x.name,size:x.blob.size,thumb:x.thumb,caption:''});room--;n++}catch(e){toast(e.message)}}
+  dpRedraw();if(n)toast(`${n} photo${n===1?'':'s'} added; ${n===1?'it is':'they are'} kept when you save the report`)}
+/* stores what the form changed: removed photos, captions, new photos; each photo's date follows the report's date */
+async function dpApply(d){const adds=DPF.add.slice(),dels=[...DPF.del],caps=Object.entries(DPF.cap),cur=()=>rmOf(d.p,'dpr','dpr',d.id);let bad=0;
+  const act=async(a,p)=>{if(CLOUD_ME)return rpc('report_media_act',{p:Object.assign({action:a},p)})};
+  for(const id of dels){const m=rmRows().find(x=>x.id===id);if(!m)continue;
+    try{if(CLOUD_ME){await act('delete',{id});await SB.storage.from('report-media').remove([m.path])}else{rmRows().splice(rmRows().indexOf(m),1);try{await DOCIDB.del('rm:'+id)}catch(x){}}}catch(e){bad++;toast(srvMsg(e))}}
+  for(const [id,c] of caps){const m=rmRows().find(x=>x.id===id);if(!m||dels.includes(id)||(m.caption||'')===c.trim())continue;
+    try{if(CLOUD_ME)await act('update',{id,caption:c});else m.caption=c.trim()}catch(e){bad++;toast(srvMsg(e))}}
+  for(const m of cur())if(m.taken_on!==d.date){try{if(CLOUD_ME)await act('update',{id:m.id,taken_on:d.date});else m.taken_on=d.date}catch(e){}}
+  for(const x of adds){const id=rmUuid(),r={id,project_id:d.p,kind:'dpr',period_type:'dpr',period:d.id,path:`${d.p}/dpr/dpr-${d.id}/${id}.jpg`,name:String(x.name).slice(0,200),mime:x.mime,size:x.size,thumb:x.thumb,duration:null,taken_on:d.date,caption:(x.caption||'').trim(),sort:cur().length+1};
+    try{if(CLOUD_ME){const {error}=await SB.storage.from('report-media').upload(r.path,x.blob,{contentType:r.mime,upsert:false});if(error)throw new Error('The photo was not stored: '+srvMsg(error));
+        try{await act('add',r)}catch(err){await SB.storage.from('report-media').remove([r.path]);throw err}}
+      else{await DOCIDB.put('rm:'+id,x.blob);rmRows().push(Object.assign(r,{by:me().id,by_name:me().name,at:new Date().toISOString()}))}}catch(e){bad++;toast(e.message||srvMsg(e))}}
+  dpfReset();if(CLOUD_ME)await cloudLoadMedia();else save();return bad}
+/* in the report, for those who review and approve it */
+function dprPhViewHTML(d){const L=dprPhotos(d);
+  return `<h3 style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">Site photos <span class="muted small">${L.length}</span>${L.length?`<button class="btn sm" type="button" data-pvall="dpvSet">Preview${L.length>1?' all':''}</button>`:''}</h3>
+    ${L.length?`<div class="phgrid" data-pvset id="dpvSet">${L.map(m=>`<figure class="phcard"><button class="rmthumb" type="button" data-rmopen="${esc(m.id)}" data-pvsub="${esc(d.id)}" aria-label="Preview ${esc(m.caption||m.name)}">${m.thumb?`<img src="${esc(m.thumb)}" alt="" loading="lazy">`:'<span class="rmph">Photo</span>'}</button>${m.caption?`<figcaption><b>${esc(m.caption)}</b></figcaption>`:''}</figure>`).join('')}</div>`:'<p class="small muted">No photo with this report.</p>'}`}
+document.addEventListener('change',e=>{const t=e.target;if((t.id==='dpPick'||t.id==='dpCam')&&t.files&&t.files.length){const files=[...t.files];t.value='';dpAddFiles(files)}});
+document.addEventListener('input',e=>{const ds=e.target.dataset||{};if(ds.dpcap)DPF.cap[ds.dpcap]=e.target.value;else if(ds.dpcapt){const x=DPF.add.find(a=>a.tmp===ds.dpcapt);if(x)x.caption=e.target.value}});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-dpdel],[data-dpdelt]');if(!t)return;const ds=t.dataset;
+  if(ds.dpdel){DPF.del.add(ds.dpdel);delete DPF.cap[ds.dpdel]}else{const i=DPF.add.findIndex(a=>a.tmp===ds.dpdelt);if(i>=0){const [x]=DPF.add.splice(i,1);if(x.url)URL.revokeObjectURL(x.url)}}dpRedraw()});
+/* the demo's sample site photos: drawn here, labelled SAMPLE, added once to recent daily reports */
+function dpSampleCanvas(a,d,q){const c=document.createElement('canvas');c.width=1280;c.height=960;const g=c.getContext('2d'),h0=[...(a.id+d.id+q)].reduce((t,ch)=>(t*31+ch.charCodeAt(0))>>>0,7),h1=Math.imul(h0^(h0>>>16),2246822507)>>>0,h2=Math.imul(h1^(h1>>>13),3266489909)>>>0,h=(h2^(h2>>>16))>>>0,r=i=>((h>>>i)%1000)/1000;
+  const sky=g.createLinearGradient(0,0,0,640);sky.addColorStop(0,`hsl(${200+r(1)*20},58%,${56+r(2)*14}%)`);sky.addColorStop(1,'hsl(35,40%,88%)');g.fillStyle=sky;g.fillRect(0,0,1280,960);
+  g.fillStyle=`hsl(32,${28+r(3)*15}%,${50+r(4)*10}%)`;g.fillRect(0,640,1280,320);
+  const x0=120+r(5)*220,lv=2+Math.floor(r(6)*4),bw=480+r(7)*260;g.fillStyle='#98A1AB';for(let i=0;i<lv;i++)g.fillRect(x0,640-(i+1)*110,bw,16);
+  g.fillStyle='#7B858F';for(let x=x0;x<=x0+bw;x+=bw/6)g.fillRect(x,640-lv*110,18,lv*110);
+  g.strokeStyle='rgba(55,55,55,.5)';g.lineWidth=3;for(let x=x0-60;x<x0+bw+60;x+=40){g.beginPath();g.moveTo(x,640);g.lineTo(x,640-lv*110-30);g.stroke()}
+  const cx=Math.min(1180,x0+bw+110+r(8)*120);g.strokeStyle='#E3A21A';g.lineWidth=12;g.beginPath();g.moveTo(cx,640);g.lineTo(cx,150);g.lineTo(cx-520,150);g.moveTo(cx,150);g.lineTo(cx+90,150);g.stroke();g.lineWidth=2;g.beginPath();g.moveTo(cx-300,150);g.lineTo(cx-300,330);g.stroke();
+  g.fillStyle='rgba(0,0,0,.55)';g.fillRect(0,850,1280,110);g.fillStyle='#fff';g.font='bold 40px sans-serif';g.fillText('SAMPLE site photo',32,902);g.font='28px sans-serif';g.fillText(`${d.id} · ${d.date} · ${a.name}`.slice(0,72),32,942);return c}
+async function dpSeed(){if(CLOUD_ME||DB.dpSeeded||!window.indexedDB)return;DB.dpSeeded=1;const from=addDays(TODAY,-40);let n=0;
+  try{for(const pid of [...new Set(DB.dprs.map(d=>d.p))]){const ds=DB.dprs.filter(d=>d.p===pid&&d.date>=from&&!['Draft','Rejected'].includes(d.status)).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+    for(const [j,d] of ds.entries()){if(rmOf(pid,'dpr','dpr',d.id).length)continue;
+      for(let q=0;q<(j%3===0?2:1);q++){const a=actById(d.lines[q%d.lines.length].act),c=dpSampleCanvas(a,d,q),id=rmUuid(),blob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.8));await DOCIDB.put('rm:'+id,blob);
+        rmRows().push({id,project_id:pid,kind:'dpr',period_type:'dpr',period:d.id,path:`${pid}/dpr/dpr-${d.id}/${id}.jpg`,name:`site_${d.id}_${q+1}.jpg`,mime:'image/jpeg',size:blob.size,thumb:rmDraw(c,1280,960,240).toDataURL('image/jpeg',0.62),duration:null,taken_on:d.date,caption:`${a.name}, ${a.area} (SAMPLE)`,sort:q+1,by:null,by_name:d.foreman,at:d.date+'T15:00:00Z'});n++}}}}
+  catch(e){console.warn('Sample site photos were not added',e)}
+  save();if(n&&state.view==='dpr')render()}
 
 /* ---------- new / edit report form ---------- */
 function blankLine(pid,used=[]){
@@ -9758,7 +9901,7 @@ function lineForm(l,i,f){
 function renderForm(){
   if(!canCreate()){go('dpr');return}
   {const key=state.editing||'new';if(!(TIMER.kind==='create'&&TIMER.id===key))timerStart('create',key,0);}
-  if(!state.form){const b=blankForm();if(!b){document.getElementById('view').innerHTML=crumb()+'<section class="panel"><h2>No project is ready for daily reporting</h2><p class="muted" style="margin:0">None of your active projects has both a baseline and a foreman yet. Ask the planning manager to finish the project setup in Settings.</p></section>';return}state.form=b}
+  if(!state.form){const b=blankForm();if(!b){document.getElementById('view').innerHTML=crumb()+'<section class="panel"><h2>No project is ready for daily reporting</h2><p class="muted" style="margin:0">None of your active projects has both a baseline and a foreman yet. Ask the planning manager to finish the project setup in Settings.</p></section>';return}state.form=b;dpfReset()}
   const f=state.form,p=projById(f.p),left=ACTS.filter(x=>x.p===f.p&&isCon(x)&&!f.lines.some(l=>l.act===x.id)).length;
   document.getElementById('view').innerHTML=`<div class="crumb"><span class="timerpill" title="Time spent on this report">⏱ <span id="formTimer">0 s</span></span> ${state.editing?`Editing ${state.editing}. Changes are logged in the audit trail.`:'One report per foreman per day. Add every activity the crews worked on, each with the resources engaged on it.'}</div>
   <div class="form-grid"><div style="display:flex;flex-direction:column;gap:16px">
@@ -9771,8 +9914,9 @@ function renderForm(){
     ${f.lines.map((l,i)=>lineForm(l,i,f)).join('')}
     <button type="button" class="addact" data-addline ${left?'':'disabled'}>${left?`Add another activity <span class="muted">(${left} more available in ${esc(p.short)})</span>`:'All activities for this project are already on the report'}</button>
     <section class="panel"><h2>Evidence and remarks</h2>
-      <label class="field">Photos, drawings or documents<input type="file" multiple id="files"></label>
-      <p class="small muted" style="margin:6px 0 12px">${f.attachments.length?'Attached: '+f.attachments.map(esc).join(', '):'In this prototype only file names are kept; the full build stores files in Azure Blob Storage.'}</p>
+      ${dpFormHTML(f)}
+      <label class="field" style="margin-top:16px">Drawings or other documents<input type="file" multiple id="files"></label>
+      <p class="small muted" style="margin:6px 0 12px">${f.attachments.length?'Attached: '+f.attachments.map(esc).join(', '):'Only the file names of documents are kept in this prototype; the full build stores them in Azure Blob Storage.'}</p>
       <label class="field">Remarks<textarea rows="3" data-k="remarks" placeholder="Delays, weather, access issues, instructions received">${esc(f.remarks)}</textarea></label></section>
   </div>
   <aside class="panel sum" id="sum"></aside></div>`;
@@ -9802,7 +9946,7 @@ function updateSummary(){
     <p class="err" id="formErr"></p>
     <p class="formula">Actual rate = quantity ÷ manhours. Index = actual rate ÷ planned rate. The report index weights each activity by its manhours.</p>`;
 }
-function saveForm(mode){
+async function saveForm(mode){
   const f=state.form,err=$('#formErr');
   for(let i=0;i<f.lines.length;i++){const l=f.lines[i],a=actById(l.act);
     if(!(+l.qty>0)){err.textContent=`Activity ${i+1} (${a.name}): enter the quantity executed.`;return}
@@ -9820,6 +9964,7 @@ function saveForm(mode){
     if(mode==='submit')d.audit.push({t,who,action:'Submitted'});DB.dprs.push(d)}
   if(TIMER.kind==='create'){const secs=timerStop();logTime(d,'create',secs)}
   save();
+  if(dpfDirty()){busyBtns('[data-save]',true);err.textContent='Saving the photos…';const bad=await dpApply(d);if(bad)toast(`${bad} photo change${bad===1?' was':'s were'} not saved`)}
   if(d.status==='Submitted'&&mode==='submit'){notify(`${d.id} submitted for ${p.short} with ${d.lines.length} activit${d.lines.length>1?'ies':'y'}, waiting for ${p.eng} to review and the site manager to approve.`);notifyLow(d);notifyOver(d)}
   toast(`${d.id} ${mode==='submit'?(state.editing?'saved':'submitted'):'saved as draft'}`);state.dprFilter='All';go('dpr');
 }
@@ -13382,7 +13527,7 @@ ${d.remarks?`<tr><td style="padding:14px 24px 0;font:14px Arial,sans-serif;color
   Prepared by ${esc(d.foreman)}${T.create?` in ${fmtDur(T.create.secs)}`:''}.
   ${rv?`Reviewed by ${esc(rv.who)}${T.review?` in ${fmtDur(T.review.secs)}`:''}.`:''}
   ${ap?`Approved by ${esc(ap.who)}${T.approve?` in ${fmtDur(T.approve.secs)}`:''}, ${esc(ap.t)}.`:''}
-  ${(d.attachments||[]).length?` ${d.attachments.length} photograph${d.attachments.length>1?'s':''} attached in ProTrack.`:''}</td></tr>
+  ${(n=>n?` ${n} site photo${n>1?'s':''} with the report in ProTrack.`:'')(dprPhotos(d).length)}</td></tr>
 <tr><td style="padding:22px 24px 26px" align="left"><a href="${link}" style="display:inline-block;background:#1763D8;color:#fff;text-decoration:none;font:bold 15px Arial,sans-serif;padding:12px 22px;border-radius:8px">Open ${esc(d.id)} in ProTrack</a>
   <div style="font:12px Arial,sans-serif;color:#8A97A8;margin-top:10px">Or paste this link: ${link}</div></td></tr>
 <tr><td style="background:#F4F6F9;padding:12px 24px;font:11px Arial,sans-serif;color:#8A97A8">Sent automatically by ProTrack because you have access to ${esc(p.short)}. Figures are as approved; later corrections appear in the app.</td></tr>
@@ -22429,7 +22574,7 @@ async function boot(){
   const s=readSession();
   if(s&&!CLOUD&&userById(s.uid)?.active){SESSION=s;state.uid=s.uid;state.role=me().role;state.view=homeView();showApp()}
   else showAuth(location.hash==='#reset'&&resetToken()?'reset':'login');
-  if(CLOUD)checkCloud();
+  if(CLOUD)checkCloud();else dpSeed();
   if(CLOUD)SB.auth.getSession().then(async ({data})=>{
     if(!data||!data.session)return;
     try{const prof=await cloudProfile();await startCloudSession(prof,true)}catch(e){console.warn(e.message)}
@@ -22827,7 +22972,7 @@ document.addEventListener('click',e=>{
   else if(ds.q)ask(ds.q);
   else if('more' in ds){state.showN+=40;render()}
   else if('reset' in ds&&CLOUD){toast('Demo data reset is switched off on this site')}
-  else if('reset' in ds){confirmBox('Reset all demo data to the original sample?\nEverything you have added in this browser is removed.','Reset').then(okd=>{if(!okd)return;try{localStorage.removeItem(KEY)}catch(x){}setDB(gen());seedNotes();state.chat=[];closeDrawer();$('#notes').hidden=true;go('dash');toast('Demo data reset')})}
+  else if('reset' in ds){confirmBox('Reset all demo data to the original sample?\nEverything you have added in this browser is removed.','Reset').then(okd=>{if(!okd)return;try{localStorage.removeItem(KEY)}catch(x){}setDB(gen());seedNotes();state.chat=[];closeDrawer();$('#notes').hidden=true;go('dash');toast('Demo data reset');dpSeed()})}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDrawer();$('#notes').hidden=true}if(e.key==='Enter'&&e.target.dataset?.open)openDpr(e.target.dataset.open)});
 document.addEventListener('input',e=>{

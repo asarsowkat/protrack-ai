@@ -1,0 +1,192 @@
+{
+ "run": "2026-11-02T15:04:39.688Z",
+ "pass": 37,
+ "total": 37,
+ "results": [
+  {
+   "check": "Install: v54 runs a second time without errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: media_features reports version 54 with dpr_media",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Draft: a foreman does not add photos to another foreman's report",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Draft: someone without access to the project adds nothing",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Draft: the planning engineer (no dpr.create) adds nothing",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Draft: the foreman adds a photo to their own report",
+   "pass": true,
+   "detail": "{\"id\":\"54000004-0000-4000-8000-000000000000\"}"
+  },
+  {
+   "check": "Draft: the site engineer adds a photo",
+   "pass": true,
+   "detail": "{\"id\":\"54000005-0000-4000-8000-000000000000\"}"
+  },
+  {
+   "check": "Draft: the project manager adds a photo",
+   "pass": true,
+   "detail": "{\"id\":\"54000006-0000-4000-8000-000000000000\"}"
+  },
+  {
+   "check": "A daily report takes photos only (no video)",
+   "pass": true,
+   "detail": "A daily report takes photos only"
+  },
+  {
+   "check": "The stored path must be the report's own",
+   "pass": true,
+   "detail": "Only those who may edit the daily report add its photos, while it is not approved"
+  },
+  {
+   "check": "The report must exist on that project",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Storage: a foreman does not store a file under another foreman's report",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Draft: the foreman changes a caption and the date",
+   "pass": true,
+   "detail": "{\"id\":\"54000004-0000-4000-8000-000000000000\"}"
+  },
+  {
+   "check": "The caption is kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Submitted: the foreman no longer adds photos",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Submitted: the foreman no longer removes one",
+   "pass": true,
+   "detail": "The daily report's photos are locked: only those who may edit the report change them"
+  },
+  {
+   "check": "Submitted: a site engineer who is not the reviewer adds nothing",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Submitted: the assigned site engineer adds a photo while reviewing",
+   "pass": true,
+   "detail": "{\"id\":\"54000014-0000-4000-8000-000000000000\"}"
+  },
+  {
+   "check": "Submitted: the project manager (dpr.approve) changes a caption",
+   "pass": true,
+   "detail": "{\"id\":\"54000004-0000-4000-8000-000000000000\"}"
+  },
+  {
+   "check": "Approved: nobody adds photos",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Approved: nobody removes one",
+   "pass": true,
+   "detail": "The daily report's photos are locked: only those who may edit the report change them"
+  },
+  {
+   "check": "Approved report from the start: nothing added",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Limit: the 21st photo of a daily report is refused",
+   "pass": true,
+   "detail": "At most 20 photos in a daily report"
+  },
+  {
+   "check": "Read: the planning engineer sees the daily photos and their files (to pick from)",
+   "pass": true,
+   "detail": "[24,27]"
+  },
+  {
+   "check": "Read: someone without access to the project sees none",
+   "pass": true,
+   "detail": "[0,0]"
+  },
+  {
+   "check": "Nobody writes the table directly",
+   "pass": true,
+   "detail": "permission denied for table report_media"
+  },
+  {
+   "check": "Weekly: the planning engineer stores the copy under the weekly report",
+   "pass": true,
+   "detail": "[]"
+  },
+  {
+   "check": "Weekly: and adds it with the photo it came from",
+   "pass": true,
+   "detail": "{\"id\":\"54000038-0000-4000-8000-000000000000\"}"
+  },
+  {
+   "check": "Weekly: the copy remembers its daily photo",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Weekly: kind and period type must match (a daily photo cannot be filed under a week)",
+   "pass": true,
+   "detail": "Only those who may edit the daily report add its photos, while it is not approved"
+  },
+  {
+   "check": "Monthly: the planning engineer adds a copy of the weekly photo",
+   "pass": true,
+   "detail": "{\"id\":\"54000040-0000-4000-8000-000000000000\"}"
+  },
+  {
+   "check": "The table itself refuses a daily record that is not a photo",
+   "pass": true,
+   "detail": "new row for relation \"report_media\" violates check constraint \"report_media_dpr_check\""
+  },
+  {
+   "check": "Rollback: version 47 again; pt_dpr_edit is gone",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: the daily photos' records are removed; the weekly and monthly copies stay",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: a daily photo is refused again",
+   "pass": true,
+   "detail": "new row violates row-level security policy for table \"objects\""
+  },
+  {
+   "check": "Rollback: v54 installs again",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: after installing again, daily photos are taken again",
+   "pass": true,
+   "detail": "{\"id\":\"54000043-0000-4000-8000-000000000000\"}"
+  }
+ ]
+}
