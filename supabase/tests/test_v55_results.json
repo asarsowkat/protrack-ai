@@ -1,0 +1,97 @@
+{
+ "run": "2026-11-02T15:28:53.137Z",
+ "pass": 18,
+ "total": 18,
+ "results": [
+  {
+   "check": "Install: v55 runs a second time without errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: media_features reports version 55 with dpr_notes",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Draft: another foreman does not change the report",
+   "pass": true,
+   "detail": "Only those who may edit the daily report change it, while it is not approved"
+  },
+  {
+   "check": "Draft: the planning engineer does not change it",
+   "pass": true,
+   "detail": "Only those who may edit the daily report change it, while it is not approved"
+  },
+  {
+   "check": "Draft: the foreman keeps the weather, constraints and recovery actions",
+   "pass": true,
+   "detail": "[{\"r\":{\"id\":\"DPR-00001\"}}]"
+  },
+  {
+   "check": "They are kept on the report",
+   "pass": true,
+   "detail": "{\"weather\":\"Dust / sandstorm, 41 °C\",\"issues_text\":\"Crane down for 2 hours (SAMPLE)\",\"recovery_text\":\"Second shift on Thursday (SAMPLE)\"}"
+  },
+  {
+   "check": "They are read with the report by those who see the project",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "The weather is 60 characters at most",
+   "pass": true,
+   "detail": "The weather is 60 characters at most"
+  },
+  {
+   "check": "Constraints are 1,000 characters at most",
+   "pass": true,
+   "detail": "Constraints and recovery actions are 1,000 characters at most each"
+  },
+  {
+   "check": "An unknown report is refused",
+   "pass": true,
+   "detail": "Unknown daily report"
+  },
+  {
+   "check": "Blank text clears a field",
+   "pass": true,
+   "detail": "[{\"r\":{\"id\":\"DPR-00001\"}}]"
+  },
+  {
+   "check": "A cleared field is empty",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Submitted: the foreman no longer changes it",
+   "pass": true,
+   "detail": "Only those who may edit the daily report change it, while it is not approved"
+  },
+  {
+   "check": "Submitted: the assigned site engineer changes it while reviewing",
+   "pass": true,
+   "detail": "[{\"r\":{\"id\":\"DPR-00001\"}}]"
+  },
+  {
+   "check": "Approved: nobody changes it",
+   "pass": true,
+   "detail": "Only those who may edit the daily report change it, while it is not approved"
+  },
+  {
+   "check": "Nobody writes the columns directly",
+   "pass": true,
+   "detail": "unchanged: no row changed"
+  },
+  {
+   "check": "Rollback: version 54 again, dpr_notes_set gone, what was written kept",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Rollback: v55 installs again",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}
