@@ -912,6 +912,9 @@ tr.boqsub td{background:rgba(127,127,127,.06)}
 .phcard figcaption{padding:6px 8px 8px;display:flex;flex-direction:column;gap:5px;font-size:12.5px;min-width:0}.phcard figcaption b{font-weight:600;overflow-wrap:anywhere}.phcard input[type=text]{width:100%;font-size:13px;padding:5px 7px}.phcard .new{color:var(--accent);font-weight:600}
 .phpick{position:relative}.phpick.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}.phpick.done{opacity:.62}.phchk{position:absolute;top:6px;left:6px;z-index:1;display:grid;place-items:center;width:30px;height:30px;border-radius:7px;background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer}.phchk input{width:18px;height:18px;margin:0;accent-color:var(--accent);cursor:pointer}
 .phtag{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.66);color:#fff;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:600}
+/* v3.54: the report preview */
+.docview{position:fixed;inset:0;z-index:62;background:rgba(8,12,16,.72);display:flex;flex-direction:column;padding:12px;gap:8px}.docbar{display:flex;align-items:center;gap:10px;background:var(--surface);color:var(--ink);border-radius:10px;padding:8px 10px 8px 14px}.docttl{flex:1;min-width:0;display:flex;flex-direction:column}.docttl b{font-size:15px}.docttl .t2{font-size:12.5px}
+.docview iframe{flex:1;width:100%;border:0;border-radius:10px;background:#fff}@media(max-width:767px){.docview{padding:0;gap:0}.docbar{border-radius:0}.docview iframe{border-radius:0}.docbar .btn{padding:7px 10px;font-size:13px}}
 .phsrc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px;background:var(--surface-2)}.phsrc>summary{cursor:pointer;font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.phsrc h4{margin:12px 0 8px;font-size:13.5px}.phsrc .phbar{margin:10px 0 0}
 /* v3.45: client report formats */
 .crpgs{display:flex;flex-direction:column;gap:8px}.crpg{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface)}.crpg.bad{border-color:var(--amber)}.crpg summary{cursor:pointer;display:flex;gap:10px;align-items:center;flex-wrap:wrap;list-style:none}.crpg summary::-webkit-details-marker{display:none}
@@ -1716,7 +1719,7 @@ function dprFromDb(r){
   const p=projById(r.project_id)||{};
   return {id:r.id,date:r.report_date,p:r.project_id,foreman:r.foreman||'',foremanId:r.foreman_id||null,engineer:r.site_engineer||p.eng||'',
     lines:(r.dpr_lines||[]).slice().sort((a,b)=>(a.line_no||0)-(b.line_no||0)).map(l=>({act:l.activity_id,qty:+l.qty||0,labour:l.labour||[],subs:l.subs||[],equip:l.equip||[]})),
-    remarks:r.remarks||'',attachments:Array.isArray(r.photo_names)?r.photo_names:[],status:r.status,late:!!r.late,returned:!!r.returned,
+    remarks:r.remarks||'',weather:r.weather||'',issues:r.issues_text||'',recovery:r.recovery_text||'',attachments:Array.isArray(r.photo_names)?r.photo_names:[],status:r.status,late:!!r.late,returned:!!r.returned,
     timing:r.timing||{},mailed:r.mailed||null,server:true,
     audit:(r.dpr_audit||[]).slice().sort((a,b)=>(a.seq||0)-(b.seq||0)).map(a=>({t:tStamp(a.at_time),who:a.by_name||nameById(a.by_user),action:a.action,note:a.note||undefined}))};
 }
@@ -1847,11 +1850,13 @@ async function cloudSaveDpr(f,cleanLines,mode,err){
   busyBtns('[data-save]',true);err.textContent='Saving to the server…';
   /* v3.53: photos go with a draft (the server lets the one who prepares a draft add them), so a report with new photos is saved
      as a draft first, its photos stored, then submitted */
-  const ph=dpfDirty(),two=ph&&mode==='submit'&&(!state.editing||f.status==='Draft');
+  const old=state.editing&&DB.dprs.find(x=>x.id===state.editing)||{},nt=DB.dprV55&&['weather','issues','recovery'].some(k=>(f[k]||'')!==(old[k]||''));
+  const ph=dpfDirty(),two=(ph||nt)&&mode==='submit'&&(!state.editing||f.status==='Draft');
   let r;
   try{r=await rpc('dpr_save',{p:two?Object.assign({},payload,{submit:false}):payload})}
   catch(e){busyBtns('[data-save]',false);err.textContent='The server did not save this report: '+srvMsg(e);return}
-  if(ph){err.textContent='Saving the photos…';const bad=await dpApply({id:r.id,p:f.p,date:f.date});if(bad)toast(`${bad} photo change${bad===1?' was':'s were'} not saved`);
+  if(nt)try{await rpc('dpr_notes_set',{p:{id:r.id,weather:f.weather||'',issues:f.issues||'',recovery:f.recovery||''}})}catch(e){toast('The weather, constraints and recovery actions were not saved: '+srvMsg(e))}
+  if(ph||nt){if(ph){err.textContent='Saving the photos…';const bad=await dpApply({id:r.id,p:f.p,date:f.date});if(bad)toast(`${bad} photo change${bad===1?' was':'s were'} not saved`)}
     if(two){try{r=await rpc('dpr_save',{p:Object.assign({},payload,{id:r.id,secs:0})})}catch(e){busyBtns('[data-save]',false);state.editing=r.id;err.textContent='The report and its photos are saved as a draft, but it was not submitted: '+srvMsg(e);return}}}
   if(TIMER.kind==='create')timerStop(true);
   try{await cloudLoadDpr(r.id)}catch(e){toast('Saved, but the list could not refresh: '+srvMsg(e))}
@@ -5949,6 +5954,7 @@ function openPlanRelease(pid,t,per){
       ${canDecide||relCanReview(open)||relCanReturn(open)?`<label class="field" style="flex:1;min-width:220px">Comment (needed to reject)<input id="relNote" maxlength="500"></label>`:''}
       ${released&&!open&&canPrepRel('planning')?`<label class="field" style="flex:1;min-width:220px">Reason for a new revision<input id="relNote" maxlength="500"></label>`:''}
       <div class="actions" style="margin:0">
+        <button class="btn" type="button" data-relprev="${esc(pid)}|${t}|${per}">Preview report</button>
         ${editable?'<button class="btn" type="button" data-reldo="save">Save draft</button>':''}
         ${(open&&open.status==='Draft'&&canPrepRel('planning'))||(editable&&!open)?'<button class="btn primary" type="button" data-reldo="submit">Submit for approval</button>':''}
         ${relCanReview(open)?'<button class="btn primary" type="button" data-reldo="review">Mark reviewed</button>':''}
@@ -6655,7 +6661,7 @@ function rmCands(pid,t,per){const a=t==='month'?per+'-01':isoWeekMonday(per),b=p
   return {weekly,daily:daily.filter(x=>!inWk.has(x.m.id)),shown:daily.length-daily.filter(x=>!inWk.has(x.m.id)).length}}
 const RMSEL=new Set();
 async function cloudLoadMedia(){if(!CLOUD_ME)return;try{DB.rmSrv=(await selAll('report_media','*',null,['project_id','period'])).map(x=>({id:x.id,project_id:x.project_id,kind:x.kind,period_type:x.period_type,period:x.period,path:x.path,name:x.name,mime:x.mime,size:+x.size_bytes,thumb:x.thumb,duration:x.duration_s,taken_on:x.taken_on,caption:x.caption||'',sort:x.sort,from:x.copied_from,by_name:x.uploaded_name,at:x.uploaded_at}));DB.rmMissing=false;
-    try{const f=await rpc('media_features',{});DB.dpV54=!!(f&&f.dpr_media)}catch(e){DB.dpV54=false}}
+    try{const f=await rpc('media_features',{});DB.dpV54=!!(f&&f.dpr_media);DB.dprV55=+(f&&f.version||0)>=55}catch(e){DB.dpV54=false;DB.dprV55=false}}
   catch(e){DB.rmSrv=[];DB.rmMissing=srvMsg(e);DB.dpV54=false}}
 const rmSize=b=>b>=1048576?fmt(b/1048576,1)+' MB':fmt(Math.max(1,Math.round(b/1024)))+' KB';
 function rmTabHTML(pid,kind,t,per){const L=rmOf(pid,kind,t,per),ed=rmCanEdit(pid,kind,t,per),st=(relOpen(pid,kind,t,per)||{}).status,
@@ -9143,7 +9149,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.53';
+const APP_VERSION='3.54';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -9684,8 +9690,8 @@ function openDpr(id){
   {const a0=actionsFor(d);if(a0.includes('approve'))timerStart('approve',d.id);else if(a0.includes('review'))timerStart('review',d.id);}
   const p=projById(d.p),g=repAgg(d),acts=actionsFor(d);
   $('#sheet').classList.remove('wide');$('#sheet').classList.add('full');   /* v3.7.2: a daily report opens full screen */
-  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${d.id}</h2><span class="st ${d.status}">${d.status}</span><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>${(()=>{const R=routeOf(d);return `<p class="small muted" style="margin:0 0 12px">Prepared by ${esc(d.foreman)} · reviewed by ${esc(R.revName)}${R.rev?'':' (project manager, no site engineer assigned)'} · approved by ${esc(R.aprName)}${R.apr?'':' (project manager, no site manager assigned)'}${d.mailed?` · <b>summary emailed to ${d.mailed.n}</b>`:''}</p>`})()}
-  <div class="small muted">${fmtDY(d.date)}, ${esc(p.short)}. Foreman ${esc(d.foreman)}, site engineer ${esc(d.engineer)}.</div>
+  $('#sheet').innerHTML=`<div class="sheet-head"><h2>${d.id}</h2><span class="st ${d.status}">${d.status}</span><button class="btn sm" type="button" data-dprprev="${esc(d.id)}" style="margin-inline-start:auto">Preview report</button><button class="iconbtn" type="button" data-close aria-label="Close">✕</button></div>${(()=>{const R=routeOf(d);return `<p class="small muted" style="margin:0 0 12px">Prepared by ${esc(d.foreman)} · reviewed by ${esc(R.revName)}${R.rev?'':' (project manager, no site engineer assigned)'} · approved by ${esc(R.aprName)}${R.apr?'':' (project manager, no site manager assigned)'}${d.mailed?` · <b>summary emailed to ${d.mailed.n}</b>`:''}</p>`})()}
+  <div class="small muted">${fmtDY(d.date)}, ${esc(p.short)}. Foreman ${esc(d.foreman)}, site engineer ${esc(d.engineer)}.${d.weather?` Weather: ${esc(d.weather)}.`:''}</div>
   <div class="facts dprfacts">
     <div><div class="l">Activities</div><div class="v">${d.lines.length}</div></div>
     <div><div class="l">Crew entries</div><div class="v">${g.heads}</div></div>
@@ -9695,7 +9701,7 @@ function openDpr(id){
   <div class="dprlines">${d.lines.map((l,i)=>lineHTML(l,i,d.lines.length,d)).join('')}</div>
   ${dprPhViewHTML(d)}
   ${d.attachments.length?`<h3>Attached documents</h3><p class="small">${d.attachments.map(esc).join(', ')}</p>`:''}
-  ${d.remarks?`<h3>Remarks</h3><p class="small">${esc(d.remarks)}</p>`:''}
+  ${d.remarks?`<h3>Remarks</h3><p class="small">${esc(d.remarks)}</p>`:''}${d.issues?`<h3>Major constraints / issues</h3><p class="small">${esc(d.issues)}</p>`:''}${d.recovery?`<h3>Recovery actions / next steps</h3><p class="small">${esc(d.recovery)}</p>`:''}
   <h3>Audit trail</h3><ul class="audit">${d.audit.map(x=>`<li><b>${esc(x.action)}</b> by ${esc(x.who)} <span class="muted small">${esc(x.t)}</span>${x.note?`<span class="note">${esc(x.note)}</span>`:''}</li>`).join('')}</ul>
   ${acts.length?`<div class="dpract"><h3>Your action as ${ROLES[state.role]}</h3>${acts.some(k=>k==='reject'||k==='return')?'<textarea id="cmt" rows="2" placeholder="Comment for the site team (required to reject or return)"></textarea>':''}
   <div class="actions">${acts.map(k=>`<button type="button" class="btn ${k==='approve'||k==='submit'||k==='review'?'primary':k==='reject'?'danger':''}" data-do="${k}">${ALABEL[k]}</button>`).join('')}</div><p class="err" id="actErr"></p></div>`:''}`;
@@ -9843,7 +9849,7 @@ const formProjects=()=>[...SCOPE].filter(id=>ACTS.some(a=>a.p===id&&isCon(a))&&p
 function blankForm(){
   const ids=formProjects();if(!ids.length)return null;
   const p=projById(ids[0]),u=me(),fm=state.role==='foreman'&&p.foremen.includes(u.name)?u.name:p.foremen[0];
-  return {id:null,date:TODAY,p:p.id,foreman:fm,engineer:p.eng,lines:[blankLine(p.id)],remarks:'',attachments:[]};
+  return {id:null,date:TODAY,p:p.id,foreman:fm,engineer:p.eng,lines:[blankLine(p.id)],remarks:'',weather:'',issues:'',recovery:'',attachments:[]};
 }
 function go2form(){state.view='new';render();window.scrollTo(0,0)}
 const opt=(arr,v,dis=[])=>arr.map(x=>{const [val,lab]=Array.isArray(x)?x:[x,x];return `<option value="${esc(val)}" ${String(val)===String(v)?'selected':''} ${dis.includes(val)&&String(val)!==String(v)?'disabled':''}>${esc(lab)}${dis.includes(val)&&String(val)!==String(v)?' (already added)':''}</option>`}).join('');
@@ -9910,6 +9916,7 @@ function renderForm(){
       ${!state.editing&&formProjects().length>1?`<label class="field">Project<select data-k="p" data-rerender>${opt(formProjects().map(id=>[id,projById(id).short]),f.p)}</select></label>`:`<div class="field">Project<div class="ro">${esc(projById(f.p).short)}</div><span class="small muted">From your project access</span></div>`}
       <label class="field">Foreman<select data-k="foreman">${opt(p.foremen,f.foreman)}</select></label>
       <div class="field">Site engineer<div class="ro">${esc(p.eng)}</div></div>
+      <label class="field">Weather<input data-k="weather" ${CLOUD_ME&&!DB.dprV55?"disabled":""} list="wxList" maxlength="60" value="${esc(f.weather||'')}" placeholder="For example: Clear, 41 °C"><datalist id="wxList">${['Clear','Hot','Windy','Dust / sandstorm','Cloudy','Rain','Humid'].map(x=>`<option value="${x}">`).join('')}</datalist></label>
     </div></section>
     ${f.lines.map((l,i)=>lineForm(l,i,f)).join('')}
     <button type="button" class="addact" data-addline ${left?'':'disabled'}>${left?`Add another activity <span class="muted">(${left} more available in ${esc(p.short)})</span>`:'All activities for this project are already on the report'}</button>
@@ -9917,7 +9924,9 @@ function renderForm(){
       ${dpFormHTML(f)}
       <label class="field" style="margin-top:16px">Drawings or other documents<input type="file" multiple id="files"></label>
       <p class="small muted" style="margin:6px 0 12px">${f.attachments.length?'Attached: '+f.attachments.map(esc).join(', '):'Only the file names of documents are kept in this prototype; the full build stores them in Azure Blob Storage.'}</p>
-      <label class="field">Remarks<textarea rows="3" data-k="remarks" placeholder="Delays, weather, access issues, instructions received">${esc(f.remarks)}</textarea></label></section>
+      <label class="field">Remarks / comments<textarea rows="3" data-k="remarks" placeholder="Delays, access issues, instructions received">${esc(f.remarks)}</textarea></label>
+      <label class="field">Major constraints / issues<textarea rows="2" data-k="issues" ${CLOUD_ME&&!DB.dprV55?"disabled":""} maxlength="1000" placeholder="What held the work back today">${esc(f.issues||'')}</textarea></label>
+      <label class="field">Recovery actions / next steps<textarea rows="2" data-k="recovery" ${CLOUD_ME&&!DB.dprV55?"disabled":""} maxlength="1000" placeholder="What will be done about it, and by when">${esc(f.recovery||'')}</textarea></label>${CLOUD_ME&&!DB.dprV55?'<p class="small muted" style="margin:4px 0 0">The weather, constraints and recovery actions are kept on the server after the v55 database update (STAGE-49-SETUP).</p>':''}</section>
   </div>
   <aside class="panel sum" id="sum"></aside></div>`;
   updateSummary();
@@ -9942,7 +9951,7 @@ function updateSummary(){
     <dl><dt>Manhours consumed</dt><dd>${fmt(g.mh,1)}</dd><dt>Overtime share</dt><dd>${g.mh?pct(g.ot/g.mh):'—'}</dd>${isSiteRole()?'':`<dt>Labour cost</dt><dd>${sar(g.cost)}</dd>`}</dl>
     <h3>Resources on this report</h3><dl>${list(trades)}${list(subs)}${list(eq)||''}</dl>
     <p class="small muted" style="margin:-4px 0 10px">A worker who moved between activities should appear on each with the hours spent there, so these counts can be higher than the gate count.</p>
-    <div class="actions"><button class="btn primary" type="button" data-save="submit" ${ready?'':'aria-disabled="true"'}>${state.editing&&f.status!=='Draft'?'Save changes':'Submit for approval'}</button>${!state.editing||f.status==='Draft'?'<button class="btn" type="button" data-save="draft">Save draft</button>':''}</div>
+    <div class="actions"><button class="btn primary" type="button" data-save="submit" ${ready?'':'aria-disabled="true"'}>${state.editing&&f.status!=='Draft'?'Save changes':'Submit for approval'}</button>${!state.editing||f.status==='Draft'?'<button class="btn" type="button" data-save="draft">Save draft</button>':''}<button class="btn" type="button" data-formprev>Preview report</button></div>
     <p class="err" id="formErr"></p>
     <p class="formula">Actual rate = quantity ÷ manhours. Index = actual rate ÷ planned rate. The report index weights each activity by its manhours.</p>`;
 }
@@ -9958,9 +9967,9 @@ async function saveForm(mode){
   const cleanLines=f.lines.map(l=>({act:l.act,qty:+l.qty,labour:l.labour.map(x=>({cat:x.cat,count:+x.count||0,reg:+x.reg||0,ot:+x.ot||0})),subs:(l.subs||[]).map(g=>g.crew?({sub:g.sub,qty:+g.qty||0,crew:g.crew.map(c=>({cat:c.cat,count:+c.count||0,hours:+c.hours||0}))}):({sub:g.sub,qty:+g.qty||0,crew:[{cat:g.cat,count:+g.count||0,hours:+g.hours||0}]})),equip:l.equip.map(e=>({type:e.type,qty:+e.qty||0,hours:+e.hours||0}))}));
   if(CLOUD_ME){cloudSaveDpr(f,cleanLines,mode,err);return}
   let d;
-  if(state.editing){d=DB.dprs.find(x=>x.id===state.editing);Object.assign(d,{date:f.date,foreman:f.foreman,engineer:p.eng,lines:cleanLines,remarks:f.remarks,attachments:f.attachments});d.audit.push({t,who,action:'Edited'});
+  if(state.editing){d=DB.dprs.find(x=>x.id===state.editing);Object.assign(d,{date:f.date,foreman:f.foreman,engineer:p.eng,lines:cleanLines,remarks:f.remarks,weather:f.weather||'',issues:f.issues||'',recovery:f.recovery||'',attachments:f.attachments});d.audit.push({t,who,action:'Edited'});
     if(mode==='submit'&&d.status==='Draft'){d.status='Submitted';d.audit.push({t,who,action:d.returned?'Resubmitted':'Submitted'})}}
-  else{d={id:'DPR-'+String(DB.next++).padStart(4,'0'),date:f.date,p:f.p,foreman:f.foreman,engineer:p.eng,lines:cleanLines,remarks:f.remarks,attachments:f.attachments,status:mode==='submit'?'Submitted':'Draft',audit:[{t,who,action:'Draft created'}],late:false,returned:false};
+  else{d={id:'DPR-'+String(DB.next++).padStart(4,'0'),date:f.date,p:f.p,foreman:f.foreman,engineer:p.eng,lines:cleanLines,remarks:f.remarks,weather:f.weather||'',issues:f.issues||'',recovery:f.recovery||'',attachments:f.attachments,status:mode==='submit'?'Submitted':'Draft',audit:[{t,who,action:'Draft created'}],late:false,returned:false};
     if(mode==='submit')d.audit.push({t,who,action:'Submitted'});DB.dprs.push(d)}
   if(TIMER.kind==='create'){const secs=timerStop();logTime(d,'create',secs)}
   save();
@@ -13606,10 +13615,163 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-mail
 async function mailLoadHTML(id){const m=(DB.outbox||[]).find(x=>x.id===id);if(!m||!m.srv||m.html)return;
   try{const {data}=await SB.from('mail_outbox').select('html').eq('id',id);if(data&&data[0]){m.html=data[0].html;render()}}catch(e){}}
 
+/* ---------- v3.54: report documents ----------
+   The Daily Productivity Report in the company layout: the alfanar Projects and ProTrack logos, the report details, activity
+   progress and productivity, the totals, the productivity index guide, remarks, constraints and recovery actions, the site
+   photos and the sign-off. It is previewed while the report is prepared, reviewed and approved, and is the approval email sent
+   to the Approval email list. The weekly and monthly internal reports have a document in the same style, previewed before they
+   are submitted. Plain tables with inline styles, so the same HTML prints from the preview and reads in an email (where the
+   logos are lettered, since mail programs block embedded pictures). */
+const DPR_STD_H=8;
+const PI_GUIDE=[['> 110%','Excellent','#6FBF5B','#E6F4E1'],['100 – 110%','Good','#BFE3A0','#F0F8E8'],['90 – 100%','Acceptable','#FFE27A','#FFF8D9'],['80 – 90%','Needs Improvement','#FFB066','#FFEFDD'],['< 80%','Critical','#EE6A6A','#FCE2E2']];
+const piBand=pi=>PI_GUIDE[pi>1.1+1e-9?0:pi>=1-1e-9?1:pi>=0.9-1e-9?2:pi>=0.8-1e-9?3:4];
+const DK={navy:'#0A3F86',ink:'#16294A',mute:'#5B6B80',line:'#BFCEE3',head:'#DCE7F5',pale:'#EEF3FA',font:'Arial,Helvetica,sans-serif'};
+/* each line of a daily report as the document shows it */
+function dprDocRows(d){return (d.lines||[]).map(l=>{const a=actById(l.act)||{id:l.act,name:l.act,uom:'',area:'',pp:0},P=qtyPos(a,d.date,d.id),q=+l.qty||0,cum=P.cum(q);
+  const normal=(l.labour||[]).reduce((t,x)=>t+(+x.count||0)*(+x.reg||0),0)+subFlat(l).reduce((t,u)=>t+(+u.count||0)*(+u.hours||0),0),ot=otOf(l),mp=headsOf(l),em=a.pp?q/a.pp:0;
+  return {a,uom:a.uom||'',scope:P.scope,before:P.before+P.sameDay,today:q,cum,bal:Math.max(0,P.scope-cum),plan:em/DPR_STD_H,mp,avgOt:mp?ot/mp:0,normal,ot,pi:normal+ot?em/(normal+ot):0}})}
+/* the brand header and footer shared by the documents; email: lettered logos */
+function docHead(title,sub,email){const c=`font-family:${DK.font}`;
+  const alf=email?`<div style="${c};font-size:30px;font-weight:bold;color:#0B57A4;line-height:1">alfanar</div><div style="${c};font-size:10px;letter-spacing:3px;color:#0B57A4">PROJECTS</div>`:`<img src="${ALFANAR_LOGO}" alt="alfanar Projects" style="height:64px;display:block;mix-blend-mode:multiply">`;
+  const pt=email?`<div style="display:inline-block;background:#04101F;color:#fff;${c};font-size:26px;font-weight:bold;padding:6px 14px;border-radius:4px">Pro<span style="color:#4DA3FF">Track</span></div>`:`<img src="${LOGO}" alt="ProTrack" style="height:46px;display:inline-block;border-radius:3px">`;
+  return `<tr><td style="padding:14px 18px 8px;background:${DK.pale}"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td width="26%" valign="top">${alf}<div style="${c};font-size:10.5px;letter-spacing:2.4px;color:${DK.navy};margin-top:6px">BUILDING A BRIGHTER TOMORROW</div></td>
+    <td align="center" valign="top"><div style="${c};font-size:28px;font-weight:900;color:${DK.navy};letter-spacing:.5px;white-space:nowrap">${title}</div><div style="${c};font-size:13px;letter-spacing:2.6px;color:${DK.ink};margin-top:4px">${sub}</div>
+      <div style="${c};font-size:12.5px;letter-spacing:4px;color:${DK.ink};margin-top:10px;font-weight:bold">PLAN <span style="color:#F08A1C">|</span> TRACK <span style="color:#F08A1C">|</span> ANALYZE <span style="color:#F08A1C">|</span> DELIVER</div></td>
+    <td width="26%" align="right" valign="top">${pt}<div style="${c};font-size:11.5px;letter-spacing:1px;color:${DK.ink};margin-top:6px">Powered by ProTrack AI</div></td></tr></table></td></tr>`}
+function docFoot(email){const c=`font-family:${DK.font}`;
+  const sky=email?'':`<svg width="420" height="46" viewBox="0 0 420 46" aria-hidden="true" style="display:block"><g fill="none" stroke="#9DB6D8" stroke-width="1.4"><path d="M40 46L52 6L64 46M44 30h16M47 20h10M52 6v-4"/><path d="M300 46L312 4L324 46M304 28h16M307 17h10"/></g><g fill="#C9D8EC"><rect x="96" y="26" width="14" height="20"/><rect x="114" y="18" width="10" height="28"/><rect x="128" y="30" width="18" height="16"/><rect x="150" y="12" width="9" height="34"/><rect x="163" y="24" width="16" height="22"/><rect x="186" y="32" width="22" height="14"/><rect x="212" y="20" width="11" height="26"/><rect x="227" y="28" width="15" height="18"/><rect x="246" y="16" width="8" height="30"/><rect x="258" y="30" width="20" height="16"/><rect x="340" y="24" width="12" height="22"/><rect x="356" y="32" width="18" height="14"/><rect x="378" y="20" width="9" height="26"/></g></svg>`;
+  return `<tr><td style="padding:12px 18px 14px;background:${DK.pale}"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td style="${c};font-size:13px;letter-spacing:3px;color:${DK.ink};font-weight:bold" valign="bottom">PEOPLE <span style="color:#F08A1C">|</span> PROJECTS <span style="color:#F08A1C">|</span> PROGRESS</td>
+    <td align="center" valign="bottom">${sky}</td><td align="right" valign="bottom" style="${c};font-size:15px;color:#1565C0">For the World. With the World.&trade;</td></tr></table></td></tr>`}
+const docBar=t=>`<tr><td style="padding:12px 18px 0"><div style="background:${DK.navy};color:#fff;font:bold 15px ${DK.font};padding:7px 12px;letter-spacing:.3px">${t}</div></td></tr>`;
+const docTh=(t,x)=>`<th style="background:${DK.head};color:${DK.ink};font:bold 12px ${DK.font};padding:6px 5px;border:1px solid ${DK.line};text-align:center;vertical-align:middle${x||''}">${t}</th>`;
+const docTd=(t,x)=>`<td style="font:12px ${DK.font};color:${DK.ink};padding:5px 6px;border:1px solid ${DK.line};vertical-align:middle${x||''}">${t}</td>`;
+const docKv=rows=>`<table role="presentation" width="100%" cellspacing="0" cellpadding="0">${rows.map(([k,v])=>`<tr><td style="font:bold 12.5px ${DK.font};color:${DK.ink};padding:3px 6px;white-space:nowrap;width:42%">${esc(k)}</td><td style="font:12.5px ${DK.font};color:${DK.ink};padding:3px 6px;border-bottom:1px solid ${DK.line}">: ${esc(v==null||v===''?'—':String(v))}</td></tr>`).join('')}</table>`;
+const docBox=(h,body,tint)=>`<td valign="top" style="border:1px solid ${DK.line};padding:0"><div style="background:${tint||DK.head};font:bold 13px ${DK.font};color:${DK.ink};padding:6px 10px">${h}</div><div style="font:12.5px ${DK.font};color:${DK.ink};padding:8px 10px;min-height:46px;white-space:pre-wrap">${body}</div></td>`;
+/* the sign-off: who prepared, reviewed and approved, and when; a step not taken yet shows who it waits for */
+function docSign(S){return `<tr><td style="padding:12px 18px 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid ${DK.line}"><tr>${S.map(([h,name,when,done],i)=>`<td valign="top" width="${100/S.length}%" style="padding:10px 14px;${i?`border-left:1px solid ${DK.line}`:''}">
+    <div style="font:bold 13px ${DK.font};color:${DK.ink};margin-bottom:8px">${h}</div>
+    <div style="font:12.5px ${DK.font};color:${DK.ink};margin:4px 0">Name: <b>${esc(name||'—')}</b>${done?'':' <span style="color:'+DK.mute+'">(pending)</span>'}</div>
+    <div style="font:12.5px ${DK.font};color:${DK.ink};margin:4px 0">Date: ${esc(when||'')}</div>
+    <div style="font:12.5px ${DK.font};color:${DK.ink};margin:4px 0">Signature: ${done?`<span style="color:#1E7B34;font-style:italic">Signed in ProTrack</span>`:'<span style="display:inline-block;width:150px;border-bottom:1px solid '+DK.mute+'">&nbsp;</span>'}</div></td>`).join('')}</tr></table></td></tr>`}
+const docPhotos=(P,email,note)=>!P.length?'':email?`<tr><td style="padding:10px 18px 0;font:12.5px ${DK.font};color:${DK.ink}">${note}</td></tr>`
+  :`<tr><td style="padding:10px 18px 0"><table role="presentation" width="100%" cellspacing="6" cellpadding="0">${Array.from({length:Math.ceil(P.length/4)},(_,i)=>`<tr>${P.slice(i*4,i*4+4).map(x=>`<td width="25%" valign="top" style="border:1px solid ${DK.line};padding:4px"><img src="${esc(x.src)}" alt="" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block"><div style="font:11.5px ${DK.font};color:${DK.ink};padding:4px 2px 0">${esc(x.cap||'')}${x.sub?`<span style="color:${DK.mute}"> · ${esc(x.sub)}</span>`:''}</div></td>`).join('')}${'<td width="25%"></td>'.repeat((4-P.slice(i*4,i*4+4).length)%4)}</tr>`).join('')}</table></td></tr>`;
+const docRibbon=t=>t?`<tr><td style="padding:8px 18px 0"><div style="background:#FFF4D6;border:1px solid #F0C75E;color:#6B4B00;font:bold 12.5px ${DK.font};padding:6px 10px">${t}</div></td></tr>`:'';
+const docWrap=(rows,email,title)=>`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>@page{size:A4 landscape;margin:7mm}body{margin:0;background:${email?'#EEF1F5':'#fff'};-webkit-print-color-adjust:exact;print-color-adjust:exact}tr{page-break-inside:avoid}</style></head><body>
+  <table role="presentation" ${email?'width="1100"':''} cellspacing="0" cellpadding="0" style="${email?'margin:16px auto;':'width:100%;min-width:1060px;'}max-width:1180px;background:#fff;border:1px solid ${DK.line};border-collapse:separate">${rows}</table></body></html>`;
+
+/* the Daily Productivity Report. o: {email, photos:[{src,cap,sub}] (preview), nPhotos} */
+function dprDocHTML(d,o={}){const p=projById(d.p)||{},R=dprDocRows(d),g=repAgg(d),em=!!o.email,last=L=>[...(d.audit||[])].reverse().find(y=>L.includes(y.action));
+  const prep=last(['Submitted','Resubmitted'])||last(['Draft created']),rv=last(['Reviewed']),ap=last(['Approved']);let route={};try{route=routeOf(d)||{}}catch(e){}
+  const n1=(v,u)=>fmt(v,u==='t'?2:1),wk=+isoWeekOf(d.date).slice(6),day=new Date(d.date+'T00:00:00Z').toLocaleDateString('en-GB',{weekday:'long',timeZone:'UTC'});
+  const discs=[...new Set(R.map(x=>discOf(x.a)))].join(', ');
+  const piCell=pi=>{const b=piBand(pi);return docTd(pi?pct(pi,1):'—',`;text-align:center;font-weight:bold;background:${pi?b[3]:'#fff'}`)};
+  const rows=R.map((x,i)=>`<tr>${docTd(i+1,';text-align:center')}${docTd(esc(x.a.area||'—'))}${docTd(esc(x.a.name)+`<div style="color:${DK.mute};font-size:10.5px">${esc(x.a.id||'')}</div>`)}${docTd(esc(x.uom),';text-align:center')}
+    ${[x.scope,x.before,x.today,x.cum,x.bal].map(v=>docTd(n1(v,x.uom),';text-align:right')).join('')}${docTd(fmt(x.plan,1),';text-align:right')}${docTd(fmt(x.mp),';text-align:right')}${docTd(fmt(x.avgOt,1),';text-align:right')}${docTd(fmt(x.normal,1),';text-align:right')}${docTd(fmt(x.ot,1),';text-align:right')}${piCell(x.pi)}</tr>`).join('')
+    +Array.from({length:Math.max(0,5-R.length)},(_,i)=>`<tr>${docTd(R.length+i+1,';text-align:center')}${docTd('&nbsp;').repeat(14)}</tr>`).join('');
+  const one=new Set(R.map(x=>x.uom)).size===1?R[0].uom:null,sum=k=>R.reduce((t,x)=>t+x[k],0),qs=k=>one!=null?`${n1(sum(k),one)} ${esc(one)}`:'Mixed units';
+  const tot=[['Total Scope<br>(Quantity)',qs('scope')],['Completed Up to<br>Yesterday',qs('before')],['Today Progress',qs('today')],['Cumulative<br>Up to Date',qs('cum')],['Balance<br>Quantity',qs('bal')],
+    ['Total Planned<br>MP',fmt(sum('plan'),1)],['Total Actual<br>MP',fmt(sum('mp'))],['Total Normal<br>Hrs',fmt(sum('normal'),1)],['Total OT<br>Hrs',fmt(sum('ot'),1)],['Overall<br>Productivity Index (%)',g.pi?pct(g.pi,1):'—']];
+  const ob=piBand(g.pi);
+  const head=docHead('DAILY PRODUCTIVITY REPORT','PROTRACK AI ENABLED DAILY PRODUCTIVITY REPORT',em);
+  const info=`<tr><td style="padding:10px 18px 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid ${DK.line};background:${DK.pale}"><tr>
+    <td width="33%" valign="top" style="padding:8px 10px">${docKv([['Initiator Name',d.foreman],['Project Name',p.name||d.p],['Project Number',pcode(p)]])}</td>
+    <td width="34%" valign="top" style="padding:8px 10px;border-left:1px solid ${DK.line}">${docKv([['Contract Number',p.contract_no],['Client',p.client],['Reporting Discipline',discs]])}</td>
+    <td width="33%" valign="top" style="padding:8px 10px;border-left:1px solid ${DK.line}">${docKv([['Date',fmtDY(d.date)],['Day (Week)',`${day} (Week ${wk})`],['Weather',d.weather]])}</td></tr></table></td></tr>`;
+  const act=`${docBar('ACTIVITY PROGRESS &amp; PRODUCTIVITY TRACKING')}<tr><td style="padding:0 18px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse">
+    <tr>${docTh('S.No.',';width:3%" rowspan="2')}${docTh('Work Location','" rowspan="2')}${docTh('Activity Name','" rowspan="2')}${docTh('UOM','" rowspan="2')}${docTh('Scope<br>(Quantity)','" rowspan="2')}${docTh('Completed<br>Up to Yesterday','" rowspan="2')}${docTh('Today<br>Progress','" rowspan="2')}${docTh('Cumulative<br>Up to Date','" rowspan="2')}${docTh('Balance<br>Quantity','" rowspan="2')}${docTh('Manpower &amp; Productivity','" colspan="5')}${docTh('Productivity<br>Index (%)','" rowspan="2')}</tr>
+    <tr>${docTh(`Planned MP<div style="font-size:10px;font-weight:normal">(as per productivity)</div>`)}${docTh('Actual<br>MP')}${docTh('Avg OT Hrs<br>per Person')}${docTh('Total<br>Normal Hrs')}${docTh('Total<br>OT Hrs')}</tr>${rows}</table></td></tr>`;
+  const summ=`<tr><td style="padding:12px 18px 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td valign="top" style="padding-right:14px">
+      <div style="background:${DK.navy};color:#fff;font:bold 15px ${DK.font};padding:7px 12px">SUMMARY (TOTALS)</div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr>${tot.map(([h])=>docTh(h)).join('')}</tr><tr>${tot.map(([,v],i)=>docTd(v,`;text-align:center;font-weight:bold;height:30px${i===9&&g.pi?';background:'+ob[3]:''}`)).join('')}</tr></table>
+      <div style="font:11px ${DK.font};color:${DK.mute};margin-top:6px">Planned MP (as per productivity) = today's quantity ÷ planned rate ÷ ${DPR_STD_H} h. Productivity index = earned manhours (quantity ÷ planned rate) ÷ manhours worked, normal and overtime. Up to yesterday includes other reports of the same day.</div></td>
+    <td width="300" valign="top"><div style="background:${DK.navy};color:#fff;font:bold 15px ${DK.font};padding:7px 12px">PRODUCTIVITY INDEX GUIDE</div><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr>${docTh('PI (%)')}${docTh('Status')}</tr>
+      ${PI_GUIDE.map(([r,s,c,bg])=>`<tr><td style="background:${c};font:bold 12px ${DK.font};color:#1B1B1B;text-align:center;padding:3px;border:1px solid #fff">${r}</td><td style="background:${bg};font:12px ${DK.font};color:#1B1B1B;padding:3px 10px;border:1px solid #fff">${s}</td></tr>`).join('')}</table></td></tr></table></td></tr>`;
+  const notes=`<tr><td style="padding:12px 18px 0"><table role="presentation" width="100%" cellspacing="8" cellpadding="0" style="margin:0 -8px"><tr>${docBox('Remarks / Comments',esc(d.remarks||''),'#E3ECF8')}${docBox('Major Constraints / Issues',esc(d.issues||''),'#FBE6D2')}${docBox('Recovery Actions / Next Steps',esc(d.recovery||''),'#E2F0DA')}</tr></table></td></tr>`;
+  const P=o.photos||[],nP=o.nPhotos!=null?o.nPhotos:P.length;
+  const photos=nP?`${docBar(`SITE PHOTOS (${nP})`)}${docPhotos(em?[{}]:P,em,`${nP} site photo${nP===1?' is':'s are'} with this report in ProTrack.`)}`:'';
+  const sign=docSign([['Prepared By (Initiator)',d.foreman,prep?prep.t:'',!!prep&&prep.action!=='Draft created'],['Reviewed By',rv?rv.who:route.revName,rv?rv.t:'',!!rv],['Approved By',ap?ap.who:route.aprName,ap?ap.t:'',!!ap]]);
+  const st=d.status==='Approved'?'':`Preview · ${d.id?`${esc(d.id)} is ${esc(String(d.status||'Draft').toLowerCase())}`:'not saved yet'}. The report becomes final when it is approved.`;
+  return {head,info,act,summ,notes,photos,sign,rib:docRibbon(st),title:`Daily Productivity Report ${d.id||''} ${d.date}`.trim()}}
+function dprDocPage(d,o){const x=dprDocHTML(d,o);return docWrap(x.head+x.rib+x.info+x.act+x.summ+x.notes+x.photos+x.sign+'<tr><td style="height:12px"></td></tr>'+docFoot(!!o.email),!!o.email,x.title)}
+/* the approval email: the report, with a link to it */
+function dprMailHTML(d){const x=dprDocHTML(d,{email:true,nPhotos:dprPhotos(d).length}),link=dprLink(d);
+  const intro=`<tr><td style="padding:12px 18px 0;font:14px ${DK.font};color:${DK.ink}"><b>${esc(d.id)}</b> for ${esc((projById(d.p)||{}).short||d.p)} on ${esc(fmtDY(d.date))} was approved${(x=>x?` by ${esc(x.who)}`:'')([...(d.audit||[])].reverse().find(a=>a.action==='Approved'))}. The approved daily productivity report follows.</td></tr>`;
+  const btn=`<tr><td style="padding:16px 18px 6px"><a href="${link}" style="display:inline-block;background:#1763D8;color:#fff;text-decoration:none;font:bold 14px ${DK.font};padding:11px 20px;border-radius:6px">Open ${esc(d.id)} in ProTrack</a><span style="font:12px ${DK.font};color:${DK.mute};margin-left:12px">Or paste this link: ${link}</span></td></tr>`;
+  const note=`<tr><td style="padding:6px 18px 12px;font:11px ${DK.font};color:#8A97A8">Sent automatically by ProTrack when the report was approved, to the people set in Settings → Approval email.</td></tr>`;
+  return docWrap(x.head+intro+x.info+x.act+x.summ+x.notes+x.photos+x.sign+btn+note+docFoot(true),true,x.title)}
+/* the photos of a report for a preview: full size from the store, else the small preview */
+async function docPhotoSrc(L,sub){const out=[];for(const m of L){if(rmIsVid(m))continue;let src=m.thumb;try{src=await rmUrl(m)}catch(e){}if(src)out.push({src,cap:m.caption||m.name,sub:sub?sub(m):''})}return out}
+
+/* the preview: the document in a frame over the app, to read, print or save as PDF */
+function docOpen(html,title,sub){const prev=$('#docView');if(prev)prev.remove();const back=document.activeElement;
+  const o=document.createElement('div');o.id='docView';o.className='docview';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',title);
+  o.innerHTML=`<div class="docbar"><div class="docttl"><b>${esc(title)}</b>${sub?`<span class="t2">${esc(sub)}</span>`:''}</div><button class="btn sm primary" type="button" data-docprint>Print or save as PDF</button><button class="iconbtn" type="button" data-docx aria-label="Close preview">✕</button></div><iframe title="${esc(title)}"></iframe>`;
+  const close=()=>{o.remove();document.removeEventListener('keydown',key,true);if(back&&back.focus)back.focus()},key=e=>{if(e.key==='Escape'){e.stopPropagation();close()}};
+  o.addEventListener('click',e=>{if(e.target.closest('[data-docx]'))close();else if(e.target.closest('[data-docprint]')){const w=o.querySelector('iframe').contentWindow;w.focus();w.print()}});
+  document.addEventListener('keydown',key,true);document.body.appendChild(o);o.querySelector('iframe').srcdoc=html;o.querySelector('[data-docx]').focus();return o}
+
+/* a daily report: saved (review, approval) or the form being prepared */
+async function dprPreview(id){const d=DB.dprs.find(x=>x.id===id);if(!d)return;
+  const P=await docPhotoSrc(dprPhotos(d));docOpen(dprDocPage(d,{photos:P}),`Daily Productivity Report · ${d.id}`,`${(projById(d.p)||{}).short||d.p} · ${fmtDY(d.date)} · ${d.status}`)}
+async function dprFormPreview(){const f=state.form;if(!f)return;const ed=state.editing&&DB.dprs.find(x=>x.id===state.editing);
+  const d=Object.assign({},ed||{},{id:state.editing||null,date:f.date,p:f.p,foreman:f.foreman,engineer:(projById(f.p)||{}).eng,remarks:f.remarks,weather:f.weather,issues:f.issues,recovery:f.recovery,status:ed?ed.status:'Draft',audit:ed?ed.audit:[],
+    lines:f.lines.filter(l=>+l.qty>0||mhOf(l)>0).map(l=>({act:l.act,qty:+l.qty||0,labour:l.labour,subs:l.subs||[],equip:l.equip}))});
+  const cur=state.editing?dprPhotos({id:state.editing,p:f.p}).filter(m=>!DPF.del.has(m.id)).map(m=>Object.assign({},m,{caption:DPF.cap[m.id]??m.caption})):[];
+  const P=[...await docPhotoSrc(cur),...DPF.add.map(x=>({src:x.url||(x.url=URL.createObjectURL(x.blob)),cap:x.caption||x.name,sub:'not saved yet'}))];
+  docOpen(dprDocPage(d,{photos:P}),`Daily Productivity Report · ${d.id||'new report'}`,`${(projById(f.p)||{}).short||f.p} · ${fmtDY(f.date)} · preview before ${state.editing&&ed&&ed.status!=='Draft'?'saving':'submitting'}`)}
+
+/* the weekly or monthly internal report as a document: what is in the form now (before it is saved or submitted), else what
+   was saved or released */
+function relDocData(pid,t,per){const open=relOpen(pid,'planning',t,per),released=relReleased(pid,'planning',t,per),r=open||released;
+  const comp=relPlanSnapshot(pid,t,per),base=r?r.figures:Object.assign({},comp,relDashDefaults(pid,t,per));let figs=base,nar=Object.assign({},(r&&r.narrative)||{}),ov=(r&&r.overrides)||[];
+  const form=$('#relForm'),live=!!(form&&form.dataset.k==='planning'&&form.dataset.pid===pid&&form.dataset.t===t&&form.dataset.per===per&&form.querySelector('[name^="f_"]:not([disabled]),[name^="d_"]:not([disabled]),[name^="n_"]:not([disabled])'));
+  if(live){const x=relFormPayload();figs=Object.assign({},base,x.figures);Object.assign(nar,x.narrative);ov=x.overrides}
+  let f;try{f=relPlanCalc(pid,figs,r&&r.status!=='Draft'?relContract(r):perMonth(t,per))}catch(e){f=figs}
+  return {p:projById(pid)||{},r,f,nar,ov,live,comp}}
+function relDocHTML(pid,t,per,P){const {p,r,f,nar,ov}=relDocData(pid,t,per),u=id=>{const x=id&&userById(id);return x?x.name:''},pm=teamOf(pid,'pm')[0],pl=teamOf(pid,'plan')[0];
+  const pc=v=>v==null||v===''?'—':fmt(+v,1)+'%',dt=v=>v?fmtDY(v):'—',dd=v=>v==null||v===''?'—':`${v>0?'+':''}${v} days`,num=v=>v==null||v===''?'—':fmt(+v),c=';text-align:center',rr=';text-align:right';
+  const tbl=(H,rows)=>`<tr><td style="padding:0 18px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr>${H.map(h=>docTh(h)).join('')}</tr>${rows.length?rows.join(''):`<tr>${docTd('No data for this period.',`;color:${DK.mute}" colspan="${H.length}`)}</tr>`}</table></td></tr>`;
+  const tile=(l,v,s)=>`<td valign="top" style="background:${DK.pale};border:1px solid ${DK.line};padding:8px 10px"><div style="font:11.5px ${DK.font};color:${DK.mute}">${l}</div><div style="font:bold 19px ${DK.font};color:${DK.navy};margin-top:2px">${v}</div>${s?`<div style="font:11px ${DK.font};color:${DK.mute}">${s}</div>`:''}</td>`;
+  const head=docHead(t==='week'?'WEEKLY PROGRESS REPORT':'MONTHLY PROGRESS REPORT',`PROTRACK AI INTERNAL REPORT · ${esc(perLabel(t,per)).toUpperCase()}`,false);
+  const st=!r?'Preview · not saved yet. This is what will be submitted for approval.':r.status==='Draft'?`Preview · draft, rev ${r.rev}, not submitted yet${relReturned(r)?' (returned by the approver)':''}. This is what will be submitted for approval.`:r.status==='Submitted'?`Preview · rev ${r.rev} submitted, awaiting ${relSettings().pm_review&&!r.reviewed_by?"the project manager's review":'approval'}.`:'';
+  const info=`<tr><td style="padding:10px 18px 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid ${DK.line};background:${DK.pale}"><tr>
+    <td width="33%" valign="top" style="padding:8px 10px">${docKv([['Project Name',p.name],['Project Number',pcode(p)],['Sub Project',f.sub_project_text]])}</td>
+    <td width="34%" valign="top" style="padding:8px 10px;border-left:1px solid ${DK.line}">${docKv([['Contract Number',p.contract_no],['Client',p.client],['Region',regName(p)]])}</td>
+    <td width="33%" valign="top" style="padding:8px 10px;border-left:1px solid ${DK.line}">${docKv([['Reporting Period',perLabel(t,per)],['Data Date',fmtDY((r&&r.data_date)||[ASOF,periodEnd(per,t)].sort()[0])],['Revision',r?'rev '+r.rev:'New']])}</td></tr></table></td></tr>`;
+  const kp=`${docBar('PROGRESS SUMMARY')}<tr><td style="padding:6px 18px 0"><table role="presentation" width="100%" cellspacing="6" cellpadding="0" style="margin:0 -6px"><tr>${tile('Planned progress',pc(f.planned_pct),'internal weightage')}${tile('Actual progress',pc(f.actual_pct),'internal weightage')}${tile('Variance',f.int_var_pct!=null?(f.int_var_pct>0?'+':'')+fmt(+f.int_var_pct,1)+'%':'—','actual − planned')}${tile('SPI',f.spi!=null?fmt(+f.spi,2):'—','')}${tile('Forecast finish',dt(f.forecast_finish),'baseline '+dt(f.baseline_finish))}${tile('Productivity index',f.productivity_pct!=null?fmt(+f.productivity_pct,1)+'%':'—','last 30 days')}${tile('Manpower',f.mp_tot_act!=null?num(f.mp_tot_act):num(f.workforce),f.mp_tot_plan!=null?'planned '+num(f.mp_tot_plan):'')}</tr></table></td></tr>
+    ${tbl(['','Planned','Actual','Variance','SPI'],[`<tr>${docTd('<b>Internal</b> (P6 internal weightage)')}${docTd(pc(f.planned_pct),rr)}${docTd(pc(f.actual_pct),rr)}${docTd(f.int_var_pct!=null?fmt(+f.int_var_pct,1):'—',rr)}${docTd(f.spi!=null?fmt(+f.spi,2):'—',rr)}</tr>`,`<tr>${docTd('<b>External</b> (client weightage)')}${docTd(pc(f.ext_plan_pct),rr)}${docTd(pc(f.ext_act_pct),rr)}${docTd(f.ext_var_pct!=null?fmt(+f.ext_var_pct,1):'—',rr)}${docTd(f.ext_spi!=null?fmt(+f.ext_spi,2):'—',rr)}</tr>`])}`;
+  const ms=`${docBar('MILESTONES')}${tbl(['Milestone','Baseline','Forecast','Certificate received','Delay'],[...['tcc','pac','fac'].map(k=>`<tr>${docTd('<b>'+k.toUpperCase()+'</b>')}${docTd(f[k+'_rev_date']?dt(f[k+'_rev_date'])+' (revised)':dt(f[k+'_orig_date']),c)}${docTd(dt(f[k+'_ext_fc_date']),c)}${docTd(dt(f[k+'_receipt_date']),c)}${docTd(dd(f[k+'_delay_days']),rr)}</tr>`),
+    `<tr>${docTd('<b>Internal TCC</b>')}${docTd(dt(f.tcc_int_target_date)+' (target)',c)}${docTd(dt(f.tcc_int_fc_date),c)}${docTd('',c)}${docTd(dd(f.tcc_int_delay_days),rr)}</tr>`,
+    ...(f.key_ms||[]).map(x=>`<tr>${docTd(esc(x.name))}${docTd(dt(x.plan),c)}${docTd(x.act?dt(x.act)+' (actual)':dt(x.fc),c)}${docTd('',c)}${docTd(x.delay==null?esc(kmsLight(x).t):dd(x.delay)+' · '+esc(kmsLight(x).t),rr)}</tr>`)])}`;
+  let PT=null;try{PT=phaseTblOf(pid,'planning',t,per,f,r)}catch(e){}
+  const ph=PT&&PT!=='old'&&PT.phases?`${docBar('PROGRESS BY PHASE')}${tbl(['Phase','Weight','Planned','Actual','Variance','Weighted planned','Weighted actual'],[...PT.phases.filter(x=>x.present!==false).map(x=>`<tr>${docTd('<b>'+esc(RPH_N[x.phase]||x.phase)+'</b>')}${docTd(x.wt?fmt(x.wt,1)+'%':'—',rr)}${docTd(pc(x.plan_pct),rr)}${docTd(pc(x.act_pct),rr)}${docTd(x.var_pct==null?'—':(x.var_pct>0?'+':'')+fmt(+x.var_pct,1),rr)}${docTd(pc(x.c_plan),rr)}${docTd(pc(x.c_act),rr)}</tr>`),
+    `<tr>${docTd('<b>Overall</b>')}${docTd('',rr)}${docTd('<b>'+pc(PT.plan)+'</b>',rr)}${docTd('<b>'+pc(PT.act)+'</b>',rr)}${docTd(PT.var_pct==null?'—':'<b>'+(PT.var_pct>0?'+':'')+fmt(+PT.var_pct,1)+'</b>',rr)}${docTd('')}${docTd('')}</tr>`])}`:'';
+  let EP=null;try{EP=epOf(pid,'planning',t,per,f,r)}catch(e){}
+  const ep=EP&&EP!=='old'&&!EP.none&&EP.ENG?`${docBar('ENGINEERING &amp; PROCUREMENT')}${tbl(['','Planned','Actual','Activities','Forecast late'],[['Engineering',EP.ENG],['Procurement',EP.PRC],['Engineering and procurement',EP.all]].filter(([,x])=>x).map(([l,x])=>`<tr>${docTd('<b>'+l+'</b>')}${docTd(pc(x.plan),rr)}${docTd(pc(x.pct),rr)}${docTd(num(x.n),rr)}${docTd(num(x.late),rr)}</tr>`))}`:'';
+  const mpv=(a,b)=>a==null||a===''||b==null||b===''?'—':((+b)-(+a)>0?'+':'')+fmt((+b)-(+a));
+  const mp=`${docBar('MANPOWER')}${tbl(['','Planned','Actual','Variance'],[...[['dir','Alfanar manpower (direct)'],['ind','Indirect manpower'],['sub','Subcontractor manpower']].map(([k,l])=>`<tr>${docTd(l)}${docTd(num(f['mp_'+k+'_plan']),rr)}${docTd(num(f['mp_'+k+'_act']),rr)}${docTd(mpv(f['mp_'+k+'_plan'],f['mp_'+k+'_act']),rr)}</tr>`),
+    `<tr>${docTd('<b>Total</b>')}${docTd('<b>'+num(f.mp_tot_plan)+'</b>',rr)}${docTd('<b>'+num(f.mp_tot_act)+'</b>',rr)}${docTd('<b>'+mpv(f.mp_tot_plan,f.mp_tot_act)+'</b>'+(f.mp_util_pct!=null?` · utilization ${fmt(+f.mp_util_pct,1)}%`:''),rr)}</tr>`])}`;
+  const en=`${docBar('ENERGIZATION')}${tbl(['Status','Forecast / actual date','Remarks'],[`<tr>${docTd(esc(f.energ_status_text||'Not Started'))}${docTd(dt(f.energ_date),c)}${docTd(esc(f.energ_remarks_text||''))}</tr>`])}`;
+  const A=t==='month'?aocOf(nar):null,aoc=A&&AOC.some(([k])=>A[k].length)?`${docBar('AREAS OF CONCERN')}${tbl(['Area','Concern','Action by','Action'],AOC.flatMap(([k,l])=>A[k].map((x,i)=>`<tr>${docTd(i?'':'<b>'+esc(l)+'</b>')}${docTd(esc(x.c||''))}${docTd(esc(x.by||''))}${docTd(esc(x.act||''))}</tr>`)))}`:'';
+  const NB=[['summary','Progress Summary','#E3ECF8'],['issues','Key Issues / Risks','#FBE6D2'],['recovery','Recovery Actions','#E2F0DA'],['next',t==='week'?'Next Week Target':'Next Month Target','#E3ECF8']];
+  const notes=`${docBar('REPORT NOTES')}<tr><td style="padding:8px 18px 0"><table role="presentation" width="100%" cellspacing="8" cellpadding="0" style="margin:0 -8px"><tr>${NB.slice(0,2).map(([k,l,tn])=>docBox(l,esc(nar[k]||''),tn)).join('')}</tr><tr>${NB.slice(2).map(([k,l,tn])=>docBox(l,esc(nar[k]||''),tn)).join('')}</tr>${nar.mgmt?`<tr><td colspan="2" style="padding:0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>${docBox('Management Remarks',esc(nar.mgmt),'#EDE6F6')}</tr></table></td></tr>`:''}</table></td></tr>`;
+  const over=ov.length?`${docBar('FIGURES CHANGED FROM PROTRACK AI')}${tbl(['Figure','ProTrack AI','In this report','Reason'],ov.map(x=>`<tr>${docTd(esc(x.label||x.field))}${docTd(x.computed==null?'—':esc(String(x.computed)),rr)}${docTd(x.value==null?'—':esc(String(x.value)),rr)}${docTd(esc(x.reason||''))}</tr>`))}`:'';
+  const nV=rmOf(pid,'planning',t,per).filter(rmIsVid).length,photos=(P&&P.length)||nV?`${docBar(`PROGRESS PHOTOS (${(P||[]).length}${nV?`, and ${nV} video${nV===1?'':'s'} in ProTrack`:''})`)}${docPhotos(P||[],false)}`:'';
+  const sign=docSign([['Prepared By (Planning Engineer)',r&&u(r.submitted_by||r.prepared_by)||(pl?pl.name:''),r&&r.submitted_at?tStamp(r.submitted_at):'',!!(r&&r.submitted_at)],
+    ...(relSettings().pm_review?[['Reviewed By (Project Manager)',r&&u(r.reviewed_by)||(pm?pm.name:''),r&&r.reviewed_at?tStamp(r.reviewed_at):'',!!(r&&r.reviewed_by)]]:[]),
+    ['Approved By',r&&u(r.approved_by)||relApproverText(pid,'planning'),r&&r.approved_at?tStamp(r.approved_at):'',!!(r&&r.approved_by)]]);
+  return docWrap(head+docRibbon(st)+info+kp+ms+ph+ep+mp+en+aoc+notes+over+photos+sign+'<tr><td style="height:12px"></td></tr>'+docFoot(false),false,`${t==='week'?'Weekly':'Monthly'} report ${pcode(p)} ${per}`)}
+async function relPreview(pid,t,per){const P=await docPhotoSrc(rmOf(pid,'planning',t,per),m=>m.taken_on?fmtD(m.taken_on):'');const {r,live}=relDocData(pid,t,per);
+  docOpen(relDocHTML(pid,t,per,P),`${t==='week'?'Weekly':'Monthly'} report · ${perLabel(t,per)}`,`${pcode(projById(pid)||{})} · ${live?'as in the form now, before saving':r?r.status==='Released'?'released, rev '+r.rev:r.status.toLowerCase()+', rev '+r.rev:'new'}`)}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-dprprev],[data-formprev],[data-relprev]');if(!t)return;const d=t.dataset;
+  if(d.dprprev)dprPreview(d.dprprev);else if('formprev' in d)dprFormPreview();else if(d.relprev){const [pid,tp,per]=d.relprev.split('|');relPreview(pid,tp,per)}});
+
 async function sendApprovalMail(d){
   const c=mailCfg();if(!c.on)return 0;
   const to=CLOUD?[]:mailRecipients(d).map(u=>({name:u.name,email:u.email,role:u.role}));if(!CLOUD&&!to.length)return 0;
-  const r=await mailOut({kind:'dpr',ref:d.id,label:d.id,p:d.p,subject:mailSubject(d),html:mailHTML(d),to});
+  const r=await mailOut({kind:'dpr',ref:d.id,label:d.id,p:d.p,subject:mailSubject(d),html:dprMailHTML(d),to});
   if(r.m){d.mailed={id:r.m.id,n:r.n,at:r.m.at};save()}
   return r.sent||r.demo?r.n:0;
 }

@@ -168,6 +168,16 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.54
+
+- **The Daily Productivity Report, and a preview of every report.** Each daily report produces a Daily Productivity Report in the company layout:
+  - the alfanar Projects and ProTrack logos;
+  - report details with the weather;
+  - activity progress with planned and actual manpower, normal and overtime hours, and a productivity index coloured by the guide (over 110% Excellent to under 80% Critical);
+  - totals, remarks, constraints, recovery actions, site photos and the sign-off.
+
+  **Preview report** shows it while preparing (as typed, before saving), reviewing and approving, with Print or save as PDF. Once approved, the report itself is the approval email to the Settings → Approval email list. New fields on the daily report: Weather, Major constraints / issues, Recovery actions / next steps. The weekly and monthly internal reports have **Preview report** beside Submit: the report as a document, from what is in the form. Server: `schema-update-v55.sql` (STAGE-49-SETUP). `tests/report_preview_demo.js` (17 checks), `supabase/tests/test_v55.cjs` (18). See RELEASE-NOTES-v3.54.md.
+
 ## Version 3.53
 
 - **Site photos from the daily report to the weekly and monthly reports.** The daily report form has **Site photos**: add them from the computer or take them with the phone's camera, caption them and preview them before saving (up to 20, resized to 1920 pixels, stored when the report is saved). Those who review and approve see them in the report. The weekly internal report's **Photos & videos** offers every photo of that week's submitted, reviewed or approved daily reports; the monthly report offers the weekly reports' photos and the month's daily photos, each photo once. Tick and **Add selected to this report**, or upload the planning engineer's own. The viewer steps through each set (arrows, keys, swipe), and the Approval tab previews the report's photos. Server: `schema-update-v54.sql` (STAGE-48-SETUP). `tests/report_photos_demo.js` (21 checks), `supabase/tests/test_v54.cjs` (37). See RELEASE-NOTES-v3.53.md.
