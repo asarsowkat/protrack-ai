@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.51
+
+- **New sign-in page** in the approved desktop and mobile designs: the ProTrack and alfanar Projects logos, the headline, four capabilities (Initiation & Setup, Scheduling & Progress, Costing & EAC, Cash Flow), RASA with its speech bubble, the sign-in card and the Project Controls Workflow from Initiation & Setup to Reports & Executive Dashboard. A short opening sequence plays once per page load: the ProTrack logo appears, its compass needle spins and settles and the tagline fades in (about 3 s); reduce motion switches it off. Signing in, demo accounts, server sign-in, reset and sessions are unchanged. The official alfanar Projects logo sits beside the ProTrack logo (`ALFANAR_LOGO`). `tests/login_page_demo.js` (29 checks). See RELEASE-NOTES-v3.51.md.
+
 ## Version 3.50
 
 - **Client invoice formats.** Client Invoice Builder → **Invoice formats**: upload a client's own invoice workbook once (tax invoice, cover page, summary, breakdown sheets per component, forecast). ProTrack reads its breakdown tables, header cells, TCC and FAC lines and forecast; the planner checks the map. Each invoice is then exported in that format:
