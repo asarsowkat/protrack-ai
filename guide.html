@@ -192,7 +192,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
       <span class="chip"><b>Primavera P6</b> in and out</span>
       <span class="chip"><b>RASA</b></span>
     </div>
-    <div class="meta"><span>Version 3.50, November 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
+    <div class="meta"><span>Version 3.54, November 2026</span><span>Prototype documentation</span><span>Sample data</span></div>
     <a class="cta" href="#about">Start reading →</a>
   </div>
 </header>
@@ -202,6 +202,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#about">1. What ProTrack is</a>
   <a href="#whatsnew" class="sub">New in each version</a>
   <a href="#process">2. How the application works</a>
+  <a href="#f-signin" class="sub">Signing in, day and night mode</a>
   <a href="#owners">3. Who owns which number</a>
   <a href="#roles">4. Roles, access and responsibilities</a>
   <a href="#role-table" class="sub">The roles</a>
@@ -230,9 +231,12 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <a href="#overview" class="sub">Project overview</a>
   <a href="#f-projlist" class="sub">Project list</a>
   <a href="#f-dpr">Daily reports</a>
+  <a href="#f-dpr-photos" class="sub">Site photos</a>
+  <a href="#f-dpr-doc" class="sub">The Daily Productivity Report</a>
   <a href="#releases">Released reporting</a>
   <a href="#weightage" class="sub">Internal weightage and updated schedule</a>
   <a href="#reldash" class="sub">Internal report dashboard</a>
+  <a href="#f-relphotos" class="sub">Photos and Preview report</a>
   <a href="#f-client-report" class="sub">Client report</a>
   <a href="#f-basecmp" class="sub">Baseline comparison, P6 progress update</a>
   <a href="#f-xr" class="sub">Executive report (released)</a>
@@ -316,7 +320,15 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <div class="card"><b>For management</b><span>The Executive report (released), customisable per person, and the Live summary of working data: progress, SPI, CPI, EAC, invoiceable against invoiced, approved and collected, and who is late.</span></div>
   </div>
   <div class="warn"><b>Prototype status</b>In demo mode everything lives in your browser. Signed in to your ProTrack server, projects, activities, daily reports, costing, invoices, weekly progress and the approval matrix are shared and checked by the server. A few settings still live in each browser; section 12 lists which.</div>
-<div class="note" id="whatsnew"><b>New in version 3.50</b>
+<div class="note" id="whatsnew"><b>New in version 3.54</b>
+    <b>The Daily Productivity Report.</b> Every daily report now produces a <b>Daily Productivity Report</b> in the company layout: the alfanar Projects and ProTrack logos, the report details with the weather, each activity's scope, progress and balance, planned and actual manpower, normal and overtime hours and its productivity index coloured by the guide, the totals, remarks, constraints, recovery actions, site photos and the sign-off. <b>Preview report</b> shows it while the report is prepared, reviewed and approved, with <b>Print or save as PDF</b>; once approved, it is the approval email to the people in <b>Settings → Approval email</b>. New fields on the daily report: <b>Weather</b>, <b>Major constraints / issues</b> and <b>Recovery actions / next steps</b>. The weekly and monthly internal reports have <b>Preview report</b> too, to read the report as a document before submitting it. See <a href="#f-dpr-doc">The Daily Productivity Report</a>.</div>
+  <div class="note"><b>New in version 3.53</b>
+    <b>Site photos from the daily report to the weekly and monthly reports.</b> The foreman adds up to 20 site photos to a daily report, from the computer or the phone's camera, each with a caption; those who review and approve it see them. The weekly internal report offers every photo of that week's daily reports, and the monthly report the weekly reports' and the month's daily photos: tick the ones you want and press <b>Add selected to this report</b>. The photo viewer steps through a whole set with the arrows, the keyboard or a swipe, and the Approval tab previews the report's photos. See <a href="#f-dpr-photos">Site photos</a> and <a href="#f-relphotos">Photos from the daily reports</a>.</div>
+  <div class="note"><b>New in version 3.52</b>
+    <b>The app in day and night mode.</b> Day: a white menu, a pale-blue page, white cards, deep navy text and ProTrack blue for actions and selection, with one orange mark beside the page title. Night: deep navy from the ProTrack logo plate. The moon button in the top bar switches between them; with no choice made the app follows the device. Every text and status colour stays readable in both. See <a href="#f-signin">Signing in, and day or night mode</a>.</div>
+  <div class="note"><b>New in version 3.51</b>
+    <b>The new sign-in page.</b> The ProTrack and alfanar Projects logos, the four capabilities, RASA and the Project Controls Workflow from Initiation &amp; Setup to Reports &amp; Executive Dashboard, on desktop and phone. A short opening plays once per visit: the logo appears, its compass needle turns and settles and the tagline fades in (switched off when the device asks for reduced motion). Signing in works as before.</div>
+  <div class="note"><b>New in version 3.50</b>
     <b>Client invoices in the client's own format.</b> In <b>Client Invoice Builder → Invoice formats</b>, upload a certified invoice workbook of the client once. ProTrack reads its tax invoice, cover page, summary and breakdown sheets; check what it found and save it for that client. On an invoice, choose the format beside <b>Excel invoice</b>: ProTrack fills the client's workbook and keeps its logos, layout and formulas. When the project's price schedule has other items, the rows of each breakdown sheet are rebuilt from its Schedule-C. ProTrack then checks the workbook's own totals against the invoice and tells you about any difference.
   </div>
   <div class="note"><b>New in version 3.49</b>
@@ -529,6 +541,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Oversight.</b> Management reads the executive summary, the reports and RASA; the performance scorecards show who is keeping the chain alive, and reminders chase the gaps.</li>
   </ol>
   <div class="note"><b>Why the order matters</b>Costing matches on activity IDs, so it cannot come before the baseline. Productivity needs the planned rate, so it cannot come before costing or the P6 labour loading. Invoiceable value needs the price weighting and the payment terms. If a screen reads zero, the link before it is usually missing.</div>
+  <h3 id="f-signin">Signing in, and day or night mode</h3>
+  <p><b>The sign-in page</b> shows the ProTrack and alfanar Projects logos, what ProTrack covers (Initiation &amp; Setup, Scheduling &amp; Progress, Costing &amp; EAC, Cash Flow), RASA and the Project Controls Workflow from Initiation &amp; Setup to Reports &amp; Executive Dashboard. Enter your username or email and password and press <b>Sign in</b>; the button says <i>Signing in…</i> while it checks. A wrong password or a locked account is said under the fields. On a phone the same page is arranged in one column.</p>
+  <p>Each time the page opens, a short opening plays: the ProTrack logo appears, its compass needle turns and settles, and the tagline fades in, in about three seconds. If your device is set to reduce motion, the page appears at once.</p>
+  <p><b>Day and night mode.</b> The moon button in the top bar switches the app between day mode (white menu, pale-blue page, white cards) and night mode (deep navy). Your choice is kept in this browser; until you choose, the app follows your device's setting. Reports you print or save as PDF are always on white.</p>
 </section>
 
 <section id="owners">
@@ -701,7 +717,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 
   <h3 id="email">Approval email</h3>
   <p>The moment a report is approved, ProTrack emails a summary to everyone with access to that project in the chosen roles: by default site engineers, site managers, project managers, portfolio managers, planning and costing engineers, executives and super admins. Site engineers and site managers receive only the reports they reviewed or approved. Recipients are blind-copied.</p>
-  <p>The email carries the project, date, discipline and foreman; activities, manpower, manhours and productivity; each activity's quantity today, percent complete and index; anything below 85% productivity; site remarks; who prepared, reviewed and approved it and how long each took; and an <b>Open &lt;report number&gt; in ProTrack</b> button that goes straight to the report after sign-in.</p>
+  <p>The email is the approved <a href="#f-dpr-doc">Daily Productivity Report</a> (v3.54): the report details and weather, each activity's progress, manpower, hours and productivity index, the totals and the guide, remarks, constraints and recovery actions, and the sign-off, all three signed. Mail programs block pictures inside emails, so the logos are written out and the site photos are counted, not shown; an <b>Open &lt;report number&gt; in ProTrack</b> button goes straight to the report, photos included, after sign-in.</p>
   <p>The super admin chooses the roles, or switches it off, in <b>Settings → Email</b>, which also lists every email with its recipients, status and a preview. The menu item is <b>Administration → Approval email</b>; it opens Settings → Email. <b>Emails</b> lists the daily report emails, the report emails and the reporting status reminders, with recipients, status and a preview.</p>
   <p><b>How an email is sent (v3.34).</b> The app asks the server to queue it; the server checks that the event is real and that the person made it (approved the report, sent the reminder), and works out the recipients itself from these settings and the report email lists. The <b>send-mail</b> function then sends it through the company mailbox (Microsoft 365) or an SMTP relay and records <b>Sent</b> or <b>Failed</b> with the reason; an email is tried up to 5 times. <b>Mail service</b> at the top of Settings → Email says whether sending is ready; the super admin has <b>Send a test email to me</b>, <b>Send queued emails now</b> and <b>Send again</b> on an email not sent. The approval email settings are kept on the server and only a super admin changes them. Until the v38 update and the function are installed (STAGE-32-SETUP), emails are listed as not sent; on the demo page they are prepared and never sent.</p>
   <p><b>Report emails (v3.17).</b> When an <b>internal report</b> (monthly, and weekly unless switched off) or a <b>monthly cost report</b> is approved and released, ProTrack emails the released figures with a link that opens the report:</p>
@@ -990,7 +1006,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
 <ul>
   <li><b>Filters</b> with counts: All, Draft, Submitted, Reviewed, Approved, Rejected. <b>Start new report</b> appears for people who prepare reports.</li>
   <li><b>Columns:</b> report number, date and project; activities; foreman; crew; manhours; earned manhours; index; status. A draft sent back shows <i>Returned</i>; a submitted or reviewed report with a quantity over its scope shows <i>Beyond scope</i>.</li>
-  <li><b>Open a report</b>: it opens full screen. The top line gives its route: prepared by, reviewed by and approved by (it says <i>project manager</i> when nobody is assigned in the <a href="#matrix">Approval matrix</a>). Each activity shows its scope, executed to date, balance and plan for today, any quantity beyond the scope with its justification, the actual and planned rate, and the crews and equipment. Then attachments, remarks, the audit trail, and <b>Your action</b> with the buttons you may use.</li>
+  <li><b>Open a report</b>: it opens full screen. The top line gives its route: prepared by, reviewed by and approved by (it says <i>project manager</i> when nobody is assigned in the <a href="#matrix">Approval matrix</a>). Each activity shows its scope, executed to date, balance and plan for today, any quantity beyond the scope with its justification, the actual and planned rate, and the crews and equipment. Then the <b>Site photos</b> with <b>Preview all</b>, attached documents, remarks, major constraints and recovery actions, the audit trail, and <b>Your action</b> with the buttons you may use. The weather is on the line under the route. <b>Preview report</b> at the top shows the <a href="#f-dpr-doc">Daily Productivity Report</a>.</li>
+  <li>The <b>Activities</b> column also says how many site photos a report has.</li>
 </ul>
 <div class="scroll"><table><thead><tr><th>Who</th><th>Draft</th><th>Submitted</th><th>Reviewed</th></tr></thead><tbody>
   <tr><td>Foreman</td><td>Submit for approval, Edit report</td><td>—</td><td>—</td></tr>
@@ -1005,9 +1022,45 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <li>Each activity needs a quantity above 0 and at least one trade or subcontractor crew with hours; the same activity once per report; no future date; one report per foreman per day.</li>
   <li>A quantity that takes an activity beyond its scope is accepted, but <b>Mark as reviewed</b> needs a justification of at least 10 characters for each such activity, and <b>Approve</b> is refused until the quantity is justified (return it to the engineer).</li>
   <li>Only submitted, reviewed and approved reports count; drafts and rejected reports never reach a dashboard.</li>
-  <li>Opening a report you can act on starts its review or approval timer (<a href="#p-time">Report handling time</a>). The moment a report is approved, the summary email goes out (<a href="#email">Approval email</a>).</li>
+  <li>Opening a report you can act on starts its review or approval timer (<a href="#p-time">Report handling time</a>). The moment a report is approved, its Daily Productivity Report is emailed (<a href="#email">Approval email</a>).</li>
+  <li>Site photos, the weather, constraints and recovery actions are changed only in the report's form, by whoever may edit the report; once it is approved or rejected they are locked.</li>
 </ul>
 <p><b>New report.</b> <b>Daily Reports → New report</b> opens the form for active projects that have a baseline and a foreman: date (not in the future), project, foreman, and the site engineer from the project. Each activity is picked by work location → work type → WBS → activity. <b>Save draft</b> or <b>Submit for approval</b>; the steps are under <a href="#s-foreman">Foreman</a>.</p>
+<p>The form also asks for the <b>Weather</b> (type it, or pick Clear, Hot, Windy, Dust / sandstorm, Cloudy, Rain or Humid), and under <b>Evidence and remarks</b> for <b>Site photos</b>, <b>Drawings or other documents</b>, <b>Remarks / comments</b>, <b>Major constraints / issues</b> (what held the work back today) and <b>Recovery actions / next steps</b> (what will be done about it, and by when). All of them are printed on the Daily Productivity Report.</p>
+
+<h3 id="f-dpr-photos">Site photos</h3>
+<p>Photos of the day's work go with the daily report, so the site engineer, the site manager and the planning engineer see what was done.</p>
+<ul>
+  <li><b>Add photos</b> picks JPG, PNG or WEBP photos from the computer or the phone's gallery. On a phone or tablet, <b>Take a photo</b> opens the camera.</li>
+  <li>Each photo shows as a small picture with a <b>caption</b> box (for example <i>Zone B columns</i>) and <b>Remove</b>. Press a picture, or <b>Preview all</b>, to see it full size; photos not saved yet say so.</li>
+  <li>Photos are made smaller (1920 pixels on the longer side) so they upload quickly. A report holds up to <b>20 photos</b>, and each takes the report's date.</li>
+  <li>They are kept only when you press <b>Save draft</b> or <b>Submit for approval</b>. Leaving the form without saving changes nothing.</li>
+  <li>To change them later, open the report and press <b>Edit report</b>: the same people who may edit the report may add, caption or remove its photos, until it is approved.</li>
+</ul>
+<p><b>The photo viewer.</b> A photo opens over the page with its caption, date and report. The <b>‹ ›</b> buttons, the <b>← →</b> keys or a swipe on a phone move to the next or previous photo ("3 of 12"); <b>Esc</b>, ✕ or a click outside closes it and leaves the report open.</p>
+<div class="tip"><b>Good site photos</b>One clear photo per activity or area is worth more than ten of the same scene. Write a caption that says where and what (<i>Rebar fixing, retaining wall, Zone A</i>): the weekly and monthly reports reuse it.</div>
+
+<h3 id="f-dpr-doc">The Daily Productivity Report</h3>
+<p>Every daily report produces a <b>Daily Productivity Report</b> in the company layout. Press <b>Preview report</b>: beside <b>Submit for approval</b> while you prepare it (it shows what you typed, before saving), or at the top of the report while you review or approve it. Until the report is approved, a yellow note at the top says it is a preview. <b>Print or save as PDF</b> prints it on A4 landscape; in the print window choose <i>Save as PDF</i> to keep a file. <b>Esc</b> or ✕ closes the preview.</p>
+<div class="scroll"><table><thead><tr><th>Part</th><th>What it shows</th></tr></thead><tbody>
+  <tr><td>Header</td><td>The alfanar Projects logo, <b>DAILY PRODUCTIVITY REPORT</b>, the ProTrack logo</td></tr>
+  <tr><td>Report details</td><td>Initiator (the foreman), project name and number, contract number, client, reporting discipline (the disciplines of the report's activities), date, day and week, weather</td></tr>
+  <tr><td>Activity progress &amp; productivity tracking</td><td>One row per activity: work location, activity, unit, scope, completed up to yesterday, today's progress, cumulative to date, balance; planned manpower as per productivity, actual manpower, average overtime hours per person, total normal and overtime hours; the productivity index, coloured by the guide</td></tr>
+  <tr><td>Summary (totals)</td><td>The same figures added up, and the overall productivity index. The quantities add up only when all activities share a unit; otherwise they say <i>Mixed units</i></td></tr>
+  <tr><td>Productivity index guide</td><td>The colours used for the index (below)</td></tr>
+  <tr><td>Remarks, constraints, recovery actions</td><td>What the foreman wrote in the three boxes</td></tr>
+  <tr><td>Site photos</td><td>The report's photos with their captions</td></tr>
+  <tr><td>Sign-off</td><td>Prepared by (the initiator), reviewed by and approved by, with names and dates. A step taken says <i>Signed in ProTrack</i>; a step still to come names who it waits for</td></tr>
+</tbody></table></div>
+<div class="scroll"><table><thead><tr><th>Productivity index</th><th>Status</th></tr></thead><tbody>
+  <tr><td>Over 110%</td><td>Excellent</td></tr>
+  <tr><td>100 – 110%</td><td>Good</td></tr>
+  <tr><td>90 – 100%</td><td>Acceptable</td></tr>
+  <tr><td>80 – 90%</td><td>Needs improvement</td></tr>
+  <tr><td>Under 80%</td><td>Critical</td></tr>
+</tbody></table></div>
+<p><b>How the figures are worked out.</b> Completed up to yesterday includes other reports of the same day. Cumulative = up to yesterday + today. Balance = scope − cumulative. Planned manpower = today's quantity ÷ planned rate ÷ 8 hours, the crew that the planned productivity would have needed. Productivity index = earned manhours (quantity ÷ planned rate) ÷ manhours worked, normal and overtime; it is the same index as everywhere else in ProTrack (<a href="#formulas">Formula reference</a>).</p>
+<p><b>After approval.</b> When the site manager (or the project manager) approves the report, the Daily Productivity Report itself is emailed to the people set in <a href="#email">Approval email</a>, with a button that opens the report in ProTrack.</p>
 </section>
 
 <section id="releases">
@@ -1079,7 +1132,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <p><b>Progress by phase (v3.23).</b> The <b>Progress</b> tab lists every phase, general works to energization and close out, with planned and actual % from the updated P6 schedule, the variance and each phase's weighted share. The client report weights the phases by the schedule's own (client) weighting, automatically. The internal report weights them by the internal weightage set at the start of the project: overall = Σ internal weight × phase % ÷ Σ weights of the phases in the schedule. Only the site phases (construction, installation, testing, energization) are compared with the daily reports, on the activities the two share; general works, design, material and close out come from P6 only.</p>
   <p><b>Internal Reporting</b> (the <a href="#reldash">internal report dashboard</a> below) and <b>Client Reporting</b> (<a href="#f-client-report">the client report</a>) both use the updated schedule in force at the end of the period. If you change progress or a milestone date by hand, the report says <b>Differs from the updated schedule</b>; the approver is notified and must tick "I have checked these differences" with a note before approving.</p>
 <h3 id="reldash">The internal report dashboard</h3>
-<p>A weekly or monthly internal report opens full screen. Across the top, nine KPI cards: actual and planned progress, progress variance, SPI (internal, with external beside it), forecast completion, manpower variance, TCC status, PAC status and energization, each with ▲ improving, ▼ deteriorating or ■ stable against the last released period. Below them a box says which updated schedule the report follows and lists any difference from it. Then eight tabs:</p>
+<p>A weekly or monthly internal report opens full screen. Across the top, nine KPI cards: actual and planned progress, progress variance, SPI (internal, with external beside it), forecast completion, manpower variance, TCC status, PAC status and energization, each with ▲ improving, ▼ deteriorating or ■ stable against the last released period. Below them a box says which updated schedule the report follows and lists any difference from it. Then the tabs (ten on a monthly report, nine on a weekly one):</p>
 <table><thead><tr><th>Tab</th><th>What you fill in or read</th></tr></thead><tbody>
   <tr><td>Overview</td><td>Project information (data date, project and sub project number, name, region, sector, internal revised contract value, project manager, planning engineer); the <b>Contract value</b> card (original, change orders submitted and approved by the client, price considered internally, revised contract value, and the gross margin when the month's cost report is released); <b>Actual against baselines</b>; milestones at a glance; internal against external progress</td></tr>
   <tr><td>Milestones</td><td>Contractual commencement and site handover; original contractual, approved revised and external forecast TCC, PAC and FAC; internal TCC target and internal forecast. Delays are worked out. Intermediate milestones from the P6 schedule (v3.23)</td></tr>
@@ -1087,11 +1140,23 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <tr><td>E&amp;P progress</td><td>Engineering, procurement and both together (plan, actual, number forecast late), then each activity with plan, actual %, actual start and finish, baseline and forecast finish and slip, from the same updated schedule. Marked stale when the schedule is over 8 days old (v3.26)</td></tr>
   <tr><td>Manpower</td><td>Alfanar direct, indirect and subcontractor, planned and actual; totals, variance, utilization and productivity index</td></tr>
   <tr><td>Energization</td><td>TCC, PAC and FAC receipt dates; status (Not Started, Under Testing, Ready for Energization, Energized), date and remarks. Energized needs its date</td></tr>
+  <tr><td>Areas of concern (monthly)</td><td>Up to three concerns each for design, procurement, construction, resources and cost / invoicing / cash collection, with who acts and the action. A new month starts from last month's released concerns; open issues can fill the empty rows (v3.41)</td></tr>
+  <tr><td>Photos &amp; videos</td><td>The report's progress photos and videos with captions and dates, up to 40; on a draft, <a href="#f-relphotos">pick from the daily reports</a> or add your own (v3.44, v3.53)</td></tr>
   <tr><td>Release notes</td><td>Progress summary, key issues and risks, recovery actions, next week or month target; management remarks from the approver (or the project manager at review)</td></tr>
-  <tr><td>Approval</td><td>Revision and reason, released (submitted), reviewed and approved by with dates, who approves this project, the workflow, history</td></tr>
+  <tr><td>Approval</td><td>Revision and reason, released (submitted), reviewed and approved by with dates, who approves this project, the workflow, the report's photos and videos with <b>Preview</b>, history</td></tr>
 </tbody></table>
 <p><b>Delay</b> = external forecast − approved revised date (or the original contractual date if there is no revision); the internal TCC delay uses the internal forecast against the internal target. <b>Green</b> on schedule (0 days or earlier, or the certificate received), <b>amber</b> at risk (1–30 days), <b>red</b> delayed (over 30 days). External variance = actual % − planned %; external SPI = actual % ÷ planned %; manpower utilization = total actual ÷ total planned. SPI shows 1.00 when nothing is planned yet.</p>
 <p><b>Where a new draft starts.</b> Dates, energization, indirect manpower and planned manpower (typed) start from the last release. External planned and actual progress and the external TCC, PAC and FAC forecasts come from the updated schedule with client weightage when one is loaded. Actual Alfanar and subcontractor manpower come from the last reported day of the daily reports. A missing figure shows as "—", never as zero.</p>
+<h4 id="f-relphotos">Photos from the daily reports, and Preview report</h4>
+<p><b>Photos &amp; videos</b> on a weekly or monthly internal report that is still a draft has, below the report's own photos, a gallery to pick from:</p>
+<ul>
+  <li><b>Weekly report:</b> <i>Pick from the daily reports of this week</i> lists every photo of the week's daily reports that are submitted, reviewed or approved (not drafts or rejected reports), each with its report number, date and status.</li>
+  <li><b>Monthly report:</b> <i>Pick from the weekly and daily reports of this month</i> has two groups, the photos of the weekly reports of the weeks in the month and the month's daily photos. A daily photo already added to a weekly report is shown once, with that weekly report.</li>
+  <li>Tick the photos you want, or <b>Select all</b>, and press <b>Add selected to this report</b>. Each becomes the report's own copy with its caption and date, which you can then change. Photos already in the report are marked <i>In this report</i> and cannot be added twice.</li>
+  <li><b>Add photos or videos</b> (from the computer or phone) and, on a phone, <b>Take a photo</b> still add your own.</li>
+</ul>
+<p>Once the report is submitted its photos are locked: <i>Locked while the report is with the reviewer or approver</i>. If it is returned, they can be changed again; once approved, only a new revision can change them.</p>
+<p><b>Preview report</b>, beside Save draft and Submit, shows the internal report as a document in the same style as the Daily Productivity Report: project details, progress summary, internal and external progress, milestones, progress by phase, engineering and procurement, manpower, energization, areas of concern (monthly), the report notes, any figure changed from ProTrack AI with its reason, the progress photos and the sign-off. It is built from what is in the form at that moment, even before you save, so you read what will be submitted. The reviewer and approver see the report as submitted; a released report shows as released. <b>Print or save as PDF</b> keeps a copy.</p>
 <h3 id="f-client-report">The client report</h3>
 <p><b>Planning &amp; Scheduling → Client Reporting</b> → choose Monthly or Weekly and the period → <b>Prepare</b> or <b>Open</b>. It uses the updated schedule with client weightage in force at the end of the period.</p>
 <ul>
@@ -1856,7 +1921,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Equipment</b> — type, units, hours.</li>
     <li><b>Add another activity</b> for everything else your crews did today.</li>
     <li><b>Check the productivity panel.</b> It shows the combined index and, where a subcontractor worked, your own figure and theirs separately. An amber line means a subcontractor quantity has no hours.</li>
-    <li><b>Remarks and photos</b> — delays, access, weather, instructions.</li>
+    <li><b>Weather</b> — in Report details: type it or pick one (Clear, Hot, Windy, Dust / sandstorm …).</li>
+    <li><b>Site photos</b> — <b>Take a photo</b> with your phone's camera, or <b>Add photos</b> from the gallery; up to 20, each with a short caption saying where and what (<a href="#f-dpr-photos">Site photos</a>).</li>
+    <li><b>Remarks / comments, Major constraints / issues, Recovery actions / next steps</b> — delays, access, instructions; what held the work back; what will be done about it and by when.</li>
+    <li><b>Preview report</b> — read your Daily Productivity Report as your engineer and manager will see it; close it and correct anything that is wrong.</li>
     <li><b>Submit.</b> It goes to your site engineer for review, then your site manager for approval. If you are interrupted, press <b>Save draft</b> and open it later from Daily reports → Draft.</li>
     <li><b>Monthly:</b> Reports &amp; Dashboards → Performance → Foremen, your own row: productivity, overtime, rework, approval rate and your score.</li>
     <li><b>Any day:</b> ask RASA for Critical activities, Manpower or a Progress report; it also lists your drafts not yet submitted.</li>
@@ -1869,6 +1937,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Every morning: Home → Live summary (working data)</b>, your home page: progress, SPI, productivity and the projects needing attention.</li>
     <li><b>Actions and approvals → Mine</b> lists the foremen's reports waiting for your review; a report is late after a day. Open each from the list, or from <b>Daily reports → Submitted</b>. A timer runs while it is open.</li>
     <li><b>Quantities beyond the scope</b> are marked "Beyond scope" in the list. In the report, each such activity shows the scope, the total to date and how much over, with a box for your justification (at least 10 characters, for example a re-measurement, a drawing revision or an instruction). You cannot mark the report reviewed until each one is justified. The justification is kept with the report and cannot be changed; if the quantity is changed after your review, the site manager cannot approve it until it is justified again.</li>
+    <li><b>Look at the site photos and the remarks.</b> Press <b>Preview all</b> to step through the photos, and <b>Preview report</b> to read the Daily Productivity Report. A photo or caption that is wrong or missing can be fixed with <b>Edit report</b> before you review it.</li>
     <li><b>Mark as reviewed</b> once quantity and crews are right, or <b>Return with comments</b>. It then goes to the site manager assigned to you on that project. You only see the Review button on reports of the foremen assigned to you.</li>
     <li><b>Daily reports → Draft.</b> Nothing should stay in draft overnight. When a foreman cannot submit, open his draft and press <b>Submit for approval</b> yourself.</li>
     <li><b>Check quantities against survey or measurement,</b> and crews against the gate count. Until the site manager approves you can still <b>Edit report</b>; your edits are logged, and a quantity beyond the scope changed after your review must be justified again.</li>
@@ -1882,8 +1951,8 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <ol class="steps">
     <li><b>Every morning: Home → Live summary (working data)</b>, your home page.</li>
     <li><b>Actions and approvals → Mine</b>, or <b>Daily reports → Reviewed</b>: you can approve those reviewed by the site engineers assigned to you on each project. A report is late after a day.</li>
-    <li><b>Open each one.</b> A timer runs while it is open; the time you take is recorded.</li>
-    <li><b>Approve</b>, or <b>Return with comments</b>, or <b>Reject</b> with a comment. If Approve is refused because a quantity beyond the scope is not justified, return it so the site engineer justifies it.</li>
+    <li><b>Open each one.</b> A timer runs while it is open; the time you take is recorded. Look at the site photos and press <b>Preview report</b>: what you see is what will be emailed when you approve.</li>
+    <li><b>Approve</b>, or <b>Return with comments</b>, or <b>Reject</b> with a comment. If Approve is refused because a quantity beyond the scope is not justified, return it so the site engineer justifies it. Approving emails the Daily Productivity Report to the approval email list.</li>
     <li><b>Weekly:</b> Projects &amp; Handover → Project overview: the status (On track, Watch, At risk), critical items and the extension of time for your project.</li>
     <li><b>Weekly:</b> Performance → Reporting compliance shows which projects have gone quiet; <b>Daily Reports → Report handling time</b> shows how long each person takes.</li>
     <li><b>Before the site meeting:</b> Reports &amp; Dashboards → Presentation: tick the slides and download.</li>
@@ -1925,14 +1994,14 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li><b>Baselines and P6 import → Updated schedule</b> → the updated XER (up to 40 MB): check the data date, the weighting and the phase of each new WBS branch; save. Design and procurement progress, statuses and forecast finishes come from it. Read the late-item notification.</li>
     <li><b>Material tracking:</b> type each new PO number, supplier and remarks as procurement places the orders, so the costing engineer can add the PO's payment terms.</li>
     <li><b>Project Visual: Live:</b> read the data warnings; map new activities; review a new drawing revision (Move or Retire its zones, then Make current).</li>
-    <li><b>Within 2 days of the week's end:</b> Internal Reporting → Weekly → <b>Prepare</b>: check the cards and the schedule box, tick the baselines to compare with, check Progress and E&amp;P progress, update Manpower and Energization, write the release notes, submit. Do the same in <b>Client Reporting</b> where the client wants a weekly report.</li>
+    <li><b>Within 2 days of the week's end:</b> Internal Reporting → Weekly → <b>Prepare</b>: check the cards and the schedule box, tick the baselines to compare with, check Progress and E&amp;P progress, update Manpower and Energization, add the week's site photos on <b>Photos &amp; videos</b> (tick them under <i>Pick from the daily reports of this week</i> and press <b>Add selected to this report</b>), write the release notes, press <b>Preview report</b> to read it through, then submit. Do the same in <b>Client Reporting</b> where the client wants a weekly report.</li>
     <li><b>Issue register:</b> add, update and close the issues of your projects, or upload your issue log, before the internal report is approved (its open issues are frozen with it).</li>
     <li><b>P6 progress update</b> → Download XER, P6 XML or Excel for P6, and load it into P6 (percent complete type Physical).</li>
     <li><b>Home → Reporting status:</b> the due date of your reports and whether they count as on time. <b>Performance → Reporting compliance → Notify team</b> for projects with gaps in daily reporting.</li>
   </ol>
   <h4>Every month, and when things happen</h4>
   <ol class="steps">
-    <li><b>By day 7 of the next month:</b> the monthly internal and client reports, as above. On the <b>Milestones</b> tab, <b>Add a milestone</b> for any intermediate milestone the project manager or the client asked for. Explain any difference on the site phases between P6 and the daily reports.</li>
+    <li><b>By day 7 of the next month:</b> the monthly internal and client reports, as above; on <b>Photos &amp; videos</b> pick from the weekly reports' and the month's daily photos. On the <b>Milestones</b> tab, <b>Add a milestone</b> for any intermediate milestone the project manager or the client asked for. Explain any difference on the site phases between P6 and the daily reports.</li>
     <li><b>When a report is returned:</b> Actions and approvals → <i>Release returned: fix and resubmit</i>. To correct a released report, open it, give a reason and press <b>Start a new revision</b>.</li>
     <li><b>At a revision or recovery plan:</b> load the revised or recovery baseline set (wrong file? <b>Undo this import</b>), then tick it under <b>Actual against baselines</b> in the next reports, and check <b>Baseline comparison</b>.</li>
     <li><b>When a delay event happens:</b> Claims &amp; Variations → Delay events register → <b>Add delay event</b>: name, start date, time bar, and the notice date as soon as it is served. Watch <i>Days to notice deadline</i>: red at 0 or less, amber 1 to 7 days. Record every letter on the event, with <i>Add its reference to the register</i> ticked; for an EOT submission, download the EOT pack (ZIP) and the chronology (Excel).</li>
@@ -2477,7 +2546,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
     <li>Re-baselining moves the plan, never earned progress; every import can be undone.</li>
     <li>A subcontractor's quantity is entered once per company; all their trades' hours count.</li>
     <li>Foreman submits, site engineer reviews, site manager approves, as assigned in the approval matrix for that project; the project manager covers anyone unassigned.</li>
-    <li>Every approval emails a summary to the project's stakeholders.</li>
+    <li>Every approval of a daily report emails its Daily Productivity Report to the approval email list (never to foremen), unless the super admin switched it off.</li>
+    <li>A daily report holds up to 20 site photos (JPG, PNG or WEBP); they are kept only when the report is saved and are locked once it is approved or rejected.</li>
+    <li>The weekly and monthly reports pick only from daily reports that are submitted, reviewed or approved; a picked photo is the report's own copy, and the same photo is never added twice.</li>
+    <li>An internal report's photos change only while it is a draft; once submitted they are locked, and once approved only a new revision changes them.</li>
     <li>Site roles never see cost or billing, and their executive view is set by the super admin.</li>
     <li>Rejecting or returning needs a comment; every change is logged with a name and time.</li>
     <li>A lifecycle stage closes only when its owner submits it with every required deliverable ticked and its approver approves it (the Head of Planning and Cost Control for stages 1 to 5, a project manager on the project for stages 6 to 12, or a super admin); nobody approves their own submission; only a super admin reopens a closed stage, with a reason.</li>
@@ -2525,6 +2597,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h4>"This is the same file as the last one loaded, so nothing changed"</h4><p>The server recognised the file. If you meant to load corrected figures, check you chose the corrected file.</p>
   <h4>Undo import or Remove baseline says it is not available</h4><p>On the server a baseline is never removed, so report history always keeps its activities. Import the correct file again; activities are matched by ID and updated.</p>
   <h4>An amber bar says the server data could not be loaded</h4><p>Your connection or the server was unavailable. Press <b>Try again</b>. Anything you change is still sent to the server, which checks it; nothing is saved only in the browser.</p>
+  <h4>Where do the photos in the weekly report come from?</h4><p>From the daily reports of that week that are submitted, reviewed or approved. Open the weekly internal report → <b>Photos &amp; videos</b> → <i>Pick from the daily reports of this week</i>, tick the ones you want and press <b>Add selected to this report</b>. A photo of a daily report still in draft appears once that report is submitted. The monthly report also offers the weekly reports' photos (<a href="#f-relphotos">Photos from the daily reports</a>).</p>
+  <h4>I cannot add or remove a photo on a daily report</h4><p>Photos change only in the report's form (<b>Edit report</b>), by whoever may edit the report: the foreman while it is a draft, the assigned site engineer, the site manager or the project manager while it is waiting for review or approval. Once a report is approved or rejected its photos are locked. A report holds 20 photos at most.</p>
+  <h4>The approval email has no pictures</h4><p>On purpose: mail programs block pictures inside emails, so the logos are written out and the email says how many site photos the report has. Press <b>Open &lt;report number&gt; in ProTrack</b> in the email to see them, or open the report and press <b>Preview report</b> → <b>Print or save as PDF</b> for a copy with the photos.</p>
+  <h4>How do I keep the Daily Productivity Report as a PDF?</h4><p>Open the report, press <b>Preview report</b>, then <b>Print or save as PDF</b>, and choose <i>Save as PDF</i> as the printer. It prints on A4 landscape, in colour.</p>
   <h4>I cannot sign in with a demo account</h4><p>Demo accounts are switched off on a site connected to the server. Use your work email; the super admin creates accounts in Supabase. For a demonstration, open the demo page (<code>demo.html</code>, linked from the sign-in page), where the demo accounts work on sample data.</p>
   <h4>I cannot approve a lifecycle stage</h4><p>Stages 1 to 5: only the Head of Planning and Cost Control or a super admin. Stages 6 to 12: only a project manager on that project or a super admin. Never the person who submitted it: if you submitted it, ask another approver.</p>
   <h4>"Required deliverables are not done"</h4><p>Tick every deliverable marked Required, or ask the stage's approver (the Head for stages 1 to 5, a project manager for 6 to 12) to mark it Not applicable if it does not apply.</p>
@@ -2539,6 +2615,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 60px;color:var(--ink-2);fon
   <h2>15. Glossary</h2>
   <table><tbody>
     <tr><td><b>AC, EV, PV</b></td><td>Actual cost, earned value, planned value</td></tr>
+    <tr><td><b>Daily Productivity Report</b></td><td>The company-layout document of a daily report (progress, manpower, hours, productivity index, remarks, photos, sign-off); previewed at every stage and emailed once approved</td></tr>
+    <tr><td><b>Preview report</b></td><td>The button that shows a daily, weekly or monthly report as a document before it is submitted or approved, to read, print or save as PDF</td></tr>
+    <tr><td><b>Productivity index guide</b></td><td>The colours of the productivity index: over 110% Excellent, 100–110% Good, 90–100% Acceptable, 80–90% Needs improvement, under 80% Critical</td></tr>
+    <tr><td><b>Site photos</b></td><td>Up to 20 captioned photos on a daily report, which the weekly and monthly internal reports pick from</td></tr>
     <tr><td><b>Approval matrix</b></td><td>Per project: which site engineer reviews each foreman, and which site manager approves each site engineer</td></tr>
     <tr><td><b>Report handling time</b></td><td>Time spent preparing, reviewing and approving a daily report, measured by the app</td></tr>
     <tr><td><b>Planned</b></td><td>A feature on the roadmap, shown greyed out and not yet available</td></tr>
