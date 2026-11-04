@@ -1,0 +1,132 @@
+{
+ "run": "2026-11-04T14:41:58.605Z",
+ "pass": 25,
+ "fail": 0,
+ "results": [
+  {
+   "check": "Install: v56 runs a second time without errors",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: media_features reports version 56 with inv_phase",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Install: activities have no invoicing phase until one is set",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "A project manager does not set the invoicing phase",
+   "pass": true,
+   "detail": "Only planning engineers and super admins of this project set the invoicing phase"
+  },
+  {
+   "check": "A foreman does not set it",
+   "pass": true,
+   "detail": "Only planning engineers and super admins of this project set the invoicing phase"
+  },
+  {
+   "check": "A planning engineer of another project does not set it",
+   "pass": true,
+   "detail": "Only planning engineers and super admins of this project set the invoicing phase"
+  },
+  {
+   "check": "The planning engineer of the project sets it after the baseline import",
+   "pass": true,
+   "detail": "[{\"r\":{\"unknown\":0,\"updated\":4}}]"
+  },
+  {
+   "check": "It reports how many activities were updated",
+   "pass": true,
+   "detail": "[{\"r\":{\"unknown\":0,\"updated\":4}}]"
+  },
+  {
+   "check": "Each activity keeps its phase; an empty phase stays empty (the WBS wording)",
+   "pass": true,
+   "detail": "{\"A1\":\"ENG\",\"A2\":\"PRC\",\"A3\":\"TC\",\"A4\":null}"
+  },
+  {
+   "check": "Only this project's activities change",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "The project keeps the code type and its map",
+   "pass": true,
+   "detail": "{\"code_type\":\"Invoice Phase\",\"map\":{\"Design (SAMPLE)\":\"ENG\",\"Supply (SAMPLE)\":\"PRC\",\"Testing (SAMPLE)\":\"TC\"}}"
+  },
+  {
+   "check": "Those who see the project read the choice",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Those who do not see it do not",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "The change is logged",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "An unknown phase in the map is refused",
+   "pass": true,
+   "detail": "Unknown phase for the code values X: use ENG, PRC, CON or TC"
+  },
+  {
+   "check": "An unknown phase on an activity is refused",
+   "pass": true,
+   "detail": "Each activity needs a phase of ENG, PRC, CON or TC, or none (A1)"
+  },
+  {
+   "check": "An activity without its ID is refused",
+   "pass": true,
+   "detail": "Each activity needs its ID; nothing was set"
+  },
+  {
+   "check": "The table refuses another phase written directly",
+   "pass": true,
+   "detail": "new row for relation \"activities\" violates check constraint \"activities_inv_phase_ok\""
+  },
+  {
+   "check": "An activity not on the project is counted as unknown, the rest is set",
+   "pass": true,
+   "detail": "[{\"r\":{\"unknown\":1,\"updated\":1}}]"
+  },
+  {
+   "check": "A super admin sets it too",
+   "pass": true,
+   "detail": "[{\"r\":{\"unknown\":0,\"updated\":4}}]"
+  },
+  {
+   "check": "An empty code type goes back to the WBS wording",
+   "pass": true,
+   "detail": "[{\"r\":{\"unknown\":0,\"updated\":4}}]"
+  },
+  {
+   "check": "... the project choice is removed and the phases cleared",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "A foreman does not write the phase on the activities directly",
+   "pass": true,
+   "detail": "unchanged: "
+  },
+  {
+   "check": "Rollback: the function is gone, media_features reports 55, the column stays",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "v56 runs again after the rollback",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}
