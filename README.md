@@ -168,6 +168,17 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.57
+
+- **The invoicing phase from a P6 activity code.** At the baseline import of an XER, **Invoicing phase taken from** offers the file's activity codes (a code named for invoicing, such as "Invoice Phase", is chosen by default) or, as before, the WBS wording.
+  - With a code, each value is listed with its activities and price weight. It gets an invoicing phase (Engineering and design, Procurement and supply, Construction and installation, Testing and commissioning), suggested from its name and changeable.
+  - Each activity keeps its phase. It decides which payment terms (cap and milestone releases) the activity is invoiced under, in invoiceable value, Monthly invoicing, the cash-inflow forecast and the phase prices.
+  - Activities without a value, and values left on "The WBS wording", follow the WBS wording.
+  - The project keeps the choice for the next import. A changed mapping on the same file is imported again, not taken as the same content.
+  - Invoicing status by phase says where the phases come from.
+
+  Server: `schema-update-v56.sql` (STAGE-50-SETUP). `tests/inv_phase_code_demo.js` (15 checks), `supabase/tests/test_v56.cjs` (25). See RELEASE-NOTES-v3.57.md.
+
 ## Version 3.56
 
 - **Invoiceable and the invoices on one basis: gross.** Invoiceable everywhere is now the value earned under the phase payment terms plus the advance, before retention and advance recovery. That is the basis of the invoice register and the Client Invoice Builder, which records each invoice at its gross value. The figure appears on the project Home page, the portfolio billing tiles, Monthly invoicing (planned, invoiceable and forecast invoicing), the invoice register page and RASA.

@@ -1707,14 +1707,15 @@ function actFromDb(r){
   const a={id:r.id,p:r.project_id,cls:r.cls||'CON',disc:r.disc||'Civil',area:r.area||'',wbs:r.wbs||'',name:r.name,
     uom:r.uom||(con?'':'%'),qty:+r.qty||(con?0:100),bmh:bh,p6mh:r.p6_mh==null?bh:+r.p6_mh,costmh:r.costing_mh==null?null:+r.costing_mh,
     brate:+r.budget_rate||0,bcost:+r.budget_cost||0,pw:+r.price_weight||0,mix:r.trade_mix||{},
-    crew:[[TRADE[r.disc]||'Mason',6],['Helper',4]],pace:1,bs:r.bs,bf:r.bf,priorQty:+r.prior_qty||0,gang:r.gang||'',costed:!!r.costed,imported:true,server:true};
+    crew:[[TRADE[r.disc]||'Mason',6],['Helper',4]],pace:1,bs:r.bs,bf:r.bf,priorQty:+r.prior_qty||0,gang:r.gang||'',costed:!!r.costed,imported:true,server:true,iph:r.inv_phase||null};
   a.pp=a.qty/Math.max(1,a.bmh);
   try{a.dailyPlan=a.qty/Math.max(1,workdays(a.bs,a.bf))}catch(e){a.dailyPlan=0}
   if(r.cur&&Object.keys(r.cur).length)a.cur=r.cur;
   return a;
 }
 const actToDb=a=>({id:a.id,name:a.name,cls:a.cls||'CON',disc:a.disc||'',area:a.area||'',wbs:a.wbs||'',uom:a.uom||'',qty:+a.qty||0,
-  budget_mh:+(a.p6mh!=null?a.p6mh:a.bmh)||0,price_weight:+a.pw||0,trade_mix:a.mix||{},bs:a.bs||null,bf:a.bf||null,prior_qty:+a.priorQty||0,cur:a.cur||{}});
+  budget_mh:+(a.p6mh!=null?a.p6mh:a.bmh)||0,price_weight:+a.pw||0,trade_mix:a.mix||{},bs:a.bs||null,bf:a.bf||null,prior_qty:+a.priorQty||0,cur:a.cur||{},
+  inv_phase:a.iph||null});   /* v3.57: import_baseline leaves it to act_inv_phase_set; here it makes a changed mapping a new import */
 function dprFromDb(r){
   const p=projById(r.project_id)||{};
   return {id:r.id,date:r.report_date,p:r.project_id,foreman:r.foreman||'',foremanId:r.foreman_id||null,engineer:r.site_engineer||p.eng||'',
@@ -1783,6 +1784,8 @@ async function cloudLoadActs(){
   const rows=await selAll('activities','*',null,['project_id','id']);
   DB.master.acts=rows.map(actFromDb);
   if(DB.costed)DB.master.acts.forEach(a=>{delete DB.costed[a.id]});   // the server has already applied costing
+  /* v3.57: the activity code each project's invoicing phase comes from (schema-update-v56.sql) */
+  try{DB.invPhase=Object.fromEntries((await selAll('project_inv_phase','*',null,['project_id'])).map(x=>[x.project_id,{code_type:x.code_type,map:x.map||{}}]))}catch(e){DB.invPhase={}}
 }
 async function cloudLoadDprs(){
   const rows=await selAll('dprs','*,dpr_lines(*),dpr_audit(*)');
@@ -6661,7 +6664,7 @@ function rmCands(pid,t,per){const a=t==='month'?per+'-01':isoWeekMonday(per),b=p
   return {weekly,daily:daily.filter(x=>!inWk.has(x.m.id)),shown:daily.length-daily.filter(x=>!inWk.has(x.m.id)).length}}
 const RMSEL=new Set();
 async function cloudLoadMedia(){if(!CLOUD_ME)return;try{DB.rmSrv=(await selAll('report_media','*',null,['project_id','period'])).map(x=>({id:x.id,project_id:x.project_id,kind:x.kind,period_type:x.period_type,period:x.period,path:x.path,name:x.name,mime:x.mime,size:+x.size_bytes,thumb:x.thumb,duration:x.duration_s,taken_on:x.taken_on,caption:x.caption||'',sort:x.sort,from:x.copied_from,by_name:x.uploaded_name,at:x.uploaded_at}));DB.rmMissing=false;
-    try{const f=await rpc('media_features',{});DB.dpV54=!!(f&&f.dpr_media);DB.dprV55=+(f&&f.version||0)>=55}catch(e){DB.dpV54=false;DB.dprV55=false}}
+    try{const f=await rpc('media_features',{});DB.dpV54=!!(f&&f.dpr_media);DB.dprV55=+(f&&f.version||0)>=55;DB.ipV56=!!(f&&f.inv_phase)}catch(e){DB.dpV54=false;DB.dprV55=false;DB.ipV56=false}}
   catch(e){DB.rmSrv=[];DB.rmMissing=srvMsg(e);DB.dpV54=false}}
 const rmSize=b=>b>=1048576?fmt(b/1048576,1)+' MB':fmt(Math.max(1,Math.round(b/1024)))+' KB';
 function rmTabHTML(pid,kind,t,per){const L=rmOf(pid,kind,t,per),ed=rmCanEdit(pid,kind,t,per),st=(relOpen(pid,kind,t,per)||{}).status,
@@ -9149,7 +9152,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.56';
+const APP_VERSION='3.57';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -14192,7 +14195,10 @@ const billOf=p=>{const b=Object.assign(defBilling(),p.billing||{});b.phases=Obje
   return b};
 const retCapPct=B=>B.ret.cap==null||B.ret.cap===''?100:+B.ret.cap;
 const priceOf=a=>(+a.pw||0)||(+a.bcost||0)||(a.bmh||0)*RATE;
-const phaseOf=a=>{const c=clsOf(a);if(c!=='CON')return c;return /test|commission|energiz/i.test(`${a.name} ${a.wbs} ${a.area}`)?'TC':'CON'};
+/* v3.57: the invoicing phase from a P6 activity code, mapped at the baseline import (a.iph); otherwise the WBS wording */
+const phaseOf=a=>{if(a.iph&&PHASES.some(([k])=>k===a.iph))return a.iph;const c=clsOf(a);if(c!=='CON')return c;return /test|commission|energiz/i.test(`${a.name} ${a.wbs} ${a.area}`)?'TC':'CON'};
+const invPhSuggest=v=>{const s=String(v||'');return /test|commission|energi[sz]/i.test(s)?'TC':/engineer|design|drawing|\bidc\b|\bifc\b/i.test(s)?'ENG'
+  :/material|procure|supply|equipment|purchas|deliver|manufactur|vendor/i.test(s)?'PRC':/construct|civil|install|erect|struct|general|prelim|close.?out|mobili/i.test(s)?'CON':''};
 const msDone=(p,type)=>{const m=msOf(p).find(x=>(x.t||'')===type);return m&&m.act?m.act:null};
 function billing(p,t){
   const B=billOf(p),acts=ACTS.filter(a=>a.p===p.id),dt=t||ASOF;
@@ -15062,7 +15068,9 @@ function invPhaseStatus(pid){
   return out.filter(x=>x.n||(x.price||0)>0)}
 function invPhaseHTML(pid){const S=invPhaseStatus(pid);if(!S.length)return '';
   const T=k=>S.reduce((t,x)=>t+(+x[k]||0),0),c=v=>v==null?'—':sar(v);
+  const ip=(DB.invPhase||{})[pid],nIph=ACTS.filter(a=>a.p===pid&&a.iph).length;
   return `<section class="panel"><div class="card-head"><h2>Invoicing status by phase</h2><span class="small muted">Price and invoiceable value from the payment terms; submitted, approved and collected from the register</span></div>
+    <p class="small muted" style="margin:0 0 8px">Phase of each activity: ${ip&&ip.code_type?`the P6 activity code “${esc(ip.code_type)}” (${fmt(nIph)} activit${nIph===1?"y":"ies"}), the others by the WBS wording`:'the WBS wording (engineering, supply and testing words)'}. Set at the baseline import.</p>
     <div class="scroll"><table class="tbl"><thead><tr><th>Phase</th><th class="n">Phase price</th><th class="n">Invoiceable to date</th><th class="n">Submitted</th><th class="n">Approved</th><th class="n">Collected</th><th class="n">Outstanding</th><th class="n">Balance to invoice</th><th>Last dates</th></tr></thead><tbody>
     ${S.map(x=>`<tr><td><b>${esc(x.name)}</b><span class="t2">${x.n} invoice${x.n===1?'':'s'}</span></td><td class="n">${c(x.price)}</td><td class="n">${c(x.billable)}</td><td class="n">${sar(x.sub)}</td><td class="n">${sar(x.appr)}</td><td class="n">${sar(x.coll)}</td>
       <td class="n ${x.outstanding>1?'a-c':''}">${sar(x.outstanding)}</td><td class="n">${c(x.balance)}</td><td class="small">${x.lastSub?'submitted '+fmtD(x.lastSub):'—'}${x.lastAppr?`<span class="t2">approved ${fmtD(x.lastAppr)}</span>`:''}${x.lastColl?`<span class="t2">collected ${fmtD(x.lastColl)}</span>`:''}</td></tr>`).join('')}
@@ -22946,7 +22954,10 @@ async function handleImportFile(file){
     const wr=(parsed.weightRes||[])[0];
     state.imp={...parsed,file:file.name,lvl:Math.min(maxLvl,maxLvl>=4?4:2),maxLvl,minBH:0,limit:2000,skipDone:true,defDisc:'Civil',
       lvlCls:Math.min(2,maxLvl),wres:wr?wr.name:'',ignorePct:false,brLvl:Math.min(2,maxLvl),branches:null,clsOn:{CON:true,ENG:true,PRC:true}};
-    if(xtxt){try{state.imp.mt=mtAutoInit(parseSchedXER(xtxt),impPid(),'baseline');state.imp.hash=await sha256Hex(xtxt)}catch(e){state.imp.mt=null}}   /* v3.8.1: Material Tracking from this baseline */
+    if(xtxt){try{const SP=parseSchedXER(xtxt);state.imp.mt=mtAutoInit(SP,impPid(),'baseline');state.imp.hash=await sha256Hex(xtxt);
+      /* v3.57: the activity codes, for the invoicing phase; the project's earlier choice, else a code named for invoicing */
+      const ip=(DB.invPhase||{})[impPid()];state.imp.codeTypes=SP.codeTypes;state.imp.codesById=Object.fromEntries(SP.rows.map(r=>[r.id,r.codes||{}]));
+      state.imp.ipCode=ip&&SP.codeTypes.includes(ip.code_type)?ip.code_type:(SP.codeTypes.find(c=>/invoic|billing|payment/i.test(c))||'');state.imp.ipMap={...((ip&&ip.map)||{})}}catch(e){state.imp.mt=null}}   /* v3.8.1: Material Tracking from this baseline */
     renderImport();
   }catch(e){box.innerHTML=`<p class="err">${esc(e.message||'This file could not be read.')}</p><p class="small muted">Supported: Primavera XER, P6 XML (PMXML), and the Excel template.</p>`}
 }
@@ -22982,6 +22993,11 @@ function clsCounts(){
   });
   return out;
 }
+/* v3.57: an activity's invoicing phase from the chosen activity code: the phase given to its value (blank = the WBS wording) */
+function impIph(I,id){if(!I||!I.ipCode)return null;const v=String(((I.codesById||{})[id]||{})[I.ipCode]||'').trim();if(!v)return null;
+  const m=v in (I.ipMap||{})?I.ipMap[v]:invPhSuggest(v);return PHASES.some(([k])=>k===m)?m:null}
+/* the map kept for the project: every value of the imported activities with its phase (blank values left out) */
+const impIpMap=(I,rows)=>{const o={};rows.forEach(r=>{if(r.ipv&&r.iph)o[r.ipv]=r.iph});return o};
 function mapRows(){
   const I=state.imp,seen=new Set(),wres=I.wres||'';
   return I.rows.filter(r=>{
@@ -23006,9 +23022,21 @@ function mapRows(){
     seen.add(id);
     const pr=projById(impPid());let bs=r.bs||pr.start,bf=r.bf||pr.finish;if(!(bf>bs))bf=addDays(bs,1);
     return {id,name:String(r.name).slice(0,80),area,wbs:wbs===area?'General':wbs,disc,cls,uom,qty,bh,pw:w,
-      trades:r.trades||{},mats:r.mats||[],noHours:!bh,bs,bf,tf:r.tf??null};
+      trades:r.trades||{},mats:r.mats||[],noHours:!bh,bs,bf,tf:r.tf??null,iph:impIph(I,r.id),ipv:I.ipCode?String(((I.codesById||{})[r.id]||{})[I.ipCode]||'').trim():''};
   }).filter(r=>r.qty>0).slice(0,I.limit);
 }
+/* v3.57: the invoicing phase (Engineering, Procurement, Construction, Testing) from a P6 activity code, value by value */
+function impIphHTML(I,rows){
+  if(!(I.codeTypes||[]).length)return '';
+  const pick=F('Invoicing phase taken from',sel('ipCode',[['','The WBS wording (engineering, supply, testing words)'],...I.codeTypes.map(c=>[c,'Activity code: '+c])],I.ipCode||'','data-imp'));
+  if(!I.ipCode)return `<div style="margin-top:10px;max-width:520px">${pick}<p class="small muted" style="margin:4px 0 0">The phase each activity is invoiced under follows the wording of its WBS and name. Choose an activity code to set it value by value instead.</p></div>`;
+  const g={};let none=0,wt=0;rows.forEach(r=>{wt+=r.pw||0;if(!r.ipv){none++;return}const x=g[r.ipv]||(g[r.ipv]={n:0,w:0});x.n++;x.w+=r.pw||0});
+  const ph=v=>v in (I.ipMap||{})?I.ipMap[v]:invPhSuggest(v);
+  return `<div style="margin-top:10px">${pick}
+    <div class="scroll" style="margin-top:6px"><table class="tbl"><thead><tr><th>Code value</th><th class="n">Activities</th><th class="n">Price weight</th><th>Invoiced under</th></tr></thead><tbody>
+      ${Object.entries(g).sort((a,b)=>b[1].w-a[1].w||b[1].n-a[1].n).map(([v,x])=>`<tr><td>${esc(v)}</td><td class="n">${fmt(x.n)}</td><td class="n">${wt?fmt(x.w/wt*100,1)+'%':'—'}</td>
+        <td><select data-impip="${esc(v)}" aria-label="Invoicing phase for ${esc(v)}"><option value="">The WBS wording</option>${PHASES.map(([k,l])=>`<option value="${k}" ${ph(v)===k?'selected':''}>${esc(l)}</option>`).join('')}</select></td></tr>`).join('')||'<tr><td colspan="4" class="muted">No activity to import carries this code.</td></tr>'}</tbody></table></div>
+    <p class="small muted" style="margin:4px 0 0">${none?`${fmt(none)} activit${none===1?'y has':'ies have'} no value for this code, and values left on "The WBS wording" follow it too. `:''}The phase decides which payment terms (cap and milestone releases) an activity is invoiced under.</p></div>`}
 function renderImport(){
   const I=state.imp;if(!I)return;const rows=mapRows(),tot=I.rows.length;
   const areas=[...new Set(rows.map(r=>r.area))],byD={};rows.forEach(r=>byD[r.disc]=(byD[r.disc]||0)+1);
@@ -23031,6 +23059,7 @@ function renderImport(){
       <div class="checks" style="max-height:none">${has.length?has.map(([k,n])=>`<label class="chk"><input type="checkbox" data-impcls="${k}" ${I.clsOn&&I.clsOn[k]===false?'':'checked'}><span>${CLASSES[k]}</span><span class="muted small">${n} activities</span></label>`).join(''):'<p class="small muted" style="margin:4px 0">No activities in the branches ticked above.</p>'}</div>
       ${has.length<3?`<p class="small muted" style="margin:6px 0 0">Not listed, so nothing to exclude: ${Object.keys(CLASSES).filter(k=>!cc[k]).map(k=>CLASSES[k]).join(', ')}.</p>`:''}
       ${cc.ENG||cc.PRC?`<p class="small" style="margin:6px 0 0">Some activities inside your ticked branches read as engineering or procurement from their wording, for example supply or delivery items sitting under a construction branch. Untick a class here to leave those out of the daily report.</p>`:''}</div>`})()}
+    ${impIphHTML(I,rows)}
     <label class="chk" style="margin:10px 0"><input type="checkbox" name="skipDone" data-imp ${I.skipDone?'checked':''}><span>Skip completed activities and milestones</span></label>
     <label class="chk" style="margin:0 0 10px"><input type="checkbox" name="ignorePct" data-imp ${I.ignorePct?'checked':''}><span>Ignore percent complete in the file (use when ProTrack already holds the progress)</span></label>
     ${(()=>{const pid=impPid(),ex=ACTS.filter(a=>a.p===pid),m=rows.filter(r=>ex.some(a=>a.id===r.id)).length;
@@ -23057,7 +23086,7 @@ async function runImport(){
   const I=state.imp,prev=DB.master.acts.filter(a=>a.p===pid),pr=projById(pid);
   const keep=DB.master.acts.filter(a=>a.p!==pid||!rows.some(r=>r.id===a.id));
   const add=rows.map(r=>{const con=r.cls==='CON';const bh=Math.max(0,r.bh||0);const a={id:r.id,p:pid,cls:r.cls,disc:r.disc,area:r.area,wbs:r.wbs,name:r.name,uom:con?r.uom:'%',pp:(con?r.qty:100)/Math.max(1,bh),pw:r.pw||0,mix:r.trades||{},
-    crew:[[TRADE[r.disc]||'Mason',6],['Helper',4]],pace:1,bs:r.bs,bf:r.bf,qty:con?r.qty:100,bmh:bh,p6mh:bh,priorQty:(con&&!I.ignorePct)?r.qty*r.pct:0,imported:true,tf:r.tf??null};
+    crew:[[TRADE[r.disc]||'Mason',6],['Helper',4]],pace:1,bs:r.bs,bf:r.bf,qty:con?r.qty:100,bmh:bh,p6mh:bh,priorQty:(con&&!I.ignorePct)?r.qty*r.pct:0,imported:true,tf:r.tf??null,iph:r.iph||null};
     a.dailyPlan=a.qty/Math.max(1,workdays(r.bs,r.bf));
     if(!con){const L=MS[r.cls];const pctIn=I.ignorePct?0:r.pct;const m=L.slice().reverse().find(x=>x[2]/100<=pctIn+1e-6)||L[0];a.cur={ms:m[0],pct:m[2]/100,ff:r.bf,dataDate:ASOF,by:'Import'}}
     return a});
@@ -23065,15 +23094,19 @@ async function runImport(){
   const dcma=()=>{if(I.dcma){DB.dcma=DB.dcma||{};DB.dcma[pid]={file:I.file,at:stamp(),by:me().name,dataDate:I.dcma.dataDate,tasks:I.dcma.tasks,rels:I.dcma.rels,checks:dcmaChecks(I.dcma)}}};
   if(CLOUD_ME){busyBtns('[data-impgo]',true);let r;
     try{r=await cloudImport('baseline',pid,I,dbRows,o)}catch(e){busyBtns('[data-impgo]',false);toast('Nothing was imported: '+e.message);return}
+    /* v3.57: the invoicing phase of the activities just imported, and the project's code and map (schema-update-v56.sql) */
+    let ipMsg='';if(I.ipCode||(DB.invPhase||{})[pid]){if(!DB.ipV56)ipMsg=I.ipCode?' The invoicing phase from the activity code needs the v56 database update (STAGE-50-SETUP); until then it follows the WBS wording.':'';
+      else try{await rpc('act_inv_phase_set',{p:{project_id:pid,code_type:I.ipCode||'',map:I.ipCode?impIpMap(I,rows):{},rows:add.map(a=>({id:a.id,phase:a.iph||''}))}})}catch(e){ipMsg=' The invoicing phase was not saved: '+srvMsg(e)}}
     dcma();try{await cloudLoadActs();applyMaster();await cloudLoadProjects();await cloudLoadInvoices()}catch(e){}
     if(!r.duplicate)logChange(`Imported ${add.length} baseline activities into ${projById(pid).short} from ${I.file}`);
     const mr=await mtAutoRun(I.mt,I.file,I.hash);
-    applyMaster();save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render();toast(importDone(r,`${r.upserted??0} activities imported on the server.`)+mtAutoMsg(mr));return}
+    applyMaster();save();state.imp=null;if(state.view!=='base')admDrawer('projects',pid);render();toast(importDone(r,`${r.upserted??0} activities imported on the server.`)+mtAutoMsg(mr)+ipMsg);return}
   const b=await localImport('baseline',pid,I,dbRows,o,()=>{
     dcma();
     DB.baseHist=DB.baseHist||{};
     DB.baseHist[pid]=[{at:stamp(),by:me().name,file:I.file,n:rows.length,before:prev.length,acts:JSON.parse(JSON.stringify(prev)),start:pr.start,finish:pr.finish}].concat(DB.baseHist[pid]||[]).slice(0,6);
     DB.master.acts=keep.concat(add);
+    DB.invPhase=DB.invPhase||{};if(I.ipCode)DB.invPhase[pid]={code_type:I.ipCode,map:impIpMap(I,rows)};else delete DB.invPhase[pid];
     const st=add.map(a=>a.bs).sort()[0],fi=add.map(a=>a.bf).sort().pop();
     if(st)pr.start=st;if(fi)pr.finish=fi;
     logChange(`Imported ${add.length} baseline activities into ${pr.short} from ${I.file}`);
@@ -23242,6 +23275,7 @@ document.addEventListener('change',e=>{const el=e.target;
   if(el.matches('[data-dchart]')){deckState().charts=el.checked;return}
   if(['dtitle','dsub','dwho','drows'].includes(el.name)){const D=deckState();D[{dtitle:'title',dsub:'sub',dwho:'who',drows:'rows'}[el.name]]=el.name==='drows'?+el.value:el.value;return}
   if(el.matches('[data-branch]')&&state.imp){state.imp.branches=state.imp.branches||{};state.imp.branches[el.dataset.branch]=el.checked;renderImport();return}
+  if(el.matches('[data-impip]')&&state.imp){state.imp.ipMap=state.imp.ipMap||{};state.imp.ipMap[el.dataset.impip]=el.value;renderImport();return}
   if(el.matches('[data-impcls]')&&state.imp){state.imp.clsOn=state.imp.clsOn||{};state.imp.clsOn[el.dataset.impcls]=el.checked;renderImport();return}
   if(el.matches('[data-imp]')&&state.imp){const n=el.name;state.imp[n]=el.type==='checkbox'?el.checked:(['lvl','minBH','limit'].includes(n)?+el.value:el.value);renderImport();return}
   if(el.matches('[data-cityfor]')){const c=el.form.elements.city;c.innerHTML=opt(DB.master.cities.filter(x=>x.region===el.value).map(x=>[x.id,x.name]),'')}if(el.matches('[data-rolefor]'))toggleAccess()});
