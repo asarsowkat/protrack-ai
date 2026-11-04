@@ -60,6 +60,14 @@
     document.querySelector('#mtTable [data-comatpo]').click();await new Promise(r=>setTimeout(r,200));ok('22. ... in the payment terms window',/Material PO/.test($('#sheet').innerText)&&/Paid at \(stage\)/.test($('#sheet').innerText));closeDrawer();
     await loadLib(LIBS.xlsx);saved=[];await coExcel('QOT');const wb=XLSX.read(await saved[0].b.arrayBuffer(),{type:'array'});
     ok('23. The Excel report has the material POs, the cost heads and the reconciliation bridge',['Material POs','Cost heads','Reconciliation bridge'].every(n=>wb.SheetNames.includes(n)));
+    /* v3.55: the Method and Forecast by source sheets */
+    const sh=n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1}),Me=sh('Method'),Sm=sh('Summary'),v=s=>{const r=Me.find(x=>String(x[0]||'').startsWith(s+'. '));return r?+r[2]||0:NaN},near=(a,b)=>Math.abs(a-b)<0.02,sm=s=>+(Sm.find(x=>x[0]===s)||[])[1];
+    const FQ3=coForecast('QOT'),parts=['3a','3b','3c','3d','3e','3f'].reduce((t,k)=>t+v(k),0);
+    ok('25. The Method sheet adds up (3 = 3a…3f, 4 = 2 + 3, 5 = 1 − 4, 6 = 2 − 6a − 6b − 6c) and agrees with the Summary',wb.SheetNames[1]==='Method'&&near(parts,v('3'))&&near(v('4'),v('2')+v('3'))&&near(v('5'),v('1')-v('4'))&&near(v('6'),v('2')-v('6a')-v('6b')-v('6c'))&&near(v('4'),sm('Forecast at completion'))&&near(v('3'),FQ3.remainingH/100),
+      {s3:v('3'),parts,fac:v('4'),summary:sm('Forecast at completion')});
+    const Fs=sh('Forecast by source'),hd=Fs[3],tr2=Fs.find(r=>r[0]==='Total'),body=Fs.slice(4,Fs.indexOf(tr2)),ms3=hd.slice(3);
+    ok('26. Forecast by source: one row per source, each month adds up to the forecast, and the total equals the forecast remaining',body.length===Object.keys(FQ3.srcF).length&&ms3.every((m,i)=>near(body.reduce((t,r)=>t+(+r[3+i]||0),0),+tr2[3+i])&&near(+tr2[3+i],(FQ3.forecast[m]||0)/100))&&near(+tr2[2],FQ3.remainingH/100),
+      {rows:body.length,sources:Object.keys(FQ3.srcF).length,total:tr2[2],remaining:FQ3.remainingH/100});
     const pm=U.find(u=>u.role==='pm'&&accessIds(u).includes('QOT'));as(pm.id);
     ok('24. A project manager reads the material PO terms but cannot change them or the head treatments',/costing engineers/.test(err(()=>coMatPoSaveLocal('QOT',Q[0].no,{value:Q[0].s.value,milestones:Q[0].s.milestones},'')))&&/keep this project/.test(err(()=>coHeadsSaveLocal('QOT',{},true,''))));
   }catch(x){ok('The checks ran to the end',false,x.message+' '+(x.stack||'').split('\n')[1])}

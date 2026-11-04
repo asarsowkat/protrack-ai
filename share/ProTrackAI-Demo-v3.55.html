@@ -9149,7 +9149,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.54';
+const APP_VERSION='3.55';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -9229,6 +9229,7 @@ function navHTML(views){
       <button type="button" class="nav-top" data-navgrp="${d.k}" aria-expanded="${open}">${icon(d.ic)}<span>${esc(d.label)}</span>${chev}</button>
       <div class="nav-sub" ${open?'':'hidden'}>${vis.map(({it,i})=>{const key=`${d.k}:${i}`;
         if(it.plan)return `<button type="button" class="nav-item planned" disabled aria-disabled="true" title="${esc(label(it)+': '+(it.note||'planned, not available yet'))}"><span>${label(it)}</span><span class="nav-pill">Planned</span></button>`;
+        if(it.action==='rasa')return `<button type="button" class="nav-item" data-rasaopen="1"><span>${label(it)}</span></button>`;
         return `<button type="button" class="nav-item" data-go="${it.v}" data-navkey="${key}"${it.rep?` data-navrep="${it.rep}"`:''}${it.tab?` data-navtab="${it.tab}"`:''}${it.sec?` data-navsec="${it.sec}"`:''} ${key===act?'aria-current="page"':''}><span>${label(it)}</span></button>`}).join('')}</div>
     </div>`}).join('');
 }
@@ -20754,8 +20755,40 @@ function coSheets(pid){
     ['Forecast remaining cash-out',coN(F.remainingH),`PO milestones ${coN(F.outPo)}; other lines ${coN(F.outOther)}`],['Forecast at completion',coN(F.fac),'actual + forecast remaining'],['Budget headroom (− = overrun)',F.headroom==null?'':coN(F.headroom),''],
     ['Forecast budget utilization %',F.utilF??'',''],['Actual budget utilization %',F.utilA??'',''],['Outstanding PO payment obligations',coN(F.outPo),''],['Status',CO_STATUS[F.status][0],F.flags.map(f=>CO_STATUS[f][0]).join(', ')],
     ['Unallocated actual cash-out',coN(F.unalloc),`tolerance ${coN(F.tol)}`]];
+  /* v3.55: the calculation step by step with this project's figures, each step pointing to the sheet that backs it up */
+  const ln=(a,b,c,d)=>[a,b,c,d||''],pc=v=>v==null?'':v+'%';
+  S['Method']=[...H,['Step','How it is calculated','Value (SAR)','Backup'],
+    ln('1. Approved current budget','Rev-0 budget + approved supplements, from the latest monthly cost report released up to the cutoff',B.ok?coN(B.amount):'Not configured',B.ok?`${B.ref} · sheet Budget`:'no released cost report'),
+    ln('2. Actual cumulative cash-out',`Finance's cumulative cash paid on the project at the cutoff (${perLabel('month',F.cutoff)}); each month's actual = this cumulative − the previous month's; ${F.openingVerified?'a zero opening is verified':'the first Finance figure is an opening balance'}`,coN(F.actualH),'sheets Monthly cash-out, Uploads and corrections'),
+    ln('3a. Subcontract PO milestones still to pay','Sum of the net of each unpaid milestone (gross − retention or deduction), at its invoice or planned date + the payment days',coN(F.outSub),'sheet PO payment schedule'),
+    ln('3b. Material PO milestones still to pay','Sum of the net of each unpaid milestone, at its Material tracking stage date or the P6 TCC / final acceptance (actual once done, else the latest P6 forecast) + the payment days',coN(F.outMat),'sheet Material POs'),
+    ln('3c. Cost report heads','Sum of (EAC − actual) of the heads not covered by POs, spread evenly from the month after the cutoff to the P6 forecast finish',coN(F.outCost),`sheet Cost heads · spread to ${F.P6.finish||'—'} (${F.P6.src})`),
+    ln('3d. Not yet ordered','Sum of the ETC of the PO heads (cost not yet on a PO), spread the same way',coN(F.outUnord),!F.heads.ok?'':F.heads.unordered?'sheet Cost heads (ETC)':'switched off for this project'),
+    ln('3e. Other cash-out lines','Sum of the remaining amounts of the lines covered neither by a PO nor by a cost report head, spread over their months',coN(F.outOther),'sheet Other lines'),
+    ln('3f. Cost booked, not yet paid','When the difference in step 6 is negative (Finance paid less than the cost booked): the gap, in the month after the cutoff',coN(F.payable),'sheet Reconciliation bridge'),
+    ln('3. Forecast remaining cash-out','3a + 3b + 3c + 3d + 3e + 3f',coN(F.remainingH),'sheet Forecast by source, month by month'),
+    ln('4. Forecast at completion','2 + 3',coN(F.fac)),
+    ln('5. Budget headroom (− = overrun)','1 − 4',F.headroom==null?'':coN(F.headroom)),
+    ln('5a. Forecast budget utilization','4 ÷ 1',pc(F.utilF)),
+    ln('5b. Actual budget utilization','2 ÷ 1',pc(F.utilA)),[],
+    ['Reconciliation: is Finance\'s actual explained by the records?'],
+    ln('6a. Paid PO milestones','Milestones marked paid, with their evidence',coN(F.paidPo),'sheets PO payment schedule, Material POs'),
+    ln('6b. Cost booked on the cost report heads','Actual of the heads in step 3c, latest released cost report',coN(F.booked),'sheet Cost heads'),
+    ln('6c. Other lines, paid to date','',coN(F.paidOther),'sheet Other lines'),
+    ln('6. Difference','2 − 6a − 6b − 6c',coN(F.diff),'sheet Reconciliation bridge'),
+    ln('6d. PO milestones due, not marked paid','Expected on or before the cutoff and not marked paid',coN(F.dueUnmarked),'sheet Exceptions'),
+    ln('6e. Unexplained','When 6 is positive: 6 − 6d; flagged above the tolerance (1% of step 2, at least SAR 100,000)',coN(F.unexplained),`tolerance ${coFull(F.tol)}`),
+    ln('7. Cross-check with the cost report','Cost report EAC without the excluded heads; the gap (4 − this) is noted when it is over 5%',coN(F.eacCmp),F.eacGap==null?'':`gap ${coFull(F.eacGap)}`),[],
+    ln('8. Status',CO_STATUS[F.status][0],'','The first that applies: Budget Not Configured, Actual Overrun (2 > 1), Forecast Overrun (4 > 1), Forecast Incomplete, Reconciliation Required, Within Budget'),
+    ln('','All that apply: '+F.flags.map(f=>CO_STATUS[f][0]).join(', '),'',F.incomplete.length+F.recon.length+F.exceptions.length?'sheet Exceptions':''),[],
+    ['Money is added in whole halalas, so the totals are exact. No scenario is applied, and nothing is capped to meet the budget.']];
   S['Monthly cash-out']=[...H,['Month','Planned (baseline)','Actual','Forecast','Cumulative planned','Cumulative actual','Cumulative actual + forecast','Notes'],
     ...F.months.map(r=>[r.m,coN(r.planned),r.opening?'opening balance':coN(r.actual),r.forecast==null?'':coN(r.forecast),coN(r.cumPlanned),coN(r.cumActual),coN(r.cumForecast),r.flags.map(f=>f.t).join(' · ')])];
+  /* v3.55: the forecast month by month, one row per source (each PO, the cost report heads, each other line) */
+  {const ms=Object.keys(F.forecast).sort(),keys=Object.keys(F.srcF).sort(),tot=k=>Object.values(F.srcF[k]).reduce((a,b)=>a+b,0);
+    const kind=k=>/^Material PO /.test(k)?'Material PO (3b)':/^Other: /.test(k)?'Other cash-out line (3e)':k==='Cost booked, not yet paid'?'Payable (3f)':/^Not yet ordered/.test(k)?'Cost report ETC (3d)':/cost report|EAC/i.test(k)?'Cost report heads (3c)':'Subcontract PO (3a)';
+    S['Forecast by source']=[...H,['Source','Type (Method step)','Total',...ms],...keys.map(k=>[k,kind(k),coN(tot(k)),...ms.map(m=>coN((F.srcF[k]||{})[m]||0))]),
+      ['Total','',coN(keys.reduce((t,k)=>t+tot(k),0)),...ms.map(m=>coN(F.forecast[m]||0))],[],['Check: the total equals the forecast remaining cash-out (Method, step 3)','',coN(F.remainingH)]]}
   const past=F.months.filter(r=>r.m<=F.cutoff);
   S['Actual vs plan']=[...H,['Month','Planned','Actual','Actual − planned'],...past.map(r=>[r.m,coN(r.planned),r.opening?'opening balance':coN(r.actual),r.actual==null?'':coN(r.actual-r.planned)])];
   S['Reconciliation']=[...H,['Month','Planned','Actual','Latest forecast for the month','Actual − planned','Actual − forecast'],...past.map(r=>[r.m,coN(r.planned),r.opening?'opening balance':coN(r.actual),coN(r.sched),r.actual==null?'':coN(r.actual-r.planned),r.actual==null?'':coN(r.actual-(r.sched||0))]),[],
@@ -20793,6 +20826,7 @@ async function coPdf(pid){
     doc.setFontSize(13);doc.text(st(H[0][0]),12,12);doc.setFontSize(8);doc.text(doc.splitTextToSize(st(H[1][0]),273),12,18);
     let y=26;const tbl=(title,rows,head)=>{if(y>170){doc.addPage();y=14}doc.setFontSize(10);doc.text(title,12,y);doc.autoTable({startY:y+2,head:[head.map(st)],body:rows.map(r=>r.map(fmtc)),styles:{fontSize:7,cellPadding:1},headStyles:{fillColor:[36,80,138]},margin:{left:12,right:12}});y=doc.lastAutoTable.finalY+8};
     tbl('Key figures (SAR)',S['Summary'].slice(4),S['Summary'][3]);
+    tbl('How the forecast is built (the Excel export has every backup sheet)',S['Method'].slice(4).filter(r=>r.length===4),S['Method'][3]);
     tbl('Monthly cash-out (SAR)',S['Monthly cash-out'].slice(4).map(r=>r.slice(0,7)),S['Monthly cash-out'][3].slice(0,7));
     tbl('Approved budget (released cost reports)',S['Budget'].slice(4).filter(r=>r.length),S['Budget'][3]);
     tbl('PO payment schedule',S['PO payment schedule'].slice(4).map(r=>[r[0],r[1],r[5],r[8],r[11],r[15],r[17],r[20]]),['PO','Supplier','Milestone','% of PO','Net','Expected payment','Status','Evidence']);
