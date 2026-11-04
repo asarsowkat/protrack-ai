@@ -9149,7 +9149,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.55';
+const APP_VERSION='3.56';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -10892,7 +10892,7 @@ function answerCore(q){
     const ps=scopeProjects().map(p=>({p,b:billing(p,ASOF)})).filter(x=>x.b.contract);
     if(!ps.length)return NOEV('No price weighting loaded for this scope, so nothing can be invoiced yet. Load the P6 schedule with its price weighting resource.');
     const T=ps.reduce((t,x)=>({c:t.c+x.b.contract,g:t.g+x.b.billable,h:t.h+x.b.retNet,n:t.n+x.b.net,r:t.r+x.b.recovered}),{c:0,g:0,h:0,n:0,r:0});
-    return `<p>Net invoiceable to date is <b>${sar(T.n)}</b>: gross billable ${sar(T.g)} less retention held ${sar(T.h)}${T.r?` and advance recovery ${sar(T.r)}`:''}, against a contract price of ${sar(T.c)}.</p>
+    return `<p>Invoiceable to date is <b>${sar(T.g)}</b> gross billable, against a contract price of ${sar(T.c)}. Less retention held ${sar(T.h)}${T.r?` and advance recovery ${sar(T.r)}`:''}, the net payable is ${sar(T.n)}.</p>
       <ul>${ps.slice(0,4).map(({p,b})=>`<li><b>${esc(p.short)}</b>: price progress ${pct(b.progress,0)}, billable ${sar(b.billable)}, net ${sar(b.net)}${b.rows.filter(r=>r.price&&r.capped<r.gross).length?`, capped in ${b.rows.filter(r=>r.price&&r.capped<r.gross).map(r=>r.k).join(' and ')}`:''}</li>`).join('')}</ul>
       <p class="small muted">Billing follows the contract terms, not only the schedule: phase caps hold back value until the milestone is certified.</p>${open('invoice')}`;
   }
@@ -14009,8 +14009,8 @@ function execPrefs(){
 }
 function savePrefs(){save();render()}
 function billOfSet(ks){
-  return ks.map(k=>billPosition(k.p)).reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.t.submitted,
-    ap:t.ap+x.t.approved,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
+  return ks.map(k=>billPosition(k.p)).reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.sub,
+    ap:t.ap+x.appr,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
 }
 function groupSet(ks,by){
   const key=k=>by==='sector'?k.p.sector:by==='project'?k.p.id:by==='city'?k.p.city:k.p.region;
@@ -14156,8 +14156,8 @@ function execProject(){
   ${(()=>{if(isSiteRole())return '';const X=billPosition(p);if(!X.b.contract&&!X.t.n)return '';
     return `<section class="g g-kpi">
       <div class="panel kpi"><div class="l">Invoiceable</div><div class="v" style="font-size:22px">${sar(X.invoiceable)}</div><div class="s">Price progress ${pct(X.b.progress,0)}</div></div>
-      <div class="panel kpi"><div class="l">Invoiced</div><div class="v" style="font-size:22px">${sar(X.t.submitted)}</div><div class="s">${X.gapSub>1?`<span class="r-c">${sar(X.gapSub)} still to bill</span>`:'Up to date'}</div></div>
-      <div class="panel kpi"><div class="l">Approved</div><div class="v" style="font-size:22px">${sar(X.t.approved)}</div><div class="s">${X.gapAppr>1?`${sar(X.gapAppr)} short of invoiceable`:'Matches the claim'}</div></div>
+      <div class="panel kpi"><div class="l">Invoiced</div><div class="v" style="font-size:22px">${sar(X.sub)}</div><div class="s">${X.gapSub>1?`<span class="r-c">${sar(X.gapSub)} still to bill</span>`:'Up to date'}${X.t.relSub>0.5?`<br>plus retention released ${sar(X.t.relSub)}`:''}</div></div>
+      <div class="panel kpi"><div class="l">Approved</div><div class="v" style="font-size:22px">${sar(X.appr)}</div><div class="s">${X.gapAppr>1?`${sar(X.gapAppr)} short of invoiceable`:'Matches the claim'}</div></div>
       <div class="panel kpi"><div class="l">Collected</div><div class="v" style="font-size:22px">${sar(X.t.collected)}</div><div class="s">${X.outstanding>1?`<span class="a-c">${sar(X.outstanding)} outstanding</span>`:'Nothing outstanding'}</div></div>
     </section>`})()}
   ${milestonesHTML(p)}
@@ -14328,14 +14328,19 @@ const invOf=pid=>{const R=((DB.invoices||{})[pid])||[];if(typeof cibRegRows!=='f
 function invTotals(pid,t){
   const rows=invOf(pid),on=(r,...k)=>{if(!t)return true;const d=k.map(x=>r[x]).find(Boolean);return !d||d<=t};
   const sum=(f,...k)=>rows.filter(r=>on(r,...k)).reduce((x,r)=>x+f(r),0);
+  const rel=(f,...k)=>rows.filter(r=>invBucket(r)==='RET'&&on(r,...k)).reduce((x,r)=>x+f(r),0);
   return {n:rows.length,submitted:sum(r=>+r.sub||+r.amount||0,'sub_date','date'),approved:sum(r=>+r.appr||0,'appr_date','sub_date','date'),collected:sum(r=>+r.coll||0,'coll_date','appr_date','sub_date','date'),
+    relSub:rel(r=>+r.sub||+r.amount||0,'sub_date','date'),relAppr:rel(r=>+r.appr||0,'appr_date','sub_date','date'),
     advance:rows.filter(r=>/advance/i.test(r.type||'')).reduce((t,r)=>t+(+r.coll||+r.appr||+r.sub||0),0),last:rows.map(r=>r.date).filter(Boolean).sort().pop()};
 }
 function billPosition(p,at){
-  /* v3.26.1: on the client revised contract value, as the cash pages, with the advance; at a date when given */
-  const b=billing(p,at||ASOF),t=invTotals(p.id,at),PV=phaseValues(p.id),inv=(b.net+(b.advance||0))*(PV.f||0);
-  return {p,b,t,invoiceable:inv,
-    gapSub:inv-t.submitted, gapAppr:inv-t.approved, outstanding:t.approved-t.collected};
+  /* v3.26.1: on the client revised contract value, as the cash pages, with the advance; at a date when given.
+     v3.56: gross, as the invoices are: the value earned under the phase terms (progress up to each cap, plus the milestone
+     releases) and the advance, before retention and advance recovery. Compared with the invoices without the retention
+     releases, whose value the gross already holds. */
+  const b=billing(p,at||ASOF),t=invTotals(p.id,at),PV=phaseValues(p.id),inv=(b.billable+(b.advance||0))*(PV.f||0),sub=t.submitted-t.relSub,appr=t.approved-t.relAppr;
+  return {p,b,t,invoiceable:inv,sub,appr,
+    gapSub:inv-sub, gapAppr:inv-appr, outstanding:t.approved-t.collected};
 }
 async function invoiceTemplate(){
   const pid=impPid();if(!pid)return;
@@ -14347,7 +14352,8 @@ async function invoiceTemplate(){
               ['INV-003','2026-04-30','Progress',PHASES[2][1],940000,940000,'2026-05-03',0,'',0,'','IPC 2, under review']];
     const ws=XLSX.utils.aoa_to_sheet([[`ProTrack invoice register, ${projById(pid).short} (${pid})`],
       ['One row per invoice: the amounts submitted, approved and collected, each with its actual date. Leave approved or collected (and their dates) empty until they happen.'],
-      [`Types: Progress, Advance, Retention release, Variation, Other. Phase (progress invoices): ${PHASES.map(x=>x[1]).join(', ')}. Upload the whole register each week; it replaces the previous one.`],[],head,...eg]);
+      [`Types: Progress, Advance, Retention release, Variation, Other. Phase (progress invoices): ${PHASES.map(x=>x[1]).join(', ')}. Upload the whole register each week; it replaces the previous one.`],
+      ['Amounts are gross: the value of each invoice before retention and advance recovery (ProTrack works those out from the payment terms). VAT is left out.'],[],head,...eg]);
     ws['!cols']=head.map(h=>({wch:Math.max(15,h.length+2)}));
     const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Invoices');
     await saveFile(`ProTrack_invoices_${pid}_${ASOF}.xlsx`,new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
@@ -14454,7 +14460,7 @@ function invoiceHTML(pid){
     <div class="actions" style="margin:0"><button class="btn" type="button" data-invtpl>Download template</button><label class="btn primary" for="invfile">Upload register</label><input id="invfile" type="file" accept=".xlsx,.xls,.csv" hidden></div></div>
     <p class="small muted" style="margin:0 0 12px">The costing engineer uploads the register weekly: invoice number, amount, submitted, approved and collected, including the advance. ProTrack compares it with what the contract says is invoiceable.</p>
     <div class="g g-kpi" style="margin-bottom:6px">
-      <div class="panel kpi"><div class="l">Invoiceable to date</div><div class="v" style="font-size:22px">${sar(B.invoiceable)}</div><div class="s">After phase caps and retention</div></div>
+      <div class="panel kpi"><div class="l">Invoiceable to date</div><div class="v" style="font-size:22px">${sar(B.invoiceable)}</div><div class="s">Gross: earned under the payment terms, with the advance</div></div>
       <div class="panel kpi"><div class="l">Submitted</div><div class="v" style="font-size:22px">${sar(t.submitted)}</div><div class="s">${t.n} invoice${t.n===1?'':'s'}${t.last?`, last ${fmtD(t.last)}`:''}</div></div>
       <div class="panel kpi"><div class="l">Approved</div><div class="v" style="font-size:22px">${sar(t.approved)}</div><div class="s">${t.submitted?pct(t.approved/t.submitted,0)+' of submitted':'—'}</div></div>
       <div class="panel kpi"><div class="l">Collected</div><div class="v" style="font-size:22px">${sar(t.collected)}</div><div class="s">${t.advance?`includes advance ${sar(t.advance)}`:'—'}</div></div>
@@ -15083,13 +15089,15 @@ function cashForecast(pid){
   const advReg=R.filter(r=>invBucket(r)==='ADV').reduce((t,r)=>t+(+r.sub||+r.amount||0),0),advTerms=contract*(+B.adv.pct||0)/100,adv=Math.max(advTerms,advReg),retCap=contract*retCapPct(B)/100,lastDate=mode=>[ms('FAC',mode),ms('TCC',mode),...acts.map(a=>mode==='base'?bfOf(a,'ORG'):((rmap&&rmap[a.id]&&(rmap[a.id].ef||rmap[a.id].bf))||bfOf(a,'ORG')))].filter(Boolean).sort().pop()||p.finish||ASOF;
   const colM=d=>ym(addDays(d,pay));
   /* one run: gross invoicing by phase month by month, retention and advance recovery from the terms, releases at TCC and FAC, collection after the payment period */
-  const run=(mode,from,covered,held0,rec0,advLeft,advTot)=>{const end=ym(addDays(lastDate(mode),31)),months=monthsBetween(from,end).slice(0,96),inv={},col={},cov={...covered};let held=held0,rec=rec0;const relDone={TCC:mode==='sched'&&!!ms('TCC',mode)&&ms('TCC',mode)<from+'-01',FAC:mode==='sched'&&!!ms('FAC',mode)&&ms('FAC',mode)<from+'-01'};
+  const run=(mode,from,covered,held0,rec0,advLeft,advTot)=>{const end=ym(addDays(lastDate(mode),31)),months=monthsBetween(from,end).slice(0,96),inv={},col={},gro={},cov={...covered};let held=held0,rec=rec0;const relDone={TCC:mode==='sched'&&!!ms('TCC',mode)&&ms('TCC',mode)<from+'-01',FAC:mode==='sched'&&!!ms('FAC',mode)&&ms('FAC',mode)<from+'-01'};
     months.forEach(m=>{const e=monthEndOf(m),b=bill(e,mode);let g=0;PHASES.forEach(([k])=>{const inc=Math.max(0,b[k]-cov[k]);cov[k]=Math.max(cov[k],b[k]);g+=inc});
       const rt=Math.max(0,Math.min(g*(+B.ret.pct||0)/100,retCap-held));held+=rt;const rc=Math.max(0,Math.min(g*(+B.adv.recover||0)/100,advTot-rec));rec+=rc;let net=g-rt-rc;
       ['TCC','FAC'].forEach(t=>{const d=ms(t,mode);if(!relDone[t]&&d&&d<=e){relDone[t]=true;net+=held*(+B.ret[t.toLowerCase()]||0)/100}});
-      if(advLeft>0&&m===from){net+=advLeft;advLeft=0}
+      if(advLeft>0&&m===from){net+=advLeft;g+=advLeft;advLeft=0}
+      /* v3.56: the gross invoice too (earned value and the advance, before retention and advance recovery), as the register holds it */
+      if(g>0.5)gro[m]=(gro[m]||0)+g;
       if(net>0.5){inv[m]=(inv[m]||0)+net;const cm=colM(e);col[cm]=(col[cm]||0)+net}});
-    const left=PHASES.reduce((t,[k])=>t+Math.max(0,price[k]-cov[k]),0);return {inv,col,left,months}};
+    const left=PHASES.reduce((t,[k])=>t+Math.max(0,price[k]-cov[k]),0);return {inv,col,gro,left,months}};
   /* the baseline plan, from the contract start */
   const start=ym(p.start||acts.map(a=>a.bs).filter(Boolean).sort()[0]||ASOF);
   const plan=run('base',start,Object.fromEntries(PHASES.map(([k])=>[k,0])),0,0,advTerms,advTerms);
@@ -15151,20 +15159,23 @@ function renderCash(){
     <p class="small muted" style="margin:8px 0 0">Each phase is worth its share of the client contract value by the P6 price weights; each phase is billed on progress up to its cap, with its releases at the milestones; retention and the advance recovery are deducted from each invoice and the retention released at TCC and FAC, as set in the payment terms. Register amounts are taken as invoiced to and paid by the client; the retention and advance already deducted from past invoices are worked out from the terms. Total, actual and forecast ${sar(Rw.length?Rw[Rw.length-1].cum:0)}; baseline plan ${sar(Rw.length?Rw[Rw.length-1].cumPlan:0)}.</p></section>`;
   cashChart(Rw,now);invChartDraw(invMonthly(pid,F));
 }
-/* v3.16: monthly invoicing, the project manager's key figure. Planned invoice: the net invoice the original baseline earns
+/* v3.16: monthly invoicing, the project manager's key figure. Planned invoice: the invoice the original baseline earns
    each month under the payment terms (the advance at the start). Invoiceable: the same on the progress actually reached by
    each month end (daily reports, and the updated schedule where loaded). Submitted and approved: the register, by their
    actual dates (the invoice date where an older register has none). Forecast invoicing: the balance of each phase on the
-   latest updated schedule. A month counts as invoiced when an invoice was submitted in a month with invoiceable value. */
+   latest updated schedule. A month counts as invoiced when an invoice was submitted in a month with invoiceable value.
+   v3.56: all gross, as the register and the Client Invoice Builder hold the invoices: before retention and advance
+   recovery (they are in the cash-inflow forecast). The retention releases are left out of submitted and approved: the
+   gross already holds their value. */
 function invMonthly(pid,F){
-  const p=projById(pid),B=billOf(p),PV=phaseValues(pid),R=invOf(pid),acts=ACTS.filter(a=>a.p===pid),now=ym(ASOF);
+  const p=projById(pid),B=billOf(p),PV=phaseValues(pid),R=invOf(pid).filter(r=>invBucket(r)!=='RET'),acts=ACTS.filter(a=>a.p===pid),now=ym(ASOF);
   const start=ym(p.start||acts.map(a=>a.bs).filter(Boolean).sort()[0]||ASOF),advT=PV.cv*(+B.adv.pct||0)/100,sub={},appr={},ivb={};
   R.forEach(r=>{const s=+r.sub||+r.amount||0;if(s>0){const m=ym(r.sub_date||r.date||ASOF);sub[m]=(sub[m]||0)+s}if(+r.appr>0){const m=ym(r.appr_date||r.sub_date||r.date||ASOF);appr[m]=(appr[m]||0)+(+r.appr)}});
-  let prev=0;if(start<=now)monthsBetween(start,now).forEach(m=>{const c=billing(p,m===now?ASOF:monthEndOf(m)).net*PV.f+advT;ivb[m]=Math.max(0,c-prev);prev=Math.max(prev,c)});
-  const ms=[...new Set([...Object.keys(F.plan.inv),...Object.keys(sub),...Object.keys(appr),...Object.keys(ivb),...Object.keys(F.fc.inv)])].sort();
+  let prev=0;if(start<=now)monthsBetween(start,now).forEach(m=>{const c=billing(p,m===now?ASOF:monthEndOf(m)).billable*PV.f+advT;ivb[m]=Math.max(0,c-prev);prev=Math.max(prev,c)});
+  const ms=[...new Set([...Object.keys(F.plan.gro),...Object.keys(sub),...Object.keys(appr),...Object.keys(ivb),...Object.keys(F.fc.gro)])].sort();
   let cP=0,cI=0,cS=0,cA=0;
-  const rows=ms.map(m=>{const pl=F.plan.inv[m]||0,past=m<=now;cP+=pl;if(past){cI+=ivb[m]||0;cS+=sub[m]||0;cA+=appr[m]||0}
-    return {m,plan:pl,ivb:past?(ivb[m]||0):null,sub:past?(sub[m]||0):null,appr:past?(appr[m]||0):null,fc:m>=now&&F.mode==='running'?(F.fc.inv[m]||0):m>=now&&F.mode==='new'&&F.fc!==F.plan?(F.fc.inv[m]||0):0,
+  const rows=ms.map(m=>{const pl=F.plan.gro[m]||0,past=m<=now;cP+=pl;if(past){cI+=ivb[m]||0;cS+=sub[m]||0;cA+=appr[m]||0}
+    return {m,plan:pl,ivb:past?(ivb[m]||0):null,sub:past?(sub[m]||0):null,appr:past?(appr[m]||0):null,fc:m>=now&&F.mode==='running'?(F.fc.gro[m]||0):m>=now&&F.mode==='new'&&F.fc!==F.plan?(F.fc.gro[m]||0):0,
       cumPlan:cP,cumIvb:past?cI:null,cumSub:past?cS:null,cumAppr:past?cA:null}});
   const done=rows.filter(r=>r.m<now),due=done.filter(r=>r.ivb>0.5),hit=due.filter(r=>r.sub>0.5),upto=rows.filter(r=>r.m<=now),sum=k=>upto.reduce((t,r)=>t+(+r[k]||0),0);
   return {rows,now,thisM:rows.find(r=>r.m===now)||{m:now,plan:0,ivb:0,sub:0,appr:0},planToDate:sum('plan'),ivbToDate:sum('ivb'),subToDate:sum('sub'),apprToDate:sum('appr'),months:due.length,monthsHit:hit.length,missed:due.filter(r=>r.sub<=0.5).map(r=>r.m),last:Object.keys(sub).sort().pop()||null}}
@@ -15182,7 +15193,7 @@ function invMonthlyHTML(pid,F){
       <td class="n ${d==null?'':d<-0.5?'r-c':d>0.5?'g-c':''}">${d==null||Math.abs(d)<=0.5?'—':(d>0?'+':'')+sar(d)}</td><td class="n">${c(r.fc)}</td><td class="n">${sar(r.cumPlan)}</td><td class="n">${r.cumIvb==null?'—':sar(r.cumIvb)}</td><td class="n">${r.cumSub==null?'—':sar(r.cumSub)}</td><td class="n">${r.cumAppr==null?'—':sar(r.cumAppr)}</td></tr>`}).join('')}
     <tr><td><b>To date</b></td><td class="n"><b>${sar(M.planToDate)}</b></td><td class="n"><b>${sar(M.ivbToDate)}</b></td><td class="n"><b>${sar(M.subToDate)}</b></td><td class="n"><b>${sar(M.apprToDate)}</b></td><td class="n ${M.subToDate-M.ivbToDate<-0.5?'r-c':''}"><b>${sar(M.subToDate-M.ivbToDate)}</b></td><td colspan="5"></td></tr>
     </tbody></table></div>
-    <p class="small muted" style="margin:8px 0 0">Planned invoice: the net invoice the original baseline earns each month under the payment terms, the advance at the start. Invoiceable: the same on the progress actually reached by each month end (daily reports, and the updated schedule where loaded). Submitted and approved: the invoice register, by their actual dates. Forecast invoicing: the balance of each phase on the latest updated schedule. A negative Submitted − invoiceable is value earned but not yet invoiced.</p></section>`}
+    <p class="small muted" style="margin:8px 0 0">All amounts are gross, as on the invoices: before retention and advance recovery (those are in the cash-inflow forecast above). Planned invoice: what the original baseline earns each month under the payment terms (progress up to each phase's cap, plus the milestone releases), the advance at the start. Invoiceable: the same on the progress actually reached by each month end (daily reports, and the updated schedule where loaded). Submitted and approved: the invoice register and the Client Invoice Builder, by their actual dates; retention release invoices are left out, since the gross already holds their value. Forecast invoicing: the balance of each phase on the latest updated schedule. A negative Submitted − invoiceable is value earned but not yet invoiced.</p></section>`}
 function invChartDraw(M){const el=$('#invChart');if(!el||typeof Chart==='undefined')return;const rows=M.rows.filter(r=>r.m<=addDays(monthEndOf(M.now),190).slice(0,7));
   const Gy=css('--bar'),B=css('--accent'),G=css('--green'),A=css('--amber');
   charts.push(new Chart(el,{type:'bar',data:{labels:rows.map(r=>perLabel('month',r.m)),datasets:[{label:'Planned invoice',data:rows.map(r=>Math.round(r.plan)),backgroundColor:Gy},
@@ -21779,7 +21790,7 @@ const REPORTS={
       if(b.held>0.5)rows.push({proj:p.short,phase:`Separate retention (${b.B.ret.pct}% of invoices, ${b.B.ret.cap==null||b.B.ret.cap===''?'no cap':'cap '+b.B.ret.cap+'% of price'})`,billable:-b.held,relNote:b.released?`${sar(b.released)} released`:'Released at TCC and FAC'});
       if(b.released>0.5)rows.push({proj:p.short,phase:'Retention released',billable:b.released,relNote:`${b.tcc?'TCC achieved':''}${b.fac?', FAC achieved':''}`});
       if(b.recovered)rows.push({proj:p.short,phase:'Advance recovery',billable:-b.recovered,relNote:`${b.B.adv.recover}% of each invoice`});
-      rows.push({proj:p.short,phase:'Net invoiceable to date',billable:b.net,relNote:b.recovered?'After advance recovery':'',total:true});
+      rows.push({proj:p.short,phase:'Net payable to date',billable:b.net,relNote:b.recovered?'After retention and advance recovery':'After retention',total:true});
     });
     const net=ps.reduce((t,x)=>t+x.b.net,0),gross=ps.reduce((t,x)=>t+x.b.billable,0),held=ps.reduce((t,x)=>t+x.b.retNet,0);
     return {cols:[C('Project','proj'),C('Phase or adjustment','phase'),C('Contract price','price','sar'),C('Price progress','pct','pct'),C('Earned price','gross','sar'),C('Cap','cap','pct'),C('Capped at','capped','sar'),C('Milestone release','rel','sar'),C('Condition','relNote'),C('Billable','billable','sar')],rows,
@@ -21787,7 +21798,7 @@ const REPORTS={
         {label:'Earned price',data:ps.flatMap(x=>x.b.rows.filter(r=>r.price).map(r=>Math.round(r.gross/1e3))),backgroundColor:pal.bar},
         {label:'Billable now',data:ps.flatMap(x=>x.b.rows.filter(r=>r.price).map(r=>Math.round(r.billable/1e3))),backgroundColor:pal.accent}]},
         options:{scales:{y:{beginAtZero:true,title:{display:true,text:'SAR thousands'}}}}}),
-      notes:`Gross billable ${sar(gross)}, retention held ${sar(held)}, net invoiceable ${sar(net)}. Price comes from the P6 weighting resource loaded by planning, which carries the client price schedule; cost and manhours from the Master Manpower Costing Sheet are not used here. Each phase bills on price progress up to its cap, with the balance released when its milestone is achieved. Where a contract also deducts a separate retention from each invoice, it is shown as its own line; if the phase split is the only holdback, retention stays at zero. Advance payment is recovered as a percentage of each invoice until it is fully repaid. Payment terms are set per project in Settings.`}}},
+      notes:`Gross billable ${sar(gross)}, retention held ${sar(held)}, net payable ${sar(net)}. Invoiceable is the gross billable, as on the invoices. Price comes from the P6 weighting resource loaded by planning, which carries the client price schedule; cost and manhours from the Master Manpower Costing Sheet are not used here. Each phase bills on price progress up to its cap, with the balance released when its milestone is achieved. Where a contract also deducts a separate retention from each invoice, it is shown as its own line; if the phase split is the only holdback, retention stays at zero. Advance payment is recovered as a percentage of each invoice until it is fully repaid. Payment terms are set per project in Settings.`}}},
   cash:{money:1,sheet:'Invoicing and collection',title:'Invoicing and collection against invoiceable',desc:'Invoice register, shortfalls and outstanding collection',build(){
     const rows=[];
     scopeProjects().forEach(p=>{

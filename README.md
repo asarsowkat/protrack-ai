@@ -168,6 +168,16 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.56
+
+- **Invoiceable and the invoices on one basis: gross.** Invoiceable everywhere is now the value earned under the phase payment terms plus the advance, before retention and advance recovery. That is the basis of the invoice register and the Client Invoice Builder, which records each invoice at its gross value. The figure appears on the project Home page, the portfolio billing tiles, Monthly invoicing (planned, invoiceable and forecast invoicing), the invoice register page and RASA.
+  - Before, Home and Monthly invoicing showed invoiceable net of retention and advance recovery. With retention or an advance, invoices looked over-billed by those deductions.
+  - Retention release invoices are left out of submitted and approved when compared with invoiceable, because the gross already holds their value; they are shown apart.
+  - Retention, advance recovery and the net payable stay in the cash-inflow forecast and the Invoiceable value report (now "Net payable to date").
+  - The invoice register template says the amounts are gross.
+
+  No server change. `tests/cash_inflow_demo.js` (32 checks). See RELEASE-NOTES-v3.56.md.
+
 ## Version 3.55
 
 - **Cash-out forecast: the calculation and its backup in the export.** Excel export of one project, new sheets:
