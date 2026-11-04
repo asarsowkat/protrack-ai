@@ -10,8 +10,9 @@
     const P='RMX',p=projById(P);state.impPid=P;
     // the template
     let blob=null;const of=saveFile;saveFile=async(n,b)=>{blob=b};await invoiceTemplate();saveFile=of;
-    const head=XLSX.utils.sheet_to_json(XLSX.read(await blob.arrayBuffer(),{type:'array'}).Sheets.Invoices,{header:1})[4];
+    const tpl=XLSX.utils.sheet_to_json(XLSX.read(await blob.arrayBuffer(),{type:'array'}).Sheets.Invoices,{header:1}),head=tpl.find(r=>r.includes('Invoice number'));
     ok('The template has the phase and the actual submission, approval and collection dates',['Phase','Submission date','Approval date','Collection date'].every(h=>head.includes(h)),head);
+    ok('The template says the amounts are gross, before retention and advance recovery (v3.56)',tpl.some(r=>/Amounts are gross/.test(r[0]||'')));
     // reading a register
     const rows=[['INV-1','2026-03-01','Progress',PHASES[0][1],100,100,'2026-03-02',90,'2026-03-20',90,'2026-04-25',''],
       ['INV-2','2026-04-01','Progress','Construction',200,200,'2026-04-02',150,'',0,'',''],
@@ -56,9 +57,19 @@
     blob=null;saveFile=async(n,b)=>{blob=b};await cashExport(P);saveFile=of;const xw=XLSX.read(await blob.arrayBuffer(),{type:'array'});
     ok('Export: Monthly invoicing, Cash inflow and Phases sheets',xw.SheetNames.join()==='Monthly invoicing,Cash inflow,Phases');
     const mi=XLSX.utils.sheet_to_json(xw.Sheets['Monthly invoicing'],{header:1})[3];ok('The Monthly invoicing sheet has planned, invoiceable, submitted and approved columns',['Planned invoice (original baseline)','Invoiceable (actual progress)','Submitted (register)','Approved (register)'].every(h=>mi.includes(h)),mi);
-    const M=invMonthly(P,cashForecast(P)),subR=R.reduce((t,r)=>t+((r.sub_date||r.date)<=ASOF?(+r.sub||+r.amount||0):0),0),apR=R.reduce((t,r)=>t+(+r.appr||0),0);
-    ok('Monthly invoicing: submitted and approved to date equal the register',Math.abs(M.subToDate-subR)<1&&Math.abs(M.apprToDate-apR)<1,{sub:M.subToDate,subR});
-    ok('Monthly invoicing: planned to date follows the baseline plan and invoiceable never goes negative',M.rows.every(r=>r.plan>=0&&(r.ivb==null||r.ivb>=0))&&Math.abs(M.planToDate-Object.entries(cashForecast(P).plan.inv).filter(([m])=>m<=ym(ASOF)).reduce((t,[,v])=>t+v,0))<1);
+    const RW=R.filter(r=>invBucket(r)!=='RET'),M=invMonthly(P,cashForecast(P)),subR=RW.reduce((t,r)=>t+((r.sub_date||r.date)<=ASOF?(+r.sub||+r.amount||0):0),0),apR=RW.reduce((t,r)=>t+(+r.appr||0),0);
+    ok('Monthly invoicing: submitted and approved to date equal the register (without the retention releases)',Math.abs(M.subToDate-subR)<1&&Math.abs(M.apprToDate-apR)<1,{sub:M.subToDate,subR});
+    ok('Monthly invoicing: planned to date follows the baseline plan (gross) and invoiceable never goes negative',M.rows.every(r=>r.plan>=0&&(r.ivb==null||r.ivb>=0))&&Math.abs(M.planToDate-Object.entries(cashForecast(P).plan.gro).filter(([m])=>m<=ym(ASOF)).reduce((t,[,v])=>t+v,0))<1);
+    /* v3.56: one basis, gross, for invoiceable and the invoices */
+    {const b1=JSON.parse(JSON.stringify(p.billing||{}));p.billing=Object.assign({},p.billing||{},{v:2,ret:{pct:10,cap:5,tcc:50,fac:50},adv:{pct:10,recover:10}});
+    const bx=billing(p,ASOF),BP=billPosition(p),Mx=invMonthly(P,cashForecast(P)),gIvb=(bx.billable+bx.advance)*PV.f,nIvb=(bx.net+bx.advance)*PV.f;p.billing=b1;
+    ok('v3.56: with retention and an advance, invoiceable is gross (earned under the terms, plus the advance), on the Home page and in Monthly invoicing alike',near(BP.invoiceable,gIvb,2)&&near(Mx.ivbToDate,gIvb,2)&&gIvb>nIvb+1,{home:BP.invoiceable,monthly:Mx.ivbToDate,gross:gIvb,net:nIvb})}
+    const BP=billPosition(p);
+    const Fg=cashForecast(P),gro=o=>Object.values(o.gro).reduce((a,b)=>a+b,0),net=o=>Object.values(o.inv).reduce((a,b)=>a+b,0),rp=+billOf(p).ret.pct||0,ap=+billOf(p).adv.pct||0;
+    ok('v3.56: the baseline plan in gross adds up to the client contract value plus the advance',near(gro(Fg.plan),Fg.contract*(1+ap/100),Fg.contract*0.001+2)&&near(net(Fg.plan),Fg.contract,Fg.contract*rp/100+2),{gross:gro(Fg.plan),contract:Fg.contract,adv:ap});
+    const keepR=DB.invoices[P];DB.invoices[P]=[...keepR,{no:'RR-TEST',date:'2026-08-01',type:'Retention release',sub:12345,amount:12345,sub_date:'2026-08-01',appr:12345,appr_date:'2026-08-05'}];
+    const M2=invMonthly(P,cashForecast(P)),BP2=billPosition(p);DB.invoices[P]=keepR;
+    ok('v3.56: a retention release invoice is left out of submitted and approved (the gross holds its value) and shown apart',near(M2.subToDate,M.subToDate)&&near(M2.apprToDate,M.apprToDate)&&near(BP2.sub,BP.sub)&&near(BP2.t.relSub,BP.t.relSub+12345));
     ok('Months invoiced counts the past months with invoiceable value that had an invoice',M.monthsHit<=M.months&&M.missed.length===M.months-M.monthsHit);
     ok('The page shows Monthly invoicing with its chart and a download button',/Monthly invoicing/.test($('#view').innerText)&&!!$('#invChart'));
     go('inv');await wait(300);ok('The invoice register page shows the status by phase and the dates',/Invoicing status by phase/.test($('#view').innerText)&&/Type and phase/.test($('#view').innerText));
