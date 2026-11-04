@@ -1,8 +1,9 @@
-/* ProTrackAI v3.57: the invoicing phase from a P6 activity code. Acceptance checks for the demo page: reading the activity codes
+/* ProTrackAI v3.57 and v3.58: the invoicing phase from a P6 activity code. Acceptance checks for the demo page: reading the activity codes
    of a baseline XER, the code named for invoicing chosen by default, a phase suggested for each value and changed by hand,
    the phase kept on each activity and used by the invoiceable calculation over the WBS wording, values without a phase left to
    the WBS wording, the project's choice kept for the next import, a changed mapping not taken as the same file, going back to
-   the WBS wording, and the note on Invoicing status by phase.
+   the WBS wording, and the note on Invoicing status by phase; (v3.58) a revised baseline without the code (keep the phases
+   or go back to the WBS wording), and the warning for a phase with no priced activity.
    How to run: open demo.html, sign in with the demo Super Admin account (U28), open the browser console and paste this whole
    file. It saves this browser's demo data first and puts it back at the end, then reloads the page. */
 (async()=>{
@@ -57,6 +58,26 @@
     /* the page */
     DB.invPhase=DB.invPhase||{};DB.invPhase[P]={code_type:'Invoice Phase',map:{}};const x=ACTS.find(a=>a.p===P&&a.id==='IPH-1010');x.iph='ENG';
     ok('15. Invoicing status by phase says where the phases come from',/the P6 activity code “Invoice Phase” \(1 activity\)/.test(invPhaseHTML(P)),invPhaseHTML(P).slice(0,600));
+    /* v3.58: a revised baseline without the project's invoicing code */
+    const xer2=xer.split('\n').filter(l=>!/^%R\t(C2\t|V[1-4]\t|T[1-4]\tC2\t)/.test(l)).join('\n');
+    DB.invPhase[P]={code_type:'Invoice Phase',map:{'Engineering design':'ENG','Equipment supply':'PRC'}};['IPH-1010','IPH-1020'].forEach((id,i)=>{A(id).iph=['ENG','PRC'][i]});
+    await handleImportFile(new File([xer2],'SAMPLE-IPH-nocode.xer'));I=state.imp;let hb=$('#impBox').innerHTML;
+    ok('16. v3.58: a file without the project\'s invoicing code says so, and keeps the phases already set by default',I.ipLost==='Invoice Phase'&&I.ipKeep===true&&!I.ipCode&&/This file has no activity code “Invoice Phase”/.test(hb)&&/Keep the phases already set/.test(hb)&&/Go back to the WBS wording/.test(hb),{lost:I.ipLost,keep:I.ipKeep,codes:I.codeTypes});
+    await runImport();
+    ok('17. ... imported with "Keep": the activities keep their phases and the project keeps its code',A('IPH-1010').iph==='ENG'&&A('IPH-1020').iph==='PRC'&&(DB.invPhase[P]||{}).code_type==='Invoice Phase',[A('IPH-1010').iph,A('IPH-1020').iph,DB.invPhase[P]]);
+    await handleImportFile(new File([xer2],'SAMPLE-IPH-nocode2.xer'));I=state.imp;I.ipKeep=false;await runImport();
+    ok('18. ... imported with "Go back to the WBS wording": the phases and the project\'s code are cleared',!A('IPH-1010').iph&&!A('IPH-1020').iph&&!(DB.invPhase||{})[P]);
+    DB.invPhase[P]={code_type:'Invoice Phase',map:{}};state.imp={rows:[{id:'X1',name:'x',path:['A'],bh:10,bs:'2026-10-01',bf:'2026-10-02'}],file:'x.xlsx',kind:'Excel / CSV',lvl:1,maxLvl:1,minBH:0,limit:10,skipDone:true,defDisc:'Civil',lvlCls:1,wres:'',brLvl:1,branches:null,clsOn:{CON:true,ENG:true,PRC:true},ipLost:'Invoice Phase',ipKeep:true,ipCode:''};
+    ok('19. ... an Excel baseline for such a project gives the same warning',/This file has no activity code “Invoice Phase”/.test(impIphHTML(state.imp,mapRows())));state.imp=null;delete DB.invPhase[P];
+    /* v3.58: a phase with no priced activity */
+    const PA=ACTS.filter(a=>a.p===P),keepIph=PA.map(a=>a.iph),keepInv=DB.invoices[P],iE=PA.findIndex(a=>priceOf(a)>0);PA.forEach((a,i)=>{a.iph=i===iE?'ENG':'CON'});
+    DB.invoices[P]=[...(keepInv||[]),{no:'GAP-TEST',date:'2026-08-01',type:'Progress',phase:'PRC',sub:1000,amount:1000,sub_date:'2026-08-01'}];
+    const nPrc=(keepInv||[]).filter(r=>invBucket(r)==='PRC').length,G=phaseGaps(P),gh=phaseGapHTML(P),ih=invPhaseHTML(P),be=billingEditor(projById(P));
+    ok('20. v3.58: the phases with no priced activity are listed, with the invoices tagged to them',G.map(g=>g.k).join()==='PRC,TC'&&G.find(g=>g.k==='PRC').inv===nPrc+1&&/No priced activity is invoiced under Procurement and supply, Testing and commissioning/.test(gh)&&gh.includes(nPrc+1+' invoice'+(nPrc?'s in the register are':' in the register is')+' tagged'),{G,gh:gh.slice(0,300)});
+    ok('21. ... the warning shows on Invoicing status by phase and on the payment terms',ih.includes('No priced activity is invoiced under')&&be.includes('No priced activity is invoiced under'));
+    PA.forEach(a=>{a.iph=null});DB.invoices[P]=keepInv;const noP=PHASES.filter(([k])=>!(phaseValues(P).raw[k]>0)).map(([k])=>k);
+    ok('22. ... and none when every phase has priced activities (or only for the phases that have none)',phaseGaps(P).map(g=>g.k).join()===noP.join()&&(noP.length||phaseGapHTML(P)===''),noP);
+    PA.forEach((a,i)=>{a.iph=keepIph[i]});
   }catch(x){ok('The checks ran to the end',false,x.message+' '+(x.stack||'').split('\n')[1])}
   finally{window.toast=keepToast;document.querySelector('#impBox[hidden]')?.remove();try{localStorage.setItem(KEY,KEYDATA)}catch(x){}}
   console.table(res);const f=res.filter(r=>r.result==='FAIL').length;console.log(`Invoicing phase from an activity code: ${res.length-f} passed, ${f} failed. Restoring the demo data and reloading…`);
