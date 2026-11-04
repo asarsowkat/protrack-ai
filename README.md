@@ -168,6 +168,15 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.55
+
+- **Cash-out forecast: the calculation and its backup in the export.** Excel export of one project, new sheets:
+  - **Method:** the forecast step by step with the project's own figures, each step naming the sheet that backs it up. Budget, actual, the six parts of the forecast remaining (subcontract POs, material POs, cost report heads, not yet ordered, other lines, payable), forecast at completion, headroom and utilization, the reconciliation with Finance, the cross-check with the cost report, and the status.
+  - **Forecast by source:** the forecast month by month, one row per source (each PO, the cost report heads, each other line), totalling the forecast remaining.
+
+  The PDF export adds the Method table after the key figures. No change to how the forecast is calculated, and no server change.
+- The RASA item in the side menu now opens the RASA assistant. `tests/cashout_p6_demo.js` (26 checks). See RELEASE-NOTES-v3.55.md.
+
 ## Version 3.54
 
 - **The Daily Productivity Report, and a preview of every report.** Each daily report produces a Daily Productivity Report in the company layout:
