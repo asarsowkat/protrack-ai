@@ -168,6 +168,14 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.58
+
+- **Two warnings on the invoicing phases.**
+  - **A baseline without the project's invoicing code.** When the project's invoicing phase came from an activity code and a revised baseline (XER without the code, or an Excel or P6 XML file) does not carry it, the import says so. It **keeps the phases already set** on the activities in the file by default; "Go back to the WBS wording" clears them. Before, the import fell back to the WBS wording without a word.
+  - **A phase with no priced activity.** The payment terms (Settings → Projects) and Invoicing status by phase list each phase with no priced activity. Its terms are not used and the contract value is shared among the other phases. The warning also counts the invoices in the register tagged to that phase, which count as invoiced beyond its value.
+
+  No server change (v56 is enough: on keeping, the import leaves `inv_phase` as it is). `tests/inv_phase_code_demo.js` (22 checks). See RELEASE-NOTES-v3.58.md.
+
 ## Version 3.57
 
 - **The invoicing phase from a P6 activity code.** At the baseline import of an XER, **Invoicing phase taken from** offers the file's activity codes (a code named for invoicing, such as "Invoice Phase", is chosen by default) or, as before, the WBS wording.
