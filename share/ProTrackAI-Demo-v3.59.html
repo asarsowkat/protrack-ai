@@ -736,6 +736,7 @@ body.pvnoscroll{overflow:hidden}
 .rasa-src b{color:var(--ink);font-weight:600;margin-inline-end:2px}.rasa-src span{display:block;margin-top:2px}
 .rasa-src.llm{border-top-color:#f59e0b}.rasa-src.llm b{color:#b45309}
 .rasa-noev{border-inline-start:3px solid #f59e0b;padding-inline-start:9px}
+.rasa-read{margin:0 0 6px}.rasa-part+.rasa-part{border-top:1px solid var(--line);margin-top:10px;padding-top:8px}.rasa-part-h{margin:0 0 4px}.rasa-dym{align-items:center}
 .rasa-doc{margin:8px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 .rasa-doc blockquote{margin:6px 0 8px;padding:2px 0;padding-inline-start:10px;border-inline-start:3px solid var(--rasa-blue);font-size:12.5px;line-height:1.5;color:var(--ink)}
 .rasa-doc mark,.rasa-src mark{background:rgba(250,204,21,.38);color:inherit;border-radius:2px;padding:0 1px}
@@ -9152,7 +9153,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.58';
+const APP_VERSION='3.59';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -10031,7 +10032,7 @@ function pmRows(){
       return s&&ap?Math.max(0,diffDays(String(s.t).slice(0,10),String(ap.t).slice(0,10))):null}).filter(x=>x!=null);
     const acts=ACTS.filter(a=>ids.has(a.p)),e=evm(acts,ASOF);
     const V=valid().filter(d=>ids.has(d.p)&&d.date>=from),g=agg(V);
-    const bp=ps.map(billPosition),inv=bp.reduce((t,x)=>t+x.invoiceable,0),sub=bp.reduce((t,x)=>t+x.t.submitted,0);
+    const bp=ps.map(p=>billPosition(p)),inv=bp.reduce((t,x)=>t+x.invoiceable,0),sub=bp.reduce((t,x)=>t+x.t.submitted,0);
     const out=bp.reduce((t,x)=>t+Math.max(0,x.outstanding),0);
     const oldest=reps.filter(d=>d.status==='Submitted'||d.status==='Reviewed').map(d=>d.date).sort()[0];
     const di=ps.map(invDiscipline),invExp=di.reduce((t,x)=>t+x.expected,0),invHit=di.reduce((t,x)=>t+x.submitted,0);
@@ -10547,7 +10548,7 @@ function rasaInsights(){
     if(['sa','exec','rm','pf','pm','plan','sm'].includes(role)){const gaps=complianceRows().filter(x=>x.missing.length>2);
       if(gaps.length)out.push({id:'gaps',sev:'insight',title:`Daily reporting has gaps on ${gaps.length} project${gaps.length>1?'s':''}`,
         text:`${gaps.slice(0,2).map(x=>`${x.p.short} is missing ${x.missing.length} days`).join('; ')}.`,rec:'Use Notify team on the Performance page.',go:'perf'})}
-    if(!site){const B=scopeProjects().map(billPosition),under=B.reduce((t,x)=>t+Math.max(0,x.invoiceable-x.t.submitted),0);
+    if(!site){const B=scopeProjects().map(p=>billPosition(p)),under=B.reduce((t,x)=>t+Math.max(0,x.invoiceable-x.t.submitted),0);
       if(under>1e5)out.push({id:'bill',sev:'insight',title:'Work done but not yet invoiced',text:`About ${sar(under)} is invoiceable under the contract terms but not yet billed.`,
         rec:'Raise the invoices this month.',point:'invoiceable',label:`Under-billed ${sar(under)}`,q:'Invoiceable value'})}
     try{if(glLive('claims')&&canDlyView()){const D=dlyVisible().filter(e=>e.status!=='Closed').map(e=>({e,c:dlyCalc(e)})).filter(x=>x.c.left!=null&&x.c.left!=='served'&&x.c.left<=7).sort((a,b)=>a.c.left-b.c.left);
@@ -10806,9 +10807,124 @@ function renderChat(){
   const box=$('#aiMsgs');box.innerHTML=state.chat.map(m=>m.ins?RasaMessage.insight(m.i):m.b?RasaMessage.answer(m.h):RasaMessage.user(m.t)).join('');box.scrollTop=box.scrollHeight;
 }
 const mdLite=t=>{const L=esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').split('\n');let h='',ul=false;L.forEach(l=>{const m=l.match(/^\s*[-•*]\s+(.*)/);if(m){if(!ul){h+='<ul>';ul=true}h+=`<li>${m[1]}</li>`}else{if(ul){h+='</ul>';ul=false}if(l.trim())h+=`<p>${l}</p>`}});return h+(ul?'</ul>':'')};
+/* ---------- v3.59 RASA understands more questions. ProTrackAI's rules read the question's words; when they find nothing,
+   RASA reads the question again with typos corrected, everyday words put in ProTrackAI's terms and an Arabic question's
+   keywords in English, and says how it read it. A question about several topics ("progress and cash") is answered topic by
+   topic. A project named in the question narrows the answer to that project when the scope has several. A short follow-up
+   ("and for RMX?", "what about manpower?", "same for all projects") carries on from the last question. Nothing leaves the
+   browser and no language model is involved: every figure is still the rule's own. ---------- */
+const RASA_VOCAB=['productivity','progress','manpower','headcount','histogram','mobilisation','mobilization','invoice','invoices','invoiceable','invoicing',
+  'billing','collection','collected','outstanding','receivable','retention','advance','payment','payments','certificate','reconciliation','reconcile','quantity',
+  'quantities','subcontract','subcontractor','subcontractors','foreman','foremen','vendor','vendors','warning','warnings','early','alert','alerts','milestone',
+  'milestones','extension','engineering','procurement','drawing','drawings','estimate','completion','overrun','forecast','variance','explain','underperforming',
+  'underperform','lagging','behind','worst','lowest','yesterday','today','commitment','commitments','actual','budget','supplement','revision','variation',
+  'variations','change','order','orders','claim','claims','released','release','executive','monthly','weekly','report','reports','reporting','lifecycle',
+  'stage','stages','handover','kickoff','tender','register','approval','approvals','approve','waiting','pending','issues','issue','bottleneck','bottlenecks',
+  'obstacle','obstacles','delay','delays','events','material','materials','delivery','deliveries','delivered','shipment','shipments','purchase','contract',
+  'contracts','document','documents','clause','clauses','baseline','schedule','cashflow','inflow','outflow','finance','status','project','projects',
+  'portfolio','region','sector','rates','compare','phase','phases','intermediate','design','deficit','treasury','payable','payables','prolongation','notice',
+  'notices','estimation','package','packages','concrete','reinforced','calculation','calculations'];
+const RASA_VOCAB_SET=new Set(RASA_VOCAB);
+/* everyday words that look like a term with one letter changed: never "corrected" */
+const RASA_KEEPW=new Set(['about','above','after','again','along','among','being','below','between','could','doing','during','every','first','given','going',
+  'having','their','there','these','those','three','through','under','until','using','where','which','while','would','should','other','before','latest',
+  'still','since','state','total','value','price','works','worked','working','start','started','finish','finished','planned','right','wrong','better','worse',
+  'money','month','months','current','shows','please','thanks','might','number','numbers','level','levels','chance','charge','place','plans','teams','client',
+  'clients','office','sites','items','needs','needed','check','great','order','range','ready','reach','stake','change','spent','spend','spending','plant',
+  'rented','rental','times','dates','label','model','total','totals','delta','weeks','years','hello','batch','batches','cases','costs','costing']);
+/* Damerau-Levenshtein (adjacent swaps count one), giving up past max */
+function rasaLev(a,b,max){if(Math.abs(a.length-b.length)>max)return max+1;const n=b.length;let p2=null,p=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=a.length;i++){const c=[i];let lo=i;for(let j=1;j<=n;j++){let v=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));
+    if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])v=Math.min(v,p2[j-2]+1);c[j]=v;if(v<lo)lo=v}if(lo>max)return max+1;p2=p;p=c}return p[n]}
+/* everyday words in ProTrackAI's terms; no replacement matches a pattern again */
+const RASA_SYN=[
+  [/\b(un-?paid|not (yet )?(been )?paid|owed( to us)?|owes us|money (due|owed)|due from (the )?clients?|receivables?|amounts? due)\b/g,'outstanding'],
+  [/\b(billable|claimable|how much (can|could|should) (we|i) (bill|claim|invoice|charge))\b/g,'invoiceable'],
+  [/\b(money in|incoming (money|cash)|income forecast)\b/g,'cash inflow'],
+  [/\b(money out|spend(ing)? forecast|outgoings?)\b/g,'cash out'],
+  [/\b(work ?force|labou?r force|labou?rers?|labou?r|workers|people on site|staff on site)\b/g,'manpower'],
+  [/\b(performance|output rates?|efficiency)\b/g,'productivity'],
+  [/\b(dangers?|threats?|red flags?|watch ?list)\b/g,'early warning'],
+  [/\b(problems?|blockers?|hold-?ups?|constraints?)\b/g,'issues'],
+  [/\b(change requests?|variation orders?)\b/g,'change order'],
+  [/\b(final cost|cost at completion|end cost|completion cost)\b/g,'eac'],
+  [/\b(key dates?|deadlines?)\b/g,'milestones'],
+  [/\b(sub-?cons?|subbies|sub-contractors?)\b/g,'subcontractor'],
+  [/\b(supervisors?|charge-?hands?|gangers?)\b/g,'foremen'],
+  [/\b(sign-?offs?|my inbox|my queue|awaiting me|on my desk)\b/g,'waiting for me'],
+  [/\b(how far (along|are we)|percent(age)? (done|complete)|completion (percent(age)?|%)|status of (the )?works?)\b/g,'progress'],
+  [/\b(slipp(ing|age)|falling behind|running late|late activities)\b/g,'behind'],
+  [/\b(late|delayed) (materials?|deliver(y|ies)|shipments?)\b/g,'material delays'],
+  [/\b(costs so far|cost to date|spent so far)\b/g,'actual cost']];
+/* Arabic: the question's keywords in English (letters normalised: no diacritics, alef forms as alef, taa marbuta as haa) */
+const rasaArN=s=>s.replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي');
+const RASA_AR=[[/انتاجي/,'productivity'],[/نسبه الانجاز|الانجاز|انجاز|التقدم|تقدم/,'progress'],[/القوي العامله|العماله|عماله|العمال|عمال/,'manpower'],
+  [/الفواتير|فواتير|الفاتوره|فاتوره/,'invoice'],[/التحصيل|تحصيل|المستحقات|مستحقات|غير مدفوع/,'outstanding'],[/المحتجزات|محتجز/,'retention'],
+  [/الدفعه المقدمه|دفعه مقدمه/,'advance payment'],[/التدفق النقدي|تدفق نقدي/,'cash flow'],[/المخاطر|مخاطر|تحذير|انذار|تنبيه/,'early warning'],
+  [/المعالم|معالم|المراحل الرئيسيه/,'milestones'],[/تمديد/,'extension of time'],[/احداث التاخير|التاخير|تاخير/,'delay events'],
+  [/مقاول(ين|ي)? (من )?الباطن|مقاولو الباطن/,'subcontractor'],[/رؤساء العمال|رئيس العمال|المشرفين|مشرف|فورمان/,'foremen'],
+  [/اوامر الشراء|امر الشراء|امر شراء/,'purchase orders'],[/المواد|مواد|التوريد|توريد/,'material deliveries'],[/قيمه العقد/,'contract value'],
+  [/التكلفه النهائيه|التكلفه عند الاكتمال/,'eac'],[/التكلفه الفعليه|تقرير التكلفه/,'actual cost'],[/الميزانيه المعتمده|الميزانيه|ميزانيه/,'approved budget'],
+  [/المشاكل|مشاكل|مشكله|المعوقات|معوقات/,'issues'],[/بانتظار|ينتظرني|موافقتي|اعتمادي|بانتظاري/,'waiting for me'],
+  [/اوامر التغيير|امر تغيير|التغييرات/,'change order'],[/المطالبات|مطالبات|مطالبه/,'claims'],[/قائمه المشاريع/,'project list'],[/اليوم/,'today'],
+  [/امس|البارحه/,'yesterday'],[/الاسوا|متاخره|متاخر|ضعيف/,'behind'],[/التقارير|تقرير/,'report'],[/دوره حياه|دوره الحياه|مراحل المشروع/,'lifecycle'],
+  [/المناقصات|مناقصه|المناقصه|عطاء/,'tender'],[/جدول الكميات|الكميات|كميات/,'boq quantities'],[/المستندات|الوثائق|مستند|وثيقه/,'documents']];
+function rasaArabic(s){const a=rasaArN(s),hits=[];
+  RASA_AR.forEach(([re,en])=>{const m=a.match(re);if(m)hits.push({i:m.index,j:m.index+m[0].length,en})});
+  const keep=[];hits.sort((x,y)=>(y.j-y.i)-(x.j-x.i)).forEach(h=>{if(!keep.some(k=>h.i<k.j&&k.i<h.j))keep.push(h)});
+  return [...keep.sort((x,y)=>x.i-y.i).map(h=>h.en),...(s.match(/[a-z0-9][a-z0-9.\-]*/g)||[])].join(' ')}
+function rasaNorm(q){let s=String(q||'').toLowerCase().replace(/[’‘`]/g,"'");
+  if(/[؀-ۿ]/.test(s))s=rasaArabic(s);
+  const syn=t=>RASA_SYN.reduce((x,[re,to])=>x.replace(re,to),t);s=syn(s);
+  const proj=new Set(PROJECTS.flatMap(p=>[p.short,p.id,p.pe,p.te].filter(Boolean).map(x=>String(x).toLowerCase())));
+  s=s.replace(/[a-z]{5,}/g,w=>{if(RASA_VOCAB_SET.has(w)||RASA_KEEPW.has(w)||proj.has(w))return w;const max=w.length>=8?2:1;let best=w,bd=max+1;
+    for(const v of RASA_VOCAB){const d=rasaLev(w,v,max);if(d<bd){bd=d;best=v}}return best});
+  return syn(s).replace(/\s+/g,' ').trim()}
+/* the suggestions RASA shows, for "Did you mean" and to leave a suggestion's own wording alone */
+const rasaChipLabels=()=>[...new Set([...document.querySelectorAll('#aiChips .chip')].map(b=>b.textContent.trim()).concat(QS,Object.keys(RASA_CHIP_MOD)))];
+const rasaIsChip=t=>rasaChipLabels().some(l=>l.toLowerCase()===String(t).trim().toLowerCase());
+function rasaDidYouMean(q){const words=t=>rasaNorm(t).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!['the','and','for','what','show','how','are','our','with','list','give','tell','all','please'].includes(w));
+  const Q=words(q);if(!Q.length)return '';
+  const near=(a,b)=>a===b||a.length>=4&&b.length>=4&&(a.startsWith(b)||b.startsWith(a))||a.length>=5&&b.length>=5&&rasaLev(a,b,1)<=1;
+  const S=rasaChipLabels().map((l,i)=>({l,i,n:words(l).filter(w=>Q.some(x=>near(x,w))).length})).filter(x=>x.n).sort((a,b)=>b.n-a.n||a.i-b.i).slice(0,3);
+  return S.length?`<div class="rasa-cta rasa-dym"><span class="small muted">Did you mean</span>${S.map(x=>`<button type="button" class="btn sm" data-q="${esc(x.l)}">${esc(x.l)}</button>`).join('')}</div>`:''}
+/* the parts of a question about several topics */
+function rasaClauses(t){const parts=String(t).split(/\s*(?:,|;|&|\band\b|\bplus\b|\bas well as\b|\balso\b)\s*/i).map(x=>x.trim()).filter(x=>x.replace(/[^a-z؀-ۿ]/gi,'').length>=3);
+  return parts.length>1?parts.slice(0,4):[]}
+/* a follow-up: "and for RMX?", "what about manpower?", "same for all projects" */
+const rasaPjWords=p=>[p.short,p.id,p.pe,p.te,p.name].filter(x=>x&&String(x).length>=3).map(x=>String(x).toLowerCase());
+function rasaStripProj(t){let s=' '+t+' ';PROJECTS.forEach(p=>rasaPjWords(p).forEach(w=>{s=s.replace(new RegExp('\\s*(\\b(for|of|on|in|at|about)\\s+)?(the\\s+)?'+reEsc(w)+'(\\s+project)?(?=$|[^a-z0-9])','gi'),' ')}));return s.replace(/\s+/g,' ').trim()}
+const RASA_FU=/^\s*(?:(?:and|but|also|ok(?:ay)?|so|then|now)\b[\s,]*)*(?:(?:what|how) about|same (?:for|on)|same|what of|for)?\b[\s,]*/i;
+const RASA_ALLP=/\b(?:for |on |across )?(?:all|every|the whole|the entire|whole|entire) (?:of )?(?:my |the )?(?:projects?|scope|portfolio)\b/i;
+function rasaFollow(q){const L=RASA.ctx;if(!L||L.uid!==state.uid||Date.now()-L.t>30*60e3)return null;
+  const cue=(q.match(RASA_FU)||[''])[0].trim(),rest=q.slice((q.match(RASA_FU)||[''])[0].length).replace(/[?.!]+\s*$/,'').trim(),s=rest.toLowerCase();
+  const P=rasaProjIn(s),all=RASA_ALLP.test(s);
+  const bare=rasaStripProj(s.replace(RASA_ALLP,' ')).replace(/\b(the|project|projects|please|then|too|as well|one|it|that|this|them|those|instead)\b/g,' ').replace(/[^a-z0-9؀-ۿ]+/g,'').length===0;
+  if(bare&&(P.length===1||all))return {q:(rasaNorm(rasaStripProj(L.q))+(all?'':' for '+P[0].short)).trim(),all,changed:true};
+  if(cue&&!bare&&!P.length&&!all&&L.pid&&projById(L.pid))return {q:rest+' for '+projById(L.pid).short,all:false,changed:true};
+  return null}
+async function rasaWithPid(pid,fn){if(!pid)return fn();const keep=SCOPE;SCOPE=new Set([pid]);_lines=null;
+  try{let r=fn();if(r&&typeof r.then==='function')r=await r;return r}finally{SCOPE=keep;_lines=null}}
+/* o.ctx false: no follow-up and no memory (RASA Intelligence); o.narrow false: the caller has chosen the projects */
+async function rasaAnswer(q,o={}){const ctx=o.ctx!==false;let eff=q,fu=false,all=false;
+  if(ctx){const f=rasaFollow(q);if(f){eff=f.q;fu=f.changed;all=f.all}}
+  const named=o.narrow!==false&&!all?rasaProjIn(eff.toLowerCase()):[],pid=named.length===1&&SCOPE.size>1?named[0].id:null;
+  const run=async t=>{try{let r=await rasaWithPid(pid,()=>answer(t));return r==null?null:r}catch(e){return NOEV('That could not be read: '+(e.message||String(e)))}};
+  let html=await run(eff),used=eff,read=fu;
+  if(html==null){const n=rasaNorm(eff);if(n&&n!==eff.toLowerCase().trim()){const h=await run(n);if(h!=null){html=h;used=n;read=true}}}
+  if(html==null)return {html:null,q:eff};
+  const T1=RASA_TOPIC,done=new Set([T1]),extra=[];
+  if(T1&&!rasaIsChip(used))for(const c of rasaClauses(used)){let h=await run(c);if(h==null){const n=rasaNorm(c);if(n&&n!==c.toLowerCase())h=await run(n)}
+    const T=RASA_TOPIC;if(h!=null&&T&&!done.has(T)){done.add(T);extra.push([c,h])}if(extra.length>=2)break}
+  RASA_TOPIC=T1;
+  let pre=read?`<p class="rasa-read small muted">${fu?'Following on from your last question, I':'I'} read this as “${esc(used)}”.</p>`:'';
+  if(pid)pre+=`<p class="rasa-read small muted">For <b>${esc(projById(pid).short)}</b> only: the project named in your question.</p>`;
+  if(extra.length)html=`<div class="rasa-part">${html}</div>`+extra.map(([c,h])=>`<div class="rasa-part"><p class="rasa-part-h small"><b>Also asked:</b> “${esc(c)}”</p>${h}</div>`).join('');
+  if(ctx&&T1)RASA.ctx={q:used,pid,t:Date.now(),uid:state.uid};
+  return {html:pre+html,q:used,pid,topics:[...done]}}
 async function ask(q){
-  q=q.trim();if(!q||aiBusy)return;let rule=answer(q);
-  if(rule&&typeof rule.then==='function'){aiBusy=true;RasaState.set('THINKING',{stay:true});try{rule=await rule}catch(e){rule=NOEV('That could not be read: '+(e.message||String(e)))}finally{aiBusy=false}}
+  q=q.trim();if(!q||aiBusy)return;let rule=null;
+  aiBusy=true;try{rule=(await rasaAnswer(q)).html}catch(e){rule=NOEV('That could not be read: '+(e.message||String(e)))}finally{aiBusy=false}
   if(!rule){try{rule=await rasaFind(q,false)}catch(e){rule=null}}
   if(rule){rasaTurn(q,rule);return}
   aiHint(false);state.chat.push({t:q});const tok=++RASA.tok;RasaState.set('THINKING',{stay:true});
@@ -10820,7 +10936,7 @@ async function ask(q){
     finally{aiBusy=false;aiCtl=null;$('#aiSend').textContent='Send';renderChat();rasaAfter(q,msg.h,null,tok)}
     return}
   const sample=rasaLLMAllowed()?await samP:null;
-  if(!sample){msg.h=RASA_NOEV_HELP();try{if(!rkLive()){rkGap(q,SCOPE.size===1?[...SCOPE][0]:null,null,'none',null);save()}}catch(e){}renderChat();rasaAfter(q,msg.h,{final:'IDLE'},tok);return}
+  if(!sample){msg.h=RASA_NOEV_HELP()+rasaDidYouMean(q);try{if(!rkLive()){rkGap(q,SCOPE.size===1?[...SCOPE][0]:null,null,'none',null);save()}}catch(e){}renderChat();rasaAfter(q,msg.h,{final:'IDLE'},tok);return}
   aiBusy=true;aiCtl=new AbortController();$('#aiSend').textContent='Stop';
   const bubble=$('#aiMsgs').lastElementChild;
   const rules=`You are RASA, the Real-time Artificial Smart Assistant inside ProTrackAI, a construction productivity platform used by a Saudi contractor. Speak like a trusted senior project-controls colleague: natural, professional, warm and concise. Say what you checked, give the figure and what it means, and where useful end with one offer of a next step. Never sound robotic. Answer the user's question using ONLY the JSON data below. It holds project KPIs, activities, foremen, subcontractors, early warnings, manpower, milestones, extension of time, contract billing, the rows of the ProTrack reports most relevant to the question, and what the live modules hold under "modules" (delay events, BOQ Engine quantities, document titles, delayed materials, cash-out and cash-inflow); a module under notLiveYet is not live yet: say so and give its stage (scope: ${scopeLabel()}; progress as of ${ASOF}; currency SAR; rates are units per manhour; index 100% = planned productivity). Be concise: under 140 words, plain sentences, "- " bullets only when listing. Quote numbers with units. If the data does not cover the question, say so and suggest which ProTrack report to open. Reply in the language of the question.\n\nDATA:\n${JSON.stringify(aiContextSafe(q))}`;
@@ -10881,7 +10997,7 @@ function answerCore(q){
   const named=acts.find(a=>a.name.toLowerCase().split(/[ ,]+/).some(w=>w.length>4&&s.includes(w)));
   const open=r=>`<p><button class="btn sm" type="button" data-go="rep" data-rep="${r}">Open ${REPORTS[r].sheet} report</button></p>`;
   if(/collect|outstanding|cash|receiv|approved amount|under-?billed|short.*bill/.test(s)){RT('collect');
-    const B=scopeProjects().map(billPosition).filter(x=>x.b.contract||x.t.n);
+    const B=scopeProjects().map(p=>billPosition(p)).filter(x=>x.b.contract||x.t.n);
     if(!B.length)return NOEV('No billing data in this scope yet.');
     const T=B.reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.t.submitted,ap:t.ap+x.t.approved,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
     if(!B.some(x=>x.t.n))return `<p>Invoiceable to date is <b>${sar(T.inv)}</b> under the contract terms.</p>`+NOEV('No invoice register is loaded in this scope, so invoiced, approved and collected amounts are not known.','Upload the register in the Import centre.');
@@ -10953,6 +11069,19 @@ function answerCore(q){
   if(/underperform|worst|behind|lagging|lowest/.test(s)){RT('under');if(!byAct.length)return NOEV('No submitted daily reports in the last 14 days in this scope, so productivity cannot be ranked.');const low=byAct.filter(x=>x.g.pi<0.9);return low.length?`<p>${low.length} ${low.length>1?'activities are':'activity is'} below 90% over 14 days:</p><ul>${low.map(x=>`<li><b>${esc(x.a.name)}</b> (${projById(x.a.p).short}): ${pct(x.g.pi)}, ${fmt(x.g.mh-x.g.earned)} manhours lost</li>`).join('')}</ul>`:`<p>No activity is below 90%. The lowest is ${esc(byAct[0]?.a.name||'—')} at ${pct(byAct[0]?.g.pi)}.</p>`}
   if(/^today'?s productivity$|today|yesterday/.test(s)){RT('today');const last=all.map(d=>d.date).sort().pop();if(last&&!acts.some(a=>all.some(l=>l.act===a.id&&l.date===last)))return NOEV('No activity in this scope was reported on the last report date.');if(!last)return NOEV('No reports yet.');const l=all.filter(d=>d.date===last),g=agg(l),r=acts.map(a=>actStats(a,l)).filter(x=>x.g.mh).sort((x,y)=>y.g.pi-x.g.pi);
     return `<p>On ${fmtDY(last)} productivity was <b>${pct(g.pi)}</b> with ${fmt(g.heads)} workers and ${fmt(g.mh)} manhours.</p><p>Best: ${esc(r[0].a.name)} at ${pct(r[0].g.pi)}. Lowest: ${esc(r[r.length-1].a.name)} at ${pct(r[r.length-1].g.pi)}.</p>`}
+  /* v3.59: progress and productivity, asked most and answered by no rule before: earned value at the data date and the
+     daily reports of the last 14 days, worst first */
+  if(/\bprogress\b|percent complete|\bspi\b|schedule performance|how (is|are) .{0,40}\b(doing|going)\b|on (track|schedule)|ahead of (plan|schedule)/.test(s)){RT('progress');
+    const R=scopeProjects().map(p=>{const e=evm(ACTS.filter(a=>a.p===p.id),ASOF),f=forecast(p);return {p,e,f}}).filter(x=>x.e.bac).sort((x,y)=>(x.e.pv?x.e.ev/x.e.pv:1)-(y.e.pv?y.e.ev/y.e.pv:1));
+    if(!R.length)return NOEV('No baseline in this scope, so progress cannot be measured.','Load the P6 baseline first.');
+    const T=R.reduce((t,x)=>({pv:t.pv+x.e.pv,ev:t.ev+x.e.ev,bac:t.bac+x.e.bac}),{pv:0,ev:0,bac:0}),spi=T.pv?T.ev/T.pv:1;
+    const line=x=>{const sp=x.e.pv?x.e.ev/x.e.pv:1,late=x.f.base&&x.f.fin?diffDays(x.f.base,x.f.fin):null;
+      return `<li><b>${esc(x.p.short)}</b>: ${pct(x.e.ev/x.e.bac)} done against ${pct(x.e.pv/x.e.bac)} planned, SPI <span class="${sp<0.9?'r-c':sp<1?'a-c':''}">${fmt(sp,2)}</span>${x.f.fin?`, forecast finish ${fmtDY(x.f.fin)}${late!=null?` (${late>0?`${fmt(late)} days after`:late<0?`${fmt(-late)} days before`:'on'} the baseline finish)`:''}`:''}</li>`};
+    return `<p>${R.length>1?`Across ${R.length} projects, w`:'W'}ork done is <b>${pct(T.ev/T.bac)}</b> against <b>${pct(T.pv/T.bac)}</b> planned at ${fmtDY(ASOF)}: SPI ${fmt(spi,2)}${spi<0.95?', behind plan':spi>1.05?', ahead of plan':', close to plan'}.</p>${R.length>1?'<p>Furthest behind first:</p>':''}<ul>${R.slice(0,6).map(line).join('')}</ul>${R.length>6?`<p class="muted small">${R.length-6} more in Reports → Project progress.</p>`:''}`}
+  if(/productiv|efficien|\bpi\b/.test(s)){RT('prod');
+    if(!w14.length)return NOEV('No submitted daily reports in the last 14 days in this scope, so productivity cannot be measured.');
+    const g=agg(w14),P=scopeProjects().map(p=>({p,g:agg(w14.filter(d=>d.p===p.id))})).filter(x=>x.g.mh).sort((x,y)=>x.g.pi-y.g.pi);
+    return `<p>Productivity over the last 14 days is <b>${pct(g.pi)}</b>: ${fmt(g.earned)} manhours earned for ${fmt(g.mh)} spent.</p>${P.length>1?`<ul>${P.slice(0,6).map(x=>`<li><b>${esc(x.p.short)}</b>: <span class="${x.g.pi<0.9?'r-c':''}">${pct(x.g.pi)}</span> on ${fmt(x.g.mh)} manhours</li>`).join('')}</ul>`:''}${byAct.length?`<p>Lowest activities: ${byAct.slice(0,2).map(x=>`${esc(x.a.name)} (${projById(x.a.p).short}) ${pct(x.g.pi)}`).join('; ')}.</p>`:''}`}
   return null;
 }
 
@@ -10970,7 +11099,7 @@ const rasaMoneyOk=()=>!isSiteRole();
 const RASA_T={collect:{src:['invoices','terms','dpr','evm'],money:1},invoice:{src:['terms','baseline','dpr','evm'],money:1},recon:{src:['dpr','baseline']},
   unitrate:{src:['dpr','rates','costing'],money:1},histo:{src:['dpr','baseline']},milestones:{src:['milestones']},engproc:{src:['weekly','baseline']},
   warn:{src:['dpr','baseline','evm']},eac:{src:['dpr','baseline','rates','evm'],money:1},reports:{src:[]},crew:{src:['dpr','baseline']},foremen:{src:['dpr']},
-  subs:{src:['dpr','rates']},variance:{src:['dpr','baseline']},under:{src:['dpr','baseline']},today:{src:['dpr']},
+  subs:{src:['dpr','rates']},variance:{src:['dpr','baseline']},under:{src:['dpr','baseline']},today:{src:['dpr']},progress:{src:['baseline','evm']},prod:{src:['dpr']},
   actions:{src:['actions']},lifecycle:{src:['lifecycle']},tender:{src:['register']}};
 let RASA_TOPIC=null;
 const RT=k=>{RASA_TOPIC=k};
@@ -11284,7 +11413,7 @@ const rasaProjWords=ps=>new Set(ps.flatMap(p=>[p.short,p.id,p.pe].filter(Boolean
 
 /* ---------- RASA: the module of each answer, and the release strategy ---------- */
 const RASA_MOD={collect:'invoices',invoice:'invoices',recon:'daily',unitrate:'cost',histo:'daily',milestones:'planning',engproc:'planning',warn:'daily',eac:'cost',reports:'reports',
-  crew:'daily',foremen:'daily',subs:'daily',variance:'daily',under:'daily',today:'daily',actions:'projects',lifecycle:'projects',tender:'projects',issues:'projects',costrep:'cost',vo:'claims',released:'home',
+  crew:'daily',foremen:'daily',subs:'daily',variance:'daily',under:'daily',today:'daily',progress:'daily',prod:'daily',actions:'projects',lifecycle:'projects',tender:'projects',issues:'projects',costrep:'cost',vo:'claims',released:'home',
   boq:'boq',docs:'docs',dly:'claims',cout:'invoices',cin:'invoices',cash:'invoices',cfd:'invoices',cplan:'cost',mer:'cost',mat:'materials',po:'materials',cv:'projects',kms:'planning',phase:'planning',ep:'planning',rs:'home',plist:'projects'};
 function rasaGate(mod,h){
   if(h&&typeof h.then==='function')return h.then(x=>rasaGate(mod,x));
@@ -11734,7 +11863,7 @@ async function rkAsk(q,o={}){q=String(q||'').trim().slice(0,500);if(!q)return nu
   const pids=(named.length?named.map(p=>p.id):o.pid?[o.pid]:[...SCOPE]).filter(id=>accessIds().includes(id));
   if(!named.length&&!o.pid&&pids.length>1&&/\b(this|our|the|my) project\b/i.test(q))return {clarify:true,q,pids,html:`<p><b>Which project do you mean?</b> Your scope has ${pids.length} projects.</p><div class="chips">${pids.slice(0,12).map(id=>`<button type="button" class="chip" data-rkclar="${esc(id)}">${esc(rkPj(id))}</button>`).join('')}</div>`};
   if(RK.dirty.size)await rkCatchUp();
-  const keep=SCOPE;let rule=null;SCOPE=new Set(pids);try{rule=answer(q);if(rule&&typeof rule.then==='function')rule=await rule}catch(e){rule=null}finally{SCOPE=keep}
+  const keep=SCOPE;let rule=null;SCOPE=new Set(pids);try{rule=(await rasaAnswer(q,{ctx:false,narrow:false})).html}catch(e){rule=null}finally{SCOPE=keep}
   const deny=!!rule&&/Not available for your role/.test(rule),noev=!!rule&&/rasa-noev/.test(rule);
   const mods=rkModsOf(q),ev=await rkSearch(q,{pids,mods}),hits=ev.hits,valid=hits.filter(h=>rkCiteOk(h.s)).length;
   const onlyDraft=hits.length&&hits.every(h=>!['Published','Released','Approved','Certified','Agreed','Recorded','Calculated','Issued','Paid'].includes(h.s.appr));
@@ -21826,7 +21955,7 @@ const REPORTS={
       rows.push({proj:p.short,no:'Total',type:`${X.t.n} invoices`,sub:X.t.submitted,appr:X.t.approved,coll:X.t.collected,
         due:Math.max(0,X.outstanding),note:`Invoiceable ${sar(X.invoiceable)}, ${X.gapSub>1?`under-billed ${sar(X.gapSub)}`:'fully billed'}`,total:true});
     });
-    const T=scopeProjects().map(billPosition).reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.t.submitted,ap:t.ap+x.t.approved,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
+    const T=scopeProjects().map(p=>billPosition(p)).reduce((t,x)=>({inv:t.inv+x.invoiceable,sub:t.sub+x.t.submitted,ap:t.ap+x.t.approved,co:t.co+x.t.collected}),{inv:0,sub:0,ap:0,co:0});
     return {cols:[C('Project','proj'),C('Invoice','no'),C('Date','date','date'),C('Type','type'),C('Submitted','sub','sar'),C('Approved','appr','sar'),C('Collected','coll','sar'),C('Outstanding','due','sar'),C('Note','note')],rows,
       chart:pal=>({type:'bar',data:{labels:['Invoiceable','Invoiced','Approved','Collected'],datasets:[{label:'SAR thousands',data:[T.inv,T.sub,T.ap,T.co].map(v=>Math.round(v/1e3)),backgroundColor:[pal.bar,pal.accent,pal.amber,pal.green]}]},
         options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'SAR thousands'}}}}}),
