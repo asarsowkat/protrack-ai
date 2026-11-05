@@ -168,6 +168,19 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.59
+
+- **RASA understands more questions.** Still only ProTrackAI's own rules, no language model.
+  - **Typos, everyday words and Arabic.** When no rule answers, RASA reads the question again with typos corrected, everyday words in ProTrackAI's terms ("unpaid" → outstanding, "labour" → manpower) and an Arabic question's keywords in English, and says how it read it.
+  - **Several topics** in one question are answered one by one ("Also asked").
+  - **A project named in the question** narrows the answer to that project when the scope has several.
+  - **Follow-ups** ("and for QOT?", "what about productivity?", "same for all projects") carry on from the last question, for 30 minutes.
+  - **"Did you mean"** suggestions when nothing answers.
+  - **New rules for progress and productivity**, which had none.
+- **Fix:** RASA's invoicing and collection answer and three other billing totals counted only the first project in the scope.
+
+  No server change. `tests/rasa_understand_demo.js` (27 checks). See RELEASE-NOTES-v3.59.md.
+
 ## Version 3.58
 
 - **Two warnings on the invoicing phases.**
