@@ -168,6 +168,14 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.60
+
+- **The weather on the daily report is filled in automatically.** When a daily report is started, the Weather field gets the weather of the project's city (chosen at project creation; a registered project's location) on the report date, with a line saying where it came from. Another date or project gets its own; typed weather is kept; a cleared field is filled in again; a report being edited keeps its saved weather.
+  - **Demo page and demo mode:** SAMPLE weather from the city's usual climate. No outside service is called.
+  - **On the ProTrack server:** through ProTrack's own server endpoint, switched off until IT and Cybersecurity approve the weather service (each request carries the city and the date). Until then the weather is typed as before; Settings → System says so.
+
+  No database change. `tests/weather_auto_demo.js` (13 checks). See RELEASE-NOTES-v3.60.md and STAGE-51-SETUP.md.
+
 ## Version 3.59
 
 - **RASA understands more questions.** Still only ProTrackAI's own rules, no language model.

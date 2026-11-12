@@ -9153,7 +9153,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.59';
+const APP_VERSION='3.60';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -9440,7 +9440,7 @@ function systemHTML(){
       <tr><td>ProTrackAI</td><td><b>v${APP_VERSION}</b></td></tr>
       <tr><td>Server</td><td>${CLOUD?'Connected (Supabase)':'Not connected: demo data in this browser'}</td></tr>
       <tr><td>RASA and outside AI</td><td>${esc(RASA_POLICY.note)}</td></tr>
-      ${rasaAvatarStatus().map(([k,v])=>`<tr><td>${k}</td><td>${esc(v)}</td></tr>`).join('')}
+      ${[...rasaAvatarStatus(),wxStatus()].map(([k,v])=>`<tr><td>${k}</td><td>${esc(v)}</td></tr>`).join('')}
       ${CLOUD_ME?`<tr><td>Last loaded from the server</td><td>${CLOUD_LOAD.at?esc(tStamp(CLOUD_LOAD.at))+(CLOUD_LOAD.ok?'':' (failed)'):'—'}</td></tr>`:''}
     </tbody></table>
   </div></div>
@@ -9909,10 +9909,80 @@ function lineForm(l,i,f){
     <button type="button" class="btn sm" style="margin-top:8px" data-add="equip" ${L}>Add equipment</button>
   </section>`;
 }
+/* ---------- v3.60 the weather on the daily report, filled in from the project's city ----------
+   Site teams no longer type the weather. When a daily report is started, or its project or date changes, the Weather field
+   is filled with the weather of the project's city (the city chosen when the project was created; for a project registered
+   from the Tender register, its location) on the report date. Anyone can still change it: a changed field is kept, and
+   clearing it fills it in again. A report being edited keeps the weather it was saved with.
+   Where the weather comes from:
+   - Signed in to the ProTrack server: ProTrack's own server (WEATHER.endpoint in config.js), which asks the approved
+     weather service. It is switched off until IT and Cybersecurity approve the service, because each request carries the
+     project's city and the report date (STAGE-51-SETUP.md). The browser never calls an outside service and holds no key.
+     Until then the field is typed as before.
+   - On the demo page and in demo mode: SAMPLE weather, from the city's usual climate for the month, said so under the
+     field. No outside service is called. */
+const WEATHER=(()=>{const c=(window.PROTRACK||{}).WEATHER||{};return Object.assign({provider:'Weather service',enabled:false,approved:false,endpoint:''},c)})();
+const wxServerOn=()=>!!(WEATHER.enabled&&WEATHER.approved&&WEATHER.endpoint);
+/* Saudi cities: latitude, longitude and climate (inland, gulf coast, Red Sea coast, highlands), public geography */
+const WX_CITY={riyadh:[24.71,46.68,'in'],'al kharj':[24.15,47.31,'in'],kharj:[24.15,47.31,'in'],dammam:[26.43,50.1,'gu'],jubail:[27.01,49.66,'gu'],
+  'ras tanura':[26.64,50.16,'gu'],'al khobar':[26.28,50.21,'gu'],khobar:[26.28,50.21,'gu'],dhahran:[26.29,50.11,'gu'],qatif:[26.56,50.01,'gu'],
+  'al ahsa':[25.38,49.59,'gu'],hofuf:[25.38,49.59,'gu'],jeddah:[21.49,39.19,'rs'],makkah:[21.39,39.86,'rs'],mecca:[21.39,39.86,'rs'],
+  madinah:[24.47,39.61,'in'],medina:[24.47,39.61,'in'],yanbu:[24.09,38.06,'rs'],rabigh:[22.8,39.03,'rs'],jazan:[16.89,42.55,'rs'],jizan:[16.89,42.55,'rs'],
+  taif:[21.27,40.42,'hi'],abha:[18.22,42.51,'hi'],'khamis mushait':[18.31,42.73,'hi'],'al baha':[20.01,41.47,'hi'],najran:[17.49,44.13,'hi'],
+  tabuk:[28.38,36.57,'in'],hail:[27.52,41.69,'in'],buraydah:[26.33,43.97,'in'],qassim:[26.33,43.97,'in'],unaizah:[26.08,43.99,'in'],
+  'hafar al batin':[28.43,45.96,'in'],arar:[30.98,41.04,'in'],sakaka:[29.97,40.21,'in'],'al jouf':[29.97,40.21,'in'],'al ula':[26.61,37.92,'in']};
+/* the usual daily maximum (°C) by month, January first */
+const WX_TMAX={in:[20,23,28,33,39,42,43,43,40,34,27,22],gu:[21,23,27,33,39,43,44,44,41,36,29,23],rs:[29,29,31,33,35,36,38,38,36,35,32,30],hi:[19,21,24,26,30,32,32,32,30,26,22,20]};
+/* the project's city: its city in the project master, else the location typed at registration */
+function wxCityOf(p){
+  if(!p)return null;const c=cityById(p.city),names=[c&&c.name,p.location].filter(Boolean);
+  for(const n of names){const s=String(n).toLowerCase(),k=WX_CITY[s.trim()]?s.trim():Object.keys(WX_CITY).sort((a,b)=>b.length-a.length).find(x=>new RegExp('(^|[^a-z])'+reEsc(x)+'($|[^a-z])').test(s));
+    if(k)return {name:c&&k===String(c.name).toLowerCase()?c.name:k.replace(/\b[a-z]/g,m=>m.toUpperCase()),lat:WX_CITY[k][0],lon:WX_CITY[k][1],cl:WX_CITY[k][2]}}
+  return names.length?{name:String(names[0]),lat:null,lon:null,cl:null}:null}
+const wxHash=s=>{let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0)/4294967296};
+/* SAMPLE weather for the demo: the usual maximum for the month ±2 °C, and a condition that fits the place and season */
+function wxSample(city,date){
+  if(!city||!city.cl)return null;const m=+date.slice(5,7)-1,h=wxHash(city.name+'|'+date),h2=wxHash(date+'|'+city.name),t=Math.round(WX_TMAX[city.cl][m]+(h2-.5)*4);
+  const winter=m<=2||m>=10,spring=m>=2&&m<=6,summer=m>=5&&m<=8;
+  const cond=(winter&&h<(city.cl==='hi'?.12:.06))||(city.cl==='hi'&&summer&&h<.1)?'Rain':spring&&city.cl!=='hi'&&h<.14?'Dust / sandstorm':
+    (city.cl==='rs'||city.cl==='gu')&&summer&&h<.45?'Humid':h<.2?'Windy':winter&&h<.3?'Cloudy':t>=45?'Hot':'Clear';
+  return {text:`${cond}, ${t} °C`,sample:true}}
+/* the weather from ProTrack's server, which asks the approved weather service */
+async function wxServer(city,date){
+  const q=new URLSearchParams({date,city:city.name});if(city.lat!=null){q.set('lat',city.lat);q.set('lon',city.lon)}
+  const r=await fetch(WEATHER.endpoint+(WEATHER.endpoint.includes('?')?'&':'?')+q,{credentials:'include',headers:await rasaAuthHeader()});
+  if(!r.ok)throw new Error('The weather service answered '+r.status);
+  const j=await r.json(),t=Math.round(+j.tmax),w=Math.round(+j.wind_kmh||0);if(!j.condition||!Number.isFinite(t))throw new Error('No weather for that date');
+  return {text:`${String(j.condition).slice(0,30)}, ${t} °C${w>=30?`, wind ${w} km/h`:''}`.slice(0,60),sample:false}}
+/* where the weather comes from: sample (demo), server (approved and switched on) or none (typed by hand) */
+const wxMode=()=>!CLOUD?'sample':wxServerOn()?'server':'none';
+/* fill the form's weather for its project and date, unless someone typed it */
+async function wxFill(f){
+  if(!f||wxMode()==='none')return;
+  if(f.wxMan==null)f.wxMan=!!(state.editing&&f.weather);
+  const key=f.p+'|'+f.date;if(f.wxMan||f.wxFor===key)return;
+  const city=wxCityOf(projById(f.p));f.wxFor=key;f.wxCity=city;f.wxErr='';
+  let w=null;try{w=wxMode()==='sample'?wxSample(city,f.date):city?await wxServer(city,f.date):null}catch(e){f.wxErr=e.message||String(e)}
+  if(state.form!==f||f.wxFor!==key||f.wxMan)return;
+  f.wxSrc=w?{city:city.name,date:f.date,sample:w.sample}:null;
+  if(w){f.weather=w.text;const el=document.querySelector('[data-k="weather"]');if(el)el.value=w.text}
+  else if(!f.wxErr)f.wxErr=city?`No weather is known for ${city.name}.`:'The project has no city.';
+  wxNotePaint(f)}
+function wxNoteText(f){
+  if(wxMode()==='none')return '';
+  if(f.wxMan)return f.weather?'Entered by hand. Clear the field to fill it in from the project\'s city again.':'';
+  if(f.wxErr)return `${f.wxErr} Type the weather.`;
+  const s=f.wxSrc;if(!s)return f.wxFor?'Getting the weather…':'';
+  return `Filled in for ${s.city} on ${fmtDY(s.date)}${s.sample?': SAMPLE weather on the demo, from the usual climate':` by ${WEATHER.provider}`}. Change it if the site saw otherwise.`}
+function wxNotePaint(f){const n=document.getElementById('wxNote');if(n)n.textContent=wxNoteText(f)}
+/* Settings → System */
+const wxStatus=()=>['Weather on daily reports',!CLOUD?'Sample weather from the project\'s city (demo)':wxServerOn()?`From ${WEATHER.provider}, through the ProTrack server`:
+  `Typed by the site team. ${WEATHER.provider} is ${!WEATHER.approved?'off until IT and Cybersecurity approve it':!WEATHER.enabled?'approved, not yet switched on':'switched on, but its server address is missing'}.`];
 function renderForm(){
   if(!canCreate()){go('dpr');return}
   {const key=state.editing||'new';if(!(TIMER.kind==='create'&&TIMER.id===key))timerStart('create',key,0);}
   if(!state.form){const b=blankForm();if(!b){document.getElementById('view').innerHTML=crumb()+'<section class="panel"><h2>No project is ready for daily reporting</h2><p class="muted" style="margin:0">None of your active projects has both a baseline and a foreman yet. Ask the planning manager to finish the project setup in Settings.</p></section>';return}state.form=b;dpfReset()}
+  wxFill(state.form);
   const f=state.form,p=projById(f.p),left=ACTS.filter(x=>x.p===f.p&&isCon(x)&&!f.lines.some(l=>l.act===x.id)).length;
   document.getElementById('view').innerHTML=`<div class="crumb"><span class="timerpill" title="Time spent on this report">⏱ <span id="formTimer">0 s</span></span> ${state.editing?`Editing ${state.editing}. Changes are logged in the audit trail.`:'One report per foreman per day. Add every activity the crews worked on, each with the resources engaged on it.'}</div>
   <div class="form-grid"><div style="display:flex;flex-direction:column;gap:16px">
@@ -9921,7 +9991,7 @@ function renderForm(){
       ${!state.editing&&formProjects().length>1?`<label class="field">Project<select data-k="p" data-rerender>${opt(formProjects().map(id=>[id,projById(id).short]),f.p)}</select></label>`:`<div class="field">Project<div class="ro">${esc(projById(f.p).short)}</div><span class="small muted">From your project access</span></div>`}
       <label class="field">Foreman<select data-k="foreman">${opt(p.foremen,f.foreman)}</select></label>
       <div class="field">Site engineer<div class="ro">${esc(p.eng)}</div></div>
-      <label class="field">Weather<input data-k="weather" ${CLOUD_ME&&!DB.dprV55?"disabled":""} list="wxList" maxlength="60" value="${esc(f.weather||'')}" placeholder="For example: Clear, 41 °C"><datalist id="wxList">${['Clear','Hot','Windy','Dust / sandstorm','Cloudy','Rain','Humid'].map(x=>`<option value="${x}">`).join('')}</datalist></label>
+      <label class="field">Weather<input data-k="weather" ${CLOUD_ME&&!DB.dprV55?"disabled":""} list="wxList" maxlength="60" value="${esc(f.weather||'')}" placeholder="For example: Clear, 41 °C"><datalist id="wxList">${['Clear','Hot','Windy','Dust / sandstorm','Cloudy','Rain','Humid'].map(x=>`<option value="${x}">`).join('')}</datalist><span class="small muted" id="wxNote" aria-live="polite">${esc(wxNoteText(f))}</span></label>
     </div></section>
     ${f.lines.map((l,i)=>lineForm(l,i,f)).join('')}
     <button type="button" class="addact" data-addline ${left?'':'disabled'}>${left?`Add another activity <span class="muted">(${left} more available in ${esc(p.short)})</span>`:'All activities for this project are already on the report'}</button>
@@ -23368,7 +23438,10 @@ document.addEventListener('input',e=>{
   if(e.target.id==='rsPw')pwMeter();
   if(e.target.id==='execQ'){state.execQ=e.target.value;renderExecList();return}
   const el=e.target,f=state.form;if(!f||state.view!=='new')return;const ds=el.dataset;
-  if(ds.k&&!('rerender' in ds)){f[ds.k]=el.value;updateSummary()}
+  if(ds.k&&!('rerender' in ds)){f[ds.k]=el.value;updateSummary();
+    /* v3.60: typed weather is kept; cleared, it is filled in again; a new date gets its own weather */
+    if(ds.k==='weather'){f.wxMan=!!el.value.trim();if(!f.wxMan){f.wxFor=null;f.wxErr='';wxFill(f)}wxNotePaint(f)}
+    else if(ds.k==='date'&&el.value){wxFill(f);wxNotePaint(f)}}
   else if(ds.lk==='qty'){f.lines[+ds.l].qty=el.value;updateSummary()}
   else if(ds.row){f.lines[+ds.l][ds.row][+ds.i][ds.f]=el.value;updateSummary()}
 });
