@@ -168,6 +168,12 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.61
+
+- **The new ProTrack logo** everywhere it appears: the sign-in page and its opening (the globe "o" spins in instead of the old needle), the side menu (on a white plate in night mode), the phone top bar and browser tab (the globe mark), report documents and PDF headers, report emails (lettered in the new colours), the user guide and the roles page. The artwork is used as supplied, not recoloured.
+
+  Not changed: the alfanar Projects, company and customer logos, the RASA badge, the training videos and README screenshots (recordings of the old screens), and DevPlanning. See RELEASE-NOTES-v3.61.md.
+
 ## Version 3.60
 
 - **The weather on the daily report is filled in automatically.** When a daily report is started, the Weather field gets the weather of the project's city (chosen at project creation; a registered project's location) on the report date, with a line saying where it came from. Another date or project gets its own; typed weather is kept; a cleared field is filled in again; a report being edited keeps its saved weather.
