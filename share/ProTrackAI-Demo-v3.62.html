@@ -1147,6 +1147,10 @@ html{scrollbar-color:var(--bar) transparent;accent-color:var(--accent)}
 /* menu */
 .side{background:var(--side);border-inline-end:1px solid var(--side-line)}
 .brand .logo-word{border-radius:8px;box-shadow:0 4px 12px rgba(16,38,77,.16);background:#fff}
+/* v3.62: the logo across the menu's full width */
+.brand{padding:0 0 22px;margin-inline:-6px}
+.brand .logo-word{max-width:none;width:100%}
+@media (max-width:900px){.brand{margin-inline:0;padding:4px 10px 24px}.brand .logo-word{max-width:186px}}
 .mnavx{border-color:var(--side-line)!important}
 .nav button:hover,.nav .nav-top:hover,.nav .nav-item:hover{color:var(--side-ink);background:var(--side-hover)}
 .nav button[aria-current="page"]{color:var(--side-act-ink);background:var(--side-act)}
@@ -1194,8 +1198,6 @@ select:focus-visible,input:focus-visible,textarea:focus-visible{outline:none;bor
   <div class="lg">
     <header class="lg-head">
       <span class="lg-pt"><img class="logo-word" alt="ProTrack: plan, track, analyze, deliver" width="1040" height="267"><i class="lg-pt-tag" aria-hidden="true"></i><i class="lg-pt-ndl" aria-hidden="true"></i></span>
-      <span class="lg-div" aria-hidden="true"></span>
-      <span class="lg-af" id="lgAlfanar"></span>
     </header>
     <section class="lg-copy">
       <h1><span class="lg-d">From Initiation to Delivery in One Platform</span><span class="lg-m">Integrated Project Controls Platform</span></h1>
@@ -9155,7 +9157,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.61';
+const APP_VERSION='3.62';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -22863,7 +22865,7 @@ const LG_ICON={user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 const lgBtnHtml=busy=>busy?'<span class="lg-spin" aria-hidden="true"></span>Signing in…':'Sign in'+LG_ICON.go;
 function lgBusy(on){const b=$('#lgBtn');if(!b)return;b.disabled=on;b.classList.toggle('busy',on);b.setAttribute('aria-busy',on?'true':'false');b.innerHTML=lgBtnHtml(on)}
 /* the sign-in page's brand slot, footer and opening sequence; the sequence plays once per page load, never after a failed sign-in */
-function lgPage(){const af=$('#lgAlfanar');
+function lgPage(){const af=$('#lgAlfanar'); /* v3.62: the sign-in page shows the ProTrack logo alone; no slot, nothing drawn */
   if(af&&!af.firstChild)af.innerHTML=ALFANAR_LOGO?`<img src="${ALFANAR_LOGO}" alt="alfanar Projects" width="174" height="79">`:'<span class="lg-af-ph" title="Placeholder: the official alfanar Projects logo file has not been supplied yet">alfanar <b>Projects</b></span>';
   const f=$('#lgFoot');if(f)f.textContent='ProTrackAI v'+APP_VERSION+(CLOUD?'':'. Prototype sign-in: accounts, passwords and sessions live in this browser only.');
   if(lgPage.played)return;lgPage.played=true;const a=$('#auth');a.classList.add('lg-play');setTimeout(()=>a.classList.remove('lg-play'),3700)}

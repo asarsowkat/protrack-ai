@@ -168,6 +168,13 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.62
+
+- **The menu logo across the menu's full width** (239 px of 252 on desktop; the phone menu keeps 186 px beside its close button).
+- **The sign-in page shows the ProTrack logo alone:** the alfanar Projects logo and its divider are removed. Report documents keep the alfanar Projects logo in their header.
+
+  `tests/login_page_demo.js` check 2 updated (29 checks). See RELEASE-NOTES-v3.62.md.
+
 ## Version 3.61
 
 - **The new ProTrack logo** everywhere it appears: the sign-in page and its opening (the globe "o" spins in instead of the old needle), the side menu (on a white plate in night mode), the phone top bar and browser tab (the globe mark), report documents and PDF headers, report emails (lettered in the new colours), the user guide and the roles page. The artwork is used as supplied, not recoloured.
