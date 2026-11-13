@@ -11,7 +11,7 @@
     const W=innerWidth,mobile=W<768;
     // branding and images
     const logo=q('.lg-pt img'),rasa=q('.lg-rasa');
-    ok('1. The original ProTrack logo, undistorted (520 x 131)',logo.src===LOGO&&logo.naturalWidth===520&&Math.abs(R(logo).width/R(logo).height-520/131)<.02,[logo.naturalWidth,logo.naturalHeight]);
+    ok('1. The ProTrack logo (v3.61), undistorted (1040 x 267)',logo.src===LOGO&&logo.naturalWidth===1040&&Math.abs(R(logo).width/R(logo).height-1040/267)<.02,[logo.naturalWidth,logo.naturalHeight]);
     ok('2. The alfanar Projects slot: the official file when ALFANAR_LOGO is set, a labelled placeholder until then',ALFANAR_LOGO?!!q('#lgAlfanar img'):!!q('#lgAlfanar .lg-af-ph')&&/placeholder/i.test(q('#lgAlfanar .lg-af-ph').title));
     ok('3. RASA is the approved badge, shown whole and round, not cropped',rasa.src===RASA_BADGE&&rasa.naturalWidth===640&&Math.abs(R(rasa).width-R(rasa).height)<1&&getComputedStyle(rasa).objectFit==='contain');
     ok('4. Both images have alternative text',!!logo.alt&&/RASA/.test(rasa.alt));
