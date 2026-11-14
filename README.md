@@ -168,6 +168,10 @@ Production needs:
 - Build: `python3 tools/make_demo.py live.html demo.html` and copy `demo.html` to `index.html`.
 - **At go-live:** copy `live.html` to `index.html` (keep `live.html` so links still work).
 
+## Version 3.62.1
+
+- **The emails in the new ProTrack colours.** The approval email, the test email and the report emails still had the old dark header band; they now open with a white header, a navy "Pro", a blue "Track" and a blue rule (v3.61 missed them). See RELEASE-NOTES-v3.62.1.md.
+
 ## Version 3.62
 
 - **The menu logo across the menu's full width** (239 px of 252 on desktop; the phone menu keeps 186 px beside its close button).

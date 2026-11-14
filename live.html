@@ -9157,7 +9157,7 @@ const canCreate=()=>state.role!=='sa'&&can('dpr.create');   /* super admins writ
    Every business domain is listed. Items that open an existing screen are live; items not yet built
    carry `plan` and render disabled with a "Planned" tag, so the roadmap is visible without pretending
    it works. Routing still goes through data-go and go(), unchanged. */
-const APP_VERSION='3.62';
+const APP_VERSION='3.62.1';
 const mhSrcName=v=>v==='Costing file'?'Master Manpower Costing Sheet':v;   /* stored value kept; shown by its new name */
 const PLAN_ROLES=['sa','exec','rm','pf','plan','costing','pm'];
 const BCM_SECS=[['ov','Budget Overview'],['intake','Tender File Intake'],['auto','Automatic WBS Classification'],['review','Classification Review'],['dup','Duplicate & Backup Analysis'],
@@ -13728,8 +13728,8 @@ function mailHTML(d){
   return `<!doctype html><html><body style="margin:0;background:#EEF1F5;padding:20px 0">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center">
 <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:640px">
-<tr><td style="background:#04101F;padding:18px 24px;font:bold 22px Arial,sans-serif;color:#fff">Pro<span style="color:#4DA3FF">Track</span>
-  <span style="float:right;font:13px Arial,sans-serif;color:#9FB6D6;padding-top:6px">Daily report approved</span></td></tr>
+<tr><td style="background:#fff;border-bottom:3px solid #016AE9;padding:18px 24px;font:bold 22px Arial,sans-serif;color:#061945">Pro<span style="color:#016AE9">Track</span>
+  <span style="float:right;font:13px Arial,sans-serif;color:#56626C;padding-top:6px">Daily report approved</span></td></tr>
 <tr><td style="padding:22px 24px 6px;font:14px Arial,sans-serif;color:#1F2A37">
   <div style="font:bold 20px Arial,sans-serif;color:#0B2545">${esc(p.name)}</div>
   <div style="color:#5B6B7F;margin-top:4px">${esc(d.id)} · ${fmtDY(d.date)} · foreman ${esc(d.foreman)}</div></td></tr>
@@ -13797,7 +13797,7 @@ async function mailCfgSave(){if(!CLOUD_ME)return;const c=mailCfg();
   if(error||!data||!data.length){toast('The server did not save the email settings'+(error?': '+srvMsg(error):': only a super admin changes them'));await cloudLoadMail();render()}}
 const mailTestHTML=()=>`<!doctype html><html><body style="margin:0;background:#EEF1F5;padding:20px 0"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center">
 <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:640px">
-<tr><td style="background:#04101F;padding:18px 24px;font:bold 22px Arial,sans-serif;color:#fff">Pro<span style="color:#4DA3FF">Track</span><span style="float:right;font:13px Arial,sans-serif;color:#9FB6D6;padding-top:6px">Test email</span></td></tr>
+<tr><td style="background:#fff;border-bottom:3px solid #016AE9;padding:18px 24px;font:bold 22px Arial,sans-serif;color:#061945">Pro<span style="color:#016AE9">Track</span><span style="float:right;font:13px Arial,sans-serif;color:#56626C;padding-top:6px">Test email</span></td></tr>
 <tr><td style="padding:22px 24px 26px;font:14px Arial,sans-serif;color:#1F2A37">This is a test email from ProTrack, sent by ${esc((me()||{}).name||'')} from Settings → Email on ${esc(stamp())}.<br><br>If you can read it, approval and report emails from ProTrack reach your mailbox.</td></tr>
 <tr><td style="background:#F4F6F9;padding:12px 24px;font:11px Arial,sans-serif;color:#8A97A8">${esc(siteUrl())}</td></tr></table></td></tr></table></body></html>`;
 function mailSrvHTML(){
@@ -14018,7 +14018,7 @@ function relMailHTML(r){
   return `<!doctype html><html><body style="margin:0;background:#EEF1F5;padding:20px 0">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center">
 <table role="presentation" width="640" cellspacing="0" cellpadding="0" style="background:#fff;border-radius:12px;overflow:hidden;max-width:640px">
-<tr><td style="background:#04101F;padding:18px 24px;font:bold 22px Arial,sans-serif;color:#fff">Pro<span style="color:#4DA3FF">Track</span><span style="float:right;font:13px Arial,sans-serif;color:#9FB6D6;padding-top:6px">${title}</span></td></tr>
+<tr><td style="background:#fff;border-bottom:3px solid #016AE9;padding:18px 24px;font:bold 22px Arial,sans-serif;color:#061945">Pro<span style="color:#016AE9">Track</span><span style="float:right;font:13px Arial,sans-serif;color:#56626C;padding-top:6px">${title}</span></td></tr>
 <tr><td style="padding:22px 24px 6px;font:14px Arial,sans-serif;color:#1F2A37"><div style="font:bold 20px Arial,sans-serif;color:#0B2545">${esc(p.name||r.project_id)}</div>
   <div style="color:#5B6B7F;margin-top:4px">${esc(pcode(p))} · ${esc(perLabel(r.period_type,r.period))} · rev ${r.rev} · approved by ${esc(who(r.approved_by))}, ${esc(tStamp(r.approved_at||new Date().toISOString()))}</div></td></tr>
 <tr><td style="padding:14px 24px"><table role="presentation" width="100%" cellspacing="6" cellpadding="0"><tr>${kp}</tr></table></td></tr>
